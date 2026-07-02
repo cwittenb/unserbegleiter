@@ -16,7 +16,7 @@ beforeAll(async () => {
   const bundled = await build({
     entryPoints: [path.join(ROOT, "platforms/cloudflare/worker/index.js")],
     bundle: true,
-    format: "esm",
+    format: "esm", external: ["cloudflare:sockets"],
     write: false,
     target: "es2022",
   });

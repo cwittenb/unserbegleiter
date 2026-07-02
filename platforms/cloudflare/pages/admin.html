@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Paarbegleitung · Verwaltung</title>
+<style>
+  :root{
+    --bg:#f5f7f9; --ink:#1b2430; --ink-soft:#5a6675; --accent:#0f766e;
+    --card:#fff; --line:#e3e8ee; --field:#cfd8e0;
+    --ok-bg:#eaf5f2; --ok-line:#bfe0d7; --err-bg:#fdecec; --err-line:#f5b5b5;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:560px; margin:0 auto; padding:40px 18px 64px}
+  .eyebrow{
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin:0 0 6px;
+  }
+  h1{font-size:22px; margin:0 0 4px; font-weight:650}
+  .lede{color:var(--ink-soft); font-size:14px; margin:0 0 24px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:20px; margin:0 0 16px;
+  }
+  label{display:block; font-size:13px; font-weight:550; margin:0 0 5px}
+  .hint{font-size:12px; color:var(--ink-soft); font-weight:400; margin:0 0 5px}
+  input{
+    display:block; width:100%; padding:10px 11px; font:inherit; color:var(--ink);
+    border:1px solid var(--field); border-radius:9px; background:#fff;
+  }
+  input:focus-visible{outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent)}
+  .row{display:flex; gap:12px}
+  .row > div{flex:1}
+  .field{margin:0 0 14px}
+  .adv{margin:2px 0 0}
+  .adv summary{font-size:13px; color:var(--ink-soft); cursor:pointer; padding:6px 0}
+  button{font:inherit; cursor:pointer; border-radius:9px}
+  .primary{
+    width:100%; margin-top:4px; padding:12px 16px; font-weight:600;
+    background:var(--accent); color:#fff; border:1px solid var(--accent);
+  }
+  .primary:disabled{opacity:.55; cursor:default}
+  .msg{border-radius:9px; padding:10px 12px; font-size:13px; margin:14px 0 0}
+  .msg.err{background:var(--err-bg); border:1px solid var(--err-line)}
+  .result{margin-top:8px}
+  .code-line{font-size:13px; color:var(--ink-soft); margin:0 0 14px}
+  .code-line b{color:var(--ink); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.04em}
+  .link-card{background:var(--ok-bg); border:1px solid var(--ok-line); border-radius:10px; padding:12px 13px; margin:0 0 10px}
+  .link-role{font-size:12px; font-weight:600; color:var(--accent); margin:0 0 6px}
+  .link-flex{display:flex; gap:8px; align-items:center}
+  .link-url{
+    flex:1; min-width:0; font-size:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    color:var(--ink); background:#fff; border:1px solid var(--ok-line); border-radius:7px;
+    padding:8px 9px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .copy{padding:8px 12px; font-size:13px; background:#fff; border:1px solid var(--field); color:var(--ink); white-space:nowrap}
+  .copy.done{border-color:var(--ok-line); color:var(--accent)}
+  .foot{font-size:12px; color:var(--ink-soft); margin-top:22px}
+  .foot code{background:#eef2f6; padding:1px 5px; border-radius:4px; font-size:11px}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="eyebrow">Paarbegleitung</p>
+    <h1>Einladung anlegen</h1>
+    <p class="lede">Legt ein neues Paar an und erzeugt die beiden persönlichen Einladungslinks — einen für jede Person.</p>
+
+    <div class="card">
+      <div class="field">
+        <label for="tok">Admin-Token</label>
+        <p class="hint">Wird nur für diese Anfrage verwendet und nirgends gespeichert.</p>
+        <input id="tok" type="password" autocomplete="off" placeholder="•••••••••••••••">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="a">Name Person A</label>
+          <input id="a" type="text" autocomplete="off" placeholder="z. B. Anna">
+        </div>
+        <div class="field">
+          <label for="b">Name Person B</label>
+          <input id="b" type="text" autocomplete="off" placeholder="z. B. Bernd">
+        </div>
+      </div>
+
+      <details class="adv">
+        <summary>Erweitert</summary>
+        <div class="field" style="margin-top:10px">
+          <label for="base">API-Basis (optional)</label>
+          <p class="hint">Leer lassen, wenn diese Seite auf derselben Domäne wie die App liegt. Sonst die Adresse eintragen, unter der die App erreichbar ist.</p>
+          <input id="base" type="text" autocomplete="off" placeholder="">
+        </div>
+      </details>
+
+      <button id="go" class="primary">Paar anlegen</button>
+      <div id="msg"></div>
+    </div>
+
+    <div id="out" class="result"></div>
+
+    <p class="foot">
+      Die Links sind <b>einmalig</b>: Beim ersten Öffnen wird die Person fest dem Paar zugeordnet, danach ist der Link verbraucht.
+      Reicht jede:r Person genau ihren Link.
+    </p>
+  </div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var go = $("go"), msg = $("msg"), out = $("out");
+
+  function basis(){
+    var b = $("base").value.trim();
+    return (b || location.origin).replace(/\/+$/, "");
+  }
+  function fehler(text){
+    out.innerHTML = "";
+    msg.innerHTML = '<div class="msg err">' + text + '</div>';
+  }
+  function frei(text){ msg.innerHTML = ""; }
+
+  function linkKarte(rolle, name, token){
+    var url = basis() + "/#t=" + token;
+    var wrap = document.createElement("div");
+    wrap.className = "link-card";
+    var head = document.createElement("div");
+    head.className = "link-role";
+    head.textContent = "Person " + rolle + (name ? " · " + name : "");
+    var flex = document.createElement("div");
+    flex.className = "link-flex";
+    var field = document.createElement("div");
+    field.className = "link-url";
+    field.title = url;
+    field.textContent = url;
+    var btn = document.createElement("button");
+    btn.className = "copy";
+    btn.type = "button";
+    btn.textContent = "Kopieren";
+    btn.addEventListener("click", function(){
+      navigator.clipboard.writeText(url).then(function(){
+        btn.textContent = "Kopiert ✓"; btn.classList.add("done");
+        setTimeout(function(){ btn.textContent = "Kopieren"; btn.classList.remove("done"); }, 1800);
+      }, function(){
+        // Fallback: Feld markieren, damit manuell kopiert werden kann
+        var r = document.createRange(); r.selectNodeContents(field);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      });
+    });
+    flex.appendChild(field); flex.appendChild(btn);
+    wrap.appendChild(head); wrap.appendChild(flex);
+    return wrap;
+  }
+
+  function zeigeErgebnis(code, links){
+    frei();
+    out.innerHTML = "";
+    var cl = document.createElement("p");
+    cl.className = "code-line";
+    cl.innerHTML = "Paar angelegt · Code <b>" + code + "</b>";
+    out.appendChild(cl);
+    out.appendChild(linkKarte("A", $("a").value.trim(), links.A));
+    out.appendChild(linkKarte("B", $("b").value.trim(), links.B));
+  }
+
+  go.addEventListener("click", function(){
+    var tok = $("tok").value;
+    var a = $("a").value.trim(), b = $("b").value.trim();
+    if(!tok){ fehler("Bitte das Admin-Token eingeben."); return; }
+    if(!a || !b){ fehler("Bitte beide Namen eingeben."); return; }
+
+    go.disabled = true; go.textContent = "Lege an …"; frei();
+    fetch(basis() + "/api/paar", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-token": tok },
+      body: JSON.stringify({ nameA: a, nameB: b }),
+    }).then(function(res){
+      if(res.status === 401){ fehler("Admin-Token fehlt oder ist falsch."); return null; }
+      return res.json().then(function(data){ return { status: res.status, data: data }; });
+    }).then(function(r){
+      if(!r) return;
+      if(r.status === 200 && r.data && r.data.links){ zeigeErgebnis(r.data.code, r.data.links); }
+      else { fehler((r.data && r.data.error) ? r.data.error : ("Unerwartete Antwort (" + r.status + ").")); }
+    }).catch(function(){
+      fehler("Verbindung fehlgeschlagen. Liegt diese Seite auf derselben Domäne wie die App? Sonst API-Basis unter „Erweitert“ setzen.");
+    }).finally(function(){
+      go.disabled = false; go.textContent = "Paar anlegen";
+    });
+  });
+})();
+</script>
+</body>
+</html>

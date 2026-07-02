@@ -40,6 +40,9 @@ function remoteBackend() {
       post: d => api("POST", "/api/handover", d),
       get: r => api("GET", "/api/handover/" + r).then(x => x.value),
     },
+    recovery: {
+      setEmail: email => api("POST", "/api/email", { email }),
+    },
     llm: makeAdapter({ mode: "proxy" }),
   };
 }
@@ -61,13 +64,41 @@ async function boot() {
     catch {
       try { await api("POST", "/api/session"); }
       catch {
-        app.innerHTML = `<p style="font-size:14px">Kein Zugang gefunden. Bitte deinen persönlichen Zugangslink öffnen.</p>`;
+        zeigeWiedereinstieg();
         return;
       }
     }
   }
   const ui = createApp({ doc, backend: remoteBackend(), root: app });
   await ui.boot();
+}
+
+/** Sackgassen-Ersatz: Wer keinen gültigen Zugang (Cookie) hat, kann sich einen
+ *  frischen Link an seine hinterlegte Adresse schicken lassen. Keine Enumeration:
+ *  die Antwort ist immer dieselbe. */
+function zeigeWiedereinstieg() {
+  app.innerHTML =
+    '<div style="max-width:440px;margin:0 auto;font-family:ui-sans-serif,system-ui,sans-serif">' +
+    '<h2 style="font-size:18px">Kein Zugang auf diesem Gerät</h2>' +
+    '<p style="font-size:14px;color:#5a6675">Öffne deinen persönlichen Zugangslink — oder lass dir einen neuen an deine hinterlegte E-Mail-Adresse schicken.</p>' +
+    '<div style="background:#fff;border:1px solid #e3e8ee;border-radius:12px;padding:16px">' +
+    '<label style="display:block;font-size:13px;font-weight:550;margin-bottom:5px">E-Mail-Adresse</label>' +
+    '<input id="recMail" type="email" autocomplete="email" placeholder="dein@postfach.de" ' +
+    'style="display:block;width:100%;padding:10px 11px;border:1px solid #cfd8e0;border-radius:9px;font:inherit;box-sizing:border-box">' +
+    '<button id="recGo" style="width:100%;margin-top:10px;padding:11px;font:inherit;font-weight:600;cursor:pointer;' +
+    'background:#0f766e;color:#fff;border:1px solid #0f766e;border-radius:9px">Neuen Link anfordern</button>' +
+    '<div id="recMsg" style="font-size:13px;margin-top:10px"></div>' +
+    '</div></div>';
+  const go = doc.getElementById("recGo"), msg = doc.getElementById("recMsg");
+  go.addEventListener("click", async () => {
+    const email = doc.getElementById("recMail").value.trim();
+    if (!email) { msg.textContent = "Bitte deine Adresse eingeben."; return; }
+    go.disabled = true; go.textContent = "Wird gesendet …";
+    try { await api("POST", "/api/recover", { email }); }
+    catch { /* Status wird bewusst nicht offengelegt */ }
+    msg.innerHTML = '<span style="color:#0f766e">Falls diese Adresse hinterlegt ist, ist ein Link unterwegs. Schau auch im Spam-Ordner nach.</span>';
+    go.textContent = "Gesendet";
+  });
 }
 
 window.PAARBEGLEITUNG = { core: CORE_VERSION, coreHash: "__CORE_HASH__" };

@@ -70,6 +70,7 @@ export function createApp({ doc, backend, root, diktat }) {
       </div>
       <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">Zeitleiste</div><div id="zlItems"></div></div>
       <div class="pb-card pb-hidden" id="boxMess"></div>
+      <div class="pb-card pb-hidden" id="boxRecovery"></div>
     </div>
     <div id="scrShared" class="pb-hidden">
       <div class="pb-card">
@@ -261,6 +262,34 @@ export function createApp({ doc, backend, root, diktat }) {
       : `<div class="pb-item">Die Agenda ist leer.</div>`;
     for (const b of $("agendaItems").querySelectorAll("[data-abr]"))
       b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selbstGeklaert"); zeigeAgenda(); });
+  }
+
+  /* ---- Wiedereinstieg per E-Mail (nur wenn das Backend es unterstützt) ---- */
+  function zeigeRecovery() {
+    const box = $("boxRecovery");
+    if (!backend.recovery) { box.classList.add("pb-hidden"); return; }
+    box.classList.remove("pb-hidden");
+    const hinterlegt = !!(state.info && state.info.recoveryEmail);
+    box.innerHTML =
+      `<div class="pb-sub">Zugang wiederfinden</div>` +
+      `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:6px 0">` +
+      (hinterlegt
+        ? `Eine E-Mail-Adresse ist hinterlegt. Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.`
+        : `Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Nimm ein Postfach, auf das nur du Zugriff hast.`) +
+      `</p>` +
+      `<input id="recInput" type="email" placeholder="dein@postfach.de" style="display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit">` +
+      `<button class="pb-btn primary" id="recSave" style="margin-top:8px">${hinterlegt ? "Adresse ändern" : "Adresse hinterlegen"}</button>` +
+      `<span id="recNote" class="pb-sub" style="margin-left:8px"></span>`;
+    box.querySelector("#recSave").addEventListener("click", async () => {
+      const email = box.querySelector("#recInput").value.trim();
+      const note = box.querySelector("#recNote");
+      if (!email) { note.textContent = "Bitte eine Adresse eingeben."; return; }
+      try {
+        await backend.recovery.setEmail(email);
+        state.info.recoveryEmail = true;
+        zeigeRecovery();
+      } catch (e) { note.textContent = e.message; }
+    });
   }
 
   /* Verdrahtung */
@@ -552,6 +581,7 @@ export function createApp({ doc, backend, root, diktat }) {
     state.info = await backend.info();
     $("pbHallo").textContent = "Hallo " + state.info.name;
     $("pbKern").textContent = "Paarbegleitung";
+    zeigeRecovery();
     show("scrStart");
   }
 

@@ -13,7 +13,9 @@ import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
 import { makeAdapter } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { pruefeUndZaehle, quotaCfg } from "./quota.js";
-import { createCouple, enroll, loginWithCred, requireSession } from "./auth.js";
+import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
+         mintMagic, RECOVER_MS, setRecoveryEmail, hasRecoveryEmail, lookupRecovery } from "./auth.js";
+import { makeMailer } from "./mailer.js";
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), {
@@ -46,6 +48,7 @@ async function route(request, env) {
 
   /* ---- Öffentliche Auth-Endpunkte ---- */
   if (p === "/api/paar" && request.method === "POST") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
     const { code, links } = await createCouple(kv, await request.json(), now);
     return json({ code, links });
   }
@@ -60,6 +63,31 @@ async function route(request, env) {
   if (p === "/api/session" && request.method === "POST") {
     const sid = await loginWithCred(kv, parseCookies(request).pb_cred, now);
     return json({ ok: true }, 200, { "Set-Cookie": cookieHeader("pb_sid", sid) });
+  }
+  if (p === "/api/recover" && request.method === "POST") {
+    // Raten-Limit je IP (grob), gegen Missbrauch — unabhängig davon, ob die Adresse existiert.
+    const ip = request.headers.get("cf-connecting-ip") || "unbekannt";
+    const rlKey = "sys/reclimit/" + ip;
+    const cnt = Number((await kv.get(rlKey)) || 0);
+    if (cnt >= (Number(env.RECOVER_RATE) || 5)) return fehler("Zu viele Anfragen. Bitte etwas später erneut.", 429);
+    await kv.put(rlKey, String(cnt + 1), { expirationTtl: 3600 });
+
+    const { email } = await request.json().catch(() => ({}));
+    const treffer = await lookupRecovery(kv, email);
+    if (treffer) {
+      const token = await mintMagic(kv, treffer.code, treffer.role, now, RECOVER_MS);
+      const link = new URL(request.url).origin + "/#t=" + token;
+      try {
+        await makeMailer(env).sendMail({
+          to: String(email).trim(),
+          subject: "Dein Zugang zur Paarbegleitung",
+          text: "Hier ist dein neuer persönlicher Zugangslink:\n\n" + link +
+                "\n\nEr ist etwa 15 Minuten gültig und nur einmal verwendbar. " +
+                "Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
+        });
+      } catch (e) { /* Versandfehler nicht nach außen offenlegen */ }
+    }
+    return json({ ok: true });   // niemals verraten, ob die Adresse hinterlegt ist
   }
 
   /* ---- Ab hier: Session-Pflicht (touch-to-extend) ---- */
@@ -77,7 +105,15 @@ async function route(request, env) {
       name: session.role === "A" ? couple.nameA : couple.nameB,
       partner: session.role === "A" ? couple.nameB : couple.nameA,
       nameA: couple.nameA, nameB: couple.nameB,
+      recoveryEmail: await hasRecoveryEmail(kv, session.code, session.role),
     });
+  }
+
+  /* ---- Wiedereinstiegs-Adresse hinterlegen (nur eigene Rolle, aus Session) ---- */
+  if (p === "/api/email" && request.method === "POST") {
+    const { email } = await request.json().catch(() => ({}));
+    try { await setRecoveryEmail(kv, session, email, now); return json({ ok: true }); }
+    catch (e) { return fehler(e.message, e.status || 400); }
   }
 
   /* ---- Bstate: geteilt, beide Rollen ---- */

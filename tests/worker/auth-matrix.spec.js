@@ -9,13 +9,14 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 let mf;
+const ADMIN = "test-admin-geheim";
 
 /* Mini-Client mit Cookie-Glas je Person (Anna, Bernd, Fremde) */
 function client() {
   const jar = {};
   return {
-    async call(method, pfad, body) {
-      const headers = { "content-type": "application/json" };
+    async call(method, pfad, body, extraHeaders) {
+      const headers = { "content-type": "application/json", ...(extraHeaders || {}) };
       const cookies = Object.entries(jar).map(([k, v]) => k + "=" + v).join("; ");
       if (cookies) headers["Cookie"] = cookies;
       const res = await mf.dispatchFetch("http://pb.test" + pfad, {
@@ -38,7 +39,7 @@ function client() {
 /** Frisches Paar: Anna und Bernd eingeschrieben, Sessions aktiv. */
 async function frischesPaar() {
   const initiator = client();
-  const { data } = await initiator.call("POST", "/api/paar", { nameA: "Anna", nameB: "Bernd" });
+  const { data } = await initiator.call("POST", "/api/paar", { nameA: "Anna", nameB: "Bernd" }, { "x-admin-token": ADMIN });
   const anna = client();
   const bernd = client();
   await anna.call("POST", "/api/enroll", { token: data.links.A });
@@ -49,13 +50,14 @@ async function frischesPaar() {
 beforeAll(async () => {
   const bundled = await build({
     entryPoints: [path.join(ROOT, "platforms/cloudflare/worker/index.js")],
-    bundle: true, format: "esm", write: false, target: "es2022",
+    bundle: true, format: "esm", external: ["cloudflare:sockets"], write: false, target: "es2022",
   });
   mf = new Miniflare({
     modules: true,
     script: bundled.outputFiles[0].text,
     kvNamespaces: ["PAARE"],
     compatibilityDate: "2026-06-01",
+    bindings: { ADMIN_TOKEN: ADMIN },
     serviceBindings: {
       // Mock-Upstream für den LLM-Proxy (Anthropic-Antwortformat)
       async UPSTREAM(request) {
@@ -90,7 +92,7 @@ describe("Enrollment · Magic-Link", () => {
   it("unbekannter Token → 404; abgelaufener Token → 410", async () => {
     expect((await client().call("POST", "/api/enroll", { token: "gibtsnicht" })).status).toBe(404);
     const initiator = client();
-    const { data } = await initiator.call("POST", "/api/paar", { nameA: "A", nameB: "B" });
+    const { data } = await initiator.call("POST", "/api/paar", { nameA: "A", nameB: "B" }, { "x-admin-token": ADMIN });
     const kv = await mf.getKVNamespace("PAARE");
     const k = "sys/magic/" + data.links.A;
     const m = JSON.parse(await kv.get(k));

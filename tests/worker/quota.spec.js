@@ -11,12 +11,13 @@ import { quotaCfg, normalisiere, QUOTA_DEFAULTS } from "../../platforms/cloudfla
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 let mf;
 let upstreamCalls = 0;
+const ADMIN = "test-admin-geheim";
 
 function client() {
   const jar = {};
   return {
-    async call(method, pfad, body) {
-      const headers = { "content-type": "application/json" };
+    async call(method, pfad, body, extraHeaders) {
+      const headers = { "content-type": "application/json", ...(extraHeaders || {}) };
       const cookies = Object.entries(jar).map(([k, v]) => k + "=" + v).join("; ");
       if (cookies) headers["Cookie"] = cookies;
       const res = await mf.dispatchFetch("http://pb.test" + pfad, {
@@ -36,7 +37,7 @@ function client() {
 
 async function frischesPaar() {
   const init = client();
-  const { data } = await init.call("POST", "/api/paar", { nameA: "Anna", nameB: "Bernd" });
+  const { data } = await init.call("POST", "/api/paar", { nameA: "Anna", nameB: "Bernd" }, { "x-admin-token": ADMIN });
   const anna = client();
   await anna.call("POST", "/api/enroll", { token: data.links.A });
   return { anna, code: data.code };
@@ -47,7 +48,7 @@ const llm = (c, text) => c.call("POST", "/api/llm", { system: "S", messages: [{ 
 beforeAll(async () => {
   const bundled = await build({
     entryPoints: [path.join(ROOT, "platforms/cloudflare/worker/index.js")],
-    bundle: true, format: "esm", write: false, target: "es2022",
+    bundle: true, format: "esm", external: ["cloudflare:sockets"], write: false, target: "es2022",
   });
   mf = new Miniflare({
     modules: true,
@@ -55,7 +56,7 @@ beforeAll(async () => {
     kvNamespaces: ["PAARE"],
     compatibilityDate: "2026-06-01",
     // kleine Grenzen für schnelle, deterministische Tests:
-    bindings: { QUOTA_LIMIT: "5", QUOTA_FENSTER_TAGE: "3", QUOTA_KARENZ: "2", RATE_PRO_MINUTE: "50", DUPLIKAT_SCHWELLE: "3" },
+    bindings: { ADMIN_TOKEN: ADMIN, QUOTA_LIMIT: "5", QUOTA_FENSTER_TAGE: "3", QUOTA_KARENZ: "2", RATE_PRO_MINUTE: "50", DUPLIKAT_SCHWELLE: "3" },
     serviceBindings: {
       async UPSTREAM() {
         upstreamCalls++;
@@ -121,7 +122,7 @@ describe("Kontingent · gleitendes Fenster mit weichem Rand (Limit 5, Karenz 2)"
 
   it("Kontingente sind je Person getrennt (Bernd startet frisch)", async () => {
     const init = client();
-    const { data } = await init.call("POST", "/api/paar", { nameA: "A", nameB: "B" });
+    const { data } = await init.call("POST", "/api/paar", { nameA: "A", nameB: "B" }, { "x-admin-token": ADMIN });
     const anna = client(), bernd = client();
     await anna.call("POST", "/api/enroll", { token: data.links.A });
     await bernd.call("POST", "/api/enroll", { token: data.links.B });
@@ -152,12 +153,12 @@ describe("Raten-Limit je Minute", () => {
     // eigener Worker mit enger Rate, damit der Test unabhängig kalibriert ist
     const bundled = await build({
       entryPoints: [path.join(ROOT, "platforms/cloudflare/worker/index.js")],
-      bundle: true, format: "esm", write: false, target: "es2022",
+      bundle: true, format: "esm", external: ["cloudflare:sockets"], write: false, target: "es2022",
     });
     const mf2 = new Miniflare({
       modules: true, script: bundled.outputFiles[0].text, kvNamespaces: ["PAARE"],
       compatibilityDate: "2026-06-01",
-      bindings: { RATE_PRO_MINUTE: "2", QUOTA_LIMIT: "50" },
+      bindings: { ADMIN_TOKEN: ADMIN, RATE_PRO_MINUTE: "2", QUOTA_LIMIT: "50" },
       serviceBindings: { async UPSTREAM() { return new Response(JSON.stringify({ content: [{ type: "text", text: "ok" }], usage: {} }), { headers: { "content-type": "application/json" } }); } },
     });
     const alt = mf; mf = mf2;
