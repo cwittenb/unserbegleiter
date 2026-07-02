@@ -164,9 +164,11 @@ sys/couple/<code>      { code, nameA, nameB, createdAt }
 sys/magic/<token>      { code, role, expiresAt, used }      · Einmal-Token, 14 Tage
 sys/cred/<sha256>      { code, role }                       · langlebig (Cookie 180 Tage)
 sys/session/<sid>      { code, role, expiresAt }            · 15 min, touch-to-extend
+sys/email/<sha256>     { code, role }                       · Wiedereinstieg: Adresse→Konto
+sys/emailfor/<code>/<role> { hash, at }                     · Status + Ersetzen/Aufräumen
 ```
 
-Credentials liegen **nur als Hash** im Speicher; Session-IDs sind 128-bit-Zufall; Cookies sind HttpOnly, SameSite=Lax, Secure.
+Credentials liegen **nur als Hash** im Speicher; Session-IDs sind 128-bit-Zufall; Cookies sind HttpOnly, SameSite=Lax, Secure. Auch die **Wiedereinstiegs-Adresse** wird nur als SHA-256-Hash gespeichert, nie im Klartext — beim Anfordern tippt die Person ihre Adresse selbst; passt der Hash, geht der frische Link an genau diese Adresse. **Mehrgeräte** ergibt sich ohne Sonderfall: Sessions sind per zufälliger `sid` geschlüsselt, Credentials per Hash, und jeder eingelöste (Wiedereinstiegs-)Link erzeugt ein eigenes Cred + eine eigene Session — Geräte koexistieren, statt sich auszuloggen.
 
 ---
 
@@ -196,7 +198,8 @@ sequenceDiagram
     participant W as Worker
     participant A as Anna (Browser)
     participant B as Bernd (Browser)
-    I->>W: POST /api/paar {nameA, nameB}
+    I->>W: POST /api/paar {nameA, nameB}<br/>Header x-admin-token
+    Note over W: Admin-Gate (fail-closed):<br/>ohne ADMIN_TOKEN gesperrt
     W-->>I: code + Magic-Link A + Magic-Link B
     I->>B: Link B persönlich übergeben (Messenger/QR)
     A->>W: Link öffnen → POST /api/enroll {token}
@@ -211,7 +214,7 @@ sequenceDiagram
 
 ### 5.2 Server-seitige Durchsetzung (der Kern)
 
-**Rolle und Paar-Code stammen ausschließlich aus der Session** — der Client nennt nie eine Rolle, nie einen Code. Query-Parameter und Body-Felder mit Rollenangaben werden bewusst nicht konsultiert. Die ausführbare **Auth-Matrix** beweist gegen den deploy-gleich gebündelten Worker:
+**Rolle und Paar-Code stammen ausschließlich aus der Session** — der Client nennt nie eine Rolle, nie einen Code. Query-Parameter und Body-Felder mit Rollenangaben werden bewusst nicht konsultiert. Der Betreiber-Endpunkt `/api/paar` liegt hinter einem **Admin-Gate** (`x-admin-token`, Vergleich über gleich lange SHA-256-Digests, **fail-closed** ohne konfiguriertes `ADMIN_TOKEN`) — der Admin-Test beweist beide Richtungen inkl. der Sperre bei fehlendem Secret. Die ausführbare **Auth-Matrix** beweist gegen den deploy-gleich gebündelten Worker:
 
 | Prüfung | Ergebnis |
 |---|---|
@@ -248,10 +251,12 @@ Geschützt wird gegen: neugierige Dritte, Link-Weiterleitung nach Konsum, Sessio
 | Endpunkt | Methode | Auth | Zweck |
 |---|---|---|---|
 | `/api/health` | GET | — | Lebenszeichen, Kern-Version |
-| `/api/paar` | POST | — | Paar anlegen → code + beide Magic-Links |
+| `/api/paar` | POST | **Admin-Token** (`x-admin-token`) | Paar anlegen → code + beide Magic-Links. Betreiber-Endpunkt, fail-closed: ohne gesetztes `ADMIN_TOKEN` gesperrt. Bequem über `/admin.html`. |
 | `/api/enroll` | POST | Magic-Token | Einmal-Konsum → Cred- + Session-Cookie |
 | `/api/session` | POST | pb_cred | neue Session aus Credential |
-| `/api/me` | GET | Session | Rolle, eigener Name, Partnername |
+| `/api/recover` | POST | — (Raten-Limit je IP) | Wiedereinstieg: `{email}` → falls hinterlegt, frischer 15-min-Einmal-Link per Mail. Antwort immer `{ok:true}` (keine Enumeration). |
+| `/api/email` | POST | Session | Wiedereinstiegs-Adresse hinterlegen/ändern (nur eigene Rolle). Kollision mit anderem Konto → 409. |
+| `/api/me` | GET | Session | Rolle, eigener Name, Partnername, `recoveryEmail` (Status) |
 | `/api/bstate/:feld` | GET/PUT | Session | geteiltes Bündel-Feld (Whitelist) |
 | `/api/pstate/:feld` | GET/PUT | Session | privates Feld — **Rolle nur aus Session** |
 | `/api/chat/shared/:id` | GET/PUT | Session | geteilter Chat |
@@ -374,7 +379,7 @@ Gequerte Fassungen liegen im Regal mit `gelesen:false` — **es gibt keine Benac
 |---|---|---|---|
 | 1 | Deterministische Strukturtests (Verträge, Schemas, Store, Adapter, Kanarien, UI-Drehbücher, Paritäts-Wächter) | Vitest, happy-dom | **138 grün** |
 | 1.5 | Engine-Drehbücher mit Mock-LLM (Korrektur-Runde, Panels, Freigabe) | Vitest | **12 grün** |
-| — | Worker-Auth-Matrix gegen echtes workerd | Miniflare | **21 grün** |
+| — | Worker-Auth-Matrix + Admin-Gate + Quota + Wiedereinstieg gegen echtes workerd | Miniflare | **41 grün** |
 | 2 | Verhaltens-Szenarien mit echtem Modell + Judge | `npm run eval`, key-gated | lauffähig, Kern deterministisch bewiesen |
 | 3/4 | Längsschnitt-Drift (Personas/Sentinels), Realdaten-Analyse | — | nur Struktur, bewusst geparkt |
 
@@ -440,6 +445,8 @@ cd dist/cloudflare
 wrangler kv namespace create PAARE
 ```
 
+`npm run build` erzeugt `dist/cloudflare/` mit dem Worker (`worker.js`), der `wrangler.toml` und dem Ordner **`public/`** — darin `index.html`, `app.js` **und `admin.html`** (die Verwaltungsseite). Alles in `public/` wird später als statisches Asset mitausgeliefert; die Admin-Seite braucht also **keinen eigenen Deploy-Schritt**.
+
 Die Ausgabe liefert eine `id`. In `wrangler.toml` den vorbereiteten Block einkommentieren und die ID eintragen:
 
 ```toml
@@ -452,6 +459,12 @@ id = "…hier die ausgegebene ID…"
 
 ```bash
 wrangler secret put LLM_API_KEY        # Anthropic- (oder Mistral-)Key einfügen
+wrangler secret put ADMIN_TOKEN        # frei gewähltes Betreiber-Token; schützt /api/paar
+# Für den E-Mail-Wiedereinstieg (SMTP über 587/465 — Port 25 ist in Workers gesperrt):
+wrangler secret put SMTP_HOST          # z. B. smtp.dein-hoster.de
+wrangler secret put SMTP_USER
+wrangler secret put SMTP_PASS
+# Optional: SMTP_PORT (Default 587), SMTP_FROM (Default = SMTP_USER)
 # optional:
 # wrangler secret put LLM_PROVIDER     # anthropic (Default) | mistral
 # wrangler secret put LLM_MODEL        # abweichendes Modell
@@ -477,9 +490,16 @@ curl https://paarbegleitung.<konto>.workers.dev/api/health
 
 **Schritt 6 — Erstes Paar anlegen und Links übergeben.**
 
+Die Verwaltungsseite ist mit Schritt 4 bereits deployt (statisches Asset aus `public/`, **kein eigener Schritt**) und liegt unter **`https://…workers.dev/admin.html`** — gleiche Herkunft wie die API. Dort Admin-Token und beide Namen eingeben, „Paar anlegen" — die zwei fertigen Einladungslinks erscheinen mit Kopier-Knopf.
+
+> **Zugriff auf die Seite:** `admin.html` ist öffentlich ladbar, enthält aber **kein Geheimnis** — die Sicherheitsgrenze ist das `ADMIN_TOKEN`-Gate an `/api/paar` (fail-closed: ohne Secret 401). Ohne Token ist das Formular wirkungslos. Wer die Seite zusätzlich vor dem Laden schützen will, legt Cloudflare Access (Zero Trust) davor — optional.
+
+Alternativ per curl (der Admin-Header ist Pflicht, sonst 401):
+
 ```bash
 curl -X POST https://…workers.dev/api/paar \
   -H 'content-type: application/json' \
+  -H 'x-admin-token: <dein ADMIN_TOKEN>' \
   -d '{"nameA":"Anna","nameB":"Bernd"}'
 # → {"code":"…","links":{"A":"<tokenA>","B":"<tokenB>"}}
 ```
@@ -521,6 +541,8 @@ Beim ersten Öffnen konsumiert der Client den Token (einmalig!), setzt die Cooki
 - Verschlüsselung at rest gegen den Betreiber selbst; aktuell ist der Vertrauensanker die Betreiberrolle (§5.3).
 - ~~Direkte Diktatfunktion~~ — **erledigt in v1.0**: 🎤-Knopf startet die Browser-Spracherkennung (de-DE, kontinuierlich, finale Ergebnisse kumulativ ins Eingabefeld); ohne Erkennung oder bei blockiertem Mikrofon (Artefakt-Sandbox) automatischer Rückfall auf den plattformbewussten OS-Diktat-Tipp. Hinweis: Die Web-Spracherkennung ist Browser-abhängig (Chrome/Edge/Safari ja, Firefox nein) — der Fallback deckt die Lücke.
 - ~~UI-Tiefe~~ — **erledigt (Sprints 10–12):** Auftragsklärungs-Panels (Regler/Ranking/Startwerte/Freigabe), Regal-Heben mit Gelesen-Markierung, Agenda samt MOMENT-KONTEXT, Prozessreflexions-Widget mit häppchenweiser Aufdeckung, Qualitätszeit-Fächer mit Einladungsleiter und Ruhend-Regel.
+- ~~`/api/paar` offen~~ — **erledigt (Sprint 13):** Admin-Gate (fail-closed) + Verwaltungsseite `/admin.html`.
+- ~~Kein Wiedereinstieg / Mehrgeräte~~ — **erledigt (Sprint 14):** E-Mail-Wiedereinstieg (nur Adresse, kein Passwort), frische Einmal-Links on demand, keine Enumeration, Raten-Limit; Mehrgeräte fällt aus der sid-Schlüsselung heraus. Die **SMTP-Übertragung** läuft über die Workers-Socket-API (587/465) und ist **deploy-verifiziert** (gegen echten SMTP), während die Wiedereinstiegs-Logik voll unit-bewiesen ist. Über den Mailer-Adapter ist ein Wechsel auf den nativen Cloudflare-Email-Binding, eine HTTP-API oder self-hosted-SMTP ein Einzeiler.
 - Verdeckte Mess-Werte liegen im geteilten Bstate; verdeckt ist eine UI-, keine Speicher-Zusicherung. Härtere Form wäre serverseitiges Aufdeckungs-Gating im Worker (fremde Beiträge erst liefern, wenn die Runde bereit ist) — sinnvolle nächste Sicherheits-Iteration.
 
 **Nächste sinnvolle Schritte:** erster echter Eval-Lauf (`--szenario AUF-01 --n 8`), ein Testpaar auf der Cloudflare-Form, dann UI-Iterationen im gewohnten Rhythmus — jetzt mit Paritäts-Wächter im Rücken.
