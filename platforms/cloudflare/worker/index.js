@@ -1,0 +1,153 @@
+// Cloudflare-Worker der Paarbegleitung — API + LLM-Proxy.
+//
+// Sicherheits-Kern (Spez §5.5): Der Client nennt NIE eine Rolle und NIE einen
+// Paar-Code — beides injiziert der Worker aus der Session. Pstate-Zugriffe
+// laufen ausschließlich über session.role; Query-/Body-Angaben werden ignoriert.
+
+import { CORE_VERSION, APP_NAME } from "../../../core/index.js";
+import { KVStore } from "./kv-store.js";
+import { Repo } from "../../../core/store/repo.js";
+import { Bstate, Pstate } from "../../../core/store/bundles.js";
+import { freigebeUebergabe } from "../../../core/engine/freigabe.js";
+import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
+import { makeAdapter } from "../../../core/llm/adapter.js";
+import { parseCookies, cookieHeader } from "./util.js";
+import { pruefeUndZaehle, quotaCfg } from "./quota.js";
+import { createCouple, enroll, loginWithCred, requireSession } from "./auth.js";
+
+const json = (data, status = 200, headers = {}) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", ...headers },
+  });
+const fehler = (msg, status) => json({ error: msg }, status);
+
+const BSTATE_FELDER = new Set(Bstate.FIELDS);
+const PSTATE_FELDER = new Set(["zeitleiste", "generalproben"]);
+
+export default {
+  async fetch(request, env, ctx) {
+    try {
+      return await route(request, env);
+    } catch (e) {
+      return fehler(e.message || "Interner Fehler", e.status || 500);
+    }
+  },
+};
+
+async function route(request, env) {
+  const url = new URL(request.url);
+  const p = url.pathname;
+  const kv = env.PAARE;
+  const now = Date.now;
+
+  if (p === "/api/health") return json({ app: APP_NAME, core: CORE_VERSION, kv: !!kv });
+  if (!kv) return fehler("KV-Bindung PAARE fehlt", 500);
+
+  /* ---- Öffentliche Auth-Endpunkte ---- */
+  if (p === "/api/paar" && request.method === "POST") {
+    const { code, links } = await createCouple(kv, await request.json(), now);
+    return json({ code, links });
+  }
+  if (p === "/api/enroll" && request.method === "POST") {
+    const { token } = await request.json();
+    const r = await enroll(kv, token, now);
+    const headers = new Headers({ "content-type": "application/json; charset=utf-8" });
+    headers.append("Set-Cookie", cookieHeader("pb_cred", r.cred, { maxAge: 60 * 60 * 24 * 180 }));
+    headers.append("Set-Cookie", cookieHeader("pb_sid", r.session));
+    return new Response(JSON.stringify({ role: r.role, name: r.name }), { status: 200, headers });
+  }
+  if (p === "/api/session" && request.method === "POST") {
+    const sid = await loginWithCred(kv, parseCookies(request).pb_cred, now);
+    return json({ ok: true }, 200, { "Set-Cookie": cookieHeader("pb_sid", sid) });
+  }
+
+  /* ---- Ab hier: Session-Pflicht (touch-to-extend) ---- */
+  const session = await requireSession(kv, parseCookies(request).pb_sid, now);
+  if (!session) return fehler("Keine gültige Sitzung.", 401);
+
+  const repo = new Repo({ store: new KVStore(kv), ns: env.NS || "PB", code: session.code, activeModuleId: "betrieb" });
+  const bstate = new Bstate(repo);
+  const pstate = new Pstate(repo);
+
+  if (p === "/api/me") {
+    const couple = JSON.parse(await kv.get("sys/couple/" + session.code));
+    return json({
+      role: session.role,
+      name: session.role === "A" ? couple.nameA : couple.nameB,
+      partner: session.role === "A" ? couple.nameB : couple.nameA,
+      nameA: couple.nameA, nameB: couple.nameB,
+    });
+  }
+
+  /* ---- Bstate: geteilt, beide Rollen ---- */
+  let m = p.match(/^\/api\/bstate\/([a-zA-Z]+)$/);
+  if (m) {
+    if (!BSTATE_FELDER.has(m[1])) return fehler("Unbekanntes Bstate-Feld: " + m[1], 404);
+    if (request.method === "GET") return json({ value: await bstate.get(m[1]) });
+    if (request.method === "PUT") {
+      const { value } = await request.json();
+      const ok = await bstate.set(m[1], value);
+      return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);
+    }
+  }
+
+  /* ---- Pstate: Rolle AUSSCHLIESSLICH aus der Session ---- */
+  m = p.match(/^\/api\/pstate\/([a-zA-Z]+)$/);
+  if (m) {
+    if (!PSTATE_FELDER.has(m[1])) return fehler("Unbekanntes Pstate-Feld: " + m[1], 404);
+    // Bewusst: url.searchParams / Request-Body werden für die Rolle NICHT konsultiert.
+    if (request.method === "GET") return json({ value: await pstate.get(session.role, m[1]) });
+    if (request.method === "PUT") {
+      const { value } = await request.json();
+      const ok = await pstate.set(session.role, m[1], value);
+      return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);
+    }
+  }
+
+  /* ---- Chats: privat je Rolle (aus Session) oder geteilt ---- */
+  m = p.match(/^\/api\/chat\/(shared|mine)\/([a-zA-Z0-9:_-]+)$/);
+  if (m) {
+    const shared = m[1] === "shared";
+    const part = shared ? "chat:" + m[2] : "chat:" + session.role + ":" + m[2];
+    if (request.method === "GET") return json({ value: await repo.get(part, shared) });
+    if (request.method === "PUT") {
+      const { value } = await request.json();
+      const ok = await repo.set(part, value, shared);
+      return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);
+    }
+  }
+
+  /* ---- Übergabe: Schreiben nur für die eigene Rolle, Lesen geteilt ---- */
+  if (p === "/api/handover" && request.method === "POST") {
+    const { module, name, items } = await request.json();
+    const u = await freigebeUebergabe(repo, session.role, { module, name, items });
+    return json({ ok: true, releasedAt: u.releasedAt });
+  }
+  m = p.match(/^\/api\/handover\/(A|B)$/);
+  if (m && request.method === "GET") {
+    // Geteilte Schicht: beide dürfen beide Freigaben lesen (das ist ihr Zweck).
+    return json({ value: await repo.get(uebergabeTeilKey(m[1]), true, "kernwetten") });
+  }
+
+  /* ---- LLM-Proxy: Key bleibt serverseitig; Session-Pflicht = Denial-of-Wallet-Schutz.
+          Davor der Missbrauchsschutz (§5.4): Duplikat-Wächter → Raten-Limit →
+          Kontingent — alles OHNE Upstream-Kontakt abgewiesen. ---- */
+  if (p === "/api/llm" && request.method === "POST") {
+    const { system, messages } = await request.json();
+    if (typeof system !== "string" || !Array.isArray(messages)) return fehler("system und messages sind Pflicht", 400);
+    const letzte = [...messages].reverse().find(x => x.role === "user");
+    const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
+    if (!q.ok) return fehler(q.meldung, q.status);
+    const fetchFn = env.UPSTREAM ? env.UPSTREAM.fetch.bind(env.UPSTREAM) : globalThis.fetch;
+    const call = makeAdapter(
+      { provider: env.LLM_PROVIDER || "anthropic", mode: "direct", apiKey: env.LLM_API_KEY || "test", models: env.LLM_MODEL ? { anthropic: env.LLM_MODEL } : {} },
+      fetchFn
+    );
+    const antwort = await call(system, messages);
+    if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
+    return json(antwort);
+  }
+
+  return fehler("Nicht gefunden: " + p, 404);
+}

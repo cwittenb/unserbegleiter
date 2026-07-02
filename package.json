@@ -1,0 +1,17 @@
+{
+  "name": "paarbegleitung",
+  "version": "1.0.0-s0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "build": "node scripts/build-artifact.js && node scripts/build-pages.js",
+    "eval": "node evals/runner.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "happy-dom": "^20.10.6",
+    "miniflare": "^4.0.0",
+    "vitest": "^4.1.9"
+  }
+}

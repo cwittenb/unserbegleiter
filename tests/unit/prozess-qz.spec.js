@@ -1,0 +1,195 @@
+// @vitest-environment happy-dom
+// Prozessreflexion (Mess-Runden) und Qualitätszeit-Leiter (Sprint 12).
+
+import { describe, it, expect, beforeEach } from "vitest";
+import { createApp } from "../../core/ui/app.js";
+import {
+  trageMessbeitragEin, bereiteRunde, formatiereMessrunde,
+  qzStufe, baueQzMaterial, waehleEinladung, keineEinladung, vereinbarePause, QZ_STUFEN_TEXT,
+} from "../../core/ui/prozess.js";
+import { MockLLM } from "../../core/engine/mock-llm.js";
+import { Repo } from "../../core/store/repo.js";
+import { Bstate, Pstate } from "../../core/store/bundles.js";
+import { MemoryStore } from "../../core/store/store.js";
+
+function memoryBackend(mock, role = "A") {
+  const store = new MemoryStore();
+  const repo = new Repo({ store, ns: "T", code: "s12", activeModuleId: "betrieb" });
+  const bstate = new Bstate(repo), pstate = new Pstate(repo);
+  return {
+    async info() { return { role, name: role === "A" ? "Anna" : "Bernd", partner: role === "A" ? "Bernd" : "Anna", nameA: "Anna", nameB: "Bernd" }; },
+    bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
+    pstate: { get: f => pstate.get(role, f), set: (f, v) => pstate.set(role, f, v) },
+    chat: { load: () => null, save: () => true },
+    uebergabe: { post: () => {}, get: () => null },
+    llm: mock ? mock.fn() : async () => ({ text: "ok" }),
+  };
+}
+
+const tick = () => new Promise(r => setTimeout(r, 0));
+async function klick(el) { el.click(); await tick(); await tick(); await tick(); }
+let root;
+beforeEach(() => {
+  document.body.innerHTML = '<div id="app"></div>';
+  root = document.getElementById("app");
+});
+
+const TAG = 86400000;
+const vor = tage => new Date(Date.now() - tage * TAG).toISOString();
+
+describe("Mess-Runden · Datenzyklus", () => {
+  it("erster Beitrag öffnet Runde, zweiter macht sie bereit; Erlebens-Differenz ≠ Lese-Genauigkeit", async () => {
+    const backend = memoryBackend(null);
+    const r1 = await trageMessbeitragEin(backend, "A", { naehe: 4, zweit: 7, passung: { AG1: 6 } });
+    expect(r1.status).toBe("offen");
+    expect(bereiteRunde(await backend.bstate.get("messrunden"))).toBeNull();
+    const r2 = await trageMessbeitragEin(backend, "B", { naehe: 8, zweit: 5, passung: { AG1: 9 } });
+    expect(r2.status).toBe("bereit");
+
+    const txt = formatiereMessrunde(r2, "Anna", "Bernd");
+    expect(txt).toContain("Erlebens-Differenz 4");                       // |4−8|, Beziehungs-Befund
+    expect(txt).toContain("Anna schätzte Bernd auf 7 (tatsächlich 8, Abstand 1)");   // Empathie-Signal
+    expect(txt).toContain("Bernd schätzte Anna auf 5 (tatsächlich 4, Abstand 1)");
+    expect(txt).toContain("AG1: Anna 6 · Bernd 9");
+    expect(txt).toContain("kein Fehler, kein Mittelwert");
+  });
+});
+
+describe("UI · Prozessreflexion-Widget (verdeckt)", () => {
+  it("Anna gibt verdeckt ab; erneutes Öffnen zeigt keinen zweiten Eingabeweg; Bernd macht die Runde bereit", async () => {
+    const backendA = memoryBackend(null, "A");
+    await backendA.bstate.set("auftraege", { items: [{ id: "AG1", art: "gemeinsam", status: "aktiv", text: "Wöchentlicher Abend" }] });
+    const app = createApp({ doc: document, backend: backendA, root });
+    await app.boot();
+    await klick(root.querySelector("#btnMyRoom"));
+    await klick(root.querySelector("#btnMess"));
+
+    const box = root.querySelector("#boxMess");
+    expect(box.textContent).toContain("verdeckt");
+    expect(box.textContent).toContain("Wöchentlicher Abend");            // Passung je aktivem AG
+    box.querySelector("#msNaehe").value = "4";
+    box.querySelector("#msZweit").value = "7";
+    box.querySelector('[data-pass="AG1"]').value = "6";
+    await klick(box.querySelector("#msOk"));
+    expect(box.textContent).toContain("verdeckt abgelegt");
+
+    await klick(root.querySelector("#btnMess"));                          // erneut öffnen
+    expect(box.textContent).toContain("Dein Beitrag ist abgegeben");
+    expect(box.querySelector("#msNaehe")).toBeNull();
+
+    const mr = await backendA.bstate.get("messrunden");
+    expect(mr.items[0].werte.A).toEqual({ naehe: 4, zweit: 7, passung: { AG1: 6 } });
+  });
+});
+
+describe("QZ · Leiter-Logik", () => {
+  it("Stufen: <4 Wochen sanft · dann Gründe · Terminhilfe · Pausen-Angebot · Pause", () => {
+    const now = () => Date.now();
+    expect(qzStufe({ wahl: [{ at: vor(3) }] }, now)).toBe(1);
+    expect(qzStufe({ wahl: [{ at: vor(29) }] }, now)).toBe(2);
+    expect(qzStufe({ wahl: [{ at: vor(29) }], leiter: { stufe2At: vor(1) } }, now)).toBe(3);
+    expect(qzStufe({ wahl: [{ at: vor(40) }], leiter: { stufe2At: vor(5), stufe3At: vor(2) } }, now)).toBe(4);
+    expect(qzStufe({ wahl: [], leiter: { pausiertBis: new Date(Date.now() + TAG).toISOString() } }, now)).toBe("pause");
+    expect(qzStufe({ startAt: vor(2), wahl: [] }, now)).toBe(1);          // frischer Start: sanft
+    expect(QZ_STUFEN_TEXT[2]).toContain("ohne Druck");
+  });
+
+  it("Wahl setzt die Leiter zurück; zweimal Nicht-Aufgreifen macht eine Domäne ruhend", async () => {
+    const backend = memoryBackend(null);
+    const einladungen = [{ text: "Lust auf einen Abendspaziergang?", domaene: "Gemeinsame Zeit", quelle: "resonanz" }];
+    await keineEinladung(backend, einladungen, 2);
+    let qz = await backend.bstate.get("qz");
+    expect(qz.ruht["Gemeinsame Zeit"]).toBeUndefined();                   // erst 1×
+    expect(qz.leiter.stufe2At).toBeTruthy();                              // Gründe-Frage gestellt
+    await keineEinladung(backend, einladungen, 3);
+    qz = await backend.bstate.get("qz");
+    expect(qz.ruht["Gemeinsame Zeit"]).toBe(true);                        // 2× ⇒ ruhend
+    expect(qz.leiter.stufe3At).toBeTruthy();
+
+    await waehleEinladung(backend, { text: "Kochen?", domaene: "Alltag", quelle: "negativraum" });
+    qz = await backend.bstate.get("qz");
+    expect(qz.leiter).toEqual({});                                        // Leiter zurückgesetzt
+    expect(qz.wahl[0].text).toBe("Kochen?");
+  });
+
+  it("baueQzMaterial: nur AKTIVE Aufträge, RUHEND-Liste, Katalog — kein privates Material", () => {
+    const m = baueQzMaterial({
+      auftraege: { items: [{ status: "aktiv", text: "Wöchentlicher Abend" }, { status: "ruhend", text: "Altes" }] },
+      freigaben: [{ name: "Anna", items: [{ text: "Nähe zentral" }] }],
+      qz: { ruht: { Sexualität: true }, wahl: [{ at: vor(2), text: "Spaziergang" }] },
+    });
+    expect(m).toContain("Aufträge: Wöchentlicher Abend");
+    expect(m).not.toContain("Altes");
+    expect(m).toContain("RUHEND (nicht vorschlagen): Sexualität");
+    expect(m).toContain("Zuletzt gewählt: Spaziergang");
+    expect(m).toContain("KATALOG der Lebensbereiche");
+  });
+});
+
+describe("UI · QZ-Fächer-Drehbuch (echte Engine, QUALITYTIME-BLOCK)", () => {
+  const FAECHER = JSON.stringify({ einladungen: [
+    { text: "Lust, am Sonntag zusammen zu kochen?", domaene: "Alltagsgestaltung", quelle: "resonanz" },
+    { text: "Lust auf einen kleinen Ausflug ins Grüne?", domaene: "Abenteuer", quelle: "negativraum" },
+  ]});
+
+  it("Einladungen holen → Karten erscheinen; Wählen persistiert die Wahl", async () => {
+    const mock = new MockLLM(["QUALITYTIME-BLOCK\n" + FAECHER + "\nEND QUALITYTIME-BLOCK"]);
+    const backend = memoryBackend(mock);
+    const app = createApp({ doc: document, backend, root });
+    await app.boot();
+    await klick(root.querySelector("#btnSharedRoom"));
+    await klick(root.querySelector("#btnQz"));
+    await klick(root.querySelector("#qzHolen"));
+
+    const karten = root.querySelector("#qzKarten");
+    expect(karten.textContent).toContain("zusammen zu kochen");
+    expect(karten.textContent).toContain("Ausflug ins Grüne");
+    expect(mock.calls[0].messages[0].content).toContain("MATERIAL");       // qzSys arbeitet nur damit
+
+    await klick(karten.querySelector('[data-qzw="0"]'));
+    const qz = await backend.bstate.get("qz");
+    expect(qz.wahl[0].domaene).toBe("Alltagsgestaltung");
+    expect(karten.textContent).toContain("nichts nachgehalten");
+  });
+
+  it("ungültiger Fächer (nur 1 Einladung) läuft durch die Korrektur-Runde der Engine", async () => {
+    const kaputt = JSON.stringify({ einladungen: [{ text: "x", domaene: "y", quelle: "resonanz" }] });
+    const mock = new MockLLM([
+      "QUALITYTIME-BLOCK\n" + kaputt + "\nEND QUALITYTIME-BLOCK",
+      "QUALITYTIME-BLOCK\n" + FAECHER + "\nEND QUALITYTIME-BLOCK",
+    ]);
+    const backend = memoryBackend(mock);
+    const app = createApp({ doc: document, backend, root });
+    await app.boot();
+    await klick(root.querySelector("#btnSharedRoom"));
+    await klick(root.querySelector("#btnQz"));
+    await klick(root.querySelector("#qzHolen"));
+    expect(mock.calls).toHaveLength(2);                                    // genau eine Korrektur
+    expect(mock.calls[1].messages.some(m => m.hidden && m.content.includes("SYSTEM-KORREKTUR"))).toBe(true);
+    expect(root.querySelector("#qzKarten").textContent).toContain("zusammen zu kochen");
+  });
+});
+
+describe("UI · Aufdeckung im Moment", () => {
+  it("bereite Runde fließt formatiert in den MOMENT-KONTEXT; MOMENT-BLOCK markiert sie aufgedeckt", async () => {
+    const moment = JSON.stringify({ zusammenfassung: "Aufgedeckt und besprochen.", themen: ["Nähe"], zwischenzeitImpuls: null });
+    const mock = new MockLLM([
+      "Schön, dass ihr da seid.",
+      "MOMENT-BLOCK\n" + moment + "\nEND MOMENT-BLOCK",
+    ]);
+    const backend = memoryBackend(mock);
+    await trageMessbeitragEin(backend, "A", { naehe: 4, zweit: 7, passung: {} });
+    await trageMessbeitragEin(backend, "B", { naehe: 8, zweit: 5, passung: {} });
+    const app = createApp({ doc: document, backend, root });
+    await app.boot();
+    await app.startChat("moment");
+    await tick();
+
+    expect(mock.calls[0].messages[0].content).toContain("Erlebens-Differenz 4");   // verdeckt im Kontext
+
+    root.querySelector("#pbInput").value = "Wir schließen ab.";
+    await klick(root.querySelector("#btnSend"));
+    const mr = await backend.bstate.get("messrunden");
+    expect(mr.items[0].status).toBe("aufgedeckt");
+  });
+});
