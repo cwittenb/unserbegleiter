@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "build": "node scripts/build-artifact.js && node scripts/build-pages.js",
+    "build": "node scripts/build-artifact.js && node scripts/build-pages.js && node scripts/build-eval-artifact.js",
     "eval": "node evals/runner.js"
   },
   "devDependencies": {

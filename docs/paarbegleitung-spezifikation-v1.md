@@ -380,6 +380,8 @@ Gequerte Fassungen liegen im Regal mit `gelesen:false` — **es gibt keine Benac
 | 1 | Deterministische Strukturtests (Verträge, Schemas, Store, Adapter, Kanarien, UI-Drehbücher, Paritäts-Wächter) | Vitest, happy-dom | **138 grün** |
 | 1.5 | Engine-Drehbücher mit Mock-LLM (Korrektur-Runde, Panels, Freigabe) | Vitest | **12 grün** |
 | — | Worker-Auth-Matrix + Admin-Gate + Quota + Wiedereinstieg gegen echtes workerd | Miniflare | **41 grün** |
+
+Der Ebene-2-Runner existiert in **zwei Hüllen um denselben Kern**: als CLI (`npm run eval`, key-gated, §8-Härteregeln) und als Ein-Datei-Artefakt `paarbegleitung-eval.html` (keyless über die Artefakt-Umgebung, wie das v0.29-Harness) — Szenarien, Judge, rote Linien und Berichte sind identisch; nur Schlüssel- und Speicherweg unterscheiden sich (Artefakt: JSON-Download + Artefakt-Speicher statt `evals/ergebnisse/`).
 | 2 | Verhaltens-Szenarien mit echtem Modell + Judge | `npm run eval`, key-gated | lauffähig, Kern deterministisch bewiesen |
 | 3/4 | Längsschnitt-Drift (Personas/Sentinels), Realdaten-Analyse | — | nur Struktur, bewusst geparkt |
 
@@ -442,12 +444,21 @@ wrangler login          # öffnet den Browser zur Freigabe
 ```bash
 npm run build
 cd dist/cloudflare
-wrangler kv namespace create PAARE
+wrangler kv namespace create PAARE   # gibt eine id aus
 ```
 
-`npm run build` erzeugt `dist/cloudflare/` mit dem Worker (`worker.js`), der `wrangler.toml` und dem Ordner **`public/`** — darin `index.html`, `app.js` **und `admin.html`** (die Verwaltungsseite). Alles in `public/` wird später als statisches Asset mitausgeliefert; die Admin-Seite braucht also **keinen eigenen Deploy-Schritt**.
+`npm run build` erzeugt `dist/cloudflare/` mit dem Worker (`worker.js`), der `wrangler.toml` und dem Ordner **`public/`** — darin `index.html`, `app.js` **und `admin.html`** (die Verwaltungsseite). Alles in `public/` wird als statisches Asset mitausgeliefert; die Admin-Seite braucht also **keinen eigenen Deploy-Schritt**.
 
-Die Ausgabe liefert eine `id`. In `wrangler.toml` den vorbereiteten Block einkommentieren und die ID eintragen:
+Die KV-Bindung wird beim Build gesetzt. **Empfohlen (übersteht jeden Rebuild):** die ausgegebene ID als Umgebungsvariable hinterlegen — dann schreibt der Build den `[[kv_namespaces]]`-Block automatisch ent-kommentiert, bei jedem `npm run build`:
+
+```bash
+export PAARE_KV_ID="…hier die ausgegebene ID…"
+cd .. && npm run build && cd dist/cloudflare      # einmal neu bauen, ID ist nun eingetragen
+```
+
+> **Warum das wichtig ist:** `npm run build` **überschreibt** `dist/cloudflare/wrangler.toml` jedes Mal. Ohne `PAARE_KV_ID` (oder eine bereits eingetragene ID) steht der KV-Block auskommentiert da → `env.PAARE` fehlt → `/api/health` liefert `"kv":false`. Der Build übernimmt eine schon eingetragene ID zwar auch aus einer vorhandenen `wrangler.toml`, aber die Variable ist der verlässliche Weg.
+
+Alternativ von Hand: nach dem Build in `dist/cloudflare/wrangler.toml` den vorbereiteten Block ent-kommentieren und die ID eintragen (dann aber **nicht** erneut `npm run build`, sonst ist die Änderung wieder weg):
 
 ```toml
 [[kv_namespaces]]
@@ -524,7 +535,8 @@ Beim ersten Öffnen konsumiert der Client den Token (einmalig!), setzt die Cooki
 
 | Symptom | Ursache / Abhilfe |
 |---|---|
-| `/api/health` meldet `"kv":false` | KV-Block in wrangler.toml fehlt/ID falsch → Schritt 2 |
+| `/api/health` meldet `"kv":false` | KV-Block in wrangler.toml auskommentiert/ID fehlt — oft, weil ein späteres `npm run build` die Datei überschrieben hat. Abhilfe: `PAARE_KV_ID` als Umgebungsvariable setzen (Schritt 2), dann bleibt der Block bei jedem Build ent-kommentiert. |
+| `"kv":false` trotz Dashboard-Bindung | `wrangler deploy` macht die `wrangler.toml` maßgeblich und entfernt im Dashboard gesetzte Bindungen → Bindung in die Datei bzw. `PAARE_KV_ID` aufnehmen |
 | „Dieser Zugangslink wurde bereits verwendet" | Einmal-Token wurde schon konsumiert (gewollt) → neues Paar oder neuen Link erzeugen |
 | 401 auf `/api/llm` trotz App-Nutzung | Session abgelaufen und Cred-Cookie fehlt (z. B. Inkognito) → Link erneut wie in Schritt 6 ausgeben |
 | LLM-Fehler „…benötigt einen API-Key" | Secret LLM_API_KEY nicht gesetzt → Schritt 3 |
