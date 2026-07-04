@@ -12,7 +12,7 @@
 // Pstate — persönliches Bündel je Rolle, Single-Writer, gleiche Prinzipien.
 
 export class Bstate {
-  static FIELDS = ["auftraege", "regal", "agenda", "messrunden", "momentprotokoll", "qz", "befund"];
+  static FIELDS = ["auftraege", "regal", "agenda", "messrunden", "momentprotokoll", "qz", "befund", "aufdeckung", "aufdeckprotokoll"];
   static DEFAULTS = {
     auftraege: null,
     regal: { items: [] },
@@ -21,6 +21,8 @@ export class Bstate {
     momentprotokoll: { eintraege: [] },
     qz: { ruht: {}, wahl: [] },
     befund: null,
+    aufdeckung: { A: null, B: null },
+    aufdeckprotokoll: null,
   };
 
   constructor(repo) {

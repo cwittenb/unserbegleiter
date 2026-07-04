@@ -4,7 +4,7 @@
 // Modell-Kontrakts (die Prompts referenzieren sie wörtlich).
 
 import { BLOECKE } from "../contracts/registry.js";
-import { einzelSys, gemeinsamSys, DOMAINS } from "../prompts/prompts.js";
+import { einzelSys, gemeinsamSys, aufdeckSys, DOMAINS } from "../prompts/prompts.js";
 
 /* Gegensatzpaare erscheinen als GETRENNTE Pole (v0.29-Prinzip). */
 export const RANK_ITEMS = DOMAINS.flatMap((d, di) =>
@@ -65,12 +65,15 @@ export function einzelDef(backend, hooks = {}) {
     shared: false,
     titel: "Auftragsklärung",
     sysPrompt: ctx => einzelSys(ctx.me, ctx.partner, ctx.v2 !== false),
-    markerOrder: ["[[REGLER]]", "[[PARTNER-RANKING]]", "[[PARTNER-UNZUFRIEDEN]]", "[[RANKING]]"],
+    markerOrder: ["[[REGLER]]", "[[PARTNER-RANKING]]", "[[PARTNER-UNZUFRIEDEN]]", "[[RANKING]]", "[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]"],
     markers: {
       "[[REGLER]]": e => hooks.onRegler && hooks.onRegler(e),
       "[[PARTNER-RANKING]]": e => hooks.onRanking && hooks.onRanking("pwichtig", e),
       "[[PARTNER-UNZUFRIEDEN]]": e => hooks.onRanking && hooks.onRanking("punzufrieden", e),
       "[[RANKING]]": e => hooks.onRanking && hooks.onRanking("self", e),
+      "[[KAPITEL-1]]": e => hooks.onKapitel && hooks.onKapitel(1, e),
+      "[[KAPITEL-2]]": e => hooks.onKapitel && hooks.onKapitel(2, e),
+      "[[KAPITEL-3]]": e => hooks.onKapitel && hooks.onKapitel(3, e),
     },
     canAct: c => c.status === "running",
     blocks: [
@@ -104,6 +107,73 @@ export function gemeinsamDef(backend, hooks = {}) {
           await backend.bstate.set("befund", { at: new Date().toISOString(), ...data });
           engine.chat.status = "finished";
           if (hooks.onBefund) hooks.onBefund(data);
+        },
+      },
+    ],
+  };
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Onboarding-Kapitel & Aufdeck-Runde (Sprint „Aufdeck")
+   Datenpfad des Mini-Gates: NUR Top 5 + Tipp 3 queren in das geteilte
+   Bstate-Feld "aufdeckung" — Fremdfelder strukturell nie. Die Gate-
+   Entscheidung selbst lebt ausschließlich im privaten Chat-Feld
+   (minigate) und erscheint NIE im Transkript.
+   ───────────────────────────────────────────────────────────────────── */
+
+export const KAPITEL_TITEL = ["Ankommen & Landkarte", "Herzstücke", "Rate-Runde", "Klartext"];
+
+/** Schnittmenge Tipp↔Stapel — Reihenfolge des Tipps bleibt erhalten; Nennungen, keine Quote. */
+export function beruehrungen(tipp3, top5) {
+  return (tipp3 || []).filter(x => (top5 || []).includes(x));
+}
+
+/** Aufdeck-Freigabe bauen (Mini-Gate / Wiedervorlage): nur name, top5, tipp3, releasedAt. */
+export function baueAufdeckung(name, ranks) {
+  const r = ranks || {};
+  if (!Array.isArray(r.self) || r.self.length !== 5 || !Array.isArray(r.pwichtig) || r.pwichtig.length !== 3)
+    throw new Error("Für die Aufdeck-Runde fehlen Stapel (Top 5) oder Tipps (Top 3) – bitte im Gespräch um eine Korrektur-Runde bitten.");
+  return { name: String(name), top5: r.self.map(String), tipp3: r.pwichtig.map(String), releasedAt: new Date().toISOString() };
+}
+
+/** AUFDECK-KONTEXT — versteckte erste Nachricht der Aufdeck-Runde (nur diese Daten, sonst nichts). */
+export function baueAufdeckKontext(gA, gB) {
+  const teil = g => g.name + " – Top 5 (eigener Stapel): " + g.top5.map((x, i) => (i + 1) + ". " + x).join(" · ") +
+    "\n" + g.name + " – Tipp (vermutete Top 3 des Partners): " + g.tipp3.map((x, i) => (i + 1) + ". " + x).join(" · ");
+  return "AUFDECK-KONTEXT (app-intern; nicht als Block zitieren)\n" + teil(gA) + "\n" + teil(gB) + "\nENDE AUFDECK-KONTEXT";
+}
+
+/** Erste (versteckte) Nachricht der gemeinsamen Klärung: zwei ÜBERGABE-BLÖCKE + optionales AUFDECK-PROTOKOLL. */
+export function baueKlaerungsKontext(uA, uB, protokoll) {
+  const blk = u => "ÜBERGABE-BLOCK – " + u.name + "\n" + u.items.map(i => i.id + ": " + i.text).join("\n") + "\nENDE ÜBERGABE-BLOCK";
+  let s = blk(uA) + "\n\n" + blk(uB);
+  if (protokoll) {
+    s += "\n\nAUFDECK-PROTOKOLL (die Aufdeck-Runde hat bereits stattgefunden): " + protokoll.zusammenfassung;
+    if (protokoll.beruehrungspunkte && protokoll.beruehrungspunkte.length)
+      s += "\nBerührungspunkte: " + protokoll.beruehrungspunkte.join(" · ");
+    if (protokoll.fuerDieKlaerung && protokoll.fuerDieKlaerung.length)
+      s += "\nFür die Klärung vorgemerkt: " + protokoll.fuerDieKlaerung.join(" · ");
+  }
+  return s;
+}
+
+/** Aufdeck-Runde (geteilter Raum, ein Gerät) — G1, kommt vor der Klärung. */
+export function aufdeckDef(backend, hooks = {}) {
+  return {
+    id: "aufdeck",
+    shared: true,
+    titel: "Aufdeck-Runde",
+    sysPrompt: ctx => aufdeckSys(ctx.nameA, ctx.nameB),
+    markerOrder: ["[[AUFDECKEN]]"],
+    markers: { "[[AUFDECKEN]]": e => hooks.onAufdecken && hooks.onAufdecken(e) },
+    canAct: c => c.status !== "finished",
+    blocks: [
+      {
+        ...BLOECKE.aufdeck,
+        handle: async (data, engine) => {
+          await backend.bstate.set("aufdeckprotokoll", { at: new Date().toISOString(), ...data });
+          engine.chat.status = "finished";
+          if (hooks.onProtokoll) hooks.onProtokoll(data);
         },
       },
     ],

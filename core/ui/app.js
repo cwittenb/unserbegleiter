@@ -5,7 +5,7 @@ import { Engine } from "../engine/engine.js";
 import { cleanDisplay } from "../contracts/block.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
-import { einzelDef, gemeinsamDef, RANK_ITEMS, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis } from "./kernwetten.js";
+import { einzelDef, gemeinsamDef, aufdeckDef, RANK_ITEMS, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, KAPITEL_TITEL, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { DOMAINS } from "../prompts/prompts.js";
 import { trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, QZ_STUFEN_TEXT, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
 
@@ -75,6 +75,7 @@ export function createApp({ doc, backend, root, diktat }) {
     <div id="scrShared" class="pb-hidden">
       <div class="pb-card">
         <button class="pb-btn primary" id="btnMoment">Gemeinsame Session beginnen</button>
+        <button class="pb-btn primary" id="btnAufdeck">Aufdeck-Runde beginnen</button>
         <button class="pb-btn primary" id="btnGemeinsam">Gemeinsame Klärung beginnen</button>
         <button class="pb-btn" id="btnRegal">Regal ansehen</button>
         <button class="pb-btn" id="btnAgenda">Agenda ansehen</button>
@@ -159,6 +160,103 @@ export function createApp({ doc, backend, root, diktat }) {
     });
   }
 
+  /* ── Kapitel-Zwischenhalt (Einzelsession) ──
+     Nach Kapitel 3 zuerst das Mini-Gate. Die Entscheidung landet NIE im
+     Transkript — nur im privaten Chat-Feld (minigate) und, bei Ja, als
+     Datenpaket (Top 5 + Tipp 3) im geteilten Bstate-Feld "aufdeckung". */
+  async function kapitelPanel(n, engine) {
+    engine.chat.kapitel = n;
+    await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, engine.chat);
+    const p = kw();
+    p.classList.remove("pb-hidden");
+    const dots = "●".repeat(n) + "○".repeat(4 - n);
+    const gateOffen = n === 3 && !engine.chat.minigate;
+    const gateHtml = !gateOffen ? "" :
+      `<p style="font-size:14px"><strong>Eine Frage zur Aufdeck-Runde:</strong> Hättest du Freude daran, wenn ihr eure Top 5 in der Aufdeck-Runde einander preisgebt – auch wenn der Gedanke im ersten Moment vielleicht etwas Aufregung und Unsicherheit auslöst?</p>` +
+      `<p class="pb-sub">Gezeigt würden dabei nur: deine Top 5 und deine drei Tipps für ${esc(state.info.partner)} – nichts aus eurem Gespräch hier.</p>` +
+      `<button class="pb-btn primary" id="kapJa">Ja, gern</button><button class="pb-btn primary" id="kapNein">Noch nicht</button>`;
+    p.innerHTML =
+      `<div class="pb-sub">Kapitel ${n} geschafft – ${esc(KAPITEL_TITEL[n - 1])}</div>` +
+      `<div style="letter-spacing:5px;font-size:16px;margin:4px 0 10px">${dots}</div>` + gateHtml +
+      `<div id="kapWeiter"${gateOffen ? ' class="pb-hidden"' : ""}>` +
+      `<button class="pb-btn primary" id="kapNext">Weitermachen: Kapitel ${n + 1} · ${esc(KAPITEL_TITEL[n])}</button>` +
+      `<button class="pb-btn" id="kapPause">Pause machen</button></div>` +
+      `<p class="pb-sub pb-hidden" id="kapNote"></p>`;
+    const zeigeWeiter = txt => {
+      for (const id of ["kapJa", "kapNein"]) { const b = p.querySelector("#" + id); if (b) b.remove(); }
+      if (txt) { const note = p.querySelector("#kapNote"); note.textContent = txt; note.classList.remove("pb-hidden"); }
+      p.querySelector("#kapWeiter").classList.remove("pb-hidden");
+    };
+    if (gateOffen) {
+      p.querySelector("#kapJa").addEventListener("click", async () => {
+        try {
+          const eintrag = baueAufdeckung(state.info.name, engine.chat.ranks);
+          const alle = (await backend.bstate.get("aufdeckung")) || { A: null, B: null };
+          alle[state.info.role] = eintrag;
+          await backend.bstate.set("aufdeckung", alle);
+          engine.chat.minigate = "ja";
+          await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, engine.chat);
+          zeigeWeiter("Schön – die Aufdeck-Runde wird startbar, sobald ihr beide so weit seid.");
+        } catch (e) { err(e.message); }
+      });
+      p.querySelector("#kapNein").addEventListener("click", async () => {
+        engine.chat.minigate = "nein";
+        await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, engine.chat);
+        zeigeWeiter("Alles gut – das bleibt bei dir. Beim Abschluss fragt die App noch genau einmal, danach nicht mehr.");
+      });
+    }
+    p.querySelector("#kapNext").addEventListener("click", async () => {
+      kwZu();
+      await engine.submitToolResult("[Weiter mit Kapitel " + (n + 1) + ".]", { hidden: true });
+      renderMsgs();
+    });
+    p.querySelector("#kapPause").addEventListener("click", () => {
+      kwZu();
+      show("scrMyRoom");
+      err("Gespeichert – du kannst jederzeit genau hier weitermachen.");
+    });
+  }
+  
+  /* ── Aufdeck-Tafel: beide Richtungen simultan, Berührungspunkte markiert,
+     strukturell keine Quote und kein Zählen. Bleibt während des Gesprächs
+     sichtbar. ── */
+  async function aufdeckPanel(engine) {
+    const alle = (await backend.bstate.get("aufdeckung")) || {};
+    const gA = alle.A, gB = alle.B;
+    if (!gA || !gB) { err("Aufdeck-Daten fehlen – bitte die Runde neu beginnen."); return; }
+    const p = kw();
+    p.classList.remove("pb-hidden");
+    const spalte = (titel, liste, marks) =>
+      `<div style="flex:1;min-width:150px"><div class="pb-sub">${esc(titel)}</div>` +
+      liste.map((x, i) => `<div class="pb-item"${marks.includes(x) ? ' style="font-weight:700;border-left:3px solid var(--accent,#0f766e);padding-left:8px"' : ""}>${i + 1}. ${esc(x)}</div>`).join("") + `</div>`;
+    const richtung = (tipper, owner) => {
+      const treff = beruehrungen(tipper.tipp3, owner.top5);
+      return `<div style="margin-top:12px"><div class="pb-sub">${esc(tipper.name)} hat getippt, was ${esc(owner.name)} am Herzen liegt</div>` +
+        `<div style="display:flex;gap:10px;flex-wrap:wrap">` + spalte("Tipp von " + tipper.name, tipper.tipp3, treff) + spalte("Top 5 von " + owner.name, owner.top5, treff) + `</div>` +
+        (treff.length ? `<p class="pb-sub">Berührungspunkte: ${treff.map(esc).join(" · ")}</p>`
+                      : `<p class="pb-sub">Zwei verschiedene Blicke – Stoff für ein gutes Gespräch.</p>`) + `</div>`;
+    };
+    p.innerHTML =
+      `<div class="pb-sub">Aufdeckung – beide Richtungen gleichzeitig</div>` +
+      `<p style="font-size:13px">Kein richtig, kein falsch, keine Punkte: Markiert ist, wo Tipp und Stapel einander berühren. Unterschiede sind ein Befund über zwei Blickwinkel – und oft das beste Gesprächsmaterial.</p>` +
+      richtung(gB, gA) + richtung(gA, gB) +
+      (engine.chat.adShown ? `<button class="pb-btn" id="adZu">Tafel ausblenden</button>`
+                           : `<button class="pb-btn primary" id="adWeiter">Weiter im Gespräch</button>`);
+    const w = p.querySelector("#adWeiter");
+    if (w) w.addEventListener("click", async () => {
+      engine.chat.adShown = true;
+      w.remove();   // Tafel bleibt sichtbar
+      const zu = doc.createElement("button");
+      zu.className = "pb-btn"; zu.textContent = "Tafel ausblenden";
+      zu.addEventListener("click", kwZu);
+      p.appendChild(zu);
+      await engine.submitToolResult("AUFDECKUNG-ANGEZEIGT: Die App hat beiden beide Richtungen gleichzeitig gezeigt – Stapel und Tipps nebeneinander, Berührungspunkte hervorgehoben; die Tafel bleibt sichtbar. Führe nun durch das Gespräch: Berührungspunkte zuerst, dann die Unterschiede mit Neugier.", { hidden: true });
+      renderMsgs();
+    });
+    const z = p.querySelector("#adZu");
+    if (z) z.addEventListener("click", kwZu);
+  }
+  
   async function startChat(art) {
     err("");
     const info = state.info;
@@ -168,15 +266,36 @@ export function createApp({ doc, backend, root, diktat }) {
       onRanking: (mode, e2) => rankPanel(mode, e2),
       onStartwerte: e2 => startwertePanel(e2),
       onFreigabe: (d, e2) => freigabePanel(d, e2),
+      onKapitel: (n, e2) => kapitelPanel(n, e2),
+      onAufdecken: e2 => aufdeckPanel(e2),
       onMomentEnde: () => markiereAufgedeckt(backend).catch(() => {}),
     };
     const def =
       art === "solo" ? soloDef(backend, hooks) :
+      art === "aufdeck" ? aufdeckDef(backend, hooks) :
       art === "einzel" ? einzelDef(backend, hooks) :
       art === "gemeinsam" ? gemeinsamDef(backend, hooks) :
       momentDef(backend, hooks);
     state.chatId = art;
+    state.chatShared = null;
     const gespeichert = await backend.chat.load(def.shared ? "shared" : "mine", art);
+    state.chatShared = def.shared;
+    // G1 vor G2: Sind beide Aufdeck-Freigaben da, aber kein Protokoll, kommt
+    // erst die Aufdeck-Runde (verbinden vor verhandeln). Ohne beide Mini-Gates
+    // läuft der kollabierte Pfad — die Klärung startet direkt.
+    if (art === "gemeinsam" && !gespeichert) {
+      const [alleG, protokollG] = await Promise.all([
+        backend.bstate.get("aufdeckung").catch(() => null),
+        backend.bstate.get("aufdeckprotokoll").catch(() => null),
+      ]);
+      if (alleG && alleG.A && alleG.B && !protokollG)
+        throw new Error("Die Aufdeck-Runde wartet noch auf euch – sie kommt vor der Klärung.");
+    }
+    if (art === "aufdeck" && !gespeichert) {
+      const alleA = (await backend.bstate.get("aufdeckung")) || {};
+      if (!alleA.A || !alleA.B)
+        throw new Error("Die Aufdeck-Runde öffnet erst, wenn beide sie gewählt haben und so weit sind.");
+    }
     const chat = gespeichert || { messages: [], status: "running" };
     const ctx = { me: info.name, partner: info.partner, nameA: info.nameA, nameB: info.nameB };
     state.engine = new Engine({
@@ -190,7 +309,20 @@ export function createApp({ doc, backend, root, diktat }) {
     $("chatTitel").textContent = def.titel;
     show("scrChat");
     renderMsgs();
-    if (!chat.messages.length) {
+    if (chat.messages.length) { await state.engine.resume(); } else {
+      if (art === "gemeinsam") {
+        const [freiA, freiB, protokoll] = await Promise.all([
+          Promise.resolve().then(() => backend.uebergabe.get("A")).catch(() => null),
+          Promise.resolve().then(() => backend.uebergabe.get("B")).catch(() => null),
+          backend.bstate.get("aufdeckprotokoll").catch(() => null),
+        ]);
+        if (freiA && freiB)
+          chat.messages.push({ role: "user", hidden: true, content: baueKlaerungsKontext(freiA, freiB, protokoll) });
+      }
+      if (art === "aufdeck") {
+        const alle = (await backend.bstate.get("aufdeckung")) || {};
+        chat.messages.push({ role: "user", hidden: true, content: baueAufdeckKontext(alle.A, alle.B) });
+      }
       if (art === "moment") {
         const [auftraege, agenda, momentprotokoll, messrunden, freiA, freiB] = await Promise.all([
           backend.bstate.get("auftraege"), backend.bstate.get("agenda"),
@@ -214,6 +346,7 @@ export function createApp({ doc, backend, root, diktat }) {
         solo: "Ich bin da und möchte beginnen.",
         einzel: "Ich bin da und möchte mit der Auftragsklärung beginnen.",
         gemeinsam: "Wir sind beide da und möchten mit der gemeinsamen Klärung beginnen.",
+        aufdeck: "Wir sind beide da und möchten die Aufdeck-Runde beginnen.",
         moment: "Wir sind beide da und möchten beginnen.",
       }[art];
       await state.engine.sendUser(startText);
@@ -301,6 +434,7 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnSolo").addEventListener("click", () => startChat("solo").catch(e => err(e.message)));
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
+    $("btnAufdeck").addEventListener("click", () => startChat("aufdeck").catch(e => err(e.message)));
   $("btnMoment").addEventListener("click", () => startChat("moment").catch(e => err(e.message)));
   $("btnZeitleiste").addEventListener("click", () => zeigeZeitleiste().catch(e => err(e.message)));
   $("btnMess").addEventListener("click", () => zeigeMess().catch(e => err(e.message)));
@@ -467,6 +601,20 @@ export function createApp({ doc, backend, root, diktat }) {
       p.querySelector("#kwRankOk").addEventListener("click", async () => {
         if (order.length !== cfg.topN) return;
         kwZu();
+        engine.chat.ranks = engine.chat.ranks || {};
+        engine.chat.ranks[mode] = order.map(ri => RANK_ITEMS[ri].label);
+        if ((mode === "self" || mode === "pwichtig") && engine.chat.minigate === "ja") {
+          try {
+            const protokoll = await backend.bstate.get("aufdeckprotokoll");
+            if (!protokoll) {
+              const alle = (await backend.bstate.get("aufdeckung")) || {};
+              if (alle[state.info.role]) {
+                alle[state.info.role] = baueAufdeckung(state.info.name, engine.chat.ranks);
+                await backend.bstate.set("aufdeckung", alle);
+              }
+            }
+          } catch { /* Nachzug ist Komfort, kein Muss */ }
+        }
         await engine.submitToolResult(rankingErgebnis(mode, order, ctx), { ranking: mode });
         renderMsgs();
       });
@@ -501,6 +649,7 @@ export function createApp({ doc, backend, root, diktat }) {
   }
 
   function freigabePanel(data, engine) {
+    const wieder = engine.chat.minigate === "nein";   // Wiedervorlage genau einmal, danach nie mehr
     const p = kw();
     p.classList.remove("pb-hidden");
     p.innerHTML =
@@ -508,16 +657,23 @@ export function createApp({ doc, backend, root, diktat }) {
       data.items.map((it, i) =>
         `<label style="display:block;font-size:14px;margin:6px 0"><input type="checkbox" data-fg="${i}" checked> <strong>${esc(it.id)}</strong> ${esc(it.text)}</label>`
       ).join("") +
-      `<button class="pb-btn primary" id="kwFgOk">Freigeben</button>` +
+      `${wieder ? `<p style="font-size:14px">Und ein einziges Mal noch die Aufdeck-Runde: Hättest du Freude daran, wenn ihr eure Top 5 einander preisgebt – auch wenn der Gedanke vielleicht etwas Aufregung auslöst? Gezeigt würden nur deine Top 5 und deine drei Tipps für ${esc(state.info.partner)}. Ohne Häkchen bleibt alles bei dir; danach fragt niemand mehr.</p><label style="display:block;font-size:14px;margin:6px 0"><input type="checkbox" id="kwFgAufdeck"> Ja – Top 5 und Tipps dürfen in der Aufdeck-Runde gezeigt werden.</label>` : ""}<button class="pb-btn primary" id="kwFgOk">Freigeben</button>` +
       `<button class="pb-btn" id="kwFgNein">Noch nicht</button>`;
     p.querySelector("#kwFgOk").addEventListener("click", async () => {
-      const items = [...p.querySelectorAll("input:checked")].map(x => {
+      const items = [...p.querySelectorAll("input[data-fg]:checked")].map(x => {
         const it = data.items[+x.getAttribute("data-fg")];
         return { id: it.id, text: it.text };
       });
+      const auchAufdecken = wieder && !!p.querySelector("#kwFgAufdeck") && p.querySelector("#kwFgAufdeck").checked;
       kwZu();
       try {
         await backend.uebergabe.post({ module: "kernwetten", name: state.info.name, items });
+        if (auchAufdecken) {
+          const alle = (await backend.bstate.get("aufdeckung")) || { A: null, B: null };
+          alle[state.info.role] = baueAufdeckung(state.info.name, engine.chat.ranks || {});
+          await backend.bstate.set("aufdeckung", alle);
+          engine.chat.minigate = "ja";
+        }
         engine.chat.status = "released";
         await engine.submitToolResult("FREIGABE-ERGEBNIS: " + items.length + " von " + data.items.length + " Punkten freigegeben.");
         renderMsgs();

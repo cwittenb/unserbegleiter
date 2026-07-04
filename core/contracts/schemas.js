@@ -145,3 +145,16 @@ export function qzSchema(d) {
     e.push("mindestens eine Resonanz-Einladung nötig");
   return e;
 }
+
+/* ---- REVEAL-BLOCK (Aufdeck-Runde, Kurzprotokoll — Berührungspunkte statt Zählen) ---- */
+export function aufdeckSchema(d) {
+  const e = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
+  if (typeof d.zusammenfassung !== "string" || !d.zusammenfassung.trim()) e.push('"zusammenfassung" fehlt');
+  for (const k of ["beruehrungspunkte", "fuerDieKlaerung"])
+    if (!Array.isArray(d[k]) || d[k].some(x => typeof x !== "string"))
+      e.push('"' + k + '" fehlt (Array aus Texten, ggf. leer)');
+  if (Object.keys(d).some(k => /quote|score|treffer|prozent/i.test(k)))
+    e.push("keine Quoten oder Scores im Protokoll – Berührungspunkte statt Zählen");
+  return e;
+}

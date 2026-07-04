@@ -1,0 +1,167 @@
+// Sprint „Aufdeck" — Onboarding-Kapitel, Mini-Gate & Aufdeck-Runde.
+// Kanarien + Vertrags- und Datenpfad-Tests.
+
+import { describe, it, expect } from "vitest";
+import { einzelSys, gemeinsamSys, aufdeckSys } from "../../core/prompts/prompts.js";
+import { aufdeckSchema } from "../../core/contracts/schemas.js";
+import { BLOECKE } from "../../core/contracts/registry.js";
+import { pruefeMarkerOrder } from "../../core/contracts/marker.js";
+import { Bstate } from "../../core/store/bundles.js";
+import {
+  einzelDef, aufdeckDef, KAPITEL_TITEL,
+  beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext,
+} from "../../core/ui/kernwetten.js";
+
+describe("Kanarien · einzelSys (vier Kapitel)", () => {
+  const p = einzelSys("Anna", "Bernd", true);
+  it("Kapitel-Marken 1–3 vorhanden und in Reihenfolge", () => {
+    for (const m of ["[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]"]) expect(p).toContain(m);
+    expect(p.indexOf("KAPITEL 1")).toBeLessThan(p.indexOf("KAPITEL 2"));
+    expect(p.indexOf("KAPITEL 2")).toBeLessThan(p.indexOf("KAPITEL 3"));
+    expect(p.indexOf("KAPITEL 3")).toBeLessThan(p.indexOf("KAPITEL 4"));
+  });
+  it("Sicherheitsfrage bleibt das Tor (vor Kapitel 2)", () => {
+    expect(p.indexOf("Sicherheitsfrage")).toBeLessThan(p.indexOf("KAPITEL 2"));
+  });
+  it("Stützmodus erzeugt keine Kapitel-Marken", () => expect(p).toContain("KEINE Kapitel-Marken"));
+  it("Vertiefung auf 2 Stellen gekürzt", () => {
+    expect(p).toContain("die 2 auffälligsten Stellen");
+    expect(p).not.toContain("3–4 auffälligsten");
+  });
+  it("Rate-Runde erhebt keine Sorgen; BV wandert nach Kapitel 4", () => {
+    expect(p).toContain("KEINE Sorgen und keine vermuteten Sorgen");
+    expect(p.indexOf("Vermutete Sorge (nur v2)")).toBeGreaterThan(p.indexOf("KAPITEL 4"));
+  });
+  it("2d/2e liegen NACH der Rate-Runde (BV-Verschiebung, Zieldramaturgie)", () => {
+    expect(p.indexOf("nicht verhandelbar")).toBeGreaterThan(p.indexOf("RATE-RUNDE"));
+  });
+  it("Mini-Gate ist reine App-Sache — nie kommentieren", () => expect(p).toContain("reine App-Sache"));
+  it("Weiche und Umformung bleiben intakt (v2)", () => {
+    expect(p).toContain("SORGEN-WEICHE (gilt in Kapitel 4");
+    expect(p).toContain("WEICHEN-DISZIPLIN (binär)");
+    expect(p).toContain("Trifft das noch den Kern dessen");
+  });
+  it("v1: Kapitel bleiben, BV-Erhebung entfällt", () => {
+    const p1 = einzelSys("Anna", "Bernd", false);
+    expect(p1).toContain("[[KAPITEL-3]]");
+    expect(p1).not.toContain("Vermutete Sorge (nur v2)");
+    expect(p1).not.toContain("SORGEN-WEICHE");
+  });
+});
+
+describe("Kanarien · gemeinsamSys (Protokoll & Pausenmarke)", () => {
+  const p = gemeinsamSys("Anna", "Bernd", true);
+  it("AUFDECK-PROTOKOLL wird respektiert (nicht wiederholen, Vormerkungen aufgreifen)", () => {
+    expect(p).toContain("AUFDECK-PROTOKOLL");
+    expect(p).toContain("wiederhole diese Aufdeckung nicht");
+  });
+  it("PAUSENMARKE liegt vor der Ergänzungsfrage", () => {
+    expect(p.indexOf("PAUSENMARKE")).toBeGreaterThan(0);
+    expect(p.indexOf("PAUSENMARKE")).toBeLessThan(p.indexOf("Phase 3 – Ergänzungsfrage"));
+  });
+});
+
+describe("Kanarien · aufdeckSys", () => {
+  const p = aufdeckSys("Anna", "Bernd");
+  it("kein richtig/falsch, Berührungspunkte statt Quote", () => {
+    expect(p).toContain("kein richtig und kein falsch");
+    expect(p).toContain("Berührungspunkt");
+  });
+  it("Marker- und Block-Vertrag benannt", () => {
+    expect(p).toContain("[[AUFDECKEN]] allein in der letzten Zeile");
+    expect(p).toContain("REVEAL-BLOCK");
+  });
+  it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("KEINE Themen-Vertiefung"));
+  it("keine Sicherheitsdiagnosen im gemeinsamen Raum", () => expect(p).toContain("Keine Sicherheitsdiagnosen"));
+});
+
+describe("Vertrag · aufdeckSchema (REVEAL-BLOCK)", () => {
+  it("gültig, leere Arrays erlaubt", () =>
+    expect(aufdeckSchema({ zusammenfassung: "a.", beruehrungspunkte: [], fuerDieKlaerung: [] })).toHaveLength(0));
+  it("fehlende Zusammenfassung ungültig", () =>
+    expect(aufdeckSchema({ beruehrungspunkte: [], fuerDieKlaerung: [] }).length).toBeGreaterThan(0));
+  it("Quoten/Scores sind strukturell verboten — Berührungspunkte statt Zählen", () =>
+    expect(aufdeckSchema({ zusammenfassung: "a.", beruehrungspunkte: [], fuerDieKlaerung: [], trefferquote: 2 }).join(" "))
+      .toContain("keine Quoten"));
+  it("Registry trägt den REVEAL-BLOCK", () => {
+    expect(BLOECKE.aufdeck.start).toBe("REVEAL-BLOCK");
+    expect(BLOECKE.aufdeck.schema).toBe(aufdeckSchema);
+  });
+});
+
+describe("Kernwetten · Kapitel-Marker & Aufdeck-Def", () => {
+  it("einzelDef: Kapitel-Marker registriert, markerOrder besteht den Wächter", () => {
+    const d = einzelDef({}, {});
+    for (const m of ["[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]"]) expect(typeof d.markers[m]).toBe("function");
+    expect(pruefeMarkerOrder(d.markerOrder)).toEqual([]);
+  });
+  it("einzelDef: Kapitel-Marker reicht Nummer an den Hook", () => {
+    const rufe = [];
+    const d = einzelDef({}, { onKapitel: (n) => rufe.push(n) });
+    d.markers["[[KAPITEL-3]]"]({});
+    expect(rufe).toEqual([3]);
+  });
+  it("aufdeckDef: geteilte Session, [[AUFDECKEN]] registriert, Block persistiert Protokoll und beendet", async () => {
+    const gesetzt = [];
+    const backend = { bstate: { set: async (f, v) => gesetzt.push([f, v]) } };
+    const d = aufdeckDef(backend, {});
+    expect(d.shared).toBe(true);
+    expect(typeof d.markers["[[AUFDECKEN]]"]).toBe("function");
+    const engine = { chat: { status: "running" } };
+    await d.blocks[0].handle({ zusammenfassung: "Warm.", beruehrungspunkte: ["Nähe"], fuerDieKlaerung: [] }, engine);
+    expect(engine.chat.status).toBe("finished");
+    expect(gesetzt[0][0]).toBe("aufdeckprotokoll");
+    expect(gesetzt[0][1].zusammenfassung).toBe("Warm.");
+    expect(gesetzt[0][1].at).toBeTruthy();
+  });
+  it("KAPITEL_TITEL trägt vier Kapitel", () => expect(KAPITEL_TITEL).toHaveLength(4));
+});
+
+describe("Kernwetten · Datenpfade der Aufdeck-Runde", () => {
+  const ranks = {
+    self: ["Nähe", "Ehrlichkeit", "Wertschätzung", "Autonomie", "Harmonie"],
+    pwichtig: ["Autonomie", "Beständigkeit", "Nähe"],
+    punzufrieden: ["Sexualität & körperliche Nähe"],   // wird bewusst NICHT gequert (erst G2)
+    geheim: "Rohform",
+  };
+  it("baueAufdeckung: nur name/top5/tipp3/releasedAt queren — Fremdfelder nie", () => {
+    const g = baueAufdeckung("Anna", ranks);
+    expect(Object.keys(g).sort()).toEqual(["name", "releasedAt", "tipp3", "top5"]);
+    expect(g.top5).toHaveLength(5);
+    expect(g.tipp3).toHaveLength(3);
+  });
+  it("baueAufdeckung: ohne vollständige Stapel wird geworfen (Korrektur-Runde statt Lücke)", () => {
+    expect(() => baueAufdeckung("Anna", { self: ["x"], pwichtig: [] })).toThrow(/Korrektur-Runde/);
+  });
+  it("beruehrungen: Schnittmenge in Tipp-Reihenfolge, keine Quote", () => {
+    expect(beruehrungen(ranks.pwichtig, ranks.self)).toEqual(["Autonomie", "Nähe"]);
+    expect(beruehrungen(["Abenteuer"], ranks.self)).toEqual([]);
+  });
+  it("AUFDECK-KONTEXT: beide Namen, keine Unzufriedenheits-Vermutung", () => {
+    const gA = baueAufdeckung("Anna", ranks);
+    const gB = baueAufdeckung("Bernd", { self: ["Autonomie", "Nähe", "Ehrlichkeit", "Abenteuer", "Wertschätzung"], pwichtig: ["Nähe", "Wertschätzung", "Harmonie"] });
+    const k = baueAufdeckKontext(gA, gB);
+    expect(k).toContain("Anna – Top 5");
+    expect(k).toContain("Bernd – Tipp");
+    expect(k).not.toContain("Sexualität");   // Unzufriedenheits-Tipp quert erst mit der Klärung
+  });
+  it("Klärungs-Kontext: zwei ÜBERGABE-BLÖCKE, Protokoll-Zeile optional", () => {
+    const uA = { name: "Anna", items: [{ id: "S1", text: "Nähe sehr wichtig, dort unzufrieden" }] };
+    const uB = { name: "Bernd", items: [{ id: "V1", text: "Vermutet, dass Anna mehr Zweisamkeit wünscht" }] };
+    const ohne = baueKlaerungsKontext(uA, uB, null);
+    expect(ohne.match(/ÜBERGABE-BLOCK – /g)).toHaveLength(2);
+    expect(ohne).not.toContain("AUFDECK-PROTOKOLL");
+    const mit = baueKlaerungsKontext(uA, uB, { zusammenfassung: "Warm gespielt.", beruehrungspunkte: ["Nähe"], fuerDieKlaerung: ["Wochenend-Rituale"] });
+    expect(mit).toContain("AUFDECK-PROTOKOLL");
+    expect(mit).toContain("Wochenend-Rituale");
+  });
+});
+
+describe("Store · Bstate-Felder (Worker-Whitelist folgt aus FIELDS)", () => {
+  it("aufdeckung + aufdeckprotokoll sind Bündel-Felder mit Defaults", () => {
+    expect(Bstate.FIELDS).toContain("aufdeckung");
+    expect(Bstate.FIELDS).toContain("aufdeckprotokoll");
+    expect(Bstate.DEFAULTS.aufdeckung).toEqual({ A: null, B: null });
+    expect(Bstate.DEFAULTS.aufdeckprotokoll).toBeNull();
+  });
+});

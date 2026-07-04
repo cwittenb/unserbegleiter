@@ -4,7 +4,7 @@
 
 import { blockDef } from "./block.js";
 import {
-  gateSchema, befundSchema, zeitSchema, gateArtSchema, momentSchema, auftragBlockSchema, qzSchema,
+  gateSchema, befundSchema, zeitSchema, gateArtSchema, momentSchema, auftragBlockSchema, qzSchema, aufdeckSchema,
 } from "./schemas.js";
 
 export const BLOECKE = {
@@ -42,6 +42,11 @@ export const BLOECKE = {
     start: "GOAL-BLOCK", end: "END GOAL-BLOCK",
     placeholder: "[Auftrags-Änderung übernommen.]",
     dataset: "auftrag", schema: auftragBlockSchema,
+  }),
+  aufdeck: blockDef({
+    start: "REVEAL-BLOCK", end: "END REVEAL-BLOCK",
+    placeholder: "[Kurzprotokoll der Aufdeck-Runde gespeichert.]",
+    dataset: "aufdeck", schema: aufdeckSchema,
   }),
 };
 

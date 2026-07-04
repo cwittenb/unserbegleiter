@@ -58,6 +58,15 @@ export class Engine {
   }
 
   /** Vertrag 1, Rückkanal: Panels antworten mit GENAU EINER User-Nachricht. */
+  /** Wiedereinstieg nach Reload: letzten Zug erneut dispatchen (Marker-Panels öffnen wieder; ein wartender User-Zug wird beantwortet). */
+  async resume() {
+    if (this.chat.status === "released" || this.chat.status === "finished") return;
+    const last = this.chat.messages[this.chat.messages.length - 1];
+    if (!last) return;
+    if (last.role === "assistant") { await this._afterAssistant(last.content); return; }
+    if (!this.busy) await this.requestAssistant();
+  }
+
   async submitToolResult(content, meta) {
     this.chat.messages.push(Object.assign({ role: "user", content }, meta || {}));
     await this._save();
