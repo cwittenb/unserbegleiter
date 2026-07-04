@@ -7,6 +7,19 @@ import { coreHash } from "./core-hash.js";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
+/** KV-Namespace-ID dauerhaft bestimmen: bevorzugt aus der Umgebungsvariable
+ *  PAARE_KV_ID, sonst aus einer bereits ent-kommentierten wrangler.toml des
+ *  vorigen Builds. So übersteht die Bindung jeden `npm run build`. */
+async function ermittleKvId(outDir) {
+  if (process.env.PAARE_KV_ID) return process.env.PAARE_KV_ID.trim();
+  try {
+    const alt = await readFile(path.join(outDir, "wrangler.toml"), "utf8");
+    const m = alt.match(/^\s*id\s*=\s*"([^"]+)"/m);   // nur ent-kommentierte Zeile
+    if (m && m[1] && m[1] !== "…") return m[1];
+  } catch { /* noch keine vorhandene Datei */ }
+  return null;
+}
+
 export async function buildPages() {
   const hash = await coreHash();
   const outDir = path.join(ROOT, "dist/cloudflare");
@@ -41,6 +54,12 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,sy
     await readFile(path.join(ROOT, "platforms/cloudflare/pages/admin.html"), "utf8")
   );
 
+  const kvId = await ermittleKvId(outDir);
+  const kvLines = kvId
+    ? ["[[kv_namespaces]]", 'binding = "PAARE"', `id = "${kvId}"`]
+    : ["# Nach `wrangler kv namespace create PAARE` die ID eintragen — oder",
+       "# PAARE_KV_ID als Umgebungsvariable setzen; dann schreibt der Build den Block automatisch:",
+       "# [[kv_namespaces]]", '# binding = "PAARE"', '# id = "…"'];
   await writeFile(path.join(outDir, "wrangler.toml"), [
     'name = "paarbegleitung"',
     'main = "worker.js"',
@@ -49,10 +68,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,sy
     "[assets]",
     'directory = "public"',
     "",
-    "# Nach `wrangler kv namespace create PAARE` die ID eintragen:",
-    "# [[kv_namespaces]]",
-    '# binding = "PAARE"',
-    '# id = "…"',
+    ...kvLines,
     "",
     "# Secrets: wrangler secret put LLM_API_KEY   (Provider-Key bleibt serverseitig)",
     "#          wrangler secret put ADMIN_TOKEN   (schützt /api/paar; ohne dieses Secret",

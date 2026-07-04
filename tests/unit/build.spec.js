@@ -30,4 +30,37 @@ describe("Build · Cloudflare", () => {
     expect(worker).toContain(CORE_VERSION);
     expect(toml).toContain('name = "paarbegleitung"');
   });
+
+  it("PAARE_KV_ID → schreibt den KV-Block ENT-kommentiert mit der ID (übersteht Rebuilds)", async () => {
+    const alt = process.env.PAARE_KV_ID;
+    process.env.PAARE_KV_ID = "test-kv-id-123";
+    try {
+      const { outDir } = await buildPages();
+      const toml = await readFile(path.join(outDir, "wrangler.toml"), "utf8");
+      expect(toml).toMatch(/^\[\[kv_namespaces\]\]/m);          // nicht auskommentiert
+      expect(toml).toContain('binding = "PAARE"');
+      expect(toml).toContain('id = "test-kv-id-123"');
+      expect(toml).not.toContain('# id = "…"');
+    } finally {
+      if (alt === undefined) delete process.env.PAARE_KV_ID; else process.env.PAARE_KV_ID = alt;
+    }
+  });
+
+  it("ohne Umgebungsvariable: übernimmt eine bereits eingetragene ID aus der vorhandenen wrangler.toml", async () => {
+    const alt = process.env.PAARE_KV_ID;
+    delete process.env.PAARE_KV_ID;
+    try {
+      // 1. Lauf mit ID (simuliert den einmal eingerichteten Zustand)
+      process.env.PAARE_KV_ID = "bereits-gesetzt-xyz";
+      const { outDir } = await buildPages();
+      // 2. Lauf OHNE Variable — die ID muss aus der vorigen Datei erhalten bleiben
+      delete process.env.PAARE_KV_ID;
+      await buildPages();
+      const toml = await readFile(path.join(outDir, "wrangler.toml"), "utf8");
+      expect(toml).toContain('id = "bereits-gesetzt-xyz"');
+      expect(toml).toMatch(/^\[\[kv_namespaces\]\]/m);
+    } finally {
+      if (alt === undefined) delete process.env.PAARE_KV_ID; else process.env.PAARE_KV_ID = alt;
+    }
+  });
 });
