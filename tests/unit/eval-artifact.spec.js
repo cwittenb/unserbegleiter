@@ -124,6 +124,6 @@ describe("Eval-Artefakt · Build", () => {
     expect(html).toContain("LEAK-S1");
     expect(html).toContain('"' + JUDGE_PROMPT_VERSION + '"');
     expect(html).toContain('data-core-hash="' + hash + '"');
-    expect(out.endsWith("paarbegleitung-eval.html")).toBe(true);
+    expect(out).toMatch(/paarbegleitung-eval_\d{4}-\d{2}-\d{2}_\d{4}_[0-9a-f]{8}\.html$/);
   });
 });

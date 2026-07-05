@@ -105,6 +105,16 @@
 
     <div id="out" class="result"></div>
 
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label for="expCode">Paar exportieren (Auswertung)</label>
+        <p class="hint">Lädt alle gespeicherten Daten des Paars als JSON herunter — Chats, geteilte und private Zustände. Nutzt dasselbe Admin-Token wie oben.</p>
+        <input id="expCode" type="text" autocomplete="off" placeholder="Paar-Code, z. B. a1b2c3">
+      </div>
+      <button id="expGo" class="primary">Export herunterladen</button>
+      <div id="expMsg"></div>
+    </div>
+
     <p class="foot">
       Die Links sind <b>einmalig</b>: Beim ersten Öffnen wird die Person fest dem Paar zugeordnet, danach ist der Link verbraucht.
       Reicht jede:r Person genau ihren Link.
@@ -168,6 +178,32 @@
     out.appendChild(linkKarte("A", $("a").value.trim(), links.A));
     out.appendChild(linkKarte("B", $("b").value.trim(), links.B));
   }
+
+  var expGo = $("expGo"), expMsg = $("expMsg");
+  function expFehler(text){ expMsg.innerHTML = '<div class="msg err">' + text + '</div>'; }
+  expGo.addEventListener("click", function(){
+    var tok = $("tok").value, code = $("expCode").value.trim();
+    if(!tok){ expFehler("Bitte oben das Admin-Token eingeben."); return; }
+    if(!code){ expFehler("Bitte den Paar-Code eingeben."); return; }
+    expGo.disabled = true; expGo.textContent = "Lade …"; expMsg.innerHTML = "";
+    fetch(basis() + "/api/export/" + encodeURIComponent(code), {
+      headers: { "x-admin-token": tok },
+    }).then(function(res){
+      if(res.status === 401){ expFehler("Admin-Token fehlt oder ist falsch."); return null; }
+      if(res.status === 404){ expFehler("Unbekannter Paar-Code."); return null; }
+      return res.json();
+    }).then(function(data){
+      if(!data) return;
+      var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "paar-" + code + "-" + data.zeit.replace(/[:.]/g, "-") + ".json";
+      a.click();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+      expMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">Export geladen (' + Object.keys(data.shared).length + ' geteilte, ' + Object.keys(data.privat).length + ' private Einträge).</div>';
+    }).catch(function(){ expFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ expGo.disabled = false; expGo.textContent = "Export herunterladen"; });
+  });
 
   go.addEventListener("click", function(){
     var tok = $("tok").value;

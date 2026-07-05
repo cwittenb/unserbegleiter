@@ -64,6 +64,23 @@ async function route(request, env) {
     const sid = await loginWithCred(kv, parseCookies(request).pb_cred, now);
     return json({ ok: true }, 200, { "Set-Cookie": cookieHeader("pb_sid", sid) });
   }
+  /* ---- Betreiber-Export: alle Daten EINES Paars (Auswertung, admin-gated) ---- */
+  const mExp = /^\/api\/export\/([A-Za-z0-9]+)$/.exec(p);
+  if (mExp && request.method === "GET") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    const code = mExp[1];
+    const couple = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+    if (!couple) return fehler("Unbekannter Paar-Code.", 404);
+    const store = new KVStore(kv);
+    const praefix = "p:" + (env.NS || "PB") + ":" + code + ":";
+    const dump = { zeit: new Date().toISOString(), code, nameA: couple.nameA, nameB: couple.nameB, shared: {}, privat: {} };
+    for (const shared of [true, false]) {
+      const ziel = shared ? dump.shared : dump.privat;
+      for (const k of await store.list(praefix, shared)) ziel[k] = await store.get(k, shared);
+    }
+    return json(dump);
+  }
+
   if (p === "/api/recover" && request.method === "POST") {
     // Raten-Limit je IP (grob), gegen Missbrauch — unabhängig davon, ob die Adresse existiert.
     const ip = request.headers.get("cf-connecting-ip") || "unbekannt";

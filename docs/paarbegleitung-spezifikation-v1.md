@@ -252,6 +252,7 @@ Geschützt wird gegen: neugierige Dritte, Link-Weiterleitung nach Konsum, Sessio
 |---|---|---|---|
 | `/api/health` | GET | — | Lebenszeichen, Kern-Version |
 | `/api/paar` | POST | **Admin-Token** (`x-admin-token`) | Paar anlegen → code + beide Magic-Links. Betreiber-Endpunkt, fail-closed: ohne gesetztes `ADMIN_TOKEN` gesperrt. Bequem über `/admin.html`. |
+| `/api/export/:code` | GET | **Admin-Token** | Betreiber-Export für die Auswertung: alle Daten EINES Paars als JSON — Chats sowie geteilte und private Zustände, nach Welten getrennt. Bequem über `/admin.html`. Betrifft ausschließlich das angefragte Paar (bewiesen). |
 | `/api/enroll` | POST | Magic-Token | Einmal-Konsum → Cred- + Session-Cookie |
 | `/api/session` | POST | pb_cred | neue Session aus Credential |
 | `/api/recover` | POST | — (Raten-Limit je IP) | Wiedereinstieg: `{email}` → falls hinterlegt, frischer 15-min-Einmal-Link per Mail. Antwort immer `{ok:true}` (keine Enumeration). |
@@ -424,7 +425,7 @@ Zweck: schnelle Iteration, Selbsttests, UX-Läufe mit einer Person, die beide Ro
 2. In claude.ai einen neuen Chat öffnen und die Datei hochladen mit der Bitte: *„Bitte stelle diese HTML-Datei unverändert als Artefakt bereit."* (Alternativ: Inhalt in ein bestehendes Artefakt einsetzen.)
 3. Beim ersten Start: Namen für A und B eingeben → Rollen-Umschalter erscheint.
 4. Knopf **Selbsttest** drücken: 11 sandboxfähige Kern-Checks (Verträge, Kanarien, Korrektur-Runde, Storage-Roundtrip) müssen „11/11 bestanden" melden.
-5. Entwicklungszyklus: Änderung im Kern → `npm test` → `npm run build` → neue HTML hochladen. Der Kern-Hash im Fußbereich (`window.PAARBEGLEITUNG.coreHash`) zeigt, welcher Stand läuft.
+5. Entwicklungszyklus: Änderung im Kern → `npm test` → `npm run build` → neue HTML hochladen. Der Kern-Hash im Fußbereich (`window.PAARBEGLEITUNG.coreHash`) zeigt, welcher Stand läuft. Zusätzlich trägt der **Dateiname** jedes Artefakts Build-Datum/-Zeit (UTC) und den Kern-Kurzhash (`paarbegleitung-dev_2026-07-04_2020_1d8cc3f8.html`), und die Eingangskarte zeigt denselben Stand — welcher Build gerade läuft, ist damit ohne Öffnen erkennbar; jeder Build räumt ältere Stände in `dist/` auf.
 
 Bekannte Sandbox-Grenzen (unverändert): kein Mikrofonzugriff — der 🎤-Knopf fällt hier automatisch auf den plattformbewussten OS-Diktat-Tipp zurück (mobile Tastatur-Mikro, Windows+H, macOS Fn Fn); keine echte Zwei-Geräte-Nutzung; LLM keyless nur hier.
 

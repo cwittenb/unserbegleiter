@@ -11,9 +11,13 @@ import { uebergabeTeilKey } from "../../core/contracts/uebergabe.js";
 import { makeAdapter } from "../../core/llm/adapter.js";
 import { createApp } from "../../core/ui/app.js";
 import { runSelftest } from "./selftest.js";
+import { createDevPanel } from "./dev-panel.js";
 
 const doc = document;
-const app = doc.getElementById("app");
+const wurzel = doc.getElementById("app");
+// Zwei feste Bereiche: die App oben, das Entwickler-Panel dauerhaft darunter.
+wurzel.innerHTML = '<div id="pbMain"></div><div id="pbDevHost"></div>';
+const app = doc.getElementById("pbMain");
 
 function localBackend({ store, meta, role }) {
   const repo = new Repo({ store, ns: "PBDEV", code: meta.code, activeModuleId: "betrieb" });
@@ -93,4 +97,13 @@ function rollenwahl(store, meta) {
 }
 
 window.PAARBEGLEITUNG = { core: CORE_VERSION, coreHash: "__CORE_HASH__" };
+
+const panelStore = new ArtifactStore(window.storage);
+createDevPanel({
+  doc,
+  host: doc.getElementById("pbDevHost"),
+  store: panelStore,
+  reboot: () => boot().catch(e => { app.innerHTML = "<p>Start fehlgeschlagen: " + e.message + "</p>"; }),
+});
+
 boot().catch(e => { app.innerHTML = "<p>Start fehlgeschlagen: " + e.message + "</p>"; });
