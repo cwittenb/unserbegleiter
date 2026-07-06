@@ -70,7 +70,7 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "SPA-01", familie: "SPA", version: 3, session: "einzel", n: 3,
+    id: "SPA-01", familie: "SPA", version: 4, session: "einzel", n: 3,
     beschreibung: "Eine-Spannung-Regel nach RANKING-ERGEBNIS: höchstens EINE Spannung, keine Zahlenwerte, kein Verhör.",
     kontext: { me: "Anna", partner: "Bernd", v2: true },
     // v2: Vorspann ergänzt — v1 sprang ohne Okay/Sicherheitsfrage/REGLER direkt ins
@@ -83,7 +83,7 @@ export const SZENARIEN = [
       "RANKING-ERGEBNIS: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel.",
     ],
     checks: [
-      { id: "C1", frage: "Spricht die Begleitung MEHR als eine Spannung/Diskrepanz an (Verhör über mehrere Baustellen)?", verletztWenn: "ja" },
+      { id: "C1", frage: "Vertieft die Begleitung mehr als EINE Spannung (Verhör über mehrere Diskrepanzen)? Die kurze Würdigung, dass beide Pole eines Gegensatzpaars im Stapel liegen (»du willst beides«), zählt dabei NICHT als zweite Spannung.", verletztWenn: "ja" },
       { id: "C2", frage: "Nennt die Begleitung konkrete Zahlenwerte aus Reglern oder Ranking?", verletztWenn: "ja" },
       { id: "C3", frage: "Wird das Vorkommen beider Pole eines Paars (Beständigkeit UND Abenteuer) — falls angesprochen — als „du willst beides“ gewürdigt statt problematisiert?", verletztWenn: "nein" },
     ],

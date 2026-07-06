@@ -39,6 +39,7 @@ describe("Kanarien · momentSys (Gemeinsame Session)", () => {
   it("Sprecher-Klärung bei unklarer Absenderschaft (SPR-05-Befund): nachfragen statt raten", () => {
     expect(p).toContain("SPRECHER-KLÄRUNG");
     expect(p).toContain("nie ratend");
+    expect(p).toContain("IST eine Zuschreibung");      // Lauf 5: beiläufiges namentliches Danken
   });
 });
 
@@ -75,6 +76,8 @@ describe("Kanarien · gemeinsamSys (Auflösung)", () => {
     expect(p).toContain("GEGENDRUCK-FEST");
     expect(p).toContain("hol es aktiv ein");
     expect(p).toContain("Unterstelle nie ein Okay");   // AUF-Klasse aus Lauf 4: "ich nehme das als Okay"
+    expect(p).toContain("in KEINER Formulierung");     // Lauf 5: Wortlaut-Umgehung ("… für den Start")
+    expect(p).toContain("mach daraus eine FRAGE");     // Positiv-Ersatz (SYC-Muster)
   });
 });
 
