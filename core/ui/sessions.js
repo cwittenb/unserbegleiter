@@ -37,7 +37,8 @@ export function soloDef(backend, hooks = {}) {
         ...BLOECKE.gate,
         handle: (data, engine) => {
           // Querung ist eine PERSONEN-Entscheidung: Panel öffnen, Engine wartet.
-          if (hooks.onGate) hooks.onGate(data, engine);
+          // Wire-Feld "fassung" → intern Selbstmitteilung (Prompt/Schema bleiben stabil).
+          if (hooks.onGate) hooks.onGate({ selbstmitteilung: data.fassung, wunsch: data.wunsch, wege: data.wege }, engine);
         },
       },
     ],
@@ -103,8 +104,8 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
     if (weg === "regal") {
       const regal = (await backend.bstate.get("regal")) || { items: [] };
       regal.items.push({
-        id: "RG" + (regal.items.length + 1),
-        text: gateDaten.fassung,
+        id: "RG" + (regal.items.length + 1),   // Regal-Item = Einblick
+        text: gateDaten.selbstmitteilung,
         wunsch: gateDaten.wunsch,
         von: (await backend.info()).name,
         at: new Date().toISOString(),
@@ -115,8 +116,8 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
     if (weg === "moment") {
       const agenda = (await backend.bstate.get("agenda")) || { items: [] };
       agenda.items.push({
-        id: "AGD" + (agenda.items.length + 1),
-        text: gateDaten.fassung,
+        id: "AGD" + (agenda.items.length + 1),   // auf der Agenda = Thema
+        text: gateDaten.selbstmitteilung,
         wunsch: gateDaten.wunsch,
         von: (await backend.info()).name,
         at: new Date().toISOString(),
@@ -124,11 +125,11 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
       });
       await backend.bstate.set("agenda", agenda);
     }
-    // "selbst": Selbst-Sagen als Generalprobe — bleibt im persönlichen Raum
+    // "selbst" → Selbstoffenbarung: bleibt im persönlichen Raum (selbst ansprechen)
     if (weg === "selbst") {
-      const gp = (await backend.pstate.get("generalproben")) || { items: [] };
-      gp.items.push({ text: gateDaten.fassung, at: new Date().toISOString() });
-      await backend.pstate.set("generalproben", gp);
+      const so = (await backend.pstate.get("selbstoffenbarungen")) || { items: [] };
+      so.items.push({ text: gateDaten.selbstmitteilung, at: new Date().toISOString() });
+      await backend.pstate.set("selbstoffenbarungen", so);
     }
   }
 }

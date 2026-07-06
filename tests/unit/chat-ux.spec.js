@@ -117,3 +117,24 @@ describe("Chat-UX · Skalenfragen", () => {
     expect(root.querySelector("#pbSkala").classList.contains("offen")).toBe(false);   // keine Skala-Frage mehr
   });
 });
+
+describe("Nutzerführung · Begrüßung, Raum-Erklärungen, System eröffnet (Sprint 26)", () => {
+  it("Hauptübersicht begrüßt mit Namen und erklärt beide Räume; Mein-Raum-Intro nennt die Vertraulichkeit", async () => {
+    expect(root.querySelector("#startHallo").textContent).toContain("Anna");
+    expect(root.querySelector("#startIntro").textContent).toContain("ausdrücklich freigibst");
+    expect(root.querySelector("#startMeinSub").textContent).toContain("Bernd");     // Partner namentlich
+    expect(root.querySelector("#startTeilSub").textContent).toContain("euch beide");
+    expect(root.querySelector("#meinIntro").textContent).toContain("nur für dich");
+    expect(root.querySelector("#sharedIntro").textContent).toContain("freigegeben");
+  });
+
+  it("Session-Start: KEINE fingierte User-Nachricht sichtbar — die Begleitung eröffnet von sich aus", async () => {
+    // beforeEach hat bereits gestartet und die Begleitung geantwortet:
+    expect(root.querySelectorAll(".pb-msg.me")).toHaveLength(0);                    // nichts, was Anna nie sagte
+    expect(sichtbar().join(" ")).toContain("Willkommen");                          // Eröffnung der Begleitung
+    // Der Steuerungs-Text existiert im Verlauf, aber versteckt:
+    const msgs = app._state.engine.chat.messages;
+    expect(msgs[0].hidden).toBe(true);
+    expect(msgs[0].content).toContain("Eröffne");
+  });
+});

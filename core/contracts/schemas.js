@@ -62,7 +62,7 @@ export function auftragBlockSchema(d) {
 export function gateArtSchema(d) {
   const e = [];
   if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
-  if (typeof d.fassung !== "string" || !d.fassung.trim()) e.push('"fassung" fehlt');
+  if (typeof d.fassung !== "string" || !d.fassung.trim()) e.push('"fassung" fehlt');   // Wire-Feld "fassung" ≙ Selbstmitteilung (intern)
   if (!("wunsch" in d) || (d.wunsch !== null && typeof d.wunsch !== "string")) e.push('"wunsch" fehlt (Text oder null)');
   if (typeof d.begruendung !== "string" || !d.begruendung.trim()) e.push('"begruendung" fehlt');
   const k = d.kriterien;

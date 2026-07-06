@@ -25,7 +25,7 @@ const json = (data, status = 200, headers = {}) =>
 const fehler = (msg, status) => json({ error: msg }, status);
 
 const BSTATE_FELDER = new Set(Bstate.FIELDS);
-const PSTATE_FELDER = new Set(["zeitleiste", "generalproben"]);
+const PSTATE_FELDER = new Set(["zeitleiste", "selbstoffenbarungen"]);
 
 export default {
   async fetch(request, env, ctx) {

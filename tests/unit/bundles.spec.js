@@ -79,7 +79,7 @@ describe("Pstate · Single-Writer je Rolle", () => {
 
   it("Pstate liegt im PRIVATEN Namensraum (Geheimnis-Architektur, Schicht Speicher)", async () => {
     const { store, p } = welt();
-    await p.set("A", "generalproben", { items: [{ id: "G1" }] });
+    await p.set("A", "selbstoffenbarungen", { items: [{ id: "G1" }] });
     expect(await store.list("", true)).toEqual([]);       // nichts im geteilten Raum
     expect((await store.list("", false)).some(k => k.includes("pstate:A"))).toBe(true);
   });

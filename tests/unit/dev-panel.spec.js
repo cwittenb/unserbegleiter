@@ -107,7 +107,7 @@ describe("Dev-Panel · Szenen", () => {
     expect(qzStufe(await b2.get("qz"))).toBe(1);
   });
 
-  it("regal-ungelesen: die Fassung liegt mit gelesen:false im Regal", async () => {
+  it("regal-ungelesen: der Einblick liegt mit gelesen:false im Regal", async () => {
     await szene("regal-ungelesen").wende(store);
     const { bstate } = bausteine(store, MOCK_META);
     const regal = await bstate.get("regal");

@@ -25,7 +25,7 @@ export const BLOECKE = {
   }),
   gate: blockDef({
     start: "GATE-BLOCK", end: "END GATE-BLOCK",
-    placeholder: "[Deine Fassung zur Freigabe:]",
+    placeholder: "[Deine Selbstmitteilung zur Freigabe:]",
     dataset: "gateart", schema: gateArtSchema,
   }),
   moment: blockDef({

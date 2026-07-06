@@ -89,11 +89,11 @@ export function baueMockdaten(meta = MOCK_META) {
 
   privat[key(meta, "pstate:A")] = stempel({
     zeitleiste: { eintraege: [{ at: vor(6), text: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat." }] },
-    generalproben: { items: [{ at: vor(6), text: "„Mir ist unser Abend wichtig — wenn er kippt, sag es mir bitte früh.“" }] },
+    selbstoffenbarungen: { items: [{ at: vor(6), text: "„Mir ist unser Abend wichtig — wenn er kippt, sag es mir bitte früh.“" }] },
   });
   privat[key(meta, "pstate:B")] = stempel({
     zeitleiste: { eintraege: [{ at: vor(3), text: "Der Arbeitsdruck frisst die Abende — das will ich nicht so lassen." }] },
-    generalproben: { items: [] },
+    selbstoffenbarungen: { items: [] },
   });
 
   const uebergabe = (role, name, items) => stempel({
@@ -152,8 +152,8 @@ export const SZENEN = [
     async wende(store) { const m = baueMockdaten(); await setzeZustand(store, m); },
   },
   {
-    id: "regal-ungelesen", titel: "Regal · Fassung wartet ungelesen",
-    beschreibung: "Annas Fassung liegt im Regal, Bernd hat sie noch nicht gelesen — Pull-Prinzip erlebbar (als Bernd einsteigen).",
+    id: "regal-ungelesen", titel: "Regal · Einblick wartet ungelesen",
+    beschreibung: "Annas Einblick liegt im Regal, Bernd hat ihn noch nicht gelesen — Pull-Prinzip erlebbar (als Bernd einsteigen).",
     async wende(store) { const m = baueMockdaten(); await setzeZustand(store, m); },   // RG1 ist gelesen:false
   },
   {

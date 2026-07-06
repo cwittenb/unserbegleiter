@@ -30,23 +30,87 @@ export function createApp({ doc, backend, root, diktat }) {
   const wurzel = root || doc.getElementById("app");
   wurzel.innerHTML = `
     <style>
+      @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&display=swap');
+      :root{
+        --bg1:#f7f4ea;--bg2:#edf1e2;--ink:#313c31;--ink-soft:#64705c;--ink-faint:#909a86;
+        --accent:#7ba05b;--accent-ink:#41562c;--me-bg:#7ba05b;--me-ink:#ffffff;
+        --card:rgba(255,255,255,.60);--card-bd:rgba(90,110,80,.15);
+        --ai-bg:rgba(255,255,255,.72);--ai-bd:rgba(90,110,80,.13);
+        --field:rgba(255,255,255,.74);--field-bd:rgba(90,110,80,.22);
+      }
+      html[data-theme=dark]{
+        --bg1:#2a3a34;--bg2:#151f1c;--ink:#edf1e8;--ink-soft:#b3c1aa;--ink-faint:#889481;
+        --accent:#aeca8d;--accent-ink:#e2ecd4;--me-bg:#5b7a51;--me-ink:#f4f7ef;
+        --card:rgba(255,255,255,.055);--card-bd:rgba(255,255,255,.10);
+        --ai-bg:rgba(255,255,255,.06);--ai-bd:rgba(255,255,255,.09);
+        --field:rgba(255,255,255,.06);--field-bd:rgba(255,255,255,.16);
+      }
+      body{margin:0;background:linear-gradient(172deg,var(--bg1),var(--bg2));background-attachment:fixed;transition:background .5s}
+      #app{max-width:660px;position:relative;z-index:1;font-family:"Newsreader",Georgia,'Times New Roman',serif;
+           color:var(--ink);font-size:18px;line-height:1.72;padding:46px 22px 34vh}
+      .pb-kulisse{position:fixed;inset:auto 0 0 0;height:84vh;z-index:0;pointer-events:none;overflow:hidden}
+      .pb-kulisse svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
+      .pb-baeume{display:block} html[data-theme=dark] .pb-baeume{display:none}
+      .pb-seerosen{display:none} html[data-theme=dark] .pb-seerosen{display:block}
       .pb-hidden{display:none!important}
-      .pb-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-      .pb-h1{font-size:17px;font-weight:650;margin:0}
-      .pb-sub{color:var(--ink-soft,#5a6675);font-size:13px}
-      .pb-card{background:#fff;border:1px solid #e3e8ee;border-radius:12px;padding:14px;margin:10px 0}
-      .pb-btn{display:inline-block;border:1px solid #cfd8e0;background:#fff;border-radius:9px;
-              padding:9px 14px;font-size:14px;cursor:pointer;margin:4px 6px 4px 0}
-      .pb-btn.primary{background:var(--accent,#0f766e);border-color:var(--accent,#0f766e);color:#fff}
-      .pb-msgs{display:flex;flex-direction:column;gap:8px;margin:10px 0}
-      .pb-msg{max-width:85%;padding:9px 12px;border-radius:12px;font-size:14px;white-space:pre-wrap}
-      .pb-msg.ai{background:#eef2f6;align-self:flex-start}
-      .pb-msg.me{background:var(--accent,#0f766e);color:#fff;align-self:flex-end}
-      .pb-composer{display:flex;gap:8px}
-      .pb-composer textarea{flex:1;border:1px solid #cfd8e0;border-radius:9px;padding:9px;font:inherit;min-height:44px}
-      .pb-err{background:#fdecec;border:1px solid #f5b5b5;border-radius:9px;padding:8px 12px;font-size:13px;margin:8px 0}
-      .pb-item{border-bottom:1px solid #eef2f6;padding:8px 0;font-size:14px}
+      .pb-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
+      .pb-brand{display:flex;flex-direction:column;gap:3px}
+      .pb-h1{font-size:31px;font-weight:300;margin:0;letter-spacing:.005em;line-height:1.15}
+      .pb-sub{color:var(--ink-faint);font-size:13px}
+      .pb-brand .pb-sub{letter-spacing:.2em;text-transform:uppercase;font-size:12px}
+      .pb-card{background:var(--card);border:1px solid var(--card-bd);border-radius:18px;padding:24px 26px;margin:16px 0;
+               backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+      .pb-btn{display:inline-block;border:1px solid var(--accent);background:transparent;color:var(--accent-ink);
+              border-radius:999px;padding:10px 22px;font-family:inherit;font-size:16px;cursor:pointer;margin:6px 8px 0 0;transition:.22s}
+      .pb-btn:hover{background:var(--accent);color:var(--me-ink)}
+      .pb-btn.primary{background:var(--accent);color:var(--me-ink)}
+      .pb-btn.primary:hover{filter:brightness(1.05)}
+      .pb-msgs{display:flex;flex-direction:column;gap:13px;margin:16px 0}
+      .pb-msg{max-width:82%;padding:14px 19px;border-radius:19px;font-size:17px;line-height:1.62;white-space:pre-wrap}
+      .pb-msg.ai{background:var(--ai-bg);border:1px solid var(--ai-bd);align-self:flex-start;border-bottom-left-radius:6px;
+                 backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+      .pb-msg.me{background:var(--me-bg);color:var(--me-ink);align-self:flex-end;border-bottom-right-radius:6px}
+      .pb-composer{display:flex;gap:8px;margin-top:6px}
+      .pb-composer textarea{flex:1;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);
+              border-radius:14px;padding:12px 14px;font:inherit;font-size:17px;min-height:46px}
+      .pb-typing{display:inline-flex;gap:5px;align-items:center;min-height:14px}
+      .pb-typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
+      .pb-typing span:nth-child(2){animation-delay:.2s}.pb-typing span:nth-child(3){animation-delay:.4s}
+      @keyframes pbBlink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+      .pb-skala{display:none;gap:12px;align-items:center;background:var(--card);border:1px solid var(--card-bd);
+                border-radius:16px;padding:12px 16px;margin:0 0 10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+      .pb-skala.offen{display:flex}
+      .pb-skala input[type=range]{flex:1;accent-color:var(--accent)}
+      .pb-skala .wert{font-weight:500;min-width:26px;text-align:center;color:var(--accent-ink);font-size:19px}
+      .pb-msg.ai strong{font-weight:500}
+      .pb-msg.ai code{background:var(--ai-bd);border-radius:4px;padding:0 4px;font-family:ui-monospace,Menlo,monospace;font-size:14px}
+      .pb-err{background:rgba(188,74,74,.12);border:1px solid rgba(188,74,74,.34);border-radius:12px;padding:11px 15px;font-size:15px;margin:12px 0}
+      .pb-item{border-bottom:1px solid var(--card-bd);padding:11px 0;font-size:16px}
+      .pb-theme{position:fixed;top:18px;right:16px;z-index:6;display:flex;gap:3px;background:var(--card);
+                border:1px solid var(--card-bd);border-radius:999px;padding:4px;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+      .pb-theme button{font-family:inherit;font-size:14px;border:0;background:transparent;color:var(--ink-soft);
+                border-radius:999px;padding:6px 14px;cursor:pointer;transition:.2s}
+      .pb-theme button.an{background:var(--accent);color:var(--me-ink)}
     </style>
+    <div class="pb-kulisse" aria-hidden="true">
+      <svg class="pb-baeume" viewBox="0 0 1200 850" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs>
+      <symbol id="pbTanne" viewBox="0 0 100 200"><rect x="45" y="178" width="10" height="22" fill="currentColor"/><polygon points="50,86 12,180 88,180" fill="currentColor"/><polygon points="50,44 22,124 78,124" fill="currentColor"/><polygon points="50,8 31,74 69,74" fill="currentColor"/></symbol>
+      <symbol id="pbLaub" viewBox="0 0 100 200"><rect x="45" y="128" width="10" height="72" fill="currentColor"/><g fill="currentColor"><ellipse cx="50" cy="80" rx="45" ry="58"/><circle cx="34" cy="50" r="21"/><circle cx="66" cy="52" r="21"/><circle cx="50" cy="38" r="23"/></g></symbol></defs>
+      <path d="M0 700 Q300 664 600 700 T1200 700 V850 H0Z" fill="#dbe4cc" opacity=".55"/>
+      <g color="#d3ddc1" opacity=".6"><use href="#pbLaub" x="270" y="410" width="220" height="440"/><use href="#pbTanne" x="430" y="470" width="190" height="380"/><use href="#pbLaub" x="782" y="452" width="205" height="410"/><use href="#pbTanne" x="70" y="512" width="170" height="340"/></g>
+      <g color="#bcca9f" opacity=".86"><use href="#pbTanne" x="50" y="120" width="360" height="730"/><use href="#pbLaub" x="452" y="252" width="300" height="600"/><use href="#pbTanne" x="648" y="352" width="250" height="500"/><use href="#pbLaub" x="902" y="330" width="266" height="520"/></g></svg>
+      <svg class="pb-seerosen" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><defs>
+      <symbol id="pbPad" viewBox="0 0 100 100"><path d="M50 4 A46 46 0 1 1 49 4 L50 50 Z" fill="currentColor"/></symbol>
+      <symbol id="pbRose" viewBox="0 0 100 100"><g fill="currentColor" fill-opacity=".82"><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(30 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(60 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(90 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(120 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(150 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(180 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(210 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(240 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(270 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(300 50 54)"/><path d="M50 5 C57 30 56 46 50 60 C44 46 43 30 50 5Z" transform="rotate(330 50 54)"/></g><g fill="currentColor"><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(15 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(45 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(75 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(105 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(135 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(165 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(195 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(225 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(255 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(285 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(315 50 54)"/><path d="M50 22 C55 37 55 48 50 58 C45 48 45 37 50 22Z" transform="rotate(345 50 54)"/></g><circle cx="50" cy="54" r="7" fill="currentColor"/></symbol></defs>
+      <path d="M0 610 Q320 584 640 610 T1200 610 V900 H0Z" fill="#ffffff" opacity=".03"/>
+      <path d="M0 770 Q300 748 600 770 T1200 770 V900 H0Z" fill="#ffffff" opacity=".035"/>
+      <g color="#ffffff"><use href="#pbPad" x="-120" y="560" width="560" height="560" opacity=".10" transform="rotate(-12 160 840)"/><use href="#pbPad" x="770" y="600" width="540" height="540" opacity=".11" transform="rotate(26 1040 870)"/><use href="#pbPad" x="300" y="690" width="400" height="400" opacity=".13" transform="rotate(-28 500 890)"/></g>
+      <g color="#ffffff"><use href="#pbRose" x="120" y="612" width="270" height="270" opacity=".52"/><use href="#pbRose" x="712" y="686" width="228" height="228" opacity=".44"/><use href="#pbRose" x="452" y="548" width="168" height="168" opacity=".34"/></g></svg>
+    </div>
+    <div class="pb-theme" role="group" aria-label="Ansicht">
+      <button id="pbHell" type="button">Hell</button>
+      <button id="pbDunkel" type="button">Dunkel</button>
+    </div>
     <div class="pb-top">
       <h1 class="pb-h1" id="pbHallo"></h1>
       <span class="pb-sub" id="pbKern"></span>
@@ -55,13 +119,18 @@ export function createApp({ doc, backend, root, diktat }) {
     <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
     <div id="scrStart">
       <div class="pb-card">
-        <div class="pb-sub">Deine Räume</div>
+        <div id="startHallo" style="font-size:17px;font-weight:650;margin-bottom:4px"></div>
+        <p class="pb-sub" id="startIntro" style="margin:0 0 12px"></p>
         <button class="pb-btn primary" id="btnMyRoom">Mein Raum</button>
+        <p class="pb-sub" id="startMeinSub" style="margin:4px 0 12px"></p>
         <button class="pb-btn primary" id="btnSharedRoom">Gemeinsamer Raum</button>
+        <p class="pb-sub" id="startTeilSub" style="margin:4px 0 0"></p>
       </div>
     </div>
     <div id="scrMyRoom" class="pb-hidden">
       <div class="pb-card">
+        <div style="font-size:16px;font-weight:650;margin-bottom:4px">Mein Raum</div>
+        <p class="pb-sub" id="meinIntro" style="margin:0 0 12px"></p>
         <button class="pb-btn primary" id="btnSolo">Reflexionsgespräch beginnen</button>
         <button class="pb-btn primary" id="btnEinzel">Auftragsklärung beginnen</button>
         <button class="pb-btn" id="btnZeitleiste">Meine Zeitleiste</button>
@@ -74,6 +143,8 @@ export function createApp({ doc, backend, root, diktat }) {
     </div>
     <div id="scrShared" class="pb-hidden">
       <div class="pb-card">
+        <div style="font-size:16px;font-weight:650;margin-bottom:4px">Gemeinsamer Raum</div>
+        <p class="pb-sub" id="sharedIntro" style="margin:0 0 12px">Hier liegt nur, was freigegeben wurde — und alles, was ihr zu zweit macht.</p>
         <button class="pb-btn primary" id="btnMoment">Gemeinsame Session beginnen</button>
         <button class="pb-btn primary" id="btnAufdeck">Aufdeck-Runde beginnen</button>
         <button class="pb-btn primary" id="btnGemeinsam">Gemeinsame Klärung beginnen</button>
@@ -82,7 +153,7 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="pb-btn" id="btnQz">Gemeinsame Momente</button>
         <button class="pb-btn" id="btnZurueck2">← Zurück</button>
       </div>
-      <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">Regal — zum Lesen, wenn du magst</div><div id="regalItems"></div></div>
+      <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">Regal — zum Lesen, wenn du magst</div><p class="pb-sub" style="margin:6px 0 4px">Kein Posteingang: Hier liegt, was eine Person aus ihrer Einzelreflexion lesbar gemacht hat — als ihre Erfahrung, nicht als Nachricht oder Anforderung. Reagieren ist frei; der beste Ort dafür ist das Gespräch.</p><div id="regalItems"></div></div>
       <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">Gemeinsame Agenda</div><div id="agendaItems"></div></div>
       <div class="pb-card pb-hidden" id="boxQz"></div>
     </div>
@@ -92,6 +163,12 @@ export function createApp({ doc, backend, root, diktat }) {
         <div class="pb-msgs" id="pbMsgs"></div>
         <div id="gatePanel" class="pb-card pb-hidden"></div>
         <div id="kwPanel" class="pb-card pb-hidden"></div>
+        <div class="pb-skala" id="pbSkala">
+          <span style="font-size:13px;color:#5a6675">Deine Zahl:</span>
+          <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
+          <span class="wert" id="pbSkalaWert">7</span>
+          <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">Senden</button>
+        </div>
         <div class="pb-composer" id="pbComposer">
           <textarea id="pbInput" placeholder="Deine Nachricht…"></textarea>
           <button class="pb-btn" id="btnMic" title="Diktieren">🎤</button>
@@ -120,24 +197,76 @@ export function createApp({ doc, backend, root, diktat }) {
     b.classList.remove("pb-hidden");
   }
 
+  /* Kompaktes, sicheres Inline-Markdown: erst HTML-escapen, dann **fett**,
+     *kursiv*, \`code\`, Überschriften als fett, "- " als Aufzählungspunkt.
+     white-space:pre-wrap erhält die Zeilenstruktur — kein Block-Parser nötig. */
+  function mdRender(roh) {
+    let t = esc(roh);
+    t = t.replace(/^#{1,4}\s+(.+)$/gm, "<strong>$1</strong>");
+    t = t.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/(^|[\s(>])\*([^*\n]+)\*(?=[\s.,;:!?)]|$)/gm, "$1<em>$2</em>");
+    t = t.replace(/\`([^\`\n]+)\`/g, "<code>$1</code>");
+    t = t.replace(/^(\s*)[-*]\s+/gm, "$1• ");
+    return t;
+  }
+
+  /** Skalenfrage? Dann Schnellantwort-Slider zeigen (freies Tippen bleibt möglich). */
+  function aktualisiereSkala() {
+    const boxS = $("pbSkala");
+    if (!boxS) return;
+    const msgs = state.engine ? state.engine.chat.messages.filter(m => !m.hidden) : [];
+    const letzte = msgs.length ? msgs[msgs.length - 1] : null;
+    const skala = !state.warten && letzte && letzte.role === "assistant" &&
+      /[Ss]kala von 1 bis 10/.test(letzte.content);
+    boxS.classList.toggle("offen", !!skala);
+  }
+
   function renderMsgs() {
     const box = $("pbMsgs");
     box.innerHTML = "";
-    for (const m of state.engine.chat.messages) {
-      if (m.hidden) continue;
-      const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
-      d.textContent = cleanDisplay(m.content, [], ALLE_BLOECKE);
+    if (state.engine) {
+      for (const m of state.engine.chat.messages) {
+        if (m.hidden) continue;
+        const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
+        if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, [], ALLE_BLOECKE));
+        else d.textContent = cleanDisplay(m.content, [], ALLE_BLOECKE);
+        box.appendChild(d);
+      }
+    }
+    if (state.warten) {
+      const d = el("div", "pb-msg ai");
+      d.innerHTML = '<span class="pb-typing" aria-label="Die Begleitung schreibt"><span></span><span></span><span></span></span>';
       box.appendChild(d);
+    }
+    box.scrollTop = box.scrollHeight;
+    aktualisiereSkala();
+  }
+
+  /** Zentraler Sendeweg: User-Text SOFORT zeigen, Ladezustand, dann Antwort. */
+  async function sende(text) {
+    if (!text || !state.engine || state.warten) return;
+    state.warten = true;
+    $("btnSend").disabled = true;
+    const laeuft = state.engine.sendUser(text);   // pusht die Nachricht synchron …
+    renderMsgs();                                 // … darum ist sie hier schon sichtbar
+    try {
+      await laeuft;
+      hint(backend.llm && backend.llm.kontingent ? backend.llm.kontingent.hinweis : null);
+    } catch (e) { err(e.message); }
+    finally {
+      state.warten = false;
+      $("btnSend").disabled = false;
+      renderMsgs();
     }
   }
 
   function gatePanel(data, engine) {
     const p = $("gatePanel");
     p.classList.remove("pb-hidden");
-    const wegName = { selbst: "Selbst sagen (Generalprobe)", regal: "Ins Regal legen", moment: "In die gemeinsame Agenda" };
+    const wegName = { selbst: "Selbst ansprechen", regal: "Ins Regal legen (Einblick)", moment: "Auf die Agenda (Thema)" };
     p.innerHTML =
-      `<div class="pb-sub">Deine Fassung zur Freigabe</div>` +
-      `<p style="font-size:14px">${esc(data.fassung)}</p>` +
+      `<div class="pb-sub">Deine Selbstmitteilung zur Freigabe</div>` +
+      `<p style="font-size:14px">${esc(data.selbstmitteilung)}</p>` +
       (data.wunsch ? `<p class="pb-sub">Wunsch: ${esc(data.wunsch)}</p>` : "") +
       data.wege.map(w => `<label style="display:block;font-size:14px;margin:4px 0"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
       `<button class="pb-btn primary" id="btnGateOk">Freigeben</button>` +
@@ -342,15 +471,21 @@ export function createApp({ doc, backend, root, diktat }) {
           ),
         });
       }
+      // Die Eröffnungs-Nachricht ist Steuerung fürs Modell, keine Äußerung der Person —
+      // sie bleibt unsichtbar (hidden), und die Begleitung beginnt von sich aus.
       const startText = {
-        solo: "Ich bin da und möchte beginnen.",
-        einzel: "Ich bin da und möchte mit der Auftragsklärung beginnen.",
-        gemeinsam: "Wir sind beide da und möchten mit der gemeinsamen Klärung beginnen.",
-        aufdeck: "Wir sind beide da und möchten die Aufdeck-Runde beginnen.",
-        moment: "Wir sind beide da und möchten beginnen.",
+        solo: "Ich bin da und möchte beginnen. Eröffne das Gespräch von dir aus.",
+        einzel: "Ich bin da und möchte mit der Auftragsklärung beginnen. Eröffne die Session von dir aus.",
+        gemeinsam: "Wir sind beide da und möchten mit der gemeinsamen Klärung beginnen. Eröffne die Session von dir aus.",
+        aufdeck: "Wir sind beide da und möchten die Aufdeck-Runde beginnen. Eröffne die Session von dir aus.",
+        moment: "Wir sind beide da und möchten beginnen. Eröffne die Session von dir aus.",
       }[art];
-      await state.engine.sendUser(startText);
+      state.warten = true;
+      $("btnSend").disabled = true;
       renderMsgs();
+      try { await state.engine.submitToolResult(startText, { hidden: true }); }
+      catch (e) { err(e.message); }
+      finally { state.warten = false; $("btnSend").disabled = false; renderMsgs(); }
     }
   }
 
@@ -359,7 +494,7 @@ export function createApp({ doc, backend, root, diktat }) {
     $("boxZeitleiste").classList.remove("pb-hidden");
     $("zlItems").innerHTML = zl.eintraege.length
       ? zl.eintraege.map(e2 => `<div class="pb-item"><strong>${esc((e2.themen || []).join(" · "))}</strong><br>${esc(e2.zusammenfassung)}</div>`).join("")
-      : `<div class="pb-item">Noch keine Einträge.</div>`;
+      : `<div class="pb-item">Noch keine Einträge — sie entstehen aus deinen Reflexionsgesprächen, mit Datum und Kurzfassung.</div>`;
   }
 
   async function zeigeRegal() {
@@ -441,16 +576,30 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnRegal").addEventListener("click", () => zeigeRegal().catch(e => err(e.message)));
   $("btnAgenda").addEventListener("click", () => zeigeAgenda().catch(e => err(e.message)));
   $("btnQz").addEventListener("click", () => zeigeQz().catch(e => err(e.message)));
-  $("btnSend").addEventListener("click", async () => {
+  $("btnSend").addEventListener("click", () => {
     const t = $("pbInput").value.trim();
-    if (!t || !state.engine) return;
+    if (!t) return;
     $("pbInput").value = "";
-    try {
-      await state.engine.sendUser(t);
-      renderMsgs();
-      hint(backend.llm && backend.llm.kontingent ? backend.llm.kontingent.hinweis : null);
-    } catch (e) { err(e.message); }
+    sende(t);
   });
+  $("pbInput").addEventListener("keydown", e2 => {
+    if (e2.key === "Enter" && !e2.shiftKey) {       // Enter sendet; Shift+Enter = Zeilenumbruch
+      e2.preventDefault();
+      $("btnSend").click();
+    }
+  });
+  $("pbSkalaRange").addEventListener("input", () => { $("pbSkalaWert").textContent = $("pbSkalaRange").value; });
+  $("pbSkalaSend").addEventListener("click", () => sende($("pbSkalaRange").value));
+
+  function pbTheme(t) {                          // hell/dunkel umschalten (Default hell)
+    const d = t === "dark";
+    doc.documentElement.setAttribute("data-theme", d ? "dark" : "light");
+    $("pbHell").classList.toggle("an", !d);
+    $("pbDunkel").classList.toggle("an", d);
+  }
+  $("pbHell").addEventListener("click", () => pbTheme("light"));
+  $("pbDunkel").addEventListener("click", () => pbTheme("dark"));
+  pbTheme("light");
 
   /* ---- Prozessreflexion (Mess-Runde, verdeckt — Aufdeckung im Moment) ---- */
   async function zeigeMess() {
@@ -498,6 +647,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const rahmen = QZ_STUFEN_TEXT[stufe];
     box.innerHTML =
       `<div class="pb-sub">Gemeinsame Momente</div>` +
+      `<p class="pb-sub" style="margin:6px 0 4px">Leichte Einladungen zu kleinen gemeinsamen Momenten — kein Programm, kein Takt. Ihr wählt, was sich stimmig anfühlt; nichts wird gemessen oder nachgehalten, und nichts auswählen ist völlig in Ordnung.</p>` +
       (rahmen ? `<p style="font-size:14px">${esc(rahmen)}</p>` : "") +
       (stufe === 4 ? `<button class="pb-btn" id="qzPause">Pause vereinbaren (4 Wochen)</button>` : "") +
       `<button class="pb-btn primary" id="qzHolen">Einladungen holen</button><div id="qzKarten"></div>`;
@@ -737,6 +887,11 @@ export function createApp({ doc, backend, root, diktat }) {
     state.info = await backend.info();
     $("pbHallo").textContent = "Hallo " + state.info.name;
     $("pbKern").textContent = "Paarbegleitung";
+    $("startHallo").textContent = "Schön, dass du da bist, " + state.info.name + ".";
+    $("startIntro").textContent = "Zwei Räume, eine einfache Regel: Was bei dir bleibt, bleibt bei dir — geteilt wird nur, was du ausdrücklich freigibst.";
+    $("startMeinSub").textContent = "Nur für dich: zum Sortieren, Üben und Ablegen. Nichts von hier erreicht " + state.info.partner + ", außer du gibst es frei.";
+    $("startTeilSub").textContent = "Für euch beide: eure gemeinsamen Sessions — und alles, was einer von euch lesbar gemacht hat.";
+    $("meinIntro").textContent = "Dieser Raum ist nur für dich — nichts von hier erreicht " + state.info.partner + ", außer du gibst es ausdrücklich frei. Nimm dir die Zeit, die du brauchst.";
     zeigeRecovery();
     show("scrStart");
   }

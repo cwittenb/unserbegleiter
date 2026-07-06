@@ -74,7 +74,7 @@ export class Pstate {
 
   key(role) { return "pstate:" + role; }
 
-  _defaults() { return { zeitleiste: { eintraege: [] }, generalproben: { items: [] } }; }
+  _defaults() { return { zeitleiste: { eintraege: [] }, selbstoffenbarungen: { items: [] } }; }
 
   async _doLoad(role) {
     const p = await this.repo.get(this.key(role), false, "betrieb");
