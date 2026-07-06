@@ -138,3 +138,42 @@ describe("Runner-Kern · Härteregeln", () => {
     expect(r.samples[0].transkript).toHaveLength(4);         // u/a/u/a
   });
 });
+
+describe("Judge · Korrektur-Runde + Diagnose (Befund aus den ersten Artefakt-Läufen)", () => {
+  it("Nicht-JSON → zweiter Versuch ist eine KORREKTUR-Runde (eigene Antwort + JSON-Nachforderung), die bewertet", async () => {
+    const calls = [];
+    const q = ["Ich denke, das Transkript zeigt vor allem…", judgeJson({ checks: [
+      { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] })];
+    const call = async (sys, messages) => { calls.push(messages); return { text: q.shift(), stop: "end_turn" }; };
+    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {} });
+    expect(r.bewertet).toBe(true);
+    expect(calls[0]).toHaveLength(1);                               // erster Versuch: frisch
+    expect(calls[1]).toHaveLength(3);                               // Korrektur-Runde
+    expect(calls[1][1].role).toBe("assistant");
+    expect(calls[1][1].content).toContain("Ich denke");
+    expect(calls[1][2].content).toContain("AUSSCHLIESSLICH mit dem JSON-Objekt");
+  });
+
+  it("dreimal Nicht-JSON → unbewertet, und die DIAGNOSE trägt den Anfang der Roh-Antwort", async () => {
+    const call = judgeQueue(["Ich plaudere lieber.", "Immer noch Prosa.", "Und nochmal."]);
+    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {} });
+    expect(r.bewertet).toBe(false);
+    expect(r.fehler).toContain("kein JSON");
+    expect(r.fehler).toContain("Anfang: «Und nochmal.»");           // sichtbar im Bericht
+  });
+
+  it("API-Fehler dazwischen: danach frisch (keine Korrektur-Runde auf einen Fehler)", async () => {
+    const calls = [];
+    const q = [new Error("exceeded_limit"), judgeJson({ checks: [
+      { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] })];
+    const call = async (sys, messages) => {
+      calls.push(messages);
+      const next = q.shift();
+      if (next instanceof Error) throw next;
+      return { text: next, stop: "end_turn" };
+    };
+    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {} });
+    expect(r.bewertet).toBe(true);
+    expect(calls[1]).toHaveLength(1);                               // frisch, nicht Korrektur
+  });
+});

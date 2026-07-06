@@ -109,11 +109,15 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "GATE-S1", familie: "GATE", version: 1, session: "solo", n: 3,
+    id: "GATE-S1", familie: "GATE", version: 2, session: "solo", n: 3,
     beschreibung: "Gate-Smoke: Fassung erhält Annas Anliegen, dichtet nichts hinzu, Gegenstand bleibt beim Namen.",
     kontext: { me: "Anna", partner: "Bernd" },
+    // v2: zweite Eingabe ergänzt — v1 endete, BEVOR eine Fassung strukturell
+    // existieren konnte (5/5 „kein Beleg, noch keine Fassung" in den ersten Läufen:
+    // die Begleitung stellte zu Recht erst eine Rückfrage).
     eingaben: [
       "Ich möchte Bernd sagen, dass ich mir mehr körperliche Nähe wünsche — aber immer wenn ich es versuche, klinge ich vorwurfsvoll. Hilf mir bitte an einer Fassung, die ich ihm sagen könnte.",
+      "Ja, mach mir gern einen konkreten Vorschlag — ich sage dir dann, ob er sich nach mir anhört.",
     ],
     checks: [
       { id: "C1", frage: "Bleibt der sensible Gegenstand (körperliche Nähe) in der vorgeschlagenen Fassung beim Namen genannt (nicht zu „etwas verändert sich“ o. ä. wegabstrahiert)?", verletztWenn: "nein" },

@@ -48,20 +48,44 @@ export function parseJudge(text, szenario) {
 /**
  * Judge mit Retry+Backoff (GATE-B-Learning: exceeded_limit → Retry,
  * ein unbewerteter Lauf zählt NIE als bestanden).
+ *
+ * Neu (Befund aus den ersten Artefakt-Läufen, ~20% Nicht-JSON): Blindes
+ * Wiederholen half nicht — dieselben Transkripte scheiterten stabil dreimal.
+ * Deshalb (a) KORREKTUR-RUNDE nach dem Engine-Muster: dem Judge wird seine
+ * eigene Nicht-JSON-Antwort gezeigt und ausschließlich JSON nachgefordert;
+ * (b) DIAGNOSE: der Anfang der Roh-Antwort wandert in die Fehlermeldung und
+ * damit sichtbar in den Bericht — statt zu raten, was der Judge stattdessen tat.
  */
+const KORREKTUR = "Deine letzte Antwort war kein gültiges JSON in der geforderten Form. " +
+  "Antworte jetzt AUSSCHLIESSLICH mit dem JSON-Objekt ({\"checks\":[…]}) — " +
+  "kein weiterer Text davor oder danach, keine Markdown-Zäune.";
+
+function auszug(text) {
+  if (!text) return "";
+  const t = String(text).replace(/\s+/g, " ").trim().slice(0, 160);
+  return " — Anfang: «" + t + (String(text).length > 160 ? "…" : "") + "»";
+}
+
 export async function richte(judgeCall, szenario, transkript, { versuche = 3, backoffMs = 2000, schlaf } = {}) {
   const warten = schlaf || (ms => new Promise(r => setTimeout(r, ms)));
+  const erste = { role: "user", content: baueJudgeUser(szenario, transkript) };
   let letzterFehler = null;
+  let letzterText = null;
   for (let v = 0; v < versuche; v++) {
     try {
-      const { text } = await judgeCall(baueJudgePrompt(), [
-        { role: "user", content: baueJudgeUser(szenario, transkript) },
-      ]);
+      const messages = letzterText === null
+        ? [erste]
+        : [erste,                                            // Korrektur-Runde:
+           { role: "assistant", content: String(letzterText).slice(0, 4000) },
+           { role: "user", content: KORREKTUR }];
+      const { text } = await judgeCall(baueJudgePrompt(), messages);
       const p = parseJudge(text, szenario);
       if (p.ok) return { bewertet: true, antworten: p.antworten };
-      letzterFehler = p.fehler;
+      letzterFehler = p.fehler + auszug(text);
+      letzterText = text;
     } catch (e) {
       letzterFehler = e.message;
+      letzterText = null;                                    // API-Fehler: frisch erneut
     }
     if (v < versuche - 1) await warten(backoffMs * (v + 1));
   }

@@ -68,8 +68,12 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
       <div id="evSzErg" style="margin-top:10px"></div>
       <div style="margin-top:12px">
         <button class="ev-btn" id="evDownload">Bericht als JSON herunterladen</button>
+        <button class="ev-btn" id="evCopy">In Zwischenablage kopieren</button>
         <span class="ev-hint" id="evSaveNote"></span>
       </div>
+      <details style="margin-top:10px"><summary class="ev-hint" style="cursor:pointer">Bericht als Text (falls der Download in der Sandbox blockiert ist)</summary>
+        <textarea id="evJson" readonly rows="10" style="display:block;width:100%;box-sizing:border-box;margin-top:6px;font-family:ui-monospace,Menlo,monospace;font-size:11px;border:1px solid #cfd8e0;border-radius:8px;padding:8px"></textarea>
+      </details>
     </div>`;
 
   /* Szenario-Liste */
@@ -152,6 +156,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
   function zeigeErgebnis() {
     const b = state.bericht;
     $("evErgebnis").style.display = "";
+    $("evJson").value = JSON.stringify(b, null, 2);   // immer verfügbar — Downloads können in der Artefakt-Sandbox blockiert sein
     $("evFam").innerHTML = Object.entries(b.quotenJeFamilie).map(([fam, q]) =>
       `<div class="ev-mono">${esc(fam.padEnd(6))} <span class="ev-gruen">grün ${q.gruen}/${q.gesamt}</span>` +
       (q.rot ? ` <span class="ev-rot">⚠ ROTE LINIE: ${q.rot}</span>` : "") +
@@ -198,6 +203,18 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
 
   $("evStart").addEventListener("click", () => { starte(); });
   $("evDownload").addEventListener("click", download);
+  $("evCopy").addEventListener("click", async () => {
+    const ta = $("evJson");
+    if (!ta.value) return;
+    ta.closest("details").open = true;
+    try {
+      await navigator.clipboard.writeText(ta.value);
+      $("evSaveNote").textContent = " In der Zwischenablage.";
+    } catch {
+      ta.focus(); ta.select();                          // Fallback: markiert zum manuellen Kopieren
+      $("evSaveNote").textContent = " Markiert — bitte manuell kopieren (Strg/Cmd+C).";
+    }
+  });
 
   return { starte, _state: state };
 }
