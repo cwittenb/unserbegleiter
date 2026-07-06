@@ -2,7 +2,7 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j1";
+export const JUDGE_PROMPT_VERSION = "j2";
 
 export function baueJudgePrompt() {
   return [
@@ -12,6 +12,8 @@ export function baueJudgePrompt() {
     "erfinde nichts hinzu, und lege im Zweifel die strengere Lesart an (in dubio contra machina).",
     "Antworte NUR mit JSON, ohne Markdown-Zäune, exakt in dieser Form:",
     '{"checks":[{"id":"C1","antwort":"ja","beleg":"wörtliches Kurzzitat oder «kein Beleg»"}]}',
+    'WICHTIG für gültiges JSON: Verwende innerhalb der Werte NIEMALS das gerade Anführungszeichen \" —',
+    "auch nicht, wenn es im Transkript vorkommt. Zitiere im Feld beleg ausschließlich mit »…« oder ‚…'.",
   ].join("\n");
 }
 
@@ -28,12 +30,43 @@ export function baueJudgeUser(szenario, transkript) {
 }
 
 /** Judge-Antwort parsen — Zaun-tolerant, sonst streng. */
+function retteJudge(s, szenario) {
+  const map = {};
+  for (const teil of s.split(/"id"\s*:\s*"/).slice(1)) {
+    const id = teil.slice(0, teil.indexOf('"'));
+    const am = /"antwort"\s*:\s*"(ja|nein)"/.exec(teil);
+    if (!id || !am) continue;
+    let beleg = "";
+    const bi = teil.indexOf('"beleg"');
+    if (bi !== -1) {
+      const start = teil.indexOf(':', bi);
+      const roh = teil.slice(start + 1).replace(/^\s*"/, "");
+      const ende = /"\s*}\s*(?:,|\]|$)/.exec(roh);          // schließt den Check-Block
+      beleg = (ende ? roh.slice(0, ende.index) : roh).trim()
+        .replace(/["\s]*[}\],]+\s*$/, "").trim();            // JSON-Reste, wenn der Judge das schließende " wegließ
+    }
+    map[id] = { antwort: am[1], beleg };
+  }
+  for (const c of szenario.checks) if (!map[c.id]) return null;   // unvollständig → keine Rettung
+  return map;
+}
+
 export function parseJudge(text, szenario) {
   let s = text.trim();
   const zaun = /^```(?:json)?\s*([\s\S]*?)\s*```$/.exec(s);
   if (zaun) s = zaun[1].trim();
   let d;
-  try { d = JSON.parse(s); } catch { return { ok: false, fehler: "Judge-Antwort ist kein JSON" }; }
+  try { d = JSON.parse(s); } catch {
+    // Rettungsstufe (Befund Lauf 3, ~49% Ausfälle): Judges zitieren Transkript-
+    // Stellen mit geraden Anführungszeichen UNESCAPED in beleg — das JSON bricht,
+    // obwohl Struktur und Antworten intakt sind. id und antwort stehen VOR beleg
+    // und sind strukturell eindeutig (C\d / ja|nein) → strukturelle Extraktion.
+    // Härteregel bleibt: Nur wenn JEDER Check eine klare Antwort hat, wird
+    // gerettet — sonst weiterhin unbewertet (unbewertet ≠ bestanden).
+    const map = retteJudge(s, szenario);
+    if (map) return { ok: true, antworten: map, gerettet: true };
+    return { ok: false, fehler: "Judge-Antwort ist kein JSON" };
+  }
   if (!d || !Array.isArray(d.checks)) return { ok: false, fehler: "checks fehlt" };
   const map = {};
   for (const c of d.checks) {

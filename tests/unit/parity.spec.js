@@ -41,7 +41,7 @@ describe("Paritäts-Wächter", () => {
   it("beide Bundles enthalten die Charta-Kanarien (Prompts sind wirklich drin)", async () => {
     const html = await readFile(artefakt.out, "utf8");
     const appJs = await readFile(path.join(pages.outDir, "public/app.js"), "utf8");
-    for (const kanarie of ["SICHERHEITS-WEICHE", "SPIEGEL-GRAMMATIK", "NOT-FRAGE AN BEIDE"]) {
+    for (const kanarie of ["SICHERHEITS-WEICHE", "SPIEGEL-GRAMMATIK", "NOT-FRAGE AN BEIDE", "VERSEHENS-KORREKTUR", "GEGENDRUCK-FEST"]) {
       expect(html, "Artefakt: " + kanarie).toContain(kanarie);
       expect(appJs, "Pages: " + kanarie).toContain(kanarie);
     }

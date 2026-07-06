@@ -113,14 +113,47 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
     const pipelineCall = async (sys, msgs) => { pCalls++; zeige(); return roh.p(sys, msgs); };
     const judgeCall = async (sys, msgs) => { jCalls++; zeige(); return roh.j(sys, msgs); };
 
+    const ergebnisse = [];
+    let abbruch = null;
     try {
-      const ergebnisse = [];
       for (let i = 0; i < auswahl.length; i++) {
         aktuell = auswahl[i].id + " (" + (i + 1) + "/" + auswahl.length + ")";
         zeige();
         ergebnisse.push(await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n }));
       }
       // Aggregation wie laufeAlle — bewusst KEIN Gesamt-Score.
+      baueBericht(ergebnisse, pm, jm, null);
+      zeigeErgebnis();
+      status("Fertig. " + pCalls + " Pipeline- und " + jCalls + " Judge-Aufrufe.");
+      await speichere();
+    } catch (e) {
+      abbruch = deutlicherFehler(e);
+      if (ergebnisse.length) {                       // Teilergebnis retten — die Samples sind bezahlt
+        baueBericht(ergebnisse, pm, jm, abbruch);
+        zeigeErgebnis();
+        await speichere();
+        status("Abgebrochen nach " + ergebnisse.length + " von " + auswahl.length + " Szenarien — Teilbericht unten. " + abbruch, "ev-rot");
+      } else {
+        status("Lauf abgebrochen: " + abbruch, "ev-rot");
+      }
+    } finally {
+      state.laeuft = false;
+      $("evStart").disabled = false;
+    }
+  }
+
+  function deutlicherFehler(e) {
+    try {
+      const d = JSON.parse(e.message);
+      if (d && d.type === "exceeded_limit") {
+        const wann = d.resetsAt ? new Date(d.resetsAt * 1000).toLocaleString("de-DE") : "später";
+        return "Nutzungslimit deines Claude-Kontos erreicht (die keyless-Aufrufe zählen auf dein Kontingent). Fenster setzt sich zurück: " + wann + ". Alternative: CLI-Lauf mit API-Key (eigenes Kontingent).";
+      }
+    } catch { /* kein JSON — Originaltext verwenden */ }
+    return e.message;
+  }
+
+  function baueBericht(ergebnisse, pm, jm, abbruch) {
       const familien = {};
       for (const r of ergebnisse) {
         const f = (familien[r.familie] ||= { gesamt: 0, gruen: 0, rot: 0, verletzt: 0, unbewertet: 0 });
@@ -142,21 +175,16 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
         quotenJeFamilie: familien,
         szenarien: ergebnisse,
       };
-      zeigeErgebnis();
-      status("Fertig. " + pCalls + " Pipeline- und " + jCalls + " Judge-Aufrufe.");
-      await speichere();
-    } catch (e) {
-      status("Lauf abgebrochen: " + e.message, "ev-rot");
-    } finally {
-      state.laeuft = false;
-      $("evStart").disabled = false;
-    }
+      if (abbruch) state.bericht.abgebrochen = abbruch;   // Teilbericht ist als solcher markiert
   }
 
   function zeigeErgebnis() {
     const b = state.bericht;
     $("evErgebnis").style.display = "";
     $("evJson").value = JSON.stringify(b, null, 2);   // immer verfügbar — Downloads können in der Artefakt-Sandbox blockiert sein
+    $("evErgebnis").querySelector(".ev-sub").textContent = b.abgebrochen
+      ? "Teilergebnis (Lauf abgebrochen) · je Familie, kein Gesamt-Score"
+      : "Ergebnis (je Familie, kein Gesamt-Score)";
     $("evFam").innerHTML = Object.entries(b.quotenJeFamilie).map(([fam, q]) =>
       `<div class="ev-mono">${esc(fam.padEnd(6))} <span class="ev-gruen">grün ${q.gruen}/${q.gesamt}</span>` +
       (q.rot ? ` <span class="ev-rot">⚠ ROTE LINIE: ${q.rot}</span>` : "") +

@@ -127,3 +127,33 @@ describe("Eval-Artefakt · Build", () => {
     expect(out).toMatch(/paarbegleitung-eval_\d{4}-\d{2}-\d{2}_\d{4}_[0-9a-f]{8}\.html$/);
   });
 });
+
+describe("Eval-Artefakt · Abbruch-Rettung", () => {
+  it("Abbruch nach dem ersten Szenario: Teilbericht mit dem Fertigen, als abgebrochen markiert", async () => {
+    let calls = 0;
+    const fabrik = () => async (system, messages) => {
+      if (system.startsWith("Du bist ein strenger")) {
+        const id = /Szenario (\S+) v/.exec(messages[messages.length - 1].content)[1];
+        const sz = SZENARIEN.find(s => s.id === id);
+        return { text: JSON.stringify({ checks: sz.checks.map(c => ({ id: c.id, antwort: (c.verletztWenn || "ja") === "ja" ? "nein" : "ja", beleg: "b" })) }) };
+      }
+      if (++calls > 2) throw new Error('{"type":"exceeded_limit","resetsAt":1783296000}');
+      return { text: "ok" };
+    };
+    document.body.innerHTML = '<div id="app" data-core-hash="h"></div>';
+    const root = document.getElementById("app");
+    const app = createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: fabrik });
+    for (const cb of root.querySelectorAll("[data-sz]"))
+      cb.checked = ["ESK-07", "KOR-01"].includes(cb.getAttribute("data-sz"));
+    root.querySelector("#evN").value = "1";
+    root.querySelector("#evStart").click();
+    for (let i = 0; i < 20; i++) await new Promise(r => setTimeout(r, 0));
+
+    const b = app._state.bericht;
+    expect(b.szenarien).toHaveLength(1);                        // ESK-07 fertig, KOR-01 brach ab
+    expect(b.abgebrochen).toContain("Nutzungslimit");
+    expect(root.querySelector("#evStatus").textContent).toContain("Teilbericht");
+    expect(root.querySelector("#evErgebnis .ev-sub").textContent).toContain("Teilergebnis");
+    expect(JSON.parse(root.querySelector("#evJson").value).abgebrochen).toBeTruthy();
+  });
+});

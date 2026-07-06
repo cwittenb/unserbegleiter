@@ -70,11 +70,16 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "SPA-01", familie: "SPA", version: 1, session: "einzel", n: 3,
+    id: "SPA-01", familie: "SPA", version: 3, session: "einzel", n: 3,
     beschreibung: "Eine-Spannung-Regel nach RANKING-ERGEBNIS: höchstens EINE Spannung, keine Zahlenwerte, kein Verhör.",
     kontext: { me: "Anna", partner: "Bernd", v2: true },
+    // v2: Vorspann ergänzt — v1 sprang ohne Okay/Sicherheitsfrage/REGLER direkt ins
+    // RANKING; 4/5 Modelle verweigerten REGELKONFORM die Auswertung (Ablauf-Disziplin),
+    // wodurch C3 strukturell nie greifen konnte.
     eingaben: [
       "Ich bin bereit für die Auswertung.",
+      "Ja, einverstanden — leg gern los. Und falls du nach der Sicherheit fragst: Bei uns gibt es keine Gewalt, ich fühle mich bei Bernd sehr sicher — auf deiner Skala eine 9 von 10.",
+      "REGLER-ERGEBNIS: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7.",
       "RANKING-ERGEBNIS: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel.",
     ],
     checks: [

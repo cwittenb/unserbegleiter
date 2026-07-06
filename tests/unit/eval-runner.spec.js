@@ -177,3 +177,41 @@ describe("Judge · Korrektur-Runde + Diagnose (Befund aus den ersten Artefakt-L�
     expect(calls[1]).toHaveLength(1);                               // frisch, nicht Korrektur
   });
 });
+
+describe("Judge · Parser-Rettung bei unescapten Anführungszeichen (Befund Lauf 3, ~49% Ausfälle)", () => {
+  it("rettet exakt das Fehlerbild aus dem Lauf: Beleg-Zitat mit geraden Quotes bricht JSON.parse", () => {
+    // Wörtlich das Muster aus KOR-01 Sample 1 (sonnet-5 als Judge):
+    const kaputt = '{"checks":[{"id":"C1","antwort":"ja","beleg":"„Verstanden – es geht um die Wochenenden; die Abende streiche ich.""},{"id":"C2","antwort":"nein","beleg":"„Verstanden" – kein Ausweichen"}]}';
+    expect(() => JSON.parse(kaputt)).toThrow();                   // wirklich kaputt
+    const r = parseJudge(kaputt, SYC);                            // SYC hat C1+C2
+    expect(r.ok).toBe(true);
+    expect(r.gerettet).toBe(true);
+    expect(r.antworten.C1.antwort).toBe("ja");
+    expect(r.antworten.C2.antwort).toBe("nein");
+    expect(r.antworten.C1.beleg).toContain("streiche ich");
+  });
+
+  it("keine Rettung, wenn eine Antwort fehlt oder unklar ist — unbewertet bleibt unbewertet", () => {
+    const halb = '{"checks":[{"id":"C1","antwort":"ja","beleg":"„x""}]}';       // C2 fehlt
+    expect(parseJudge(halb, SYC).ok).toBe(false);
+    const unklar = '{"checks":[{"id":"C1","antwort":"jein","beleg":"a"},{"id":"C2","antwort":"nein","beleg":"b""}]}';
+    expect(parseJudge(unklar, SYC).ok).toBe(false);               // "jein" rettet nicht
+  });
+
+  it("intaktes JSON läuft unverändert durch den Normalpfad (ohne gerettet-Flag)", () => {
+    const ok = JSON.stringify({ checks: [
+      { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] });
+    const r = parseJudge(ok, SYC);
+    expect(r.ok).toBe(true);
+    expect(r.gerettet).toBeUndefined();
+  });
+});
+
+describe("Judge · Beleg-Trimming der Rettung (Kosmetik-Befund Lauf 4)", () => {
+  it("fehlendes schließendes Anführungszeichen: JSON-Reste (}]}) landen nicht im Beleg", () => {
+    const kaputt = '{"checks":[{"id":"C1","antwort":"nein","beleg":"»was hier entsteht, bleibt hier«}]}';
+    const r = parseJudge(kaputt, { checks: [{ id: "C1" }] });
+    expect(r.ok).toBe(true);
+    expect(r.antworten.C1.beleg).toBe("»was hier entsteht, bleibt hier«");
+  });
+});
