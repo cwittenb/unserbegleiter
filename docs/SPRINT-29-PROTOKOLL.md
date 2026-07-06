@@ -1,27 +1,28 @@
-# Sprint 29 — Protokoll · Design in die App (gegen dein echtes Repo verifiziert)
+# Sprint 29 — Design dokumentweit (überarbeitet, gegen echtes Repo verifiziert)
 
-**Datum:** 6. Juli 2026 · **Basis:** dein `origin/main` (`afcb554`) + S25 + S26 + S27 · **310 Tests grün** · **Kern-Hash: `266c889d65556a38`** (dein echter Hash)
+**Datum:** 6. Juli 2026 · **Basis:** dein aktueller `origin/main` `a15a34a` · **310 Tests grün** · **Kern-Hash `823f20bee7166f4f`**
 
-## Wichtig vorweg: Divergenz aufgelöst
+## Was war das Problem
 
-Mein früherer Arbeitsstand (und damit das `neubau-v1`-Zip und die ganze `app.js` aus dem ersten S29-Versuch) lag hinter deinem Repo zurück — ihm fehlten die Aufdeck-Runde, Resume, das Kapitel-Marken-System und die Übergänge. **Zip und Voll-`app.js` bitte NICHT verwenden.** Dieser Patch wurde gegen dein echtes, geklontes Repo gebaut und verifiziert.
+Die frühere S29 legte das Design in das Template von `createApp` — und `createApp` läuft erst **nach der Rollenwahl**. Einrichtung, Rollenwahl und Entwickler-Panel blieben ungestylt; das Design erschien erst, sobald man eine Rolle gewählt hatte.
 
-## S28 verwerfen
+## Fix: Design auf Dokument-Ebene
 
-`patch-s28-kapitel.mjs` **nicht anwenden**. Dein `einzelSys` hat die Kapitel bereits als vollständiges System (`[[KAPITEL-1..3]]`-Marken, App-seitiges Pause-oder-weiter, `[Weiter mit Kapitel N.]`-Wiedereinstieg, Drei-Schritt-Übergänge) — meiner S28 wollte das mit Prosa nachbauen und würde nur kollidieren.
+- **NEU `core/ui/design.js`** — `DESIGN_CSS` + `KULISSE_HTML` + `applyDesign(doc)`. `applyDesign` schreibt den `<style>`, die Kulisse und den Theme-Umschalter **einmalig beim Booten** in `<head>`/`<body>` (idempotent über `#pbDesign`).
+- **`core/ui/app.js`** — Design-Teile raus (leben jetzt in `design.js`); `applyDesign` importiert und im Boot aufgerufen (idempotent, falls die Hülle es schon tat).
+- **`platforms/artifact/main.js`** — `applyDesign(doc)` läuft **vor dem ersten Screen**. Einrichtung und Rollenwahl nutzen die Design-Tokens (milchige Karten, Serife, Theme-Hintergrund).
+- **`platforms/artifact/dev-panel.js`** — die Panel-Karten sind jetzt transparent-milchig auf dem Theme-Hintergrund, wie der Chat.
 
-## Was S29 macht (nur `core/ui/app.js`)
-
-Rührt ausschließlich `core/ui/app.js` an — Aufdeck-Runde, Resume, Kapitel-System bleiben unberührt.
-
-- **Neuer `<style>`:** zwei Themes über `html[data-theme]` — **hell** (Creme-Salbei-Pastell, Mischwald) und **dunkel** (Wasser-Grün, sehr große weiße Seerosen). Newsreader-Serife durchgängig, luftig, milchig-transparente Karten. Alle Bausteine (Karten, Buttons, Chat-Blasen, Composer, Skala, Items, Fehler) auf CSS-Variablen umgestellt.
-- **Kulisse** als fixe Ebene hinter dem Inhalt: `pbTanne`/`pbLaub` (Nadel- und Laubbäume, höchster über 2/3 der Höhe) im hellen, `pbPad`/`pbRose` (Blätter + mehrlagige weiße Blüten nach Foto-Vorlage) im dunklen Layout.
-- **Theme-Umschalter** oben rechts + `pbTheme()`-Logik, Default hell.
+Damit trägt **jeder** Screen ab Start dasselbe Theme, und der Umschalter oben rechts ist durchgehend da.
 
 ## Auslieferung & Verifikation
 
-`patch-s29-design.mjs` — 3 Anker-Edits, nur `core/ui/app.js`. Verifiziert gegen eine frische Replikation deines Repos (`git clone` + S25 + S26 + S27): Trockenlauf 3/3, Byte-Abgleich identisch mit dem transplantierten Stand, Idempotenz 0 Fehler, 310 Tests grün, Build → `266c889d65556a38`.
+`patch-s29-design.mjs` schreibt vier Dateien (design.js neu; app.js, main.js, dev-panel.js ersetzt) und prüft vorab den erwarteten Ausgangszustand (frühere S29 in app.js) — idempotent. Verifiziert gegen einen **frischen Klon von `origin/main` a15a34a**: Trockenlauf, Byte-Abgleich aller vier Dateien identisch, Idempotenz, 310 Tests grün, Build → `823f20bee7166f4f`.
 
-## Stand deiner Kette
+## Anwenden
 
-S25 · S26 (korrigiert) · S27 · **S29** — alle gegen dein echtes Repo geprüft, 310 Tests grün. S28 entfällt. Prüfe bei dir künftig mit `npm test` (grün) und optional dem Hash `266c889d65556a38` nach S29.
+Auf deinem aktuellen Stand einfach `node patch-s29-design.mjs` (Trockenlauf zuerst). Danach `npm test` (310 grün) und optional der Hash. Er ersetzt die frühere S29-Fassung — nichts doppelt anwenden.
+
+## Kette
+
+S25 · S26 · S27 · **S29 (dokumentweit)** — alle committet bzw. gegen dein echtes Repo geprüft. **S28 entfällt** (dein `einzelSys` hat das Kapitel-System bereits).

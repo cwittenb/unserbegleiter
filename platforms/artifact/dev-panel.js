@@ -186,24 +186,24 @@ export const SZENEN = [
 export function createDevPanel({ doc, host, store, reboot }) {
   const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   host.innerHTML = `
-    <details style="margin-top:26px;border-top:1px dashed #cfd8e0;padding-top:10px">
-      <summary style="cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#5a6675;font-weight:600">Entwickler-Panel</summary>
-      <div style="background:#fff;border:1px solid #e3e8ee;border-radius:12px;padding:14px;margin-top:10px;font-size:13px">
+    <details style="margin-top:26px;border-top:1px dashed var(--card-bd);padding-top:10px">
+      <summary style="cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600">Entwickler-Panel</summary>
+      <div style="background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:16px;margin-top:10px;font-size:13px;backdrop-filter:blur(8px)">
 
-        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#0f766e;font-weight:600;margin-bottom:6px">Szenen anspringen</div>
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin-bottom:6px">Szenen anspringen</div>
         <div id="devSzenen">${SZENEN.map(s =>
           `<div style="display:flex;gap:10px;align-items:baseline;padding:4px 0">
-             <button data-szene="${esc(s.id)}" style="font:inherit;cursor:pointer;border:1px solid #cfd8e0;background:#fff;border-radius:8px;padding:5px 10px;white-space:nowrap">${esc(s.titel)}</button>
-             <span style="color:#5a6675">${esc(s.beschreibung)}</span>
+             <button data-szene="${esc(s.id)}" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;white-space:nowrap">${esc(s.titel)}</button>
+             <span style="color:var(--ink-soft)">${esc(s.beschreibung)}</span>
            </div>`).join("")}
         </div>
 
-        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#0f766e;font-weight:600;margin:14px 0 6px">Zustand sichern &amp; laden</div>
-        <button id="devSave" style="font:inherit;cursor:pointer;border:1px solid #cfd8e0;background:#fff;border-radius:8px;padding:6px 12px">Zustand speichern (JSON)</button>
-        <button id="devLoad" style="font:inherit;cursor:pointer;border:1px solid #cfd8e0;background:#fff;border-radius:8px;padding:6px 12px">Zustand aus Textfeld laden</button>
-        <button id="devWipe" style="font:inherit;cursor:pointer;border:1px solid #f5b5b5;background:#fdecec;border-radius:8px;padding:6px 12px;float:right">Alles zurücksetzen</button>
-        <textarea id="devDump" rows="5" placeholder="Hierhin einen gespeicherten Zustand einfügen — oder hier erscheint der gespeicherte." style="display:block;width:100%;box-sizing:border-box;margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;border:1px solid #cfd8e0;border-radius:8px;padding:8px"></textarea>
-        <div id="devMsg" style="min-height:18px;margin-top:6px;color:#5a6675"></div>
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin:14px 0 6px">Zustand sichern &amp; laden</div>
+        <button id="devSave" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px">Zustand speichern (JSON)</button>
+        <button id="devLoad" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px">Zustand aus Textfeld laden</button>
+        <button id="devWipe" style="font:inherit;cursor:pointer;border:1px solid rgba(188,74,74,.4);background:rgba(188,74,74,.14);color:var(--ink);border-radius:999px;padding:6px 14px;float:right">Alles zurücksetzen</button>
+        <textarea id="devDump" rows="5" placeholder="Hierhin einen gespeicherten Zustand einfügen — oder hier erscheint der gespeicherte." style="display:block;width:100%;box-sizing:border-box;margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;padding:8px"></textarea>
+        <div id="devMsg" style="min-height:18px;margin-top:6px;color:var(--ink-soft)"></div>
       </div>
     </details>`;
 
