@@ -5,6 +5,7 @@
 import { CORE_VERSION, APP_NAME } from "../../../core/index.js";
 import { makeAdapter } from "../../../core/llm/adapter.js";
 import { createApp } from "../../../core/ui/app.js";
+import { applyDesign } from "../../../core/ui/design.js";
 
 const doc = document;
 const app = doc.getElementById("app");
@@ -48,6 +49,7 @@ function remoteBackend() {
 }
 
 async function boot() {
+  applyDesign(doc);   // Design ab Start — auch Wiedereinstieg/Fehler-Screens
   const frag = new URLSearchParams(location.hash.slice(1));
   const token = frag.get("t");
   if (token) {
@@ -55,7 +57,7 @@ async function boot() {
       await api("POST", "/api/enroll", { token });
       history.replaceState(null, "", location.pathname);   // Token aus der Adresszeile
     } catch (e) {
-      app.innerHTML = `<div style="background:#fdecec;border:1px solid #f5b5b5;border-radius:9px;padding:12px;font-size:14px">${e.message}</div>`;
+      app.innerHTML = `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px)">${e.message}</div>`;
       return;
     }
   } else {
@@ -78,15 +80,15 @@ async function boot() {
  *  die Antwort ist immer dieselbe. */
 function zeigeWiedereinstieg() {
   app.innerHTML =
-    '<div style="max-width:440px;margin:0 auto;font-family:ui-sans-serif,system-ui,sans-serif">' +
-    '<h2 style="font-size:18px">Kein Zugang auf diesem Gerät</h2>' +
-    '<p style="font-size:14px;color:#5a6675">Öffne deinen persönlichen Zugangslink — oder lass dir einen neuen an deine hinterlegte E-Mail-Adresse schicken.</p>' +
-    '<div style="background:#fff;border:1px solid #e3e8ee;border-radius:12px;padding:16px">' +
+    '<div style="max-width:440px;margin:0 auto;font-family:inherit">' +
+    '<h2 style="font-family:inherit;font-weight:400;font-size:26px">Kein Zugang auf diesem Gerät</h2>' +
+    '<p style="font-size:14px;color:var(--ink-soft)">Öffne deinen persönlichen Zugangslink — oder lass dir einen neuen an deine hinterlegte E-Mail-Adresse schicken.</p>' +
+    '<div style="background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:18px;backdrop-filter:blur(8px)">' +
     '<label style="display:block;font-size:13px;font-weight:550;margin-bottom:5px">E-Mail-Adresse</label>' +
     '<input id="recMail" type="email" autocomplete="email" placeholder="dein@postfach.de" ' +
-    'style="display:block;width:100%;padding:10px 11px;border:1px solid #cfd8e0;border-radius:9px;font:inherit;box-sizing:border-box">' +
-    '<button id="recGo" style="width:100%;margin-top:10px;padding:11px;font:inherit;font-weight:600;cursor:pointer;' +
-    'background:#0f766e;color:#fff;border:1px solid #0f766e;border-radius:9px">Neuen Link anfordern</button>' +
+    'style="display:block;width:100%;padding:10px 12px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;font:inherit;box-sizing:border-box">' +
+    '<button id="recGo" style="width:100%;margin-top:10px;padding:12px;font:inherit;cursor:pointer;' +
+    'background:var(--accent);color:var(--me-ink,#fff);border:0;border-radius:999px">Neuen Link anfordern</button>' +
     '<div id="recMsg" style="font-size:13px;margin-top:10px"></div>' +
     '</div></div>';
   const go = doc.getElementById("recGo"), msg = doc.getElementById("recMsg");
@@ -96,7 +98,7 @@ function zeigeWiedereinstieg() {
     go.disabled = true; go.textContent = "Wird gesendet …";
     try { await api("POST", "/api/recover", { email }); }
     catch { /* Status wird bewusst nicht offengelegt */ }
-    msg.innerHTML = '<span style="color:#0f766e">Falls diese Adresse hinterlegt ist, ist ein Link unterwegs. Schau auch im Spam-Ordner nach.</span>';
+    msg.innerHTML = '<span style="color:var(--accent-ink)">Falls diese Adresse hinterlegt ist, ist ein Link unterwegs. Schau auch im Spam-Ordner nach.</span>';
     go.textContent = "Gesendet";
   });
 }

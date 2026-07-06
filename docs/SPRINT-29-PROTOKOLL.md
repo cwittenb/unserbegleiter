@@ -1,28 +1,22 @@
-# Sprint 29 — Design dokumentweit (überarbeitet, gegen echtes Repo verifiziert)
+# Sprint 29 — Design dokumentweit · Abschluss (Produktiv-Client)
 
-**Datum:** 6. Juli 2026 · **Basis:** dein aktueller `origin/main` `a15a34a` · **310 Tests grün** · **Kern-Hash `823f20bee7166f4f`**
+**Stand deines Repos:** `origin/main` = `52703ba "s29 now complete themable"` — die Dokument-weit-Umstellung (design.js, app.js, main.js, dev-panel.js) ist bereits committet. **310 Tests grün · Kern-Hash `823f20bee7166f4f`.**
 
-## Was war das Problem
+## Was noch fehlte: der Produktiv-Client
 
-Die frühere S29 legte das Design in das Template von `createApp` — und `createApp` läuft erst **nach der Rollenwahl**. Einrichtung, Rollenwahl und Entwickler-Panel blieben ungestylt; das Design erschien erst, sobald man eine Rolle gewählt hatte.
+Die eigentliche App ist in Produktion (Cloudflare/Pages) gestylt, weil `client.js` `createApp(...).boot()` ruft und `applyDesign` in `boot()` sitzt. Aber `client.js` zeigt **vor** dem Boot zwei Screens, die noch fest verdrahtete Farben hatten:
 
-## Fix: Design auf Dokument-Ebene
+- den **Wiedereinstiegs-Screen** ("Kein Zugang auf diesem Gerät"),
+- die **Enroll-Fehlermeldung** (ungültiger/abgelaufener Link).
 
-- **NEU `core/ui/design.js`** — `DESIGN_CSS` + `KULISSE_HTML` + `applyDesign(doc)`. `applyDesign` schreibt den `<style>`, die Kulisse und den Theme-Umschalter **einmalig beim Booten** in `<head>`/`<body>` (idempotent über `#pbDesign`).
-- **`core/ui/app.js`** — Design-Teile raus (leben jetzt in `design.js`); `applyDesign` importiert und im Boot aufgerufen (idempotent, falls die Hülle es schon tat).
-- **`platforms/artifact/main.js`** — `applyDesign(doc)` läuft **vor dem ersten Screen**. Einrichtung und Rollenwahl nutzen die Design-Tokens (milchige Karten, Serife, Theme-Hintergrund).
-- **`platforms/artifact/dev-panel.js`** — die Panel-Karten sind jetzt transparent-milchig auf dem Theme-Hintergrund, wie der Chat.
+`patch-s29c-client.mjs` behebt das: `applyDesign(doc)` läuft jetzt ganz am Anfang von `client.js`-`boot()`, und beide Screens nutzen die Design-Tokens. Damit ist das Design ab Start **auch in Produktion** durchgängig.
 
-Damit trägt **jeder** Screen ab Start dasselbe Theme, und der Umschalter oben rechts ist durchgehend da.
-
-## Auslieferung & Verifikation
-
-`patch-s29-design.mjs` schreibt vier Dateien (design.js neu; app.js, main.js, dev-panel.js ersetzt) und prüft vorab den erwarteten Ausgangszustand (frühere S29 in app.js) — idempotent. Verifiziert gegen einen **frischen Klon von `origin/main` a15a34a**: Trockenlauf, Byte-Abgleich aller vier Dateien identisch, Idempotenz, 310 Tests grün, Build → `823f20bee7166f4f`.
+Verifiziert gegen einen frischen Klon von `origin/main` (52703ba): client.js byte-identisch mit dem geprüften Stand, idempotent, 310 Tests grün, voller Build (inkl. Cloudflare/Pages) → `823f20bee7166f4f` (unverändert — client.js ist Plattform-Code, nicht im Kern-Hash).
 
 ## Anwenden
 
-Auf deinem aktuellen Stand einfach `node patch-s29-design.mjs` (Trockenlauf zuerst). Danach `npm test` (310 grün) und optional der Hash. Er ersetzt die frühere S29-Fassung — nichts doppelt anwenden.
+Auf deinem aktuellen Stand `node patch-s29c-client.mjs` (Trockenlauf zuerst), dann `npm test` (310). Der Kern-Hash ändert sich nicht.
 
-## Kette
+## Auth-Modell (zur Einordnung)
 
-S25 · S26 · S27 · **S29 (dokumentweit)** — alle committet bzw. gegen dein echtes Repo geprüft. **S28 entfällt** (dein `einzelSys` hat das Kapitel-System bereits).
+Produktion: `createCouple` erzeugt **zwei Magic-Links** — einen mit Rolle A, einen mit Rolle B. Der Token trägt die Rolle (`sys/magic/<token> → {code, role}`); `/api/enroll` meldet serverseitig als diese Rolle an, `/api/me` leitet Name/Partner aus der **Session** ab. Regel: Rolle und Paar-Code kommen immer aus der Session, nie aus dem Request. Kein "Wer bin ich?" in Produktion — der Link bestimmt es. Die Rollenwahl im Artefakt ist reine Dev-Bequemlichkeit (kein Server/keine Links).
