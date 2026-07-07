@@ -10,7 +10,7 @@
 //   backend.llm(system, messages)        → {text, stop, usage}
 
 import { BLOECKE } from "../contracts/registry.js";
-import { soloSys, momentSys, THEMEN_RAHMEN } from "../prompts/prompts.js";
+import { K } from "../prompts/prompts.js";
 
 /** Reflexionsgespräch (persönlicher Raum). */
 export function soloDef(backend, hooks = {}) {
@@ -18,7 +18,7 @@ export function soloDef(backend, hooks = {}) {
     id: "solo",
     shared: false,
     titel: "Reflexionsgespräch",
-    sysPrompt: ctx => soloSys(ctx.me, ctx.partner) + THEMEN_RAHMEN,
+    sysPrompt: ctx => K().soloSys(ctx.me, ctx.partner) + K().THEMEN_RAHMEN,
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",
@@ -51,7 +51,7 @@ export function momentDef(backend, hooks = {}) {
     id: "moment",
     shared: true,
     titel: "Gemeinsame Session",
-    sysPrompt: ctx => momentSys(ctx.nameA, ctx.nameB) + THEMEN_RAHMEN,
+    sysPrompt: ctx => K().momentSys(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",

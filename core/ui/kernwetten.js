@@ -4,7 +4,7 @@
 // Modell-Kontrakts (die Prompts referenzieren sie wörtlich).
 
 import { BLOECKE } from "../contracts/registry.js";
-import { einzelSys, gemeinsamSys, aufdeckSys, DOMAINS } from "../prompts/prompts.js";
+import { DOMAINS, K } from "../prompts/prompts.js";
 
 /* Gegensatzpaare erscheinen als GETRENNTE Pole (v0.29-Prinzip). */
 export const RANK_ITEMS = DOMAINS.flatMap((d, di) =>
@@ -64,7 +64,7 @@ export function einzelDef(backend, hooks = {}) {
     id: "einzel",
     shared: false,
     titel: "Auftragsklärung",
-    sysPrompt: ctx => einzelSys(ctx.me, ctx.partner, ctx.v2 !== false),
+    sysPrompt: ctx => K().einzelSys(ctx.me, ctx.partner, ctx.v2 !== false),
     markerOrder: ["[[REGLER]]", "[[PARTNER-RANKING]]", "[[PARTNER-UNZUFRIEDEN]]", "[[RANKING]]", "[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]"],
     markers: {
       "[[REGLER]]": e => hooks.onRegler && hooks.onRegler(e),
@@ -94,7 +94,7 @@ export function gemeinsamDef(backend, hooks = {}) {
     id: "gemeinsam",
     shared: true,
     titel: "Gemeinsame Klärung",
-    sysPrompt: ctx => gemeinsamSys(ctx.nameA, ctx.nameB, ctx.v2 !== false),
+    sysPrompt: ctx => K().gemeinsamSys(ctx.nameA, ctx.nameB, ctx.v2 !== false),
     markerOrder: ["[[STARTWERTE]]"],
     markers: {
       "[[STARTWERTE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),
@@ -121,7 +121,7 @@ export function gemeinsamDef(backend, hooks = {}) {
    (minigate) und erscheint NIE im Transkript.
    ───────────────────────────────────────────────────────────────────── */
 
-export const KAPITEL_TITEL = ["Ankommen & Landkarte", "Herzstücke", "Rate-Runde", "Klartext"];
+export { KAPITEL_TITEL } from "../prompts/prompts.js";   // Inhalt lebt im Korpus (Sprachfassung)
 
 /** Schnittmenge Tipp↔Stapel — Reihenfolge des Tipps bleibt erhalten; Nennungen, keine Quote. */
 export function beruehrungen(tipp3, top5) {
@@ -163,7 +163,7 @@ export function aufdeckDef(backend, hooks = {}) {
     id: "aufdeck",
     shared: true,
     titel: "Aufdeck-Runde",
-    sysPrompt: ctx => aufdeckSys(ctx.nameA, ctx.nameB),
+    sysPrompt: ctx => K().aufdeckSys(ctx.nameA, ctx.nameB),
     markerOrder: ["[[AUFDECKEN]]"],
     markers: { "[[AUFDECKEN]]": e => hooks.onAufdecken && hooks.onAufdecken(e) },
     canAct: c => c.status !== "finished",

@@ -5,9 +5,9 @@ import { Engine } from "../engine/engine.js";
 import { cleanDisplay } from "../contracts/block.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
-import { einzelDef, gemeinsamDef, aufdeckDef, RANK_ITEMS, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, KAPITEL_TITEL, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
-import { DOMAINS, steuerTexte } from "../prompts/prompts.js";
-import { trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, QZ_STUFEN_TEXT, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
+import { einzelDef, gemeinsamDef, aufdeckDef, RANK_ITEMS, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
+import { K, setKorpusSprache } from "../prompts/prompts.js";
+import { trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
 import { applyDesign } from "./design.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
@@ -200,14 +200,14 @@ export function createApp({ doc, backend, root, diktat }) {
       try {
         await quereGate(backend, data, wege);
         await engine.submitToolResult(
-          wege.length ? fuelle(steuerTexte.freigabeGequert, { wege: wege.join(", ") }) : steuerTexte.freigabeNichts
+          wege.length ? fuelle(K().steuerTexte.freigabeGequert, { wege: wege.join(", ") }) : K().steuerTexte.freigabeNichts
         );
         renderMsgs();
       } catch (e) { err(e.message); }
     });
     p.querySelector("#btnGateNein").addEventListener("click", async () => {
       p.classList.add("pb-hidden");
-      await engine.submitToolResult(steuerTexte.freigabeWeiterarbeiten);
+      await engine.submitToolResult(K().steuerTexte.freigabeWeiterarbeiten);
       renderMsgs();
     });
   }
@@ -228,10 +228,10 @@ export function createApp({ doc, backend, root, diktat }) {
       `<p class="pb-sub">${t("kapitel.frageSub", { partner: esc(state.info.partner) })}</p>` +
       `<button class="pb-btn primary" id="kapJa">${t("kapitel.ja")}</button><button class="pb-btn primary" id="kapNein">${t("allg.nochNicht")}</button>`;
     p.innerHTML =
-      `<div class="pb-sub">${t("kapitel.geschafft", { n, titel: esc(KAPITEL_TITEL[n - 1]) })}</div>` +
+      `<div class="pb-sub">${t("kapitel.geschafft", { n, titel: esc(K().KAPITEL_TITEL[n - 1]) })}</div>` +
       `<div style="letter-spacing:5px;font-size:16px;margin:4px 0 10px">${dots}</div>` + gateHtml +
       `<div id="kapWeiter"${gateOffen ? ' class="pb-hidden"' : ""}>` +
-      `<button class="pb-btn primary" id="kapNext">${t("kapitel.weitermachen", { n: n + 1, titel: esc(KAPITEL_TITEL[n]) })}</button>` +
+      `<button class="pb-btn primary" id="kapNext">${t("kapitel.weitermachen", { n: n + 1, titel: esc(K().KAPITEL_TITEL[n]) })}</button>` +
       `<button class="pb-btn" id="kapPause">${t("kapitel.pause")}</button></div>` +
       `<p class="pb-sub pb-hidden" id="kapNote"></p>`;
     const zeigeWeiter = txt => {
@@ -259,7 +259,7 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     p.querySelector("#kapNext").addEventListener("click", async () => {
       kwZu();
-      await engine.submitToolResult(fuelle(steuerTexte.weiterMitKapitel, { n: n + 1 }), { hidden: true });
+      await engine.submitToolResult(fuelle(K().steuerTexte.weiterMitKapitel, { n: n + 1 }), { hidden: true });
       renderMsgs();
     });
     p.querySelector("#kapPause").addEventListener("click", () => {
@@ -302,7 +302,7 @@ export function createApp({ doc, backend, root, diktat }) {
       zu.className = "pb-btn"; zu.textContent = t("aufdeck.tafelZu");
       zu.addEventListener("click", kwZu);
       p.appendChild(zu);
-      await engine.submitToolResult(steuerTexte.aufdeckungAngezeigt, { hidden: true });
+      await engine.submitToolResult(K().steuerTexte.aufdeckungAngezeigt, { hidden: true });
       renderMsgs();
     });
     const z = p.querySelector("#adZu");
@@ -312,6 +312,11 @@ export function createApp({ doc, backend, root, diktat }) {
   async function startChat(art) {
     err("");
     const info = state.info;
+    // Sprach-Schnappschuss: neue Sessions starten in der Paarsprache; laufende
+    // und pausierte behalten ihre Sprache (Resume bricht nicht mitten im
+    // Gespräch um). Der Schnappschuss steuert ALLE Korpus-Zugriffe via K().
+    const paarSprache = info && info.locale === "en" ? "en" : "de";
+    setKorpusSprache(paarSprache);
     const hooks = {
       onGate: (d, e2) => gatePanel(d, e2),
       onRegler: e2 => reglerPanel(e2),
@@ -349,6 +354,9 @@ export function createApp({ doc, backend, root, diktat }) {
         throw new Error(t("fehler.aufdeckZu"));
     }
     const chat = gespeichert || { messages: [], status: "running" };
+    const korpusSprache = (gespeichert && gespeichert.sprache) || paarSprache;
+    setKorpusSprache(korpusSprache);
+    if (!gespeichert) chat.sprache = korpusSprache;
     const ctx = { me: info.name, partner: info.partner, nameA: info.nameA, nameB: info.nameB };
     state.engine = new Engine({
       def, chat, llm: backend.llm, ctx,
@@ -358,7 +366,7 @@ export function createApp({ doc, backend, root, diktat }) {
         onRender: renderMsgs,
       },
     });
-    $("chatTitel").textContent = def.titel;
+    $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;
     show("scrChat");
     renderMsgs();
     if (chat.messages.length) { await state.engine.resume(); } else {
@@ -396,7 +404,7 @@ export function createApp({ doc, backend, root, diktat }) {
       }
       // Die Eröffnungs-Nachricht ist Steuerung fürs Modell, keine Äußerung der Person —
       // sie bleibt unsichtbar (hidden), und die Begleitung beginnt von sich aus.
-      const startText = steuerTexte.start[art];   // Korpus: Sprachfassung liefert prompts.<locale>.js
+      const startText = K().steuerTexte.start[art];   // Korpus: Sprachfassung liefert prompts.<locale>.js
       state.warten = true;
       $("btnSend").disabled = true;
       renderMsgs();
@@ -549,7 +557,7 @@ export function createApp({ doc, backend, root, diktat }) {
       box.innerHTML = `<div class="pb-sub">${t("qz.titel")}</div><p style="font-size:14px">${t("qz.pausiert", { datum: esc((qz.leiter.pausiertBis || "").slice(0, 10)) })}</p>`;
       return;
     }
-    const rahmen = QZ_STUFEN_TEXT[stufe];
+    const rahmen = K().QZ_STUFEN_TEXT[stufe];
     box.innerHTML =
       `<div class="pb-sub">${t("qz.titel")}</div>` +
       `<p class="pb-sub" style="margin:6px 0 4px">${t("qz.intro")}</p>` +
@@ -563,6 +571,7 @@ export function createApp({ doc, backend, root, diktat }) {
         Promise.resolve().then(() => backend.uebergabe.get("A")).catch(() => null),
         Promise.resolve().then(() => backend.uebergabe.get("B")).catch(() => null),
       ]);
+      setKorpusSprache(state.info && state.info.locale === "en" ? "en" : "de");   // QZ = geteilt, Paarsprache
       const def = qzDef({
         onFaecher: async (data) => {
           $("qzKarten").innerHTML = data.einladungen.map((e2, i) =>
@@ -592,22 +601,22 @@ export function createApp({ doc, backend, root, diktat }) {
   function kwZu() { kw().classList.add("pb-hidden"); kw().innerHTML = ""; }
 
   function reglerPanel(engine) {
-    const vals = DOMAINS.map(() => ({ w: 5, z: 5, tw: false, tz: false }));
+    const vals = K().DOMAINS.map(() => ({ w: 5, z: 5, tw: false, tz: false }));
     let i = 0;
     const p = kw();
     p.classList.remove("pb-hidden");
     function zeichne() {
-      const d = DOMAINS[i];
+      const d = K().DOMAINS[i];
       const [lw, lz] = d.poles
         ? [t("kw.poleW", { p0: d.poles[0], p1: d.poles[1] }), t("kw.poleZ")]
         : [t("kw.wichtig"), t("kw.zufrieden")];
       p.innerHTML =
-        `<div class="pb-sub">${t("kw.bereich", { i: i + 1, n: DOMAINS.length })}</div>` +
+        `<div class="pb-sub">${t("kw.bereich", { i: i + 1, n: K().DOMAINS.length })}</div>` +
         `<p style="font-size:14px;margin:6px 0"><strong>${esc(d.t)}</strong><br><span class="pb-sub">${esc(d.d)}</span></p>` +
         `<label style="display:block;font-size:13px;margin:8px 0">${esc(lw)}<br><input id="kwW" type="range" min="1" max="10" value="${vals[i].w}" style="width:100%"></label>` +
         `<label style="display:block;font-size:13px;margin:8px 0">${esc(lz)}<br><input id="kwZ" type="range" min="1" max="10" value="${vals[i].z}" style="width:100%"></label>` +
         `<button class="pb-btn" id="kwBack"${i === 0 ? " disabled" : ""}>${t("allg.zurueck")}</button>` +
-        `<button class="pb-btn primary" id="kwNext" disabled>${i === DOMAINS.length - 1 ? t("allg.fertig") : t("allg.weiter")}</button>`;
+        `<button class="pb-btn primary" id="kwNext" disabled>${i === K().DOMAINS.length - 1 ? t("allg.fertig") : t("allg.weiter")}</button>`;
       const auf = () => { p.querySelector("#kwNext").disabled = !(vals[i].tw && vals[i].tz); };
       for (const [id, feld] of [["kwW", "w"], ["kwZ", "z"]]) {
         const inp = p.querySelector("#" + id);
@@ -619,7 +628,7 @@ export function createApp({ doc, backend, root, diktat }) {
       p.querySelector("#kwBack").addEventListener("click", () => { if (i > 0) { i--; zeichne(); } });
       p.querySelector("#kwNext").addEventListener("click", async () => {
         if (!(vals[i].tw && vals[i].tz)) return;
-        if (i < DOMAINS.length - 1) { i++; zeichne(); return; }
+        if (i < K().DOMAINS.length - 1) { i++; zeichne(); return; }
         kwZu();
         await engine.submitToolResult(reglerErgebnis(vals, state.info.name), { slider: true });
         renderMsgs();
@@ -728,13 +737,13 @@ export function createApp({ doc, backend, root, diktat }) {
           engine.chat.minigate = "ja";
         }
         engine.chat.status = "released";
-        await engine.submitToolResult(fuelle(steuerTexte.freigabeAnzahl, { n: items.length, gesamt: data.items.length }));
+        await engine.submitToolResult(fuelle(K().steuerTexte.freigabeAnzahl, { n: items.length, gesamt: data.items.length }));
         renderMsgs();
       } catch (e) { err(e.message); }
     });
     p.querySelector("#kwFgNein").addEventListener("click", async () => {
       kwZu();
-      await engine.submitToolResult(steuerTexte.freigabeAnpassen);
+      await engine.submitToolResult(K().steuerTexte.freigabeAnpassen);
       renderMsgs();
     });
   }

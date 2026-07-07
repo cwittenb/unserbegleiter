@@ -6,7 +6,7 @@
 // „verdeckt" ist eine UI-Zusicherung, keine Speicher-Zusicherung. Serverseitiges
 // Gating je Rolle wäre die härtere Form — als offener Punkt notiert.
 
-import { qzSys, DOMAENEN } from "../prompts/prompts.js";
+import { DOMAENEN, K } from "../prompts/prompts.js";
 import { BLOECKE } from "../contracts/registry.js";
 
 /* ================= Prozessreflexion ================= */
@@ -75,12 +75,7 @@ export function qzStufe(qz, now = Date.now) {
   return 4;
 }
 
-export const QZ_STUFEN_TEXT = {
-  1: null,   // sanfte Einladung braucht keinen Rahmen-Text
-  2: "Es ist eine Weile her — ganz ohne Druck: Was macht es euch gerade schwer, gemeinsame Momente zu finden? (Die Frage ist die Einladung; eine Antwort ist optional.)",
-  3: "Falls es am Kalender liegt: Mögt ihr direkt einen konkreten Termin für einen kleinen gemeinsamen Moment verabreden? Ein fester Platz nimmt die Entscheidung aus dem Alltag.",
-  4: "Auch das ist eine legitime Möglichkeit: die gemeinsamen Momente bewusst zu pausieren, mit einem klaren Wiedereinstiegs-Datum — ein sauberer Ausstieg statt stiller Erosion.",
-};
+export { QZ_STUFEN_TEXT } from "../prompts/prompts.js";   // Inhalt lebt im Korpus (Sprachfassung)
 
 /** Material-Nachricht für den Fächer-Generator (qzSys arbeitet NUR damit). */
 export function baueQzMaterial({ auftraege, freigaben, qz }) {
@@ -105,7 +100,7 @@ export function qzDef(hooks = {}) {
     id: "qz",
     shared: true,
     titel: "Gemeinsame Momente",
-    sysPrompt: () => qzSys(),
+    sysPrompt: () => K().qzSys(),
     markerOrder: [],
     markers: {},
     canAct: () => true,

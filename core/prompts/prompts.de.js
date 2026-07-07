@@ -251,3 +251,26 @@ export const steuerTexte = {
   weiterMitKapitel: "[Weiter mit Kapitel {n}.]",
   aufdeckungAngezeigt: "AUFDECKUNG-ANGEZEIGT: Die App hat beiden beide Richtungen gleichzeitig gezeigt – Stapel und Tipps nebeneinander, Berührungspunkte hervorgehoben; die Tafel bleibt sichtbar. Führe nun durch das Gespräch: Berührungspunkte zuerst, dann die Unterschiede mit Neugier.",
 };
+
+/* ── Korpus-Inhalte außerhalb der Systemprompts ──
+   Sprachfassung; die LOGIK (Ableitungen, Bauer, Defs) bleibt einfach-instanzig
+   in kernwetten/sessions/prozess und liest diese Inhalte über K().
+   Die erläuternden Texte der Ergebnis-/Kontext-Bauer werden in Stufe C2
+   zusammen mit prompts.en.js parametrisiert (vorher existiert keine
+   EN-Session, die sie bräuchte). */
+export const KAPITEL_TITEL = ["Ankommen & Landkarte", "Herzstücke", "Rate-Runde", "Klartext"];
+
+export const QZ_STUFEN_TEXT = {
+  1: null,   // sanfte Einladung braucht keinen Rahmen-Text
+  2: "Es ist eine Weile her — ganz ohne Druck: Was macht es euch gerade schwer, gemeinsame Momente zu finden? (Die Frage ist die Einladung; eine Antwort ist optional.)",
+  3: "Falls es am Kalender liegt: Mögt ihr direkt einen konkreten Termin für einen kleinen gemeinsamen Moment verabreden? Ein fester Platz nimmt die Entscheidung aus dem Alltag.",
+  4: "Auch das ist eine legitime Möglichkeit: die gemeinsamen Momente bewusst zu pausieren, mit einem klaren Wiedereinstiegs-Datum — ein sauberer Ausstieg statt stiller Erosion.",
+};
+
+export const korpusTexte = {
+  "titel.solo": "Reflexionsgespräch",
+  "titel.einzel": "Auftragsklärung",
+  "titel.gemeinsam": "Gemeinsame Klärung",
+  "titel.aufdeck": "Aufdeck-Runde",
+  "titel.moment": "Gemeinsame Session",
+};
