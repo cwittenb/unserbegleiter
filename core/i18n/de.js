@@ -160,6 +160,7 @@ export const de = {
   "einr.wer": "Wer bist du gerade? (Dev-Umschalter — produktiv übernimmt das der Magic-Link)",
   "einr.selbsttest": "Selbsttest",
   "einr.selbsttestLaeuft": "Selbsttest läuft…",
+  "einr.sprache": "Sprache der Begleitung ",
 
   // Produktiv-Client (Wiedereinstieg)
   "wieder.titel": "Kein Zugang auf diesem Gerät",
@@ -171,6 +172,15 @@ export const de = {
   "wieder.gesendet": "Gesendet",
   "wieder.unterwegs": "Falls diese Adresse hinterlegt ist, ist ein Link unterwegs. Schau auch im Spam-Ordner nach.",
   "wieder.startFehler": "Start fehlgeschlagen: {fehler}",
+
+  // Worker-Fehler-Codes (clientseitige Wortlaute = heutige Server-Meldungen)
+  "fehler.code.names_required": "nameA und nameB sind Pflicht",
+  "fehler.code.email_invalid": "Bitte eine gültige E-Mail-Adresse angeben.",
+  "fehler.code.email_taken": "Diese Adresse ist bereits hinterlegt.",
+  "fehler.code.link_unknown": "Dieser Zugangslink ist unbekannt.",
+  "fehler.code.link_used": "Dieser Zugangslink wurde bereits verwendet.",
+  "fehler.code.link_expired": "Dieser Zugangslink ist abgelaufen.",
+  "fehler.code.no_session": "Kein gültiger Zugang.",
 
   // Theme-Umschalter
   "theme.hell": "Hell",

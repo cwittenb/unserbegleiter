@@ -9,7 +9,7 @@ import { einzelDef, gemeinsamDef, aufdeckDef, RANK_ITEMS, RANK_MODES, reglerErge
 import { DOMAINS, steuerTexte } from "../prompts/prompts.js";
 import { trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, QZ_STUFEN_TEXT, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
 import { applyDesign } from "./design.js";
-import { t, fuelle } from "../i18n/index.js";
+import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -36,6 +36,7 @@ export function createApp({ doc, backend, root, diktat }) {
     <div class="pb-top">
       <h1 class="pb-h1" id="pbHallo"></h1>
       <span class="pb-sub" id="pbKern"></span>
+      <span class="pb-sub" id="pbSpr" style="float:right;margin-left:auto;user-select:none;letter-spacing:1px"><span data-spr="de" style="cursor:pointer">DE</span> · <span data-spr="en" style="cursor:pointer">EN</span></span>
     </div>
     <div id="pbErr" class="pb-err pb-hidden"></div>
     <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
@@ -470,7 +471,7 @@ export function createApp({ doc, backend, root, diktat }) {
         await backend.recovery.setEmail(email);
         state.info.recoveryEmail = true;
         zeigeRecovery();
-      } catch (e) { note.textContent = e.message; }
+      } catch (e) { note.textContent = fehlerText(e); }
     });
   }
 
@@ -785,9 +786,36 @@ export function createApp({ doc, backend, root, diktat }) {
   }
   $("btnMic").addEventListener("click", () => { rec ? diktatStopp() : diktatStart(); });
 
+  /* ── UI-Sprache: pro Person (pstate "sprache"), jederzeit umstellbar,
+     folgenlos für den Partner. Der Wechsel baut die Oberfläche neu auf;
+     Gespräche und Zustände liegen im Backend und bleiben unberührt.
+     Die Begleitungssprache (Korpus) ist davon getrennt — Paar-Ebene, Stufe C. ── */
+  function relaunch() {
+    const neu = createApp({ doc, backend, root: wurzel, diktat });
+    return neu.boot();
+  }
+  function zeichneSprachwahl() {
+    for (const el2 of wurzel.querySelectorAll("#pbSpr [data-spr]"))
+      el2.style.fontWeight = el2.getAttribute("data-spr") === getLocale() ? "700" : "400";
+  }
+  for (const el2 of wurzel.querySelectorAll("#pbSpr [data-spr]"))
+    el2.addEventListener("click", async () => {
+      const l = el2.getAttribute("data-spr");
+      if (l === getLocale()) return;
+      setLocale(l);
+      try { await backend.pstate.set("sprache", l); } catch { /* Umgebungen ohne pstate */ }
+      relaunch();
+    });
+
   async function boot() {
     applyDesign(doc);   // Design dokumentweit (idempotent)
     state.info = await backend.info();
+    try {
+      const sp = await backend.pstate.get("sprache");
+      if (sp && sp !== getLocale()) { setLocale(sp); return relaunch(); }
+    } catch { /* Umgebungen ohne pstate */ }
+    doc.documentElement.lang = getLocale();
+    zeichneSprachwahl();
     $("pbHallo").textContent = t("allg.hallo", { name: state.info.name });
     $("pbKern").textContent = t("allg.marke");
     $("startHallo").textContent = t("start.hallo", { name: state.info.name });

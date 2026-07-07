@@ -44,10 +44,10 @@ export async function mintMagic(kv, code, role, now = Date.now, ttlMs = MAGIC_MS
   return token;
 }
 
-export async function createCouple(kv, { nameA, nameB }, now = Date.now) {
+export async function createCouple(kv, { nameA, nameB, locale }, now = Date.now) {
   if (!nameA || !nameB) throw Object.assign(new Error("nameA und nameB sind Pflicht"), { status: 400, code: "names_required" });
   const code = randomToken(6);
-  await W(kv, "sys/couple/" + code, { code, nameA, nameB, createdAt: now() });
+  await W(kv, "sys/couple/" + code, { code, nameA, nameB, locale: locale === "en" ? "en" : "de", createdAt: now() });
   const links = {};
   for (const role of ["A", "B"]) links[role] = await mintMagic(kv, code, role, now);
   return { code, links };   // Übergabe-Variante: Initiator erhält beide Links

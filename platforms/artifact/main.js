@@ -34,6 +34,7 @@ function localBackend({ store, meta, role }) {
         name: role === "A" ? meta.nameA : meta.nameB,
         partner: role === "A" ? meta.nameB : meta.nameA,
         nameA: meta.nameA, nameB: meta.nameB,
+        locale: meta.locale || "de",
       };
     },
     bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
@@ -61,12 +62,14 @@ async function boot() {
         <label style="display:block;font-size:14px;margin:6px 0">${t("einr.nameA")}<input id="inA" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Anna"></label>
         <label style="display:block;font-size:14px;margin:6px 0">${t("einr.nameB")}<input id="inB" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Bernd"></label>
         <button id="btnStart" style="margin-top:8px;background:var(--accent);color:var(--me-ink,#fff);border:0;border-radius:999px;padding:11px 24px;font:inherit;cursor:pointer">${t("einr.los")}</button>
+        <label style="display:block;font-size:13px;margin:10px 0 0;color:var(--ink-soft)">${t("einr.sprache")}<select id="inSpr" style="font:inherit;padding:4px 8px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px"><option value="de">Deutsch</option><option value="en">English</option></select></label>
       </div>`;
     doc.getElementById("btnStart").onclick = async () => {
       meta = {
         code: "dev-" + Math.random().toString(36).slice(2, 8),
         nameA: doc.getElementById("inA").value.trim() || "A",
         nameB: doc.getElementById("inB").value.trim() || "B",
+        locale: doc.getElementById("inSpr").value === "en" ? "en" : "de",   // Paarsprache (Korpus ab Stufe C)
       };
       await store.set("PBDEV:meta", meta, true);
       rollenwahl(store, meta);

@@ -122,6 +122,7 @@ async function route(request, env) {
       name: session.role === "A" ? couple.nameA : couple.nameB,
       partner: session.role === "A" ? couple.nameB : couple.nameA,
       nameA: couple.nameA, nameB: couple.nameB,
+      locale: couple.locale || "de",
       recoveryEmail: await hasRecoveryEmail(kv, session.code, session.role),
     });
   }

@@ -4,8 +4,9 @@
 // Platzhalter: {name} — via fuelle() auch für Korpus-Steuertexte nutzbar.
 
 import { de } from "./de.js";
+import { en } from "./en.js";
 
-const woerterbuecher = { de };
+const woerterbuecher = { de, en };
 let aktuell = "de";
 
 export function setLocale(l) { if (woerterbuecher[l]) aktuell = l; }
@@ -17,6 +18,19 @@ export function fuelle(text, params) {
   let s = text;
   for (const [k, v] of Object.entries(params)) s = s.split("{" + k + "}").join(v);
   return s;
+}
+
+export function hatKey(key) {
+  const dict = woerterbuecher[aktuell] || de;
+  return dict[key] !== undefined || de[key] !== undefined;
+}
+
+// Fehlertexte: Worker liefert stabile Codes (e.code) — falls das Wörterbuch
+// den Code kennt, kommt die lokalisierte Meldung; sonst die Server-Meldung.
+export function fehlerText(e) {
+  const k = e && e.code ? "fehler.code." + e.code : null;
+  if (k && hatKey(k)) return t(k);
+  return (e && e.message) || String(e);
 }
 
 export function t(key, params) {

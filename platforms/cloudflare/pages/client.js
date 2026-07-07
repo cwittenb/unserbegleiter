@@ -6,7 +6,7 @@ import { CORE_VERSION, APP_NAME } from "../../../core/index.js";
 import { makeAdapter } from "../../../core/llm/adapter.js";
 import { createApp } from "../../../core/ui/app.js";
 import { applyDesign } from "../../../core/ui/design.js";
-import { t } from "../../../core/i18n/index.js";
+import { t, fehlerText } from "../../../core/i18n/index.js";
 
 const doc = document;
 const app = doc.getElementById("app");
@@ -19,7 +19,7 @@ async function api(method, pfad, body) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(data.error || "Fehler " + r.status), { status: r.status });
+  if (!r.ok) throw Object.assign(new Error(data.error || "Fehler " + r.status), { status: r.status, code: data.code });
   return data;
 }
 
@@ -58,7 +58,7 @@ async function boot() {
       await api("POST", "/api/enroll", { token });
       history.replaceState(null, "", location.pathname);   // Token aus der Adresszeile
     } catch (e) {
-      app.innerHTML = `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px)">${e.message}</div>`;
+      app.innerHTML = `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px)">${fehlerText(e)}</div>`;
       return;
     }
   } else {
