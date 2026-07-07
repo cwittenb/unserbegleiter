@@ -45,7 +45,7 @@ export async function mintMagic(kv, code, role, now = Date.now, ttlMs = MAGIC_MS
 }
 
 export async function createCouple(kv, { nameA, nameB }, now = Date.now) {
-  if (!nameA || !nameB) throw Object.assign(new Error("nameA und nameB sind Pflicht"), { status: 400 });
+  if (!nameA || !nameB) throw Object.assign(new Error("nameA und nameB sind Pflicht"), { status: 400, code: "names_required" });
   const code = randomToken(6);
   await W(kv, "sys/couple/" + code, { code, nameA, nameB, createdAt: now() });
   const links = {};
@@ -65,11 +65,11 @@ const istMail = e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
 
 export async function setRecoveryEmail(kv, { code, role }, email, now = Date.now) {
   const clean = normMail(email);
-  if (!istMail(clean)) throw Object.assign(new Error("Bitte eine gültige E-Mail-Adresse angeben."), { status: 400 });
+  if (!istMail(clean)) throw Object.assign(new Error("Bitte eine gültige E-Mail-Adresse angeben."), { status: 400, code: "email_invalid" });
   const hash = await sha256Hex(clean);
   const belegt = await J(kv, emailKey(hash));
   if (belegt && (belegt.code !== code || belegt.role !== role))
-    throw Object.assign(new Error("Diese Adresse ist bereits hinterlegt."), { status: 409 });
+    throw Object.assign(new Error("Diese Adresse ist bereits hinterlegt."), { status: 409, code: "email_taken" });
   const vorher = await J(kv, emailForKey(code, role));
   if (vorher && vorher.hash && vorher.hash !== hash) await kv.delete(emailKey(vorher.hash));
   await W(kv, emailKey(hash), { code, role });
@@ -90,9 +90,9 @@ export async function lookupRecovery(kv, email) {
 
 export async function enroll(kv, token, now = Date.now) {
   const m = await J(kv, "sys/magic/" + token);
-  if (!m) throw Object.assign(new Error("Dieser Zugangslink ist unbekannt."), { status: 404 });
-  if (m.used) throw Object.assign(new Error("Dieser Zugangslink wurde bereits verwendet."), { status: 410 });
-  if (now() > m.expiresAt) throw Object.assign(new Error("Dieser Zugangslink ist abgelaufen."), { status: 410 });
+  if (!m) throw Object.assign(new Error("Dieser Zugangslink ist unbekannt."), { status: 404, code: "link_unknown" });
+  if (m.used) throw Object.assign(new Error("Dieser Zugangslink wurde bereits verwendet."), { status: 410, code: "link_used" });
+  if (now() > m.expiresAt) throw Object.assign(new Error("Dieser Zugangslink ist abgelaufen."), { status: 410, code: "link_expired" });
   m.used = true;
   await W(kv, "sys/magic/" + token, m);                 // Konsum VOR Ausgabe
   const cred = randomToken(24);
@@ -104,7 +104,7 @@ export async function enroll(kv, token, now = Date.now) {
 
 export async function loginWithCred(kv, cred, now = Date.now) {
   const c = cred ? await J(kv, "sys/cred/" + (await sha256Hex(cred))) : null;
-  if (!c) throw Object.assign(new Error("Kein gültiger Zugang."), { status: 401 });
+  if (!c) throw Object.assign(new Error("Kein gültiger Zugang."), { status: 401, code: "no_session" });
   return createSession(kv, c.code, c.role, now);
 }
 

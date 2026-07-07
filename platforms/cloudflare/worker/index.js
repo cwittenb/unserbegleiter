@@ -22,7 +22,7 @@ const json = (data, status = 200, headers = {}) =>
     status,
     headers: { "content-type": "application/json; charset=utf-8", ...headers },
   });
-const fehler = (msg, status) => json({ error: msg }, status);
+const fehler = (msg, status, code) => json(code ? { error: msg, code } : { error: msg }, status);
 
 const BSTATE_FELDER = new Set(Bstate.FIELDS);
 const PSTATE_FELDER = new Set(["zeitleiste", "selbstoffenbarungen"]);
@@ -32,7 +32,7 @@ export default {
     try {
       return await route(request, env);
     } catch (e) {
-      return fehler(e.message || "Interner Fehler", e.status || 500);
+      return fehler(e.message || "Interner Fehler", e.status || 500, e.code);
     }
   },
 };
@@ -130,7 +130,7 @@ async function route(request, env) {
   if (p === "/api/email" && request.method === "POST") {
     const { email } = await request.json().catch(() => ({}));
     try { await setRecoveryEmail(kv, session, email, now); return json({ ok: true }); }
-    catch (e) { return fehler(e.message, e.status || 400); }
+    catch (e) { return fehler(e.message, e.status || 400, e.code); }
   }
 
   /* ---- Bstate: geteilt, beide Rollen ---- */

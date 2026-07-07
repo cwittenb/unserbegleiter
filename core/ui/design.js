@@ -1,3 +1,4 @@
+import { t as uiText } from "../i18n/index.js";
 // Design auf Dokument-Ebene: <style> + Kulisse + Theme-Umschalter, einmalig
 // beim Booten angewendet (idempotent), damit ALLE Screens dasselbe Theme tragen.
 
@@ -101,6 +102,8 @@ export function applyDesign(doc) {
     if (n) n.classList.toggle("an", d);
   };
   const h = doc.getElementById("pbHell"), n = doc.getElementById("pbDunkel");
+  if (h) h.textContent = uiText("theme.hell");
+  if (n) n.textContent = uiText("theme.dunkel");
   if (h) h.addEventListener("click", () => setze("light"));
   if (n) n.addEventListener("click", () => setze("dark"));
   setze("light");

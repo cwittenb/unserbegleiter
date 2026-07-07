@@ -6,9 +6,10 @@ import { cleanDisplay } from "../contracts/block.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
 import { einzelDef, gemeinsamDef, aufdeckDef, RANK_ITEMS, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, KAPITEL_TITEL, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
-import { DOMAINS } from "../prompts/prompts.js";
+import { DOMAINS, steuerTexte } from "../prompts/prompts.js";
 import { trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, QZ_STUFEN_TEXT, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
 import { applyDesign } from "./design.js";
+import { t, fuelle } from "../i18n/index.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -42,40 +43,40 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-card">
         <div id="startHallo" style="font-size:17px;font-weight:650;margin-bottom:4px"></div>
         <p class="pb-sub" id="startIntro" style="margin:0 0 12px"></p>
-        <button class="pb-btn primary" id="btnMyRoom">Mein Raum</button>
+        <button class="pb-btn primary" id="btnMyRoom">${t("start.meinRaum")}</button>
         <p class="pb-sub" id="startMeinSub" style="margin:4px 0 12px"></p>
-        <button class="pb-btn primary" id="btnSharedRoom">Gemeinsamer Raum</button>
+        <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")}</button>
         <p class="pb-sub" id="startTeilSub" style="margin:4px 0 0"></p>
       </div>
     </div>
     <div id="scrMyRoom" class="pb-hidden">
       <div class="pb-card">
-        <div style="font-size:16px;font-weight:650;margin-bottom:4px">Mein Raum</div>
+        <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("start.meinRaum")}</div>
         <p class="pb-sub" id="meinIntro" style="margin:0 0 12px"></p>
-        <button class="pb-btn primary" id="btnSolo">Reflexionsgespräch beginnen</button>
-        <button class="pb-btn primary" id="btnEinzel">Auftragsklärung beginnen</button>
-        <button class="pb-btn" id="btnZeitleiste">Meine Zeitleiste</button>
-        <button class="pb-btn" id="btnMess">Prozessreflexion</button>
-        <button class="pb-btn" id="btnZurueck1">← Zurück</button>
+        <button class="pb-btn primary" id="btnSolo">${t("mein.solo")}</button>
+        <button class="pb-btn primary" id="btnEinzel">${t("mein.einzel")}</button>
+        <button class="pb-btn" id="btnZeitleiste">${t("mein.zeitleiste")}</button>
+        <button class="pb-btn" id="btnMess">${t("mein.mess")}</button>
+        <button class="pb-btn" id="btnZurueck1">${t("allg.zurueck")}</button>
       </div>
-      <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">Zeitleiste</div><div id="zlItems"></div></div>
+      <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
       <div class="pb-card pb-hidden" id="boxMess"></div>
       <div class="pb-card pb-hidden" id="boxRecovery"></div>
     </div>
     <div id="scrShared" class="pb-hidden">
       <div class="pb-card">
-        <div style="font-size:16px;font-weight:650;margin-bottom:4px">Gemeinsamer Raum</div>
-        <p class="pb-sub" id="sharedIntro" style="margin:0 0 12px">Hier liegt nur, was freigegeben wurde — und alles, was ihr zu zweit macht.</p>
-        <button class="pb-btn primary" id="btnMoment">Gemeinsame Session beginnen</button>
-        <button class="pb-btn primary" id="btnAufdeck">Aufdeck-Runde beginnen</button>
-        <button class="pb-btn primary" id="btnGemeinsam">Gemeinsame Klärung beginnen</button>
-        <button class="pb-btn" id="btnRegal">Regal ansehen</button>
-        <button class="pb-btn" id="btnAgenda">Agenda ansehen</button>
-        <button class="pb-btn" id="btnQz">Gemeinsame Momente</button>
-        <button class="pb-btn" id="btnZurueck2">← Zurück</button>
+        <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("start.teilRaum")}</div>
+        <p class="pb-sub" id="sharedIntro" style="margin:0 0 12px">${t("teil.intro")}</p>
+        <button class="pb-btn primary" id="btnMoment">${t("teil.moment")}</button>
+        <button class="pb-btn primary" id="btnAufdeck">${t("teil.aufdeck")}</button>
+        <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
+        <button class="pb-btn" id="btnRegal">${t("teil.regal")}</button>
+        <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
+        <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
+        <button class="pb-btn" id="btnZurueck2">${t("allg.zurueck")}</button>
       </div>
-      <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">Regal — zum Lesen, wenn du magst</div><p class="pb-sub" style="margin:6px 0 4px">Kein Posteingang: Hier liegt, was eine Person aus ihrer Einzelreflexion lesbar gemacht hat — als ihre Erfahrung, nicht als Nachricht oder Anforderung. Reagieren ist frei; der beste Ort dafür ist das Gespräch.</p><div id="regalItems"></div></div>
-      <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">Gemeinsame Agenda</div><div id="agendaItems"></div></div>
+      <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">${t("regal.titel")}</div><p class="pb-sub" style="margin:6px 0 4px">${t("regal.intro")}</p><div id="regalItems"></div></div>
+      <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
       <div class="pb-card pb-hidden" id="boxQz"></div>
     </div>
     <div id="scrChat" class="pb-hidden">
@@ -85,17 +86,17 @@ export function createApp({ doc, backend, root, diktat }) {
         <div id="gatePanel" class="pb-card pb-hidden"></div>
         <div id="kwPanel" class="pb-card pb-hidden"></div>
         <div class="pb-skala" id="pbSkala">
-          <span style="font-size:13px;color:#5a6675">Deine Zahl:</span>
+          <span style="font-size:13px;color:#5a6675">${t("chat.deineZahl")}</span>
           <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
           <span class="wert" id="pbSkalaWert">7</span>
-          <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">Senden</button>
+          <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">${t("chat.senden")}</button>
         </div>
         <div class="pb-composer" id="pbComposer">
-          <textarea id="pbInput" placeholder="Deine Nachricht…"></textarea>
-          <button class="pb-btn" id="btnMic" title="Diktieren">🎤</button>
-          <button class="pb-btn primary" id="btnSend">Senden</button>
+          <textarea id="pbInput" placeholder="${t("chat.platzhalter")}"></textarea>
+          <button class="pb-btn" id="btnMic" title="${t("chat.diktieren")}">🎤</button>
+          <button class="pb-btn primary" id="btnSend">${t("chat.senden")}</button>
         </div>
-        <button class="pb-btn" id="btnChatZurueck">← Raum verlassen</button>
+        <button class="pb-btn" id="btnChatZurueck">${t("chat.raumVerlassen")}</button>
       </div>
     </div>`;
 
@@ -156,7 +157,7 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     if (state.warten) {
       const d = el("div", "pb-msg ai");
-      d.innerHTML = '<span class="pb-typing" aria-label="Die Begleitung schreibt"><span></span><span></span><span></span></span>';
+      d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
       box.appendChild(d);
     }
     box.scrollTop = box.scrollHeight;
@@ -184,28 +185,28 @@ export function createApp({ doc, backend, root, diktat }) {
   function gatePanel(data, engine) {
     const p = $("gatePanel");
     p.classList.remove("pb-hidden");
-    const wegName = { selbst: "Selbst ansprechen", regal: "Ins Regal legen (Einblick)", moment: "Auf die Agenda (Thema)" };
+    const wegName = { selbst: t("gate.weg.selbst"), regal: t("gate.weg.regal"), moment: t("gate.weg.moment") };
     p.innerHTML =
-      `<div class="pb-sub">Deine Selbstmitteilung zur Freigabe</div>` +
+      `<div class="pb-sub">${t("gate.titel")}</div>` +
       `<p style="font-size:14px">${esc(data.selbstmitteilung)}</p>` +
-      (data.wunsch ? `<p class="pb-sub">Wunsch: ${esc(data.wunsch)}</p>` : "") +
+      (data.wunsch ? `<p class="pb-sub">${t("gate.wunsch")}${esc(data.wunsch)}</p>` : "") +
       data.wege.map(w => `<label style="display:block;font-size:14px;margin:4px 0"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
-      `<button class="pb-btn primary" id="btnGateOk">Freigeben</button>` +
-      `<button class="pb-btn" id="btnGateNein">Noch nicht</button>`;
+      `<button class="pb-btn primary" id="btnGateOk">${t("allg.freigeben")}</button>` +
+      `<button class="pb-btn" id="btnGateNein">${t("allg.nochNicht")}</button>`;
     p.querySelector("#btnGateOk").addEventListener("click", async () => {
       const wege = [...p.querySelectorAll("input:checked")].map(x => x.getAttribute("data-weg"));
       p.classList.add("pb-hidden");
       try {
         await quereGate(backend, data, wege);
         await engine.submitToolResult(
-          wege.length ? "FREIGABE-ERGEBNIS: gequert über " + wege.join(", ") : "FREIGABE-ERGEBNIS: nichts gequert"
+          wege.length ? fuelle(steuerTexte.freigabeGequert, { wege: wege.join(", ") }) : steuerTexte.freigabeNichts
         );
         renderMsgs();
       } catch (e) { err(e.message); }
     });
     p.querySelector("#btnGateNein").addEventListener("click", async () => {
       p.classList.add("pb-hidden");
-      await engine.submitToolResult("FREIGABE-ERGEBNIS: Ich möchte noch weiter daran arbeiten.");
+      await engine.submitToolResult(steuerTexte.freigabeWeiterarbeiten);
       renderMsgs();
     });
   }
@@ -222,15 +223,15 @@ export function createApp({ doc, backend, root, diktat }) {
     const dots = "●".repeat(n) + "○".repeat(4 - n);
     const gateOffen = n === 3 && !engine.chat.minigate;
     const gateHtml = !gateOffen ? "" :
-      `<p style="font-size:14px"><strong>Eine Frage zur Aufdeck-Runde:</strong> Hättest du Freude daran, wenn ihr eure Top 5 in der Aufdeck-Runde einander preisgebt – auch wenn der Gedanke im ersten Moment vielleicht etwas Aufregung und Unsicherheit auslöst?</p>` +
-      `<p class="pb-sub">Gezeigt würden dabei nur: deine Top 5 und deine drei Tipps für ${esc(state.info.partner)} – nichts aus eurem Gespräch hier.</p>` +
-      `<button class="pb-btn primary" id="kapJa">Ja, gern</button><button class="pb-btn primary" id="kapNein">Noch nicht</button>`;
+      `<p style="font-size:14px"><strong>${t("kapitel.frageTitel")}</strong> ${t("kapitel.frage")}</p>` +
+      `<p class="pb-sub">${t("kapitel.frageSub", { partner: esc(state.info.partner) })}</p>` +
+      `<button class="pb-btn primary" id="kapJa">${t("kapitel.ja")}</button><button class="pb-btn primary" id="kapNein">${t("allg.nochNicht")}</button>`;
     p.innerHTML =
-      `<div class="pb-sub">Kapitel ${n} geschafft – ${esc(KAPITEL_TITEL[n - 1])}</div>` +
+      `<div class="pb-sub">${t("kapitel.geschafft", { n, titel: esc(KAPITEL_TITEL[n - 1]) })}</div>` +
       `<div style="letter-spacing:5px;font-size:16px;margin:4px 0 10px">${dots}</div>` + gateHtml +
       `<div id="kapWeiter"${gateOffen ? ' class="pb-hidden"' : ""}>` +
-      `<button class="pb-btn primary" id="kapNext">Weitermachen: Kapitel ${n + 1} · ${esc(KAPITEL_TITEL[n])}</button>` +
-      `<button class="pb-btn" id="kapPause">Pause machen</button></div>` +
+      `<button class="pb-btn primary" id="kapNext">${t("kapitel.weitermachen", { n: n + 1, titel: esc(KAPITEL_TITEL[n]) })}</button>` +
+      `<button class="pb-btn" id="kapPause">${t("kapitel.pause")}</button></div>` +
       `<p class="pb-sub pb-hidden" id="kapNote"></p>`;
     const zeigeWeiter = txt => {
       for (const id of ["kapJa", "kapNein"]) { const b = p.querySelector("#" + id); if (b) b.remove(); }
@@ -246,24 +247,24 @@ export function createApp({ doc, backend, root, diktat }) {
           await backend.bstate.set("aufdeckung", alle);
           engine.chat.minigate = "ja";
           await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, engine.chat);
-          zeigeWeiter("Schön – die Aufdeck-Runde wird startbar, sobald ihr beide so weit seid.");
+          zeigeWeiter(t("kapitel.jaNote"));
         } catch (e) { err(e.message); }
       });
       p.querySelector("#kapNein").addEventListener("click", async () => {
         engine.chat.minigate = "nein";
         await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, engine.chat);
-        zeigeWeiter("Alles gut – das bleibt bei dir. Beim Abschluss fragt die App noch genau einmal, danach nicht mehr.");
+        zeigeWeiter(t("kapitel.neinNote"));
       });
     }
     p.querySelector("#kapNext").addEventListener("click", async () => {
       kwZu();
-      await engine.submitToolResult("[Weiter mit Kapitel " + (n + 1) + ".]", { hidden: true });
+      await engine.submitToolResult(fuelle(steuerTexte.weiterMitKapitel, { n: n + 1 }), { hidden: true });
       renderMsgs();
     });
     p.querySelector("#kapPause").addEventListener("click", () => {
       kwZu();
       show("scrMyRoom");
-      err("Gespeichert – du kannst jederzeit genau hier weitermachen.");
+      err(t("kapitel.gespeichert"));
     });
   }
   
@@ -273,7 +274,7 @@ export function createApp({ doc, backend, root, diktat }) {
   async function aufdeckPanel(engine) {
     const alle = (await backend.bstate.get("aufdeckung")) || {};
     const gA = alle.A, gB = alle.B;
-    if (!gA || !gB) { err("Aufdeck-Daten fehlen – bitte die Runde neu beginnen."); return; }
+    if (!gA || !gB) { err(t("aufdeck.fehlt")); return; }
     const p = kw();
     p.classList.remove("pb-hidden");
     const spalte = (titel, liste, marks) =>
@@ -281,26 +282,26 @@ export function createApp({ doc, backend, root, diktat }) {
       liste.map((x, i) => `<div class="pb-item"${marks.includes(x) ? ' style="font-weight:700;border-left:3px solid var(--accent,#0f766e);padding-left:8px"' : ""}>${i + 1}. ${esc(x)}</div>`).join("") + `</div>`;
     const richtung = (tipper, owner) => {
       const treff = beruehrungen(tipper.tipp3, owner.top5);
-      return `<div style="margin-top:12px"><div class="pb-sub">${esc(tipper.name)} hat getippt, was ${esc(owner.name)} am Herzen liegt</div>` +
-        `<div style="display:flex;gap:10px;flex-wrap:wrap">` + spalte("Tipp von " + tipper.name, tipper.tipp3, treff) + spalte("Top 5 von " + owner.name, owner.top5, treff) + `</div>` +
-        (treff.length ? `<p class="pb-sub">Berührungspunkte: ${treff.map(esc).join(" · ")}</p>`
-                      : `<p class="pb-sub">Zwei verschiedene Blicke – Stoff für ein gutes Gespräch.</p>`) + `</div>`;
+      return `<div style="margin-top:12px"><div class="pb-sub">${t("aufdeck.getippt", { tipper: esc(tipper.name), owner: esc(owner.name) })}</div>` +
+        `<div style="display:flex;gap:10px;flex-wrap:wrap">` + spalte(t("aufdeck.tippVon", { name: tipper.name }), tipper.tipp3, treff) + spalte(t("aufdeck.topVon", { name: owner.name }), owner.top5, treff) + `</div>` +
+        (treff.length ? `<p class="pb-sub">${t("aufdeck.beruehrungen")}${treff.map(esc).join(" · ")}</p>`
+                      : `<p class="pb-sub">${t("aufdeck.verschieden")}</p>`) + `</div>`;
     };
     p.innerHTML =
-      `<div class="pb-sub">Aufdeckung – beide Richtungen gleichzeitig</div>` +
-      `<p style="font-size:13px">Kein richtig, kein falsch, keine Punkte: Markiert ist, wo Tipp und Stapel einander berühren. Unterschiede sind ein Befund über zwei Blickwinkel – und oft das beste Gesprächsmaterial.</p>` +
+      `<div class="pb-sub">${t("aufdeck.titel")}</div>` +
+      `<p style="font-size:13px">${t("aufdeck.intro")}</p>` +
       richtung(gB, gA) + richtung(gA, gB) +
-      (engine.chat.adShown ? `<button class="pb-btn" id="adZu">Tafel ausblenden</button>`
-                           : `<button class="pb-btn primary" id="adWeiter">Weiter im Gespräch</button>`);
+      (engine.chat.adShown ? `<button class="pb-btn" id="adZu">${t("aufdeck.tafelZu")}</button>`
+                           : `<button class="pb-btn primary" id="adWeiter">${t("aufdeck.weiter")}</button>`);
     const w = p.querySelector("#adWeiter");
     if (w) w.addEventListener("click", async () => {
       engine.chat.adShown = true;
       w.remove();   // Tafel bleibt sichtbar
       const zu = doc.createElement("button");
-      zu.className = "pb-btn"; zu.textContent = "Tafel ausblenden";
+      zu.className = "pb-btn"; zu.textContent = t("aufdeck.tafelZu");
       zu.addEventListener("click", kwZu);
       p.appendChild(zu);
-      await engine.submitToolResult("AUFDECKUNG-ANGEZEIGT: Die App hat beiden beide Richtungen gleichzeitig gezeigt – Stapel und Tipps nebeneinander, Berührungspunkte hervorgehoben; die Tafel bleibt sichtbar. Führe nun durch das Gespräch: Berührungspunkte zuerst, dann die Unterschiede mit Neugier.", { hidden: true });
+      await engine.submitToolResult(steuerTexte.aufdeckungAngezeigt, { hidden: true });
       renderMsgs();
     });
     const z = p.querySelector("#adZu");
@@ -339,12 +340,12 @@ export function createApp({ doc, backend, root, diktat }) {
         backend.bstate.get("aufdeckprotokoll").catch(() => null),
       ]);
       if (alleG && alleG.A && alleG.B && !protokollG)
-        throw new Error("Die Aufdeck-Runde wartet noch auf euch – sie kommt vor der Klärung.");
+        throw new Error(t("fehler.aufdeckWartet"));
     }
     if (art === "aufdeck" && !gespeichert) {
       const alleA = (await backend.bstate.get("aufdeckung")) || {};
       if (!alleA.A || !alleA.B)
-        throw new Error("Die Aufdeck-Runde öffnet erst, wenn beide sie gewählt haben und so weit sind.");
+        throw new Error(t("fehler.aufdeckZu"));
     }
     const chat = gespeichert || { messages: [], status: "running" };
     const ctx = { me: info.name, partner: info.partner, nameA: info.nameA, nameB: info.nameB };
@@ -394,13 +395,7 @@ export function createApp({ doc, backend, root, diktat }) {
       }
       // Die Eröffnungs-Nachricht ist Steuerung fürs Modell, keine Äußerung der Person —
       // sie bleibt unsichtbar (hidden), und die Begleitung beginnt von sich aus.
-      const startText = {
-        solo: "Ich bin da und möchte beginnen. Eröffne das Gespräch von dir aus.",
-        einzel: "Ich bin da und möchte mit der Auftragsklärung beginnen. Eröffne die Session von dir aus.",
-        gemeinsam: "Wir sind beide da und möchten mit der gemeinsamen Klärung beginnen. Eröffne die Session von dir aus.",
-        aufdeck: "Wir sind beide da und möchten die Aufdeck-Runde beginnen. Eröffne die Session von dir aus.",
-        moment: "Wir sind beide da und möchten beginnen. Eröffne die Session von dir aus.",
-      }[art];
+      const startText = steuerTexte.start[art];   // Korpus: Sprachfassung liefert prompts.<locale>.js
       state.warten = true;
       $("btnSend").disabled = true;
       renderMsgs();
@@ -415,7 +410,7 @@ export function createApp({ doc, backend, root, diktat }) {
     $("boxZeitleiste").classList.remove("pb-hidden");
     $("zlItems").innerHTML = zl.eintraege.length
       ? zl.eintraege.map(e2 => `<div class="pb-item"><strong>${esc((e2.themen || []).join(" · "))}</strong><br>${esc(e2.zusammenfassung)}</div>`).join("")
-      : `<div class="pb-item">Noch keine Einträge — sie entstehen aus deinen Reflexionsgesprächen, mit Datum und Kurzfassung.</div>`;
+      : `<div class="pb-item">${t("zeitleiste.leer")}</div>`;
   }
 
   async function zeigeRegal() {
@@ -425,13 +420,13 @@ export function createApp({ doc, backend, root, diktat }) {
       ? regal.items.map(i => {
           const fremd = i.von !== state.info.name;
           return `<div class="pb-item">${esc(i.text)}` +
-            (i.wunsch ? `<br><span class="pb-sub">Wunsch: ${esc(i.wunsch)}</span>` : "") +
-            `<br><span class="pb-sub">von ${esc(i.von)}${i.gelesen ? " · gelesen" : ""}${i.gehoben ? " · in der Agenda" : ""}</span>` +
-            (fremd && !i.gelesen ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">Gelesen ✓</button>` : "") +
-            (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">In die Agenda heben</button>` : "") +
+            (i.wunsch ? `<br><span class="pb-sub">${t("gate.wunsch")}${esc(i.wunsch)}</span>` : "") +
+            `<br><span class="pb-sub">${t("allg.von", { name: esc(i.von) })}${i.gelesen ? " · " + t("regal.stGelesen") : ""}${i.gehoben ? " · " + t("regal.stInAgenda") : ""}</span>` +
+            (fremd && !i.gelesen ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
+            (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnHeben")}</button>` : "") +
             `</div>`;
         }).join("")
-      : `<div class="pb-item">Das Regal ist leer.</div>`;
+      : `<div class="pb-item">${t("regal.leer")}</div>`;
     for (const b of $("regalItems").querySelectorAll("[data-gelesen]"))
       b.addEventListener("click", async () => { await markiereGelesen(backend, b.getAttribute("data-gelesen")); zeigeRegal(); });
     for (const b of $("regalItems").querySelectorAll("[data-heben]"))
@@ -443,12 +438,12 @@ export function createApp({ doc, backend, root, diktat }) {
     $("boxAgenda").classList.remove("pb-hidden");
     $("agendaItems").innerHTML = agenda.items.length
       ? agenda.items.map(i =>
-          `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">von ${esc(i.von)} · ${esc(i.zustand)}</span>` +
+          `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.von) })} · ${esc(i.zustand)}</span>` +
           (i.zustand === "offen"
-            ? ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">Haben wir selbst geklärt ✓</button>`
+            ? ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">${t("agenda.btnAbr")}</button>`
             : "") + `</div>`
         ).join("")
-      : `<div class="pb-item">Die Agenda ist leer.</div>`;
+      : `<div class="pb-item">${t("agenda.leer")}</div>`;
     for (const b of $("agendaItems").querySelectorAll("[data-abr]"))
       b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selbstGeklaert"); zeigeAgenda(); });
   }
@@ -460,19 +455,17 @@ export function createApp({ doc, backend, root, diktat }) {
     box.classList.remove("pb-hidden");
     const hinterlegt = !!(state.info && state.info.recoveryEmail);
     box.innerHTML =
-      `<div class="pb-sub">Zugang wiederfinden</div>` +
+      `<div class="pb-sub">${t("rec.titel")}</div>` +
       `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:6px 0">` +
-      (hinterlegt
-        ? `Eine E-Mail-Adresse ist hinterlegt. Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.`
-        : `Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Nimm ein Postfach, auf das nur du Zugriff hast.`) +
+      (hinterlegt ? t("rec.hinterlegt") : t("rec.neu")) +
       `</p>` +
-      `<input id="recInput" type="email" placeholder="dein@postfach.de" style="display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit">` +
-      `<button class="pb-btn primary" id="recSave" style="margin-top:8px">${hinterlegt ? "Adresse ändern" : "Adresse hinterlegen"}</button>` +
+      `<input id="recInput" type="email" placeholder="${t("rec.platzhalter")}" style="display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit">` +
+      `<button class="pb-btn primary" id="recSave" style="margin-top:8px">${hinterlegt ? t("rec.aendern") : t("rec.hinterlegen")}</button>` +
       `<span id="recNote" class="pb-sub" style="margin-left:8px"></span>`;
     box.querySelector("#recSave").addEventListener("click", async () => {
       const email = box.querySelector("#recInput").value.trim();
       const note = box.querySelector("#recNote");
-      if (!email) { note.textContent = "Bitte eine Adresse eingeben."; return; }
+      if (!email) { note.textContent = t("rec.bitte"); return; }
       try {
         await backend.recovery.setEmail(email);
         state.info.recoveryEmail = true;
@@ -519,18 +512,18 @@ export function createApp({ doc, backend, root, diktat }) {
     const [mr, auftraege] = await Promise.all([backend.bstate.get("messrunden"), backend.bstate.get("auftraege")]);
     const offen = ((mr && mr.items) || []).find(r => r.status === "offen");
     if (offen && offen.werte[state.info.role]) {
-      box.innerHTML = `<div class="pb-sub">Prozessreflexion</div><p style="font-size:14px">Dein Beitrag ist abgegeben — aufgedeckt wird gemeinsam im nächsten Moment, häppchenweise.</p>`;
+      box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.abgegeben")}</p>`;
       return;
     }
     const aktive = (((auftraege && auftraege.items) || [])).filter(a => a.status === "aktiv" && a.art === "gemeinsam");
     box.innerHTML =
-      `<div class="pb-sub">Prozessreflexion — verdeckt; ${esc(state.info.partner)} sieht deine Werte erst bei der gemeinsamen Aufdeckung</div>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">Wie nah fühlst du dich ${esc(state.info.partner)} gerade? (1–10)<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">Und was schätzt du: Wie nah fühlt sich ${esc(state.info.partner)} dir? (1–10)<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      `<div class="pb-sub">${t("mess.verdeckt", { partner: esc(state.info.partner) })}</div>` +
+      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.naehe", { partner: esc(state.info.partner) })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.zweit", { partner: esc(state.info.partner) })}<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
       aktive.map(a =>
-        `<label style="display:block;font-size:13px;margin:8px 0">Wie gut passt „${esc(a.text)}" (${esc(a.id)}) gerade zu euch? (1–10)<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
+        `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.passung", { text: esc(a.text), id: esc(a.id) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
       ).join("") +
-      `<button class="pb-btn primary" id="msOk">Verdeckt abgeben</button>`;
+      `<button class="pb-btn primary" id="msOk">${t("mess.abgeben")}</button>`;
     box.querySelector("#msOk").addEventListener("click", async () => {
       const passung = {};
       for (const inp of box.querySelectorAll("[data-pass]")) passung[inp.getAttribute("data-pass")] = +inp.value;
@@ -539,8 +532,8 @@ export function createApp({ doc, backend, root, diktat }) {
         zweit: +box.querySelector("#msZweit").value,
         passung,
       });
-      box.innerHTML = `<div class="pb-sub">Prozessreflexion</div><p style="font-size:14px">Danke — verdeckt abgelegt.` +
-        (runde.status === "bereit" ? " Ihr seid beide dran gewesen: Die Aufdeckung wartet im nächsten gemeinsamen Moment." : "") + `</p>`;
+      box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.danke")}` +
+        (runde.status === "bereit" ? t("mess.bereit") : "") + `</p>`;
     });
   }
 
@@ -552,16 +545,16 @@ export function createApp({ doc, backend, root, diktat }) {
     if (!qz.startAt) { qz.startAt = new Date().toISOString(); await backend.bstate.set("qz", qz); }
     const stufe = qzStufe(qz);
     if (stufe === "pause") {
-      box.innerHTML = `<div class="pb-sub">Gemeinsame Momente</div><p style="font-size:14px">Pausiert bis ${esc((qz.leiter.pausiertBis || "").slice(0, 10))} — vereinbart, kein Vergessen.</p>`;
+      box.innerHTML = `<div class="pb-sub">${t("qz.titel")}</div><p style="font-size:14px">${t("qz.pausiert", { datum: esc((qz.leiter.pausiertBis || "").slice(0, 10)) })}</p>`;
       return;
     }
     const rahmen = QZ_STUFEN_TEXT[stufe];
     box.innerHTML =
-      `<div class="pb-sub">Gemeinsame Momente</div>` +
-      `<p class="pb-sub" style="margin:6px 0 4px">Leichte Einladungen zu kleinen gemeinsamen Momenten — kein Programm, kein Takt. Ihr wählt, was sich stimmig anfühlt; nichts wird gemessen oder nachgehalten, und nichts auswählen ist völlig in Ordnung.</p>` +
+      `<div class="pb-sub">${t("qz.titel")}</div>` +
+      `<p class="pb-sub" style="margin:6px 0 4px">${t("qz.intro")}</p>` +
       (rahmen ? `<p style="font-size:14px">${esc(rahmen)}</p>` : "") +
-      (stufe === 4 ? `<button class="pb-btn" id="qzPause">Pause vereinbaren (4 Wochen)</button>` : "") +
-      `<button class="pb-btn primary" id="qzHolen">Einladungen holen</button><div id="qzKarten"></div>`;
+      (stufe === 4 ? `<button class="pb-btn" id="qzPause">${t("qz.pauseBtn")}</button>` : "") +
+      `<button class="pb-btn primary" id="qzHolen">${t("qz.holen")}</button><div id="qzKarten"></div>`;
     if (stufe === 4) box.querySelector("#qzPause").addEventListener("click", async () => { await vereinbarePause(backend, 4); zeigeQz(); });
     box.querySelector("#qzHolen").addEventListener("click", async () => {
       const [auftraege, freiA, freiB] = await Promise.all([
@@ -572,16 +565,16 @@ export function createApp({ doc, backend, root, diktat }) {
       const def = qzDef({
         onFaecher: async (data) => {
           $("qzKarten").innerHTML = data.einladungen.map((e2, i) =>
-            `<div class="pb-item">${esc(e2.text)}<br><span class="pb-sub">${esc(e2.domaene)}</span> <button class="pb-btn" data-qzw="${i}" style="padding:3px 10px">Wählen</button></div>`
-          ).join("") + `<button class="pb-btn" id="qzKeine" style="margin-top:6px">Heute keine davon</button>`;
+            `<div class="pb-item">${esc(e2.text)}<br><span class="pb-sub">${esc(e2.domaene)}</span> <button class="pb-btn" data-qzw="${i}" style="padding:3px 10px">${t("qz.waehlen")}</button></div>`
+          ).join("") + `<button class="pb-btn" id="qzKeine" style="margin-top:6px">${t("qz.keine")}</button>`;
           for (const b of $("qzKarten").querySelectorAll("[data-qzw]"))
             b.addEventListener("click", async () => {
               await waehleEinladung(backend, data.einladungen[+b.getAttribute("data-qzw")]);
-              $("qzKarten").innerHTML = `<p style="font-size:14px">Schön — viel Freude damit. (Nichts wird gemessen, nichts nachgehalten.)</p>`;
+              $("qzKarten").innerHTML = `<p style="font-size:14px">${t("qz.gewaehlt")}</p>`;
             });
           $("qzKarten").querySelector("#qzKeine").addEventListener("click", async () => {
             await keineEinladung(backend, data.einladungen, stufe);
-            $("qzKarten").innerHTML = `<p style="font-size:14px">Völlig in Ordnung.</p>`;
+            $("qzKarten").innerHTML = `<p style="font-size:14px">${t("qz.ok")}</p>`;
           });
         },
       });
@@ -605,17 +598,15 @@ export function createApp({ doc, backend, root, diktat }) {
     function zeichne() {
       const d = DOMAINS[i];
       const [lw, lz] = d.poles
-        ? ["Wo lebt ihr gerade? (1=" + d.poles[0] + " … 10=" + d.poles[1] + ")",
-           "Wo wäre es für dich stimmig?"]
-        : ["Wie wichtig ist dir das? (1 kaum … 10 zentral)",
-           "Wie zufrieden bist du damit gerade? (1 … 10)"];
+        ? [t("kw.poleW", { p0: d.poles[0], p1: d.poles[1] }), t("kw.poleZ")]
+        : [t("kw.wichtig"), t("kw.zufrieden")];
       p.innerHTML =
-        `<div class="pb-sub">Bereich ${i + 1} von ${DOMAINS.length}</div>` +
+        `<div class="pb-sub">${t("kw.bereich", { i: i + 1, n: DOMAINS.length })}</div>` +
         `<p style="font-size:14px;margin:6px 0"><strong>${esc(d.t)}</strong><br><span class="pb-sub">${esc(d.d)}</span></p>` +
         `<label style="display:block;font-size:13px;margin:8px 0">${esc(lw)}<br><input id="kwW" type="range" min="1" max="10" value="${vals[i].w}" style="width:100%"></label>` +
         `<label style="display:block;font-size:13px;margin:8px 0">${esc(lz)}<br><input id="kwZ" type="range" min="1" max="10" value="${vals[i].z}" style="width:100%"></label>` +
-        `<button class="pb-btn" id="kwBack"${i === 0 ? " disabled" : ""}>← Zurück</button>` +
-        `<button class="pb-btn primary" id="kwNext" disabled>${i === DOMAINS.length - 1 ? "Fertig" : "Weiter"}</button>`;
+        `<button class="pb-btn" id="kwBack"${i === 0 ? " disabled" : ""}>${t("allg.zurueck")}</button>` +
+        `<button class="pb-btn primary" id="kwNext" disabled>${i === DOMAINS.length - 1 ? t("allg.fertig") : t("allg.weiter")}</button>`;
       const auf = () => { p.querySelector("#kwNext").disabled = !(vals[i].tw && vals[i].tz); };
       for (const [id, feld] of [["kwW", "w"], ["kwZ", "z"]]) {
         const inp = p.querySelector("#" + id);
@@ -654,7 +645,7 @@ export function createApp({ doc, backend, root, diktat }) {
         RANK_ITEMS.map((it, ri) => order.includes(ri) ? "" :
           `<button class="pb-btn" data-rein="${ri}"${order.length >= cfg.topN ? " disabled" : ""}>${esc(it.label)}</button>`
         ).join("") + `</div>` +
-        `<button class="pb-btn primary" id="kwRankOk"${order.length === cfg.topN ? "" : " disabled"}>Fertig</button>`;
+        `<button class="pb-btn primary" id="kwRankOk"${order.length === cfg.topN ? "" : " disabled"}>${t("allg.fertig")}</button>`;
       for (const b of p.querySelectorAll("[data-rein]"))
         b.addEventListener("click", () => { order.push(+b.getAttribute("data-rein")); zeichne(); });
       for (const b of p.querySelectorAll("[data-raus]"))
@@ -691,11 +682,11 @@ export function createApp({ doc, backend, root, diktat }) {
     p.classList.remove("pb-hidden");
     function frage(idx) {
       p.innerHTML =
-        `<div class="pb-sub">Startwert, verdeckt — bitte nur ${esc(namen[idx])} schauen</div>` +
-        `<p style="font-size:14px">${esc(namen[idx])}: Wie nah seid ihr dem heute? (1–10)</p>` +
+        `<div class="pb-sub">${t("sw.titel", { name: esc(namen[idx]) })}</div>` +
+        `<p style="font-size:14px">${t("sw.frage", { name: esc(namen[idx]) })}</p>` +
         `<input id="kwSW" type="range" min="1" max="10" value="5" style="width:100%">` +
         `<div class="pb-sub" style="text-align:center" id="kwSWv">5</div>` +
-        `<button class="pb-btn primary" id="kwSWok">Verdeckt übernehmen</button>`;
+        `<button class="pb-btn primary" id="kwSWok">${t("sw.ok")}</button>`;
       const inp = p.querySelector("#kwSW");
       inp.addEventListener("input", () => { p.querySelector("#kwSWv").textContent = inp.value; });
       p.querySelector("#kwSWok").addEventListener("click", async () => {
@@ -714,12 +705,12 @@ export function createApp({ doc, backend, root, diktat }) {
     const p = kw();
     p.classList.remove("pb-hidden");
     p.innerHTML =
-      `<div class="pb-sub">Deine Freigabe — nur angekreuzte Punkte werden für das gemeinsame Gespräch bereitgelegt</div>` +
+      `<div class="pb-sub">${t("fg.titel")}</div>` +
       data.items.map((it, i) =>
         `<label style="display:block;font-size:14px;margin:6px 0"><input type="checkbox" data-fg="${i}" checked> <strong>${esc(it.id)}</strong> ${esc(it.text)}</label>`
       ).join("") +
-      `${wieder ? `<p style="font-size:14px">Und ein einziges Mal noch die Aufdeck-Runde: Hättest du Freude daran, wenn ihr eure Top 5 einander preisgebt – auch wenn der Gedanke vielleicht etwas Aufregung auslöst? Gezeigt würden nur deine Top 5 und deine drei Tipps für ${esc(state.info.partner)}. Ohne Häkchen bleibt alles bei dir; danach fragt niemand mehr.</p><label style="display:block;font-size:14px;margin:6px 0"><input type="checkbox" id="kwFgAufdeck"> Ja – Top 5 und Tipps dürfen in der Aufdeck-Runde gezeigt werden.</label>` : ""}<button class="pb-btn primary" id="kwFgOk">Freigeben</button>` +
-      `<button class="pb-btn" id="kwFgNein">Noch nicht</button>`;
+      `${wieder ? `<p style="font-size:14px">${t("fg.wieder", { partner: esc(state.info.partner) })}</p><label style="display:block;font-size:14px;margin:6px 0"><input type="checkbox" id="kwFgAufdeck"> ${t("fg.check")}</label>` : ""}<button class="pb-btn primary" id="kwFgOk">${t("allg.freigeben")}</button>` +
+      `<button class="pb-btn" id="kwFgNein">${t("allg.nochNicht")}</button>`;
     p.querySelector("#kwFgOk").addEventListener("click", async () => {
       const items = [...p.querySelectorAll("input[data-fg]:checked")].map(x => {
         const it = data.items[+x.getAttribute("data-fg")];
@@ -736,13 +727,13 @@ export function createApp({ doc, backend, root, diktat }) {
           engine.chat.minigate = "ja";
         }
         engine.chat.status = "released";
-        await engine.submitToolResult("FREIGABE-ERGEBNIS: " + items.length + " von " + data.items.length + " Punkten freigegeben.");
+        await engine.submitToolResult(fuelle(steuerTexte.freigabeAnzahl, { n: items.length, gesamt: data.items.length }));
         renderMsgs();
       } catch (e) { err(e.message); }
     });
     p.querySelector("#kwFgNein").addEventListener("click", async () => {
       kwZu();
-      await engine.submitToolResult("FREIGABE-ERGEBNIS: Ich möchte vor der Freigabe noch etwas anpassen.");
+      await engine.submitToolResult(steuerTexte.freigabeAnpassen);
       renderMsgs();
     });
   }
@@ -751,12 +742,12 @@ export function createApp({ doc, backend, root, diktat }) {
   function diktatTipp() {
     const ua = dk.ua;
     if (/Android|iPhone|iPad|iPod/i.test(ua))
-      return "Diktat: Tippe auf das Mikrofon deiner Bildschirmtastatur — der Text landet direkt im Eingabefeld.";
+      return t("diktat.mobil");
     if (/Windows/i.test(ua))
-      return "Diktat: Windows-Taste + H drücken — die Windows-Diktierfunktion schreibt direkt ins Eingabefeld.";
+      return t("diktat.windows");
     if (/Mac/i.test(ua))
-      return "Diktat: Zweimal die Fn-Taste (🌐) drücken — das macOS-Diktat schreibt direkt ins Eingabefeld.";
-    return "Diktat: Nutze die Diktierfunktion deines Systems — der Text landet direkt im Eingabefeld.";
+      return t("diktat.mac");
+    return t("diktat.allgemein");
   }
 
   let rec = null;
@@ -768,7 +759,7 @@ export function createApp({ doc, backend, root, diktat }) {
   function diktatStart() {
     if (!dk.SR) { hint(diktatTipp()); return; }          // keine Erkennung → OS-Tipp
     try { rec = new dk.SR(); } catch { hint(diktatTipp()); return; }
-    rec.lang = "de-DE";
+    rec.lang = t("sprache.diktat");
     rec.continuous = true;
     rec.interimResults = true;
     rec.onresult = ev => {
@@ -784,26 +775,26 @@ export function createApp({ doc, backend, root, diktat }) {
       diktatStopp();
       if (ev && (ev.error === "not-allowed" || ev.error === "service-not-allowed"))
         hint(diktatTipp());                              // Mikro blockiert (z. B. Sandbox) → OS-Tipp
-      else err("Diktat unterbrochen — einfach erneut auf 🎤 tippen.");
+      else err(t("diktat.unterbrochen"));
     };
     rec.onend = () => { if (rec) diktatStopp(); };       // Browser beendet still (Timeout)
     rec.start();
     $("btnMic").textContent = "⏹";
     $("btnMic").classList.add("primary");
-    hint("Diktat läuft — sprich einfach; ⏹ beendet.");
+    hint(t("diktat.laeuft"));
   }
   $("btnMic").addEventListener("click", () => { rec ? diktatStopp() : diktatStart(); });
 
   async function boot() {
     applyDesign(doc);   // Design dokumentweit (idempotent)
     state.info = await backend.info();
-    $("pbHallo").textContent = "Hallo " + state.info.name;
-    $("pbKern").textContent = "Paarbegleitung";
-    $("startHallo").textContent = "Schön, dass du da bist, " + state.info.name + ".";
-    $("startIntro").textContent = "Zwei Räume, eine einfache Regel: Was bei dir bleibt, bleibt bei dir — geteilt wird nur, was du ausdrücklich freigibst.";
-    $("startMeinSub").textContent = "Nur für dich: zum Sortieren, Üben und Ablegen. Nichts von hier erreicht " + state.info.partner + ", außer du gibst es frei.";
-    $("startTeilSub").textContent = "Für euch beide: eure gemeinsamen Sessions — und alles, was einer von euch lesbar gemacht hat.";
-    $("meinIntro").textContent = "Dieser Raum ist nur für dich — nichts von hier erreicht " + state.info.partner + ", außer du gibst es ausdrücklich frei. Nimm dir die Zeit, die du brauchst.";
+    $("pbHallo").textContent = t("allg.hallo", { name: state.info.name });
+    $("pbKern").textContent = t("allg.marke");
+    $("startHallo").textContent = t("start.hallo", { name: state.info.name });
+    $("startIntro").textContent = t("start.intro");
+    $("startMeinSub").textContent = t("start.meinSub", { partner: state.info.partner });
+    $("startTeilSub").textContent = t("start.teilSub");
+    $("meinIntro").textContent = t("mein.intro", { partner: state.info.partner });
     zeigeRecovery();
     show("scrStart");
   }

@@ -11,6 +11,7 @@ import { uebergabeTeilKey } from "../../core/contracts/uebergabe.js";
 import { makeAdapter } from "../../core/llm/adapter.js";
 import { createApp } from "../../core/ui/app.js";
 import { applyDesign } from "../../core/ui/design.js";
+import { t } from "../../core/i18n/index.js";
 import { runSelftest } from "./selftest.js";
 import { createDevPanel } from "./dev-panel.js";
 
@@ -54,12 +55,12 @@ async function boot() {
   let meta = await store.get("PBDEV:meta", true);
   if (!meta) {
     app.innerHTML = `
-      <h1 style="font-family:inherit;font-weight:400;font-size:26px;margin:0 0 4px">${APP_NAME} · Einrichtung</h1>
-      <p style="color:var(--ink-soft);font-size:13px">Entwicklungsumgebung (Artefakt) · Kern ${CORE_VERSION}</p>
+      <h1 style="font-family:inherit;font-weight:400;font-size:26px;margin:0 0 4px">${APP_NAME} · ${t("einr.titel")}</h1>
+      <p style="color:var(--ink-soft);font-size:13px">${t("einr.umgebung", { version: CORE_VERSION })}</p>
       <div style="background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:16px;backdrop-filter:blur(8px)">
-        <label style="display:block;font-size:14px;margin:6px 0">Name Person A <input id="inA" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Anna"></label>
-        <label style="display:block;font-size:14px;margin:6px 0">Name Person B <input id="inB" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Bernd"></label>
-        <button id="btnStart" style="margin-top:8px;background:var(--accent);color:var(--me-ink,#fff);border:0;border-radius:999px;padding:11px 24px;font:inherit;cursor:pointer">Loslegen</button>
+        <label style="display:block;font-size:14px;margin:6px 0">${t("einr.nameA")}<input id="inA" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Anna"></label>
+        <label style="display:block;font-size:14px;margin:6px 0">${t("einr.nameB")}<input id="inB" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Bernd"></label>
+        <button id="btnStart" style="margin-top:8px;background:var(--accent);color:var(--me-ink,#fff);border:0;border-radius:999px;padding:11px 24px;font:inherit;cursor:pointer">${t("einr.los")}</button>
       </div>`;
     doc.getElementById("btnStart").onclick = async () => {
       meta = {
@@ -78,11 +79,11 @@ async function boot() {
 function rollenwahl(store, meta) {
   app.innerHTML = `
     <h1 style="font-family:inherit;font-weight:400;font-size:26px;margin:0 0 4px">${APP_NAME}</h1>
-    <p style="color:var(--ink-soft);font-size:13px">Wer bist du gerade? (Dev-Umschalter — produktiv übernimmt das der Magic-Link)</p>
+    <p style="color:var(--ink-soft);font-size:13px">${t("einr.wer")}</p>
     <div style="background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:16px;backdrop-filter:blur(8px)">
       <button id="asA" style="border:1px solid var(--accent);background:transparent;color:var(--accent-ink);border-radius:999px;padding:10px 22px;font:inherit;cursor:pointer;margin-right:8px">${meta.nameA}</button>
       <button id="asB" style="border:1px solid var(--accent);background:transparent;color:var(--accent-ink);border-radius:999px;padding:10px 22px;font:inherit;cursor:pointer">${meta.nameB}</button>
-      <button id="btnSelftest" style="float:right;border:1px solid var(--card-bd);background:var(--card);color:var(--ink-soft);border-radius:999px;padding:9px 16px;font:inherit;cursor:pointer">Selbsttest</button>
+      <button id="btnSelftest" style="float:right;border:1px solid var(--card-bd);background:var(--card);color:var(--ink-soft);border-radius:999px;padding:9px 16px;font:inherit;cursor:pointer">${t("einr.selbsttest")}</button>
     </div>
     <pre id="devIO" style="font-size:11px;white-space:pre-wrap;color:#5a6675"></pre>`;
   const start = async role => {
@@ -93,7 +94,7 @@ function rollenwahl(store, meta) {
   doc.getElementById("asA").onclick = () => start("A");
   doc.getElementById("asB").onclick = () => start("B");
   doc.getElementById("btnSelftest").onclick = async () => {
-    doc.getElementById("devIO").textContent = "Selbsttest läuft…";
+    doc.getElementById("devIO").textContent = t("einr.selbsttestLaeuft");
     doc.getElementById("devIO").textContent = await runSelftest(store);
   };
 }
@@ -105,7 +106,7 @@ createDevPanel({
   doc,
   host: doc.getElementById("pbDevHost"),
   store: panelStore,
-  reboot: () => boot().catch(e => { app.innerHTML = "<p>Start fehlgeschlagen: " + e.message + "</p>"; }),
+  reboot: () => boot().catch(e => { app.innerHTML = "<p>" + t("wieder.startFehler", { fehler: e.message }) + "</p>"; }),
 });
 
-boot().catch(e => { app.innerHTML = "<p>Start fehlgeschlagen: " + e.message + "</p>"; });
+boot().catch(e => { app.innerHTML = "<p>" + t("wieder.startFehler", { fehler: e.message }) + "</p>"; });
