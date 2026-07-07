@@ -6,7 +6,8 @@
 // „verdeckt" ist eine UI-Zusicherung, keine Speicher-Zusicherung. Serverseitiges
 // Gating je Rolle wäre die härtere Form — als offener Punkt notiert.
 
-import { DOMAENEN, K } from "../prompts/prompts.js";
+import { K } from "../prompts/prompts.js";
+import { fuelle } from "../i18n/index.js";
 import { BLOECKE } from "../contracts/registry.js";
 
 /* ================= Prozessreflexion ================= */
@@ -34,17 +35,19 @@ export function bereiteRunde(mr) {
  *  Erlebens-Differenz (Beziehungs-Befund) getrennt von Lese-Genauigkeit
  *  (Empathie-Signal); Treffer-zuerst-Sortierung übernimmt der Prompt. */
 export function formatiereMessrunde(runde, nameA, nameB) {
+  const KT = key => K().korpusTexte[key];
   const a = runde.werte.A, b = runde.werte.B;
   const zeilen = [
-    "Nähe-Werte: " + nameA + " " + a.naehe + " · " + nameB + " " + b.naehe +
-      " ⇒ Erlebens-Differenz " + Math.abs(a.naehe - b.naehe) + " (Beziehungs-Befund, kein Fehler, kein Mittelwert)",
-    "Lese-Genauigkeit (Empathie-Signal): " +
-      nameA + " schätzte " + nameB + " auf " + a.zweit + " (tatsächlich " + b.naehe + ", Abstand " + Math.abs(a.zweit - b.naehe) + ") · " +
-      nameB + " schätzte " + nameA + " auf " + b.zweit + " (tatsächlich " + a.naehe + ", Abstand " + Math.abs(b.zweit - a.naehe) + ")",
+    fuelle(KT("mess.naehe"), { nameA, a: a.naehe, nameB, b: b.naehe, diff: Math.abs(a.naehe - b.naehe) }),
+    fuelle(KT("mess.lese"), {
+      nameA, nameB,
+      x: a.zweit, y: b.naehe, d: Math.abs(a.zweit - b.naehe),
+      x2: b.zweit, y2: a.naehe, d2: Math.abs(b.zweit - a.naehe),
+    }),
   ];
   const pk = Object.keys(a.passung || {});
   if (pk.length)
-    zeilen.push("Auftrags-Passung: " + pk.map(k =>
+    zeilen.push(KT("mess.passung") + pk.map(k =>
       k + ": " + nameA + " " + a.passung[k] + " · " + nameB + " " + ((b.passung || {})[k] ?? "–")).join(" · "));
   return zeilen.join("\n");
 }
@@ -79,18 +82,19 @@ export { QZ_STUFEN_TEXT } from "../prompts/prompts.js";   // Inhalt lebt im Korp
 
 /** Material-Nachricht für den Fächer-Generator (qzSys arbeitet NUR damit). */
 export function baueQzMaterial({ auftraege, freigaben, qz }) {
-  const teile = ["MATERIAL (gemeinsame Ebene):"];
+  const KT = key => K().korpusTexte[key];
+  const teile = [KT("qm.kopf")];
   const aktive = ((auftraege && auftraege.items) || []).filter(a => a.status === "aktiv");
   teile.push(aktive.length
-    ? "Aufträge: " + aktive.map(a => a.text).join(" · ")
-    : "Aufträge: keine aktiven.");
+    ? KT("qm.auftraege") + aktive.map(a => a.text).join(" · ")
+    : KT("qm.auftraegeLeer"));
   const frei = (freigaben || []).flatMap(f => f.items.map(i => i.text));
-  teile.push(frei.length ? "Freigegebenes Material: " + frei.join(" · ") : "Freigegebenes Material: keines.");
+  teile.push(frei.length ? KT("qm.material") + frei.join(" · ") : KT("qm.materialLeer"));
   const ruht = Object.keys((qz && qz.ruht) || {}).filter(k => qz.ruht[k]);
-  teile.push(ruht.length ? "RUHEND (nicht vorschlagen): " + ruht.join(" · ") : "RUHEND: nichts.");
+  teile.push(ruht.length ? KT("qm.ruhend") + ruht.join(" · ") : KT("qm.ruhendLeer"));
   const letzte = ((qz && qz.wahl) || []).slice(-3).map(w => w.text);
-  if (letzte.length) teile.push("Zuletzt gewählt: " + letzte.join(" · "));
-  teile.push("KATALOG der Lebensbereiche:\n" + DOMAENEN);
+  if (letzte.length) teile.push(KT("qm.zuletzt") + letzte.join(" · "));
+  teile.push(KT("qm.katalog") + "\n" + K().DOMAENEN);
   return teile.join("\n\n");
 }
 

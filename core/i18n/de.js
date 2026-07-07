@@ -97,6 +97,7 @@ export const de = {
   // Start-Fehler
   "fehler.aufdeckWartet": "Die Aufdeck-Runde wartet noch auf euch – sie kommt vor der Klärung.",
   "fehler.aufdeckZu": "Die Aufdeck-Runde öffnet erst, wenn beide sie gewählt haben und so weit sind.",
+  "fehler.aufdeckDaten": "Für die Aufdeck-Runde fehlen Stapel (Top 5) oder Tipps (Top 3) – bitte im Gespräch um eine Korrektur-Runde bitten.",
 
   // Prozessreflexion
   "mess.titel": "Prozessreflexion",

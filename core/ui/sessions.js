@@ -11,6 +11,7 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { K } from "../prompts/prompts.js";
+import { fuelle } from "../i18n/index.js";
 
 /** Reflexionsgespräch (persönlicher Raum). */
 export function soloDef(backend, hooks = {}) {
@@ -140,33 +141,34 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
  * sieht die Rohform nie (hidden = reine Anzeige-Semantik, geht ans Modell mit).
  */
 export function baueMomentKontext({ auftraege, agenda, momentprotokoll, messrunde, freigaben }, nameA, nameB) {
-  const teile = ["MOMENT-KONTEXT (app-intern; nicht als Block zitieren, dramaturgisch einbringen):"];
+  const KT = key => K().korpusTexte[key];
+  const teile = [KT("mk.kopf")];
 
   const aktive = ((auftraege && auftraege.items) || []).filter(a => a.status !== "abgeschlossen");
   teile.push(aktive.length
     ? "AUFTRÄGE:\n" + aktive.map(a => "- " + a.id + " (" + a.art + (a.owner ? ", " + a.owner : "") + ", " + a.status + "): " + a.text).join("\n")
-    : "AUFTRÄGE: noch keine.");
+    : KT("mk.auftraegeLeer"));
 
   const offen = ((agenda && agenda.items) || []).filter(i => i.zustand === "offen");
   teile.push(offen.length
-    ? "AGENDA (offen):\n" + offen.map(i => "- von " + i.von + ": " + i.text + (i.wunsch ? " (Wunsch: " + i.wunsch + ")" : "")).join("\n")
-    : "AGENDA: leer.");
+    ? KT("mk.agendaKopf") + "\n" + offen.map(i => fuelle(KT("mk.agendaVon"), { name: i.von }) + i.text + (i.wunsch ? fuelle(KT("mk.agendaWunsch"), { wunsch: i.wunsch }) : "")).join("\n")
+    : KT("mk.agendaLeer"));
 
   const fruehere = ((momentprotokoll && momentprotokoll.eintraege) || []).slice(-3);
   teile.push(fruehere.length
-    ? "FRÜHERE MOMENTE (jüngste zuletzt):\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.zusammenfassung + (e.zwischenzeitImpuls ? " · Zwischenzeit-Impuls war: " + e.zwischenzeitImpuls : "")).join("\n")
-    : "FRÜHERE MOMENTE: keine — dies ist der erste Termin (keine offene Tür).");
+    ? KT("mk.fruehereKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.zusammenfassung + (e.zwischenzeitImpuls ? KT("mk.impulsWar") + e.zwischenzeitImpuls : "")).join("\n")
+    : KT("mk.fruehereLeer"));
 
   teile.push(messrunde
-    ? "PROZESSREFLEXION (aufzudecken, Werte sieht nur das System — häppchenweise, Treffer zuerst):\n" + messrunde
-    : "PROZESSREFLEXION: keine ausstehend.");
+    ? KT("mk.prozessKopf") + "\n" + messrunde
+    : KT("mk.prozessLeer"));
 
   const frei = freigaben || [];
   teile.push(frei.length
-    ? "ZWISCHENZEIT-MATERIAL (freigegeben):\n" + frei.map(f => "- von " + f.name + ": " + f.items.map(i => i.text).join(" · ")).join("\n")
-    : "ZWISCHENZEIT-MATERIAL: keines.");
+    ? KT("mk.zwischenzeitKopf") + "\n" + frei.map(f => fuelle(KT("mk.materialVon"), { name: f.name }) + f.items.map(i => i.text).join(" · ")).join("\n")
+    : KT("mk.materialLeer"));
 
-  teile.push("Namen: " + nameA + " (A), " + nameB + " (B).");
+  teile.push(fuelle(KT("mk.namen"), { nameA, nameB }));
   return teile.join("\n\n");
 }
 

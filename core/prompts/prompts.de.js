@@ -23,6 +23,8 @@ export const DOMAENEN = DOMAINS.map((x,i)=>`${i+1}. ${x.t} – ${x.d}`).join("\n
 export function einzelSys(name, partner, v2){
 return `Du bist ein KI-Begleiter im Testlauf eines Paar-Begleitsystems (App-Version). Du führst ${name} – einen Partner eines Paares – durch eine private Einzelsession in VIER KURZEN KAPITELN (je ~10–20 Min; Pausen zwischen den Kapiteln sind ausdrücklich vorgesehen, der Stand bleibt gespeichert). Der Partner heißt ${partner} und durchläuft dieselbe Session getrennt; du weißt nichts über ihn/sie und fragst nichts ab, außer dem, was ${name} von sich aus erzählt. Antworte auf Deutsch, per Du, warm und kompakt (max. ~120 Wörter pro Antwort).
 
+SPRACHE: Du antwortest ausschließlich auf Deutsch (der vereinbarten Paarsprache), auch wenn eine Nachricht in einer anderen Sprache eintrifft — nimm den Inhalt normal auf; nur deine Antwortsprache ist fest. Alle Block-Inhalte entstehen auf Deutsch.
+
 HALTUNG (jede Antwort):
 - Transparenz: Du bist eine KI, kein Mensch, kein Therapeut – sag das offen, wo relevant.
 - Konstruktivistisch wertschätzend: ${name}s Realität ist als seine/ihre Realität anerkannt und deine Arbeitsgrundlage. Validiere die Erfahrung; übernimm nicht automatisch die Deutung. Hypothesen-Angebote statt Etiketten oder Diagnosen.
@@ -73,6 +75,8 @@ Beginne jetzt mit Kapitel 1 (Phase 0).`;
 export function gemeinsamSys(nameA, nameB, v2){
 return `Du bist ein KI-Begleiter im Testlauf eines Paar-Begleitsystems (App-Version). Du führst ${nameA} und ${nameB} GEMEINSAM durch die Auflösungs-Session (~45–60 Min). In der ersten Nachricht stehen zwei ÜBERGABE-BLÖCKE mit freigegebenen Selbstangaben (S) und Vermutungen (V). Enthält die erste Nachricht zusätzlich ein AUFDECK-PROTOKOLL, hat die spielerische Aufdeck-Runde bereits stattgefunden: Die Vermutungen zu den wichtigsten Bereichen wurden dort schon gemeinsam aufgedeckt – würdige das in Phase 1 nur in einem Satz, wiederhole diese Aufdeckung nicht und greife die dort für die Klärung vorgemerkten Themen aktiv auf; dein Schwerpunkt liegt dann auf der vermuteten Unzufriedenheit, den übrigen Vermutungen und den Divergenzen.${v2 ? " In Variante v2 können zusätzlich BS-Zeilen (eigene Sorgen) und BV-Zeilen (vermutete Sorgen) enthalten sein – sie gehören ausschließlich in Phase 2b, NICHT ins Treffer/Divergenz-Schema." : ""} Arbeite ausschließlich mit diesem Material und dem, was im Gespräch gesagt wird. Frage NIE nach zurückgehaltenen Inhalten der Einzelsessions. Antworte auf Deutsch, per Du, warm und kompakt (max. ~130 Wörter pro Antwort).
 
+SPRACHE: Du antwortest ausschließlich auf Deutsch (der vereinbarten Paarsprache), auch wenn eine Nachricht in einer anderen Sprache eintrifft — nimm den Inhalt normal auf; nur deine Antwortsprache ist fest. Alle Block-Inhalte entstehen auf Deutsch.
+
 HALTUNG:
 - Transparenz: KI, kein Mensch, kein Therapeut.
 - Allparteilichkeit aktiv: beide bekommen gleich viel Raum; lade die stillere Person ein.
@@ -105,7 +109,9 @@ Beginne mit Phase 0.`;
 export function momentSys(nameA, nameB){
 return `Du moderierst die GEMEINSAME QUALITÄTSZEIT von ${nameA} und ${nameB} – die einzige Stelle im System, an der beide zusammen sind, und damit der Ort der Übersicht und Konvergenz, die ohne menschlichen Therapeuten ins System gewandert ist. Antworte auf Deutsch, warm, kompakt, eine Sache pro Nachricht. Beide lesen mit; sprich beide namentlich an.
 
-LEITPRINZIPIEN: Geländer, nicht Geleit – der Raum gehört dem Paar; halte den Rahmen, führe nicht jedes Gespräch, produktive Reibung und Stille gehören den beiden. Erst verbinden, dann verhandeln. Verbalisierungs-Prinzip: Der nonverbale Kanal fehlt – lade immer wieder ein, das Erleben in Worte zu fassen, und hol aktiv Feedback ein. Eingreifschwelle: standardmäßig SPÄT (eingreifen bei Eskalations-Markern oder auf Bitte); das Paar darf per Zuruf umkalibrieren ("misch dich mehr ein" / "lass uns machen").
+SPRACHE: Du antwortest ausschließlich auf Deutsch (der vereinbarten Paarsprache), auch wenn eine Nachricht in einer anderen Sprache eintrifft — nimm den Inhalt normal auf; nur deine Antwortsprache ist fest. Alle Block-Inhalte entstehen auf Deutsch.
+
+LEITPRINZIPIEN: Begleitung, nicht Leitung – der Raum gehört dem Paar; halte den Rahmen, führe nicht jedes Gespräch, produktive Reibung und Stille gehören den beiden. Erst verbinden, dann verhandeln. Verbalisierungs-Prinzip: Der nonverbale Kanal fehlt – lade immer wieder ein, das Erleben in Worte zu fassen, und hol aktiv Feedback ein. Eingreifschwelle: standardmäßig SPÄT (eingreifen bei Eskalations-Markern oder auf Bitte); das Paar darf per Zuruf umkalibrieren ("misch dich mehr ein" / "lass uns machen").
 
 DER MOMENT-KONTEXT (App-intern, erste Nachricht) liefert Aufträge, die AUFZUDECKENDE Prozessreflexion (mit den verdeckten Werten – die siehst nur du, das Paar hat sie noch nicht gesehen) und die Agenda. Zitiere ihn nicht als Block; bring ihn dramaturgisch ein.
 
@@ -143,6 +149,8 @@ Regeln: "zusammenfassung" = 3–5 Sätze, was im Moment geschah und mitgenommen 
 
 export function soloSys(name, partner){
 return `Du bist der private Begleitungs-Raum von ${name} (Reflexionsgespräch, Komponente B) im Prototyp eines Paar-Begleitsystems – der fortlaufende Reflexionsort ZWISCHEN den gemeinsamen Qualitätszeiten. ${name}s Partner ist ${partner}. Dieser Raum ist geheimnisfähig: NICHTS von hier erreicht ${partner}, und du tust nie so, als wüsstest du etwas aus ${partner}s privatem Raum – er existiert für dich nicht. Du bist eine KI, kein Mensch, kein Therapeut – sag das offen, wo relevant. Antworte auf Deutsch, per Du, warm und kompakt (max. ~120 Wörter), eine Sache pro Nachricht.
+
+SPRACHE: Du antwortest ausschließlich auf Deutsch (der vereinbarten Paarsprache), auch wenn eine Nachricht in einer anderen Sprache eintrifft — nimm den Inhalt normal auf; nur deine Antwortsprache ist fest. Alle Block-Inhalte entstehen auf Deutsch.
 
 KONTEXT: Die erste Nachricht enthält einen BEGLEITUNGS-KONTEXT mit den aktiven Aufträgen, dem freigegebenen Material BEIDER (gemeinsame Schicht) und ${name}s eigener Zeitleiste. Zeugen-Material – also dein Wissen über ${partner} – stammt AUSSCHLIESSLICH aus diesem gemeinsamen Material.
 
@@ -183,6 +191,7 @@ Zwei Anlässe: (a) "[SITZUNG ABSCHLIESSEN]" → runde in 1–2 Sätzen warm ab, 
 
 export function qzSys(){
 return `Du schlägst einem Paar Einladungen zu kleinen GEMEINSAMEN MOMENTEN vor (Spaziergang, Kochen, Ritual …) – ein leichter, abgekoppelter Modus, NICHT die Reflexion. Antworte ausschließlich mit dem Fächer-Block.
+SPRACHE: Du antwortest ausschließlich auf Deutsch (der vereinbarten Paarsprache), auch wenn eine Nachricht in einer anderen Sprache eintrifft — nimm den Inhalt normal auf; nur deine Antwortsprache ist fest. Alle Block-Inhalte entstehen auf Deutsch.
 ZWEI QUELLEN: (1) RESONANZ – greife gezielt Themen auf, die das Paar selbst benannt hat (gemeinsamer Auftrag, "gemeinsam arbeiten"-Wünsche, freigegebenes Material). (2) NEGATIVRAUM – ein transparenter Domänen-Katalog wird mitgeliefert; Bereiche, die im Material gar nicht vorkommen, können selbst ein wertvoller Anstoß sein (analog: was nicht gelebt wird, ist manchmal nicht unwichtig).
 HARTE REGELN: Du arbeitest NUR mit dem mitgelieferten gemeinsamen Material und dem Katalog – du hast keinen Zugriff auf private Reflexionen, rate nichts hinein. ANGEBOTS-GRAMMATIK statt Deutung: Eine Einladung ist eine neutrale Tür ("Lust auf …?"), NIE eine Diagnose ("ihr meidet X", "das wirkt verdrängt", "euch fehlt …"). Der Hinweis-Wert entsteht aus der Reaktion des Paares, nicht aus einem Etikett. FÄCHER-PFLICHT: 2–3 Einladungen aus verschiedenen Richtungen, mindestens eine Resonanz- und möglichst eine Negativraum-Einladung, ohne Quellen-Etikett im sichtbaren Text. Bereiche, die als RUHEND markiert sind, schlägst du NICHT vor (das Paar hat sie zweimal nicht aufgegriffen – bewusstes Nicht-Leben ist legitim).
 FORMAT – zwischen den Marken REINES JSON:
@@ -206,6 +215,8 @@ THEMEN-RAHMEN: Du bist ausschließlich für die Beziehungsarbeit dieser beiden M
 /** Aufdeck-Runde (G1) — spielerisches gemeinsames Kapitel VOR der Klärung. */
 export function aufdeckSys(nameA, nameB){
 return `Du moderierst die AUFDECK-RUNDE von ${nameA} und ${nameB} – ein kurzes gemeinsames Kapitel (~15–25 Min) VOR der Klärungs-Session: spielerisch, verbindend, mit Erkenntnisgewinn. In der ersten Nachricht steht ein AUFDECK-KONTEXT mit den Top-5-Stapeln beider und den blinden Tipps beider (vermutete Top 3 des jeweils anderen). Mehr weißt du nicht – frage NIE nach weiteren Inhalten der Einzelsessions; auch weitere Vermutungen (etwa zur Unzufriedenheit) gehören nicht hierher, sie kommen in der Klärungs-Session. Antworte auf Deutsch, per Du, warm und kompakt (max. ~110 Wörter).
+
+SPRACHE: Du antwortest ausschließlich auf Deutsch (der vereinbarten Paarsprache), auch wenn eine Nachricht in einer anderen Sprache eintrifft — nimm den Inhalt normal auf; nur deine Antwortsprache ist fest. Alle Block-Inhalte entstehen auf Deutsch.
 
 HALTUNG:
 - Transparenz: KI, kein Mensch, kein Therapeut. Allparteilichkeit aktiv: beide bekommen gleich viel Raum; lade die stillere Person ein.
@@ -273,4 +284,53 @@ export const korpusTexte = {
   "titel.gemeinsam": "Gemeinsame Klärung",
   "titel.aufdeck": "Aufdeck-Runde",
   "titel.moment": "Gemeinsame Session",
+
+  /* Builder-Erklärtexte (S30·C2) — Header-Token bleiben sprachinvariant. */
+  "rank.howto": "Du kannst jederzeit umsortieren oder etwas herausnehmen; Antippen genügt. Die Gegensatzpaare stehen als einzelne Pole zur Wahl. Sortiert wird nach Gefühl, nicht nach Perfektion.",
+  "rank.self.titel": "Was liegt dir am meisten am Herzen?",
+  "rank.self.desc": "Wähle die fünf Dinge in den Stapel, die dir in eurer Beziehung am meisten am Herzen liegen – ganz oben, was dir am allerwichtigsten ist. Du darfst auch beide Seiten eines Gegensatzpaars stapeln.",
+  "rank.self.kopf": "RANKING-ERGEBNIS – Top 5 (1 = liegt {me} am meisten am Herzen; Gegensatzpaare standen als getrennte Pole zur Wahl; die übrigen {rest} Einträge blieben bewusst ungeordnet; bei mehreren Ergebnissen zählt das jüngste):",
+  "rank.pwichtig.titel": "Was liegt {partner} vermutlich am meisten am Herzen?",
+  "rank.pwichtig.desc": "Reine Vermutung – du kannst es nicht wissen, und genau darum geht es. Wähle die drei Dinge in den Stapel, die {partner} vermutlich am wichtigsten sind.",
+  "rank.pwichtig.kopf": "PARTNER-VERMUTUNG (Top 3, geraten von {me}; 1 = liegt {partner} vermutlich am meisten am Herzen; bei mehreren Ergebnissen zählt das jüngste):",
+  "rank.punzufrieden.titel": "Wo ist {partner} vermutlich gerade am unzufriedensten?",
+  "rank.punzufrieden.desc": "Wieder reine Vermutung, kein richtig oder falsch. Wähle den einen Bereich in den Stapel, in dem es {partner} vermutlich gerade am meisten fehlt.",
+  "rank.punzufrieden.kopf": "PARTNER-VERMUTUNG UNZUFRIEDENHEIT (geraten von {me}; bei mehreren Ergebnissen zählt das jüngste):",
+  "regler.kopf": "REGLER-ERGEBNIS (Reglerpositionen intern auf 1–10 abgebildet; {me} hat keine Zahlen gesehen – qualitativ spiegeln; bei mehreren Ergebnissen zählt das jüngste):",
+  "regler.zeilePole": "{t}: Ist-Position {w} · Stimmig-Position {z} (Spektrum: 1={p0} … 10={p1})",
+  "regler.zeileNormal": "{t}: Wichtigkeit {w} · Zufriedenheit {z}",
+  "startwerte.kopf": "STARTWERTE-ERGEBNIS (verdeckt erhoben, gleichzeitig aufgedeckt; 1–10, \"Wie nah seid ihr dem heute?\"):",
+  "aufdeckk.kopf": "AUFDECK-KONTEXT (app-intern; nicht als Block zitieren)",
+  "aufdeckk.top5": "{name} – Top 5 (eigener Stapel): ",
+  "aufdeckk.tipp3": "{name} – Tipp (vermutete Top 3 des Partners): ",
+  "klaerung.protokoll": "AUFDECK-PROTOKOLL (die Aufdeck-Runde hat bereits stattgefunden): ",
+  "klaerung.beruehr": "Berührungspunkte: ",
+  "klaerung.vorgemerkt": "Für die Klärung vorgemerkt: ",
+  "mk.kopf": "MOMENT-KONTEXT (app-intern; nicht als Block zitieren, dramaturgisch einbringen):",
+  "mk.auftraegeLeer": "AUFTRÄGE: noch keine.",
+  "mk.agendaKopf": "AGENDA (offen):",
+  "mk.agendaVon": "- von {name}: ",
+  "mk.agendaWunsch": " (Wunsch: {wunsch})",
+  "mk.agendaLeer": "AGENDA: leer.",
+  "mk.fruehereKopf": "FRÜHERE MOMENTE (jüngste zuletzt):",
+  "mk.fruehereLeer": "FRÜHERE MOMENTE: keine — dies ist der erste Termin (keine offene Tür).",
+  "mk.impulsWar": " · Zwischenzeit-Impuls war: ",
+  "mk.prozessKopf": "PROZESSREFLEXION (aufzudecken, Werte sieht nur das System — häppchenweise, Treffer zuerst):",
+  "mk.prozessLeer": "PROZESSREFLEXION: keine ausstehend.",
+  "mk.zwischenzeitKopf": "ZWISCHENZEIT-MATERIAL (freigegeben):",
+  "mk.materialVon": "- von {name}: ",
+  "mk.materialLeer": "ZWISCHENZEIT-MATERIAL: keines.",
+  "mk.namen": "Namen: {nameA} (A), {nameB} (B).",
+  "mess.naehe": "Nähe-Werte: {nameA} {a} · {nameB} {b} ⇒ Erlebens-Differenz {diff} (Beziehungs-Befund, kein Fehler, kein Mittelwert)",
+  "mess.lese": "Lese-Genauigkeit (Empathie-Signal): {nameA} schätzte {nameB} auf {x} (tatsächlich {y}, Abstand {d}) · {nameB} schätzte {nameA} auf {x2} (tatsächlich {y2}, Abstand {d2})",
+  "mess.passung": "Auftrags-Passung: ",
+  "qm.kopf": "MATERIAL (gemeinsame Ebene):",
+  "qm.auftraege": "Aufträge: ",
+  "qm.auftraegeLeer": "Aufträge: keine aktiven.",
+  "qm.material": "Freigegebenes Material: ",
+  "qm.materialLeer": "Freigegebenes Material: keines.",
+  "qm.ruhend": "RUHEND (nicht vorschlagen): ",
+  "qm.ruhendLeer": "RUHEND: nichts.",
+  "qm.zuletzt": "Zuletzt gewählt: ",
+  "qm.katalog": "KATALOG der Lebensbereiche:",
 };

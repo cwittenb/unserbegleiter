@@ -99,6 +99,7 @@ export const en = {
   // Start errors
   "fehler.aufdeckWartet": "The Reveal Round is still waiting for you – it comes before the clarification.",
   "fehler.aufdeckZu": "The Reveal Round opens once both of you have chosen it and are ready.",
+  "fehler.aufdeckDaten": "The Reveal Round is missing the stack (Top 5) or the guesses (Top 3) – please ask for a correction round in the conversation.",
 
   // Process reflection
   "mess.titel": "Process Reflection",

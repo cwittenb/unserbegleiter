@@ -5,7 +5,7 @@ import { Engine } from "../engine/engine.js";
 import { cleanDisplay } from "../contracts/block.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
-import { einzelDef, gemeinsamDef, aufdeckDef, RANK_ITEMS, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
+import { einzelDef, gemeinsamDef, aufdeckDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
 import { applyDesign } from "./design.js";
@@ -639,6 +639,7 @@ export function createApp({ doc, backend, root, diktat }) {
 
   function rankPanel(mode, engine) {
     const cfg = RANK_MODES[mode];
+    const ITEMS = rankItems();
     const ctx = { me: state.info.name, partner: state.info.partner };
     const order = [];
     const p = kw();
@@ -650,9 +651,9 @@ export function createApp({ doc, backend, root, diktat }) {
         `<div class="pb-sub">${esc(titel)}</div><p style="font-size:13px">${esc(desc)}</p>` +
         `<div id="kwStack">` +
         order.map((ri, pos) =>
-          `<div class="pb-item">${pos + 1}. ${esc(RANK_ITEMS[ri].label)} <button class="pb-btn" data-raus="${ri}" style="padding:2px 8px;float:right">✕</button></div>`
+          `<div class="pb-item">${pos + 1}. ${esc(ITEMS[ri].label)} <button class="pb-btn" data-raus="${ri}" style="padding:2px 8px;float:right">✕</button></div>`
         ).join("") + `</div><div id="kwPool" style="margin:8px 0">` +
-        RANK_ITEMS.map((it, ri) => order.includes(ri) ? "" :
+        ITEMS.map((it, ri) => order.includes(ri) ? "" :
           `<button class="pb-btn" data-rein="${ri}"${order.length >= cfg.topN ? " disabled" : ""}>${esc(it.label)}</button>`
         ).join("") + `</div>` +
         `<button class="pb-btn primary" id="kwRankOk"${order.length === cfg.topN ? "" : " disabled"}>${t("allg.fertig")}</button>`;
@@ -664,7 +665,7 @@ export function createApp({ doc, backend, root, diktat }) {
         if (order.length !== cfg.topN) return;
         kwZu();
         engine.chat.ranks = engine.chat.ranks || {};
-        engine.chat.ranks[mode] = order.map(ri => RANK_ITEMS[ri].label);
+        engine.chat.ranks[mode] = order.map(ri => ITEMS[ri].label);
         if ((mode === "self" || mode === "pwichtig") && engine.chat.minigate === "ja") {
           try {
             const protokoll = await backend.bstate.get("aufdeckprotokoll");

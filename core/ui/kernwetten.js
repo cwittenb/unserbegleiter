@@ -5,56 +5,63 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
+import { fuelle, t } from "../i18n/index.js";
 
-/* Gegensatzpaare erscheinen als GETRENNTE Pole (v0.29-Prinzip). */
+/* Gegensatzpaare erscheinen als GETRENNTE Pole (v0.29-Prinzip).
+   rankItems() liest die Domänen zur LAUFZEIT aus dem aktiven Korpus (S30·C2);
+   RANK_ITEMS bleibt als statischer de-Kompat-Export erhalten. */
+export const rankItems = () => K().DOMAINS.flatMap((d, di) =>
+  d.poles ? d.poles.map(pl => ({ label: pl, dom: di })) : [{ label: d.t, dom: di }]
+);
 export const RANK_ITEMS = DOMAINS.flatMap((d, di) =>
   d.poles ? d.poles.map(pl => ({ label: pl, dom: di })) : [{ label: d.t, dom: di }]
 );
 
-const HOWTO = "Du kannst jederzeit umsortieren oder etwas herausnehmen; Antippen genügt. Die Gegensatzpaare stehen als einzelne Pole zur Wahl. Sortiert wird nach Gefühl, nicht nach Perfektion.";
+/* Builder-Texte aus dem aktiven Korpus (Header-Token bleiben sprachinvariant). */
+const KT = key => K().korpusTexte[key];
 
 export const RANK_MODES = {
   self: {
     topN: 5,
-    title: () => "Was liegt dir am meisten am Herzen?",
-    desc: () => "Wähle die fünf Dinge in den Stapel, die dir in eurer Beziehung am meisten am Herzen liegen – ganz oben, was dir am allerwichtigsten ist. Du darfst auch beide Seiten eines Gegensatzpaars stapeln. " + HOWTO,
-    result: (lines, ctx) => "RANKING-ERGEBNIS – Top 5 (1 = liegt " + ctx.me + " am meisten am Herzen; Gegensatzpaare standen als getrennte Pole zur Wahl; die übrigen " + (RANK_ITEMS.length - 5) + " Einträge blieben bewusst ungeordnet; bei mehreren Ergebnissen zählt das jüngste):\n" + lines,
+    title: () => KT("rank.self.titel"),
+    desc: () => KT("rank.self.desc") + " " + KT("rank.howto"),
+    result: (lines, ctx) => fuelle(KT("rank.self.kopf"), { me: ctx.me, rest: rankItems().length - 5 }) + "\n" + lines,
   },
   pwichtig: {
     topN: 3,
-    title: ctx => "Was liegt " + ctx.partner + " vermutlich am meisten am Herzen?",
-    desc: ctx => "Reine Vermutung – du kannst es nicht wissen, und genau darum geht es. Wähle die drei Dinge in den Stapel, die " + ctx.partner + " vermutlich am wichtigsten sind. " + HOWTO,
-    result: (lines, ctx) => "PARTNER-VERMUTUNG (Top 3, geraten von " + ctx.me + "; 1 = liegt " + ctx.partner + " vermutlich am meisten am Herzen; bei mehreren Ergebnissen zählt das jüngste):\n" + lines,
+    title: ctx => fuelle(KT("rank.pwichtig.titel"), { partner: ctx.partner }),
+    desc: ctx => fuelle(KT("rank.pwichtig.desc"), { partner: ctx.partner }) + " " + KT("rank.howto"),
+    result: (lines, ctx) => fuelle(KT("rank.pwichtig.kopf"), { me: ctx.me, partner: ctx.partner }) + "\n" + lines,
   },
   punzufrieden: {
     topN: 1,
-    title: ctx => "Wo ist " + ctx.partner + " vermutlich gerade am unzufriedensten?",
-    desc: ctx => "Wieder reine Vermutung, kein richtig oder falsch. Wähle den einen Bereich in den Stapel, in dem es " + ctx.partner + " vermutlich gerade am meisten fehlt. " + HOWTO,
-    result: (lines, ctx) => "PARTNER-VERMUTUNG UNZUFRIEDENHEIT (geraten von " + ctx.me + "; bei mehreren Ergebnissen zählt das jüngste):\n" + lines,
+    title: ctx => fuelle(KT("rank.punzufrieden.titel"), { partner: ctx.partner }),
+    desc: ctx => fuelle(KT("rank.punzufrieden.desc"), { partner: ctx.partner }) + " " + KT("rank.howto"),
+    result: (lines, ctx) => fuelle(KT("rank.punzufrieden.kopf"), { me: ctx.me }) + "\n" + lines,
   },
 };
 
 /** REGLER-ERGEBNIS aus den 13 Domänen-Werten (Spektrum-Text bei Gegensatzpaaren). */
 export function reglerErgebnis(vals, me) {
-  const lines = DOMAINS.map((d, k) => {
+  const lines = K().DOMAINS.map((d, k) => {
     const v = vals[k];
     return d.poles
-      ? `${d.t}: Ist-Position ${v.w} · Stimmig-Position ${v.z} (Spektrum: 1=${d.poles[0]} … 10=${d.poles[1]})`
-      : `${d.t}: Wichtigkeit ${v.w} · Zufriedenheit ${v.z}`;
+      ? fuelle(KT("regler.zeilePole"), { t: d.t, w: v.w, z: v.z, p0: d.poles[0], p1: d.poles[1] })
+      : fuelle(KT("regler.zeileNormal"), { t: d.t, w: v.w, z: v.z });
   });
-  return "REGLER-ERGEBNIS (Reglerpositionen intern auf 1–10 abgebildet; " + me +
-    " hat keine Zahlen gesehen – qualitativ spiegeln; bei mehreren Ergebnissen zählt das jüngste):\n" + lines.join("\n");
+  return fuelle(KT("regler.kopf"), { me }) + "\n" + lines.join("\n");
 }
 
 /** RANKING-/VERMUTUNGS-Ergebnis aus der Stapel-Reihenfolge (Indizes in RANK_ITEMS). */
 export function rankingErgebnis(mode, order, ctx) {
-  const lines = order.map((ri, pos) => (pos + 1) + ". " + RANK_ITEMS[ri].label).join("\n");
+  const ITEMS = rankItems();
+  const lines = order.map((ri, pos) => (pos + 1) + ". " + ITEMS[ri].label).join("\n");
   return RANK_MODES[mode].result(lines, ctx);
 }
 
 /** STARTWERTE-ERGEBNIS: verdeckt erhoben, gleichzeitig aufgedeckt. */
 export function startwerteErgebnis(nameA, wA, nameB, wB) {
-  return "STARTWERTE-ERGEBNIS (verdeckt erhoben, gleichzeitig aufgedeckt; 1–10, \"Wie nah seid ihr dem heute?\"):\n" +
+  return KT("startwerte.kopf") + "\n" +
     nameA + ": " + wA + "\n" + nameB + ": " + wB;
 }
 
@@ -132,15 +139,15 @@ export function beruehrungen(tipp3, top5) {
 export function baueAufdeckung(name, ranks) {
   const r = ranks || {};
   if (!Array.isArray(r.self) || r.self.length !== 5 || !Array.isArray(r.pwichtig) || r.pwichtig.length !== 3)
-    throw new Error("Für die Aufdeck-Runde fehlen Stapel (Top 5) oder Tipps (Top 3) – bitte im Gespräch um eine Korrektur-Runde bitten.");
+    throw new Error(t("fehler.aufdeckDaten"));
   return { name: String(name), top5: r.self.map(String), tipp3: r.pwichtig.map(String), releasedAt: new Date().toISOString() };
 }
 
 /** AUFDECK-KONTEXT — versteckte erste Nachricht der Aufdeck-Runde (nur diese Daten, sonst nichts). */
 export function baueAufdeckKontext(gA, gB) {
-  const teil = g => g.name + " – Top 5 (eigener Stapel): " + g.top5.map((x, i) => (i + 1) + ". " + x).join(" · ") +
-    "\n" + g.name + " – Tipp (vermutete Top 3 des Partners): " + g.tipp3.map((x, i) => (i + 1) + ". " + x).join(" · ");
-  return "AUFDECK-KONTEXT (app-intern; nicht als Block zitieren)\n" + teil(gA) + "\n" + teil(gB) + "\nENDE AUFDECK-KONTEXT";
+  const teil = g => fuelle(KT("aufdeckk.top5"), { name: g.name }) + g.top5.map((x, i) => (i + 1) + ". " + x).join(" · ") +
+    "\n" + fuelle(KT("aufdeckk.tipp3"), { name: g.name }) + g.tipp3.map((x, i) => (i + 1) + ". " + x).join(" · ");
+  return KT("aufdeckk.kopf") + "\n" + teil(gA) + "\n" + teil(gB) + "\nENDE AUFDECK-KONTEXT";
 }
 
 /** Erste (versteckte) Nachricht der gemeinsamen Klärung: zwei ÜBERGABE-BLÖCKE + optionales AUFDECK-PROTOKOLL. */
@@ -148,11 +155,11 @@ export function baueKlaerungsKontext(uA, uB, protokoll) {
   const blk = u => "ÜBERGABE-BLOCK – " + u.name + "\n" + u.items.map(i => i.id + ": " + i.text).join("\n") + "\nENDE ÜBERGABE-BLOCK";
   let s = blk(uA) + "\n\n" + blk(uB);
   if (protokoll) {
-    s += "\n\nAUFDECK-PROTOKOLL (die Aufdeck-Runde hat bereits stattgefunden): " + protokoll.zusammenfassung;
+    s += "\n\n" + KT("klaerung.protokoll") + protokoll.zusammenfassung;
     if (protokoll.beruehrungspunkte && protokoll.beruehrungspunkte.length)
-      s += "\nBerührungspunkte: " + protokoll.beruehrungspunkte.join(" · ");
+      s += "\n" + KT("klaerung.beruehr") + protokoll.beruehrungspunkte.join(" · ");
     if (protokoll.fuerDieKlaerung && protokoll.fuerDieKlaerung.length)
-      s += "\nFür die Klärung vorgemerkt: " + protokoll.fuerDieKlaerung.join(" · ");
+      s += "\n" + KT("klaerung.vorgemerkt") + protokoll.fuerDieKlaerung.join(" · ");
   }
   return s;
 }
