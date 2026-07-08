@@ -1,0 +1,129 @@
+// @vitest-environment happy-dom
+// Paarsprache-Karte (S30·C3) — drei Ansichts-Zustände gegen die echte App;
+// nach beidseitiger Bestätigung startet eine NEUE Session in der neuen Sprache.
+
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { createApp } from "../../core/ui/app.js";
+import { MockLLM } from "../../core/engine/mock-llm.js";
+import { Repo } from "../../core/store/repo.js";
+import { Bstate, Pstate } from "../../core/store/bundles.js";
+import { MemoryStore } from "../../core/store/store.js";
+import { getKorpusSprache, setKorpusSprache } from "../../core/prompts/prompts.js";
+
+/* Lokales Backend mit derselben Sprach-Zustandsmaschine wie Worker/Artifact. */
+function memoryBackend(mock, { role = "A", locale = "de", sprachwunsch = null } = {}) {
+  const store = new MemoryStore();
+  const repo = new Repo({ store, ns: "T", code: "ps", activeModuleId: "betrieb" });
+  const bstate = new Bstate(repo), pstate = new Pstate(repo);
+  const meta = { locale, ...(sprachwunsch ? { sprachwunsch } : {}) };
+  return {
+    store, repo, meta,
+    async info() {
+      return { role, name: "Anna", partner: "Bernd", nameA: "Anna", nameB: "Bernd",
+               locale: meta.locale, sprachwunsch: meta.sprachwunsch || null };
+    },
+    bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
+    pstate: { get: f => pstate.get(role, f), set: (f, v) => pstate.set(role, f, v) },
+    chat: { load: () => null, save: () => true },
+    sprache: {
+      antrag: async ziel => {
+        const aktuell = meta.locale || "de";
+        let status;
+        if (ziel === aktuell) status = "aktiv";
+        else if (meta.sprachwunsch && meta.sprachwunsch.ziel === ziel && meta.sprachwunsch.von !== role) {
+          meta.locale = ziel; delete meta.sprachwunsch; status = "bestaetigt";
+        } else { meta.sprachwunsch = { ziel, von: role, at: 1 }; status = "wartet"; }
+        return { locale: meta.locale, sprachwunsch: meta.sprachwunsch || null, status };
+      },
+      zurueckziehen: async () => {
+        delete meta.sprachwunsch;
+        return { locale: meta.locale, sprachwunsch: null, status: "verworfen" };
+      },
+    },
+    llm: mock.fn(),
+  };
+}
+
+const tick = () => new Promise(r => setTimeout(r, 0));
+async function klick(el) { el.click(); await tick(); await tick(); await tick(); }
+let root;
+beforeEach(() => {
+  document.body.innerHTML = '<div id="app"></div>';
+  root = document.getElementById("app");
+});
+afterEach(() => setKorpusSprache("de"));
+
+async function booten(backend) {
+  const app = createApp({ doc: document, backend, root });
+  await app.boot();
+  return app;
+}
+
+describe("Paarsprache-Karte · drei Zustände", () => {
+  it("kein Wunsch: zeigt aktuelle Sprache und Vorschlagen-Knopf; Klick → Wartet-Ansicht", async () => {
+    const backend = memoryBackend(new MockLLM([]));
+    await booten(backend);
+    const box = document.getElementById("boxPaarsprache");
+    expect(box.classList.contains("pb-hidden")).toBe(false);
+    expect(box.textContent).toContain("Deutsch");
+    const antrag = box.querySelector("#psAntrag");
+    expect(antrag).toBeTruthy();
+    await klick(antrag);
+    expect(backend.meta.sprachwunsch).toMatchObject({ ziel: "en", von: "A" });
+    expect(box.querySelector("#psZurueck")).toBeTruthy();
+    expect(box.textContent).toContain("Bernd");   // wartet auf Partner
+  });
+
+  it("eigener Wunsch offen: Zurückziehen räumt auf und zeigt wieder Vorschlagen", async () => {
+    const backend = memoryBackend(new MockLLM([]), { sprachwunsch: { ziel: "en", von: "A", at: 1 } });
+    await booten(backend);
+    const box = document.getElementById("boxPaarsprache");
+    await klick(box.querySelector("#psZurueck"));
+    expect(backend.meta.sprachwunsch).toBeUndefined();
+    expect(box.querySelector("#psAntrag")).toBeTruthy();
+  });
+
+  it("Partner-Wunsch offen: Bestätigen wechselt mit Von-beiden-bestätigt-Meldung", async () => {
+    const backend = memoryBackend(new MockLLM([]), { sprachwunsch: { ziel: "en", von: "B", at: 1 } });
+    await booten(backend);
+    const box = document.getElementById("boxPaarsprache");
+    expect(box.querySelector("#psJa")).toBeTruthy();
+    expect(box.querySelector("#psNein")).toBeTruthy();
+    await klick(box.querySelector("#psJa"));
+    expect(backend.meta.locale).toBe("en");
+    expect(backend.meta.sprachwunsch).toBeUndefined();
+    expect(box.querySelector("#psMeldung").textContent).toContain("bestätigt");
+    expect(box.textContent).toContain("Englisch");
+  });
+
+  it("Ablehnen des Partner-Wunschs: Sprache unverändert, Wunsch weg", async () => {
+    const backend = memoryBackend(new MockLLM([]), { sprachwunsch: { ziel: "en", von: "B", at: 1 } });
+    await booten(backend);
+    const box = document.getElementById("boxPaarsprache");
+    await klick(box.querySelector("#psNein"));
+    expect(backend.meta.locale).toBe("de");
+    expect(backend.meta.sprachwunsch).toBeUndefined();
+    expect(box.querySelector("#psAntrag")).toBeTruthy();
+  });
+
+  it("Backend ohne sprache-Fassade: Karte bleibt verborgen", async () => {
+    const backend = memoryBackend(new MockLLM([]));
+    delete backend.sprache;
+    await booten(backend);
+    expect(document.getElementById("boxPaarsprache").classList.contains("pb-hidden")).toBe(true);
+  });
+});
+
+describe("Wechselwirkung mit dem Sprach-Schnappschuss (C1/C2)", () => {
+  it("nach beidseitiger Bestätigung startet eine NEUE Einzelsession englisch", async () => {
+    const mock = new MockLLM(["Hello Anna."]);
+    const backend = memoryBackend(mock, { sprachwunsch: { ziel: "en", von: "B", at: 1 } });
+    await booten(backend);
+    await klick(document.querySelector("#psJa"));
+    await klick(root.querySelector("#btnMyRoom"));
+    await klick(root.querySelector("#btnEinzel"));
+    expect(getKorpusSprache()).toBe("en");
+    expect(mock.calls[0].system).toContain("You respond exclusively in English");
+    expect(document.getElementById("chatTitel").textContent).toBe("Clarifying Your Focus");
+  });
+});

@@ -26,6 +26,10 @@ async function api(method, pfad, body) {
 function remoteBackend() {
   return {
     info: () => api("GET", "/api/me"),
+    sprache: {
+      antrag: ziel => api("POST", "/api/sprache", { ziel }),
+      zurueckziehen: () => api("DELETE", "/api/sprache"),
+    },
     bstate: {
       get: f => api("GET", "/api/bstate/" + f).then(r => r.value),
       set: (f, v) => api("PUT", "/api/bstate/" + f, { value: v }),

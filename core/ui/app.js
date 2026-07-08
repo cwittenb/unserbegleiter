@@ -49,6 +49,7 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")}</button>
         <p class="pb-sub" id="startTeilSub" style="margin:4px 0 0"></p>
       </div>
+      <div class="pb-card pb-hidden" id="boxPaarsprache"></div>
     </div>
     <div id="scrMyRoom" class="pb-hidden">
       <div class="pb-card">
@@ -457,6 +458,50 @@ export function createApp({ doc, backend, root, diktat }) {
       b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selbstGeklaert"); zeigeAgenda(); });
   }
 
+  /* ---- Paarsprache: beidseitig bestätigter Wechsel (S30·C3).
+     Die Karte ist reine Ansicht auf den Backend-Zustand — die Invariante
+     (Wechsel nur bei zwei gleichlautenden Anträgen verschiedener Rollen)
+     erzwingt der Worker bzw. das lokale Backend, nie die UI. ---- */
+  function sprachName(l) { return t("paarspr.name." + (l === "en" ? "en" : "de")); }
+  function zeigePaarsprache(meldung) {
+    const box = $("boxPaarsprache");
+    if (!backend.sprache) { box.classList.add("pb-hidden"); return; }
+    box.classList.remove("pb-hidden");
+    const aktuell = state.info.locale === "en" ? "en" : "de";
+    const ziel = aktuell === "en" ? "de" : "en";
+    const w = state.info.sprachwunsch;
+    const meins = w && w.von === state.info.role;
+    let mitte, knoepfe;
+    if (!w) {
+      mitte = t("paarspr.aktuell", { sprache: sprachName(aktuell) });
+      knoepfe = `<button class="pb-btn" id="psAntrag">${t("paarspr.vorschlagen", { sprache: sprachName(ziel) })}</button>`;
+    } else if (meins) {
+      mitte = t("paarspr.wartet", { sprache: sprachName(w.ziel), partner: esc(state.info.partner) });
+      knoepfe = `<button class="pb-btn" id="psZurueck">${t("paarspr.zurueckziehen")}</button>`;
+    } else {
+      mitte = t("paarspr.vorschlag", { partner: esc(state.info.partner), sprache: sprachName(w.ziel) });
+      knoepfe = `<button class="pb-btn primary" id="psJa">${t("paarspr.bestaetigen")}</button> ` +
+                `<button class="pb-btn" id="psNein">${t("paarspr.ablehnen")}</button>`;
+    }
+    box.innerHTML =
+      `<div class="pb-sub">${t("paarspr.titel")}</div>` +
+      `<p style="font-size:13px;margin:6px 0">${mitte}</p>` + knoepfe +
+      (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650" id="psMeldung">${meldung}</p>` : "") +
+      `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>`;
+    const anwenden = r => {
+      state.info.locale = r.locale;
+      state.info.sprachwunsch = r.sprachwunsch;
+      zeigePaarsprache(r.status === "bestaetigt"
+        ? t("paarspr.gewechselt", { sprache: sprachName(r.locale) })
+        : "");
+    };
+    const knopf = (id, fn) => { const b = box.querySelector(id); if (b) b.addEventListener("click", () => fn().then(anwenden).catch(e => err(fehlerText(e)))); };
+    knopf("#psAntrag", () => backend.sprache.antrag(ziel));
+    knopf("#psJa", () => backend.sprache.antrag(w.ziel));
+    knopf("#psZurueck", () => backend.sprache.zurueckziehen());
+    knopf("#psNein", () => backend.sprache.zurueckziehen());
+  }
+
   /* ---- Wiedereinstieg per E-Mail (nur wenn das Backend es unterstützt) ---- */
   function zeigeRecovery() {
     const box = $("boxRecovery");
@@ -834,6 +879,7 @@ export function createApp({ doc, backend, root, diktat }) {
     $("startTeilSub").textContent = t("start.teilSub");
     $("meinIntro").textContent = t("mein.intro", { partner: state.info.partner });
     zeigeRecovery();
+    zeigePaarsprache();
     show("scrStart");
   }
 

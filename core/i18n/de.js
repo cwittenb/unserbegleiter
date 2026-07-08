@@ -98,6 +98,19 @@ export const de = {
   "fehler.aufdeckWartet": "Die Aufdeck-Runde wartet noch auf euch – sie kommt vor der Klärung.",
   "fehler.aufdeckZu": "Die Aufdeck-Runde öffnet erst, wenn beide sie gewählt haben und so weit sind.",
   "fehler.aufdeckDaten": "Für die Aufdeck-Runde fehlen Stapel (Top 5) oder Tipps (Top 3) – bitte im Gespräch um eine Korrektur-Runde bitten.",
+  /* Paarsprache — beidseitig bestätigter Wechsel (S30·C3) */
+  "paarspr.titel": "Begleitungssprache (Paar)",
+  "paarspr.aktuell": "Eure gemeinsame Begleitungssprache: {sprache}.",
+  "paarspr.vorschlagen": "Wechsel zu {sprache} vorschlagen",
+  "paarspr.wartet": "Dein Vorschlag ({sprache}) wartet auf die Bestätigung von {partner}.",
+  "paarspr.vorschlag": "{partner} schlägt vor, zu {sprache} zu wechseln.",
+  "paarspr.bestaetigen": "Bestätigen",
+  "paarspr.ablehnen": "Ablehnen",
+  "paarspr.zurueckziehen": "Zurückziehen",
+  "paarspr.gewechselt": "Von euch beiden bestätigt — die Begleitungssprache ist jetzt {sprache}.",
+  "paarspr.hinweisLaufend": "Laufende Gespräche behalten ihre Sprache; neue starten in der neuen.",
+  "paarspr.name.de": "Deutsch",
+  "paarspr.name.en": "Englisch",
 
   // Prozessreflexion
   "mess.titel": "Prozessreflexion",

@@ -100,6 +100,19 @@ export const en = {
   "fehler.aufdeckWartet": "The Reveal Round is still waiting for you – it comes before the clarification.",
   "fehler.aufdeckZu": "The Reveal Round opens once both of you have chosen it and are ready.",
   "fehler.aufdeckDaten": "The Reveal Round is missing the stack (Top 5) or the guesses (Top 3) – please ask for a correction round in the conversation.",
+  /* Couple language — bilaterally confirmed switch (S30·C3) */
+  "paarspr.titel": "Companion language (couple)",
+  "paarspr.aktuell": "Your shared companion language: {sprache}.",
+  "paarspr.vorschlagen": "Suggest switching to {sprache}",
+  "paarspr.wartet": "Your suggestion ({sprache}) is waiting for {partner}'s confirmation.",
+  "paarspr.vorschlag": "{partner} suggests switching to {sprache}.",
+  "paarspr.bestaetigen": "Confirm",
+  "paarspr.ablehnen": "Decline",
+  "paarspr.zurueckziehen": "Withdraw",
+  "paarspr.gewechselt": "Confirmed by both of you — the companion language is now {sprache}.",
+  "paarspr.hinweisLaufend": "Ongoing conversations keep their language; new ones start in the new one.",
+  "paarspr.name.de": "German",
+  "paarspr.name.en": "English",
 
   // Process reflection
   "mess.titel": "Process Reflection",

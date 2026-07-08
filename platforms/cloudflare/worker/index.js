@@ -123,8 +123,42 @@ async function route(request, env) {
       partner: session.role === "A" ? couple.nameB : couple.nameA,
       nameA: couple.nameA, nameB: couple.nameB,
       locale: couple.locale || "de",
+      sprachwunsch: couple.sprachwunsch || null,
       recoveryEmail: await hasRecoveryEmail(kv, session.code, session.role),
     });
+  }
+
+  /* ---- Paarsprache: Wechsel nur beidseitig bestätigt (S30·C3).
+   *  Zustandsmaschine im Worker — die UI kann die Invariante nicht umgehen:
+   *  locale ändert sich AUSSCHLIESSLICH durch zwei gleichlautende Anträge
+   *  verschiedener Rollen („von beiden bestätigt" auf Einstellungs-Ebene).
+   *  Die Rolle kommt aus der Session, nie aus dem Request. ---- */
+  if (p === "/api/sprache" && (request.method === "POST" || request.method === "DELETE")) {
+    const coupleKey = "sys/couple/" + session.code;
+    const paar = JSON.parse(await kv.get(coupleKey));
+    if (request.method === "DELETE") {
+      // Zurückziehen (Vorschlagende) oder Ablehnen (Partner) — beide Rollen dürfen.
+      if (paar.sprachwunsch) { delete paar.sprachwunsch; await kv.put(coupleKey, JSON.stringify(paar)); }
+      return json({ locale: paar.locale || "de", sprachwunsch: null, status: "verworfen" });
+    }
+    const { ziel } = await request.json().catch(() => ({}));
+    const z = ziel === "en" ? "en" : ziel === "de" ? "de" : null;
+    if (!z) return fehler("Unbekannte Zielsprache.", 400, "sprache_invalid");
+    const aktuell = paar.locale || "de";
+    if (z === aktuell)
+      // Antrag auf die aktive Sprache: stiller No-op (Design-Entscheidung C3);
+      // ein etwaiger offener Wunsch bleibt unberührt — Rückzug ist DELETE.
+      return json({ locale: aktuell, sprachwunsch: paar.sprachwunsch || null, status: "aktiv" });
+    const w = paar.sprachwunsch;
+    if (w && w.ziel === z && w.von !== session.role) {
+      paar.locale = z;                       // zweiter, gleichlautender Antrag der anderen Rolle
+      delete paar.sprachwunsch;
+      await kv.put(coupleKey, JSON.stringify(paar));
+      return json({ locale: z, sprachwunsch: null, status: "bestaetigt" });
+    }
+    paar.sprachwunsch = { ziel: z, von: session.role, at: now() };   // neu oder idempotent erneuert
+    await kv.put(coupleKey, JSON.stringify(paar));
+    return json({ locale: aktuell, sprachwunsch: paar.sprachwunsch, status: "wartet" });
   }
 
   /* ---- Wiedereinstiegs-Adresse hinterlegen (nur eigene Rolle, aus Session) ---- */

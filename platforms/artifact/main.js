@@ -35,7 +35,32 @@ function localBackend({ store, meta, role }) {
         partner: role === "A" ? meta.nameB : meta.nameA,
         nameA: meta.nameA, nameB: meta.nameB,
         locale: meta.locale || "de",
+        sprachwunsch: meta.sprachwunsch || null,
       };
+    },
+    /* Paarsprache lokal — gleiche Zustandsmaschine wie der Worker (S30·C3);
+       bilateral testbar über den Rollenwechsel des Dev-Panels. */
+    sprache: {
+      antrag: async ziel => {
+        const z = ziel === "en" ? "en" : ziel === "de" ? "de" : null;
+        if (!z) throw new Error("Unbekannte Zielsprache.");
+        const m = (await store.get("PBDEV:meta", true)) || meta;
+        const aktuell = m.locale || "de";
+        let status;
+        if (z === aktuell) status = "aktiv";
+        else if (m.sprachwunsch && m.sprachwunsch.ziel === z && m.sprachwunsch.von !== role) {
+          m.locale = z; delete m.sprachwunsch; status = "bestaetigt";
+        } else { m.sprachwunsch = { ziel: z, von: role, at: Date.now() }; status = "wartet"; }
+        await store.set("PBDEV:meta", m, true);
+        Object.assign(meta, m); if (!m.sprachwunsch) delete meta.sprachwunsch;
+        return { locale: m.locale || "de", sprachwunsch: m.sprachwunsch || null, status };
+      },
+      zurueckziehen: async () => {
+        const m = (await store.get("PBDEV:meta", true)) || meta;
+        if (m.sprachwunsch) { delete m.sprachwunsch; await store.set("PBDEV:meta", m, true); }
+        Object.assign(meta, m); delete meta.sprachwunsch;
+        return { locale: m.locale || "de", sprachwunsch: null, status: "verworfen" };
+      },
     },
     bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
     pstate: { get: f => pstate.get(role, f), set: (f, v) => pstate.set(role, f, v) },
