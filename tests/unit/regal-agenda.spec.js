@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Regal-Heben, Gelesen-Markierung, Agenda und MOMENT-KONTEXT (Sprint 11).
+// Regal-Heben, Gelesen-Markierung, Agenda und MOMENT-CONTEXT (Sprint 11).
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createApp } from "../../core/ui/app.js";
@@ -35,21 +35,21 @@ describe("baueMomentKontext (Modell-Kontrakt: app-interne erste Nachricht)", () 
   it("voller Kontext: Aufträge/Agenda/frühere Momente/Freigaben, Namen am Ende", () => {
     const k = baueMomentKontext({
       auftraege: { items: [
-        { id: "AG1", art: "gemeinsam", status: "aktiv", text: "Wöchentlicher Abend" },
-        { id: "AI2", art: "individuell", owner: "B", status: "ruhend", text: "Früher offline" },
-        { id: "AG3", art: "gemeinsam", status: "abgeschlossen", text: "Alt" },
+        { id: "AG1", art: "shared", status: "active", text: "Wöchentlicher Abend" },
+        { id: "AI2", art: "individual", owner: "B", status: "resting", text: "Früher offline" },
+        { id: "AG3", art: "shared", status: "closed", text: "Alt" },
       ]},
       agenda: { items: [
-        { von: "Anna", text: "Mehr gemeinsame Abende", wunsch: "2/Woche", zustand: "offen" },
+        { von: "Anna", text: "Mehr gemeinsame Abende", wish: "2/Woche", zustand: "offen" },
         { von: "Bernd", text: "Erledigt", zustand: "besprochen" },
       ]},
-      momentprotokoll: { eintraege: [{ at: "2026-06-20T10:00:00Z", zusammenfassung: "Gut verbunden.", zwischenzeitImpuls: "Spaziergang" }] },
+      momentprotokoll: { eintraege: [{ at: "2026-06-20T10:00:00Z", summary: "Gut verbunden.", gentleInvitation: "Spaziergang" }] },
       messrunde: null,
       freigaben: [{ name: "Anna", items: [{ id: "S1", text: "Nähe zentral" }] }],
     }, "Anna", "Bernd");
-    expect(k).toContain("MOMENT-KONTEXT");
-    expect(k).toContain("AG1 (gemeinsam, aktiv): Wöchentlicher Abend");
-    expect(k).toContain("AI2 (individuell, B, ruhend)");
+    expect(k).toContain("MOMENT-CONTEXT");
+    expect(k).toContain("AG1 (shared, active): Wöchentlicher Abend");
+    expect(k).toContain("AI2 (individual, B, resting)");
     expect(k).not.toContain("AG3");                                 // abgeschlossene raus
     expect(k).toContain("von Anna: Mehr gemeinsame Abende (Wunsch: 2/Woche)");
     expect(k).not.toContain("Erledigt");                            // nur offene Agenda
@@ -60,10 +60,10 @@ describe("baueMomentKontext (Modell-Kontrakt: app-interne erste Nachricht)", () 
 
   it("Erst-Termin: leere Quellen werden ehrlich benannt (keine offene Tür)", () => {
     const k = baueMomentKontext({ auftraege: null, agenda: null, momentprotokoll: null, messrunde: null, freigaben: [] }, "Anna", "Bernd");
-    expect(k).toContain("AUFTRÄGE: noch keine.");
+    expect(k).toContain("GOALS: noch keine.");
     expect(k).toContain("AGENDA: leer.");
     expect(k).toContain("erste Termin (keine offene Tür)");
-    expect(k).toContain("ZWISCHENZEIT-MATERIAL: keines.");
+    expect(k).toContain("IN-BETWEEN MATERIAL: keines.");
   });
 });
 
@@ -71,7 +71,7 @@ describe("UI · Regal-Heben und Gelesen (Pull-Prinzip)", () => {
   it("Bernd sieht bei Annas Eintrag Gelesen/Heben; eigener Eintrag hat keine Knöpfe; Heben erzeugt Agenda-Item mit Herkunft", async () => {
     const backend = memoryBackend(null);   // Bernd
     await backend.bstate.set("regal", { items: [
-      { id: "RG1", text: "Annas Fassung", wunsch: "Mehr Zeit", von: "Anna", gelesen: false },
+      { id: "RG1", text: "Annas Fassung", wish: "Mehr Zeit", von: "Anna", gelesen: false },
       { id: "RG2", text: "Bernds eigene", von: "Bernd", gelesen: false },
     ]});
     const app = createApp({ doc: document, backend, root });
@@ -90,7 +90,7 @@ describe("UI · Regal-Heben und Gelesen (Pull-Prinzip)", () => {
     await klick(root.querySelector('[data-heben="RG1"]'));
     const agenda = await backend.bstate.get("agenda");
     expect(agenda.items).toHaveLength(1);
-    expect(agenda.items[0]).toMatchObject({ text: "Annas Fassung", wunsch: "Mehr Zeit", von: "Anna", herkunft: "regal", zustand: "offen" });
+    expect(agenda.items[0]).toMatchObject({ text: "Annas Fassung", wish: "Mehr Zeit", von: "Anna", herkunft: "regal", zustand: "offen" });
     expect((await backend.bstate.get("regal")).items[0].gehoben).toBe(true);
     expect(root.querySelector('[data-heben="RG1"]')).toBeNull();     // kein Doppel-Heben
     await hebeInAgenda(backend, "RG1");                              // auch mechanisch idempotent
@@ -108,12 +108,12 @@ describe("UI · Regal-Heben und Gelesen (Pull-Prinzip)", () => {
     await klick(root.querySelector("#btnAgenda"));
     expect(root.querySelector("#agendaItems").textContent).toContain("offen");
     await klick(root.querySelector('[data-abr="AGD1"]'));
-    expect((await backend.bstate.get("agenda")).items[0].zustand).toBe("selbstGeklaert");
+    expect((await backend.bstate.get("agenda")).items[0].zustand).toBe("selfResolved");
     expect(root.querySelector('[data-abr="AGD1"]')).toBeNull();
   });
 });
 
-describe("UI · MOMENT-KONTEXT fließt in die gemeinsame Session", () => {
+describe("UI · MOMENT-CONTEXT fließt in die gemeinsame Session", () => {
   it("neue Session: Kontext geht als VERSTECKTE erste Nachricht ans Modell, erscheint aber nicht im Chat", async () => {
     const mock = new MockLLM(["Schön, dass ihr da seid."]);
     const backend = memoryBackend(mock);
@@ -125,9 +125,9 @@ describe("UI · MOMENT-KONTEXT fließt in die gemeinsame Session", () => {
 
     const anModell = mock.calls[0].messages;
     expect(anModell[0].hidden).toBe(true);
-    expect(anModell[0].content).toContain("MOMENT-KONTEXT");
+    expect(anModell[0].content).toContain("MOMENT-CONTEXT");
     expect(anModell[0].content).toContain("GEHOBENES-THEMA");
     expect(anModell[1].content).toContain("Wir sind beide da");
-    expect(root.querySelector("#pbMsgs").textContent).not.toContain("MOMENT-KONTEXT");   // versteckt
+    expect(root.querySelector("#pbMsgs").textContent).not.toContain("MOMENT-CONTEXT");   // versteckt
   });
 });

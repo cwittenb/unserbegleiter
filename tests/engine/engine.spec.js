@@ -9,7 +9,7 @@ import { Repo } from "../../core/store/repo.js";
 import { MemoryStore } from "../../core/store/store.js";
 import { uebergabeSchema } from "../../core/contracts/uebergabe.js";
 
-const GUELTIG_ZEIT = '{"zusammenfassung":"Kurz reflektiert.","themen":["Nähe"],"wiederkehr":null}';
+const GUELTIG_ZEIT = '{"summary":"Kurz reflektiert.","topics":["Nähe"],"recurrenceNote":null}';
 
 function soloDef(overrides = {}) {
   return {
@@ -39,16 +39,16 @@ describe("Engine · Vertrag 2, gültiger Block", () => {
     });
     await e.sendUser("Ich möchte kurz reflektieren.");
     expect(empfangen).not.toBeNull();
-    expect(empfangen.themen).toEqual(["Nähe"]);
+    expect(empfangen.topics).toEqual(["Nähe"]);
     expect(e.chat.blockFix).toBe(false);
     expect(mock.calls).toHaveLength(1);
   });
 });
 
 describe("Engine · Vertrag 2, genau EINE Korrektur-Runde", () => {
-  const UNGUELTIG = 'TIMELINE-BLOCK\n{"themen":[]}\nEND TIMELINE-BLOCK';
+  const UNGUELTIG = 'TIMELINE-BLOCK\n{"topics":[]}\nEND TIMELINE-BLOCK';
 
-  it("ungültig → versteckte SYSTEM-KORREKTUR → gültig → handle feuert", async () => {
+  it("ungültig → versteckte SYSTEM-REVISION → gültig → handle feuert", async () => {
     let empfangen = null;
     const mock = new MockLLM([
       UNGUELTIG,
@@ -66,7 +66,7 @@ describe("Engine · Vertrag 2, genau EINE Korrektur-Runde", () => {
     const korrektur = r2[r2.length - 1];
     expect(korrektur.role).toBe("user");
     expect(korrektur.hidden).toBe(true);
-    expect(korrektur.content).toContain("SYSTEM-KORREKTUR");
+    expect(korrektur.content).toContain("SYSTEM-REVISION");
     expect(korrektur.content).toContain("TIMELINE-BLOCK");
     expect(e.chat.blockFix).toBe(false);
   });
@@ -105,7 +105,7 @@ describe("Engine · Vertrag 2, genau EINE Korrektur-Runde", () => {
 describe("Engine · Vertrag 1, Marker & Panels", () => {
   const einzelDef = (markers) => ({
     sysPrompt: () => "EINZEL",
-    markerOrder: ["[[REGLER]]", "[[PARTNER-RANKING]]", "[[RANKING]]"],
+    markerOrder: ["[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[RANKING]]"],
     markers,
     canAct: c => c.status === "running",
     blocks: [],
@@ -114,12 +114,12 @@ describe("Engine · Vertrag 1, Marker & Panels", () => {
   it("Marker in letzter Zeile öffnet das registrierte Panel; Panel antwortet mit GENAU EINER User-Nachricht", async () => {
     const geoeffnet = [];
     const mock = new MockLLM([
-      "Schätze bitte alle Bereiche ein.\n[[REGLER]]",
+      "Schätze bitte alle Bereiche ein.\n[[SLIDERS]]",
       "Danke für deine Einschätzung!",
     ]);
     const e = new Engine({
       def: einzelDef({
-        "[[REGLER]]": () => geoeffnet.push("regler"),
+        "[[SLIDERS]]": () => geoeffnet.push("regler"),
         "[[PARTNER-RANKING]]": () => geoeffnet.push("pr"),
         "[[RANKING]]": () => geoeffnet.push("r"),
       }),
@@ -139,7 +139,7 @@ describe("Engine · Vertrag 1, Marker & Panels", () => {
     const geoeffnet = [];
     const mock = new MockLLM(["Gleich kommt das [[RANKING]]-Panel.\nVorher: Wie geht es dir?"]);
     const e = new Engine({
-      def: einzelDef({ "[[REGLER]]": () => {}, "[[PARTNER-RANKING]]": () => {}, "[[RANKING]]": () => geoeffnet.push("r") }),
+      def: einzelDef({ "[[SLIDERS]]": () => {}, "[[PARTNER-RANKING]]": () => {}, "[[RANKING]]": () => geoeffnet.push("r") }),
       chat: neuerChat(), llm: mock.fn(),
     });
     await e.sendUser("Bereit.");
@@ -162,11 +162,11 @@ describe("Engine · Status-Disziplin", () => {
   it("canAct=false: weder Marker noch Blöcke werden dispatcht", async () => {
     const geoeffnet = [];
     let handled = false;
-    const mock = new MockLLM(["[[REGLER]]"]);
+    const mock = new MockLLM(["[[SLIDERS]]"]);
     const e = new Engine({
       def: {
-        sysPrompt: () => "", markerOrder: ["[[REGLER]]"],
-        markers: { "[[REGLER]]": () => geoeffnet.push("x") },
+        sysPrompt: () => "", markerOrder: ["[[SLIDERS]]"],
+        markers: { "[[SLIDERS]]": () => geoeffnet.push("x") },
         canAct: c => c.status === "running",
         blocks: [{ ...BLOECKE.zeitleiste, handle: () => { handled = true; } }],
       },
@@ -197,7 +197,7 @@ describe("Engine · Vertrag 3, Freigabe", () => {
     const repo = new Repo({ store, ns: "T", code: "paar1", activeModuleId: "kernwetten" });
     await freigebeUebergabe(repo, "A", {
       module: "kernwetten", name: "Anna",
-      items: [{ id: "BS1", text: "meine Fassung", rohform: "PRIVAT-GEHEIM" }],
+      items: [{ id: "CS1", text: "meine Fassung", rohform: "PRIVAT-GEHEIM" }],
     });
     const keys = await store.list("", true);
     expect(keys).toHaveLength(1);
@@ -221,7 +221,7 @@ describe("Engine · Persistenz-Hook", () => {
   it("onSave feuert nach User-, Assistant- und Korrektur-Schritten", async () => {
     let saves = 0;
     const mock = new MockLLM([
-      'TIMELINE-BLOCK\n{"themen":[]}\nEND TIMELINE-BLOCK',
+      'TIMELINE-BLOCK\n{"topics":[]}\nEND TIMELINE-BLOCK',
       "TIMELINE-BLOCK\n" + GUELTIG_ZEIT + "\nEND TIMELINE-BLOCK",
     ]);
     const e = new Engine({

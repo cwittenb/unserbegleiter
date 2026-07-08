@@ -1,6 +1,6 @@
 // Eval-Runner CLI (Ebene 2) — echte Modell-Läufe, key-gated.
 //
-//   npm run eval -- [--familie GATE] [--szenario AUF-01] [--n 3]
+//   npm run eval -- [--familie GATE] [--szenario AUF-01] [--sprache de|en] [--n 3]
 //                   [--provider anthropic|mistral]
 //                   [--pipeline-modell claude-sonnet-4-6]
 //                   [--judge-modell claude-opus-4-8]
@@ -16,6 +16,7 @@ import { fileURLToPath } from "node:url";
 import { makeAdapter } from "../core/llm/adapter.js";
 import { laufeAlle } from "./runner-kern.js";
 import { SZENARIEN } from "./szenarien/start-katalog.js";
+import { SZENARIEN_EN } from "./szenarien/start-katalog.en.js";
 import { JUDGE_PROMPT_VERSION } from "./judge/judge.js";
 import { coreHash } from "../scripts/core-hash.js";
 
@@ -47,7 +48,9 @@ async function main() {
     process.exit(2);
   }
 
-  let szenarien = SZENARIEN;
+  let szenarien = [...SZENARIEN, ...SZENARIEN_EN];
+  const sprache = arg("sprache", null);
+  if (sprache) szenarien = szenarien.filter(s => (s.sprache === "en" ? "en" : "de") === sprache);
   const familie = arg("familie");
   const einzeln = arg("szenario");
   if (familie) szenarien = szenarien.filter(s => s.familie === familie);

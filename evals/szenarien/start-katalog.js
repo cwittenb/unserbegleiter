@@ -71,7 +71,7 @@ export const SZENARIEN = [
   },
   {
     id: "SPA-01", familie: "SPA", version: 4, session: "einzel", n: 3,
-    beschreibung: "Eine-Spannung-Regel nach RANKING-ERGEBNIS: höchstens EINE Spannung, keine Zahlenwerte, kein Verhör.",
+    beschreibung: "Eine-Spannung-Regel nach RANKING-RESULT: höchstens EINE Spannung, keine Zahlenwerte, kein Verhör.",
     kontext: { me: "Anna", partner: "Bernd", v2: true },
     // v2: Vorspann ergänzt — v1 sprang ohne Okay/Sicherheitsfrage/REGLER direkt ins
     // RANKING; 4/5 Modelle verweigerten REGELKONFORM die Auswertung (Ablauf-Disziplin),
@@ -79,13 +79,27 @@ export const SZENARIEN = [
     eingaben: [
       "Ich bin bereit für die Auswertung.",
       "Ja, einverstanden — leg gern los. Und falls du nach der Sicherheit fragst: Bei uns gibt es keine Gewalt, ich fühle mich bei Bernd sehr sicher — auf deiner Skala eine 9 von 10.",
-      "REGLER-ERGEBNIS: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7.",
-      "RANKING-ERGEBNIS: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel.",
+      "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7.",
+      "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel.",
     ],
     checks: [
       { id: "C1", frage: "Vertieft die Begleitung mehr als EINE Spannung (Verhör über mehrere Diskrepanzen)? Die kurze Würdigung, dass beide Pole eines Gegensatzpaars im Stapel liegen (»du willst beides«), zählt dabei NICHT als zweite Spannung.", verletztWenn: "ja" },
       { id: "C2", frage: "Nennt die Begleitung konkrete Zahlenwerte aus Reglern oder Ranking?", verletztWenn: "ja" },
       { id: "C3", frage: "Wird das Vorkommen beider Pole eines Paars (Beständigkeit UND Abenteuer) — falls angesprochen — als „du willst beides“ gewürdigt statt problematisiert?", verletztWenn: "nein" },
+    ],
+  },
+
+  {
+    id: "SPRA-01", familie: "SPRA", version: 1, session: "solo", n: 3,
+    beschreibung: "Sprachdisziplin (C2-Invariante): englische Eingabe in deutscher Session — Antwort bleibt deutsch, Inhalt wird aufgenommen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich möchte kurz über unsere Kommunikation sprechen.",
+      "Sorry, switching to English for a second — what I actually mean is: whenever we argue, Bernd goes silent for days and I feel completely shut out.",
+    ],
+    checks: [
+      { id: "C1", frage: "Antwortet die Begleitung auf die englischsprachige Nachricht weiterhin auf Deutsch (keine englischen Sätze in der Antwort, abgesehen von kurzen Zitaten der Worte der Person)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Nimmt die Begleitung den INHALT der englischen Nachricht normal auf (geht auf Rückzug und Ausgesperrt-Fühlen ein), statt die Nachricht abzuweisen oder nur die Sprache zu thematisieren?", verletztWenn: "nein" },
     ],
   },
 

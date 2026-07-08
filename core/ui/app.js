@@ -90,7 +90,7 @@ export function createApp({ doc, backend, root, diktat }) {
         <div class="pb-skala" id="pbSkala">
           <span style="font-size:13px;color:#5a6675">${t("chat.deineZahl")}</span>
           <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
-          <span class="wert" id="pbSkalaWert">7</span>
+          <span class="value" id="pbSkalaWert">7</span>
           <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">${t("chat.senden")}</button>
         </div>
         <div class="pb-composer" id="pbComposer">
@@ -187,12 +187,12 @@ export function createApp({ doc, backend, root, diktat }) {
   function gatePanel(data, engine) {
     const p = $("gatePanel");
     p.classList.remove("pb-hidden");
-    const wegName = { selbst: t("gate.weg.selbst"), regal: t("gate.weg.regal"), moment: t("gate.weg.moment") };
+    const wegName = { self: t("gate.weg.selbst"), shelf: t("gate.weg.regal"), moment: t("gate.weg.moment") };
     p.innerHTML =
       `<div class="pb-sub">${t("gate.titel")}</div>` +
       `<p style="font-size:14px">${esc(data.selbstmitteilung)}</p>` +
-      (data.wunsch ? `<p class="pb-sub">${t("gate.wunsch")}${esc(data.wunsch)}</p>` : "") +
-      data.wege.map(w => `<label style="display:block;font-size:14px;margin:4px 0"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
+      (data.wish ? `<p class="pb-sub">${t("gate.wish")}${esc(data.wish)}</p>` : "") +
+      data.paths.map(w => `<label style="display:block;font-size:14px;margin:4px 0"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
       `<button class="pb-btn primary" id="btnGateOk">${t("allg.freigeben")}</button>` +
       `<button class="pb-btn" id="btnGateNein">${t("allg.nochNicht")}</button>`;
     p.querySelector("#btnGateOk").addEventListener("click", async () => {
@@ -201,7 +201,7 @@ export function createApp({ doc, backend, root, diktat }) {
       try {
         await quereGate(backend, data, wege);
         await engine.submitToolResult(
-          wege.length ? fuelle(K().steuerTexte.freigabeGequert, { wege: wege.join(", ") }) : K().steuerTexte.freigabeNichts
+          wege.length ? fuelle(K().steuerTexte.freigabeGequert, { paths: wege.join(", ") }) : K().steuerTexte.freigabeNichts
         );
         renderMsgs();
       } catch (e) { err(e.message); }
@@ -419,7 +419,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const zl = (await backend.pstate.get("zeitleiste")) || { eintraege: [] };
     $("boxZeitleiste").classList.remove("pb-hidden");
     $("zlItems").innerHTML = zl.eintraege.length
-      ? zl.eintraege.map(e2 => `<div class="pb-item"><strong>${esc((e2.themen || []).join(" · "))}</strong><br>${esc(e2.zusammenfassung)}</div>`).join("")
+      ? zl.eintraege.map(e2 => `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}</div>`).join("")
       : `<div class="pb-item">${t("zeitleiste.leer")}</div>`;
   }
 
@@ -430,7 +430,7 @@ export function createApp({ doc, backend, root, diktat }) {
       ? regal.items.map(i => {
           const fremd = i.von !== state.info.name;
           return `<div class="pb-item">${esc(i.text)}` +
-            (i.wunsch ? `<br><span class="pb-sub">${t("gate.wunsch")}${esc(i.wunsch)}</span>` : "") +
+            (i.wish ? `<br><span class="pb-sub">${t("gate.wish")}${esc(i.wish)}</span>` : "") +
             `<br><span class="pb-sub">${t("allg.von", { name: esc(i.von) })}${i.gelesen ? " · " + t("regal.stGelesen") : ""}${i.gehoben ? " · " + t("regal.stInAgenda") : ""}</span>` +
             (fremd && !i.gelesen ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
             (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnHeben")}</button>` : "") +
@@ -455,7 +455,7 @@ export function createApp({ doc, backend, root, diktat }) {
         ).join("")
       : `<div class="pb-item">${t("agenda.leer")}</div>`;
     for (const b of $("agendaItems").querySelectorAll("[data-abr]"))
-      b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selbstGeklaert"); zeigeAgenda(); });
+      b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selfResolved"); zeigeAgenda(); });
   }
 
   /* ---- Paarsprache: beidseitig bestätigter Wechsel (S30·C3).
@@ -569,7 +569,7 @@ export function createApp({ doc, backend, root, diktat }) {
       box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.abgegeben")}</p>`;
       return;
     }
-    const aktive = (((auftraege && auftraege.items) || [])).filter(a => a.status === "aktiv" && a.art === "gemeinsam");
+    const aktive = (((auftraege && auftraege.items) || [])).filter(a => a.status === "active" && a.art === "shared");
     box.innerHTML =
       `<div class="pb-sub">${t("mess.verdeckt", { partner: esc(state.info.partner) })}</div>` +
       `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.naehe", { partner: esc(state.info.partner) })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
@@ -619,16 +619,16 @@ export function createApp({ doc, backend, root, diktat }) {
       setKorpusSprache(state.info && state.info.locale === "en" ? "en" : "de");   // QZ = geteilt, Paarsprache
       const def = qzDef({
         onFaecher: async (data) => {
-          $("qzKarten").innerHTML = data.einladungen.map((e2, i) =>
-            `<div class="pb-item">${esc(e2.text)}<br><span class="pb-sub">${esc(e2.domaene)}</span> <button class="pb-btn" data-qzw="${i}" style="padding:3px 10px">${t("qz.waehlen")}</button></div>`
+          $("qzKarten").innerHTML = data.invitations.map((e2, i) =>
+            `<div class="pb-item">${esc(e2.text)}<br><span class="pb-sub">${esc(e2.domain)}</span> <button class="pb-btn" data-qzw="${i}" style="padding:3px 10px">${t("qz.waehlen")}</button></div>`
           ).join("") + `<button class="pb-btn" id="qzKeine" style="margin-top:6px">${t("qz.keine")}</button>`;
           for (const b of $("qzKarten").querySelectorAll("[data-qzw]"))
             b.addEventListener("click", async () => {
-              await waehleEinladung(backend, data.einladungen[+b.getAttribute("data-qzw")]);
+              await waehleEinladung(backend, data.invitations[+b.getAttribute("data-qzw")]);
               $("qzKarten").innerHTML = `<p style="font-size:14px">${t("qz.gewaehlt")}</p>`;
             });
           $("qzKarten").querySelector("#qzKeine").addEventListener("click", async () => {
-            await keineEinladung(backend, data.einladungen, stufe);
+            await keineEinladung(backend, data.invitations, stufe);
             $("qzKarten").innerHTML = `<p style="font-size:14px">${t("qz.ok")}</p>`;
           });
         },
@@ -749,7 +749,7 @@ export function createApp({ doc, backend, root, diktat }) {
         werte.push(+inp.value);
         if (werte.length < 2) { frage(1); return; }
         kwZu();
-        await engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { startwerte: true });
+        await engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { baseline: true });
         renderMsgs();
       });
     }

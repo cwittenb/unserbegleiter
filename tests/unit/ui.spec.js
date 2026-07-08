@@ -55,7 +55,7 @@ describe("UI · Reflexionsgespräch-Drehbuch", () => {
   it("Start → Assistant antwortet → Block schließt ab → Zeitleiste gefüllt, Block-Rohform NIE sichtbar", async () => {
     const mock = new MockLLM([
       "Schön, dass du da bist. Was beschäftigt dich?",
-      'Danke dir.\nTIMELINE-BLOCK\n{"zusammenfassung":"Kurze Reflexion über Nähe.","themen":["Nähe"],"wiederkehr":null}\nEND TIMELINE-BLOCK',
+      'Danke dir.\nTIMELINE-BLOCK\n{"summary":"Kurze Reflexion über Nähe.","topics":["Nähe"],"recurrenceNote":null}\nEND TIMELINE-BLOCK',
     ]);
     const backend = memoryBackend(mock);
     const app = createApp({ doc: document, backend, root });
@@ -76,7 +76,7 @@ describe("UI · Reflexionsgespräch-Drehbuch", () => {
     // Persistenz: Eintrag in der Zeitleiste, Chat abgeschlossen
     const zl = await backend.pstate.get("zeitleiste");
     expect(zl.eintraege).toHaveLength(1);
-    expect(zl.eintraege[0].themen).toEqual(["Nähe"]);
+    expect(zl.eintraege[0].topics).toEqual(["Nähe"]);
     await klick(root.querySelector("#btnChatZurueck"));
     await klick(root.querySelector("#btnMyRoom"));
     await klick(root.querySelector("#btnZeitleiste"));
@@ -87,11 +87,11 @@ describe("UI · Reflexionsgespräch-Drehbuch", () => {
 describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
   it("GATE-BLOCK öffnet Panel; Freigabe ins Regal quert und antwortet mit GENAU EINER User-Nachricht", async () => {
     const gate = JSON.stringify({
-      fassung: "Ich wünsche mir mehr gemeinsame Abende.",
-      wunsch: "Zwei Abende pro Woche.",
-      begruendung: "Situationsbezogen, mit Selbstanteil.",
-      kriterien: { charakterzuschreibung: false, generalisierung: false, situationsbezug: true, selbstanteil: true },
-      wege: ["selbst", "regal", "moment"],
+      wording: "Ich wünsche mir mehr gemeinsame Abende.",
+      wish: "Zwei Abende pro Woche.",
+      reasoning: "Situationsbezogen, mit Selbstanteil.",
+      criteria: { characterJudgment: false, generalization: false, situationSpecific: true, ownShare: true },
+      paths: ["self", "shelf", "moment"],
     });
     const mock = new MockLLM([
       "Magst du eine Fassung zur Freigabe sehen?\nGATE-BLOCK\n" + gate + "\nEND GATE-BLOCK",
@@ -107,7 +107,7 @@ describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
     expect(panel.classList.contains("pb-hidden")).toBe(false);
     expect(panel.textContent).toContain("mehr gemeinsame Abende");
 
-    panel.querySelector('input[data-weg="regal"]').checked = true;
+    panel.querySelector('input[data-weg="shelf"]').checked = true;
     await klick(panel.querySelector("#btnGateOk"));
 
     const regal = await backend.bstate.get("regal");
@@ -115,17 +115,17 @@ describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
     expect(regal.items[0].gelesen).toBe(false);           // merken statt melden
     expect(regal.items[0].von).toBe("Anna");
 
-    // Rückkanal: genau EINE user-Nachricht mit FREIGABE-ERGEBNIS in Runde 2
+    // Rückkanal: genau EINE user-Nachricht mit SHARING-RESULT in Runde 2
     const r2 = mock.calls[1].messages.filter(m => m.role === "user");
-    expect(r2[r2.length - 1].content).toContain("FREIGABE-ERGEBNIS");
+    expect(r2[r2.length - 1].content).toContain("SHARING-RESULT");
     expect(panel.classList.contains("pb-hidden")).toBe(true);
   });
 
   it("„Noch nicht\" quert NICHTS und meldet das dem Gespräch", async () => {
     const gate = JSON.stringify({
-      fassung: "F", wunsch: null, begruendung: "B",
-      kriterien: { charakterzuschreibung: false, generalisierung: false, situationsbezug: true, selbstanteil: true },
-      wege: ["regal"],
+      wording: "F", wish: null, reasoning: "B",
+      criteria: { characterJudgment: false, generalization: false, situationSpecific: true, ownShare: true },
+      paths: ["shelf"],
     });
     const mock = new MockLLM([
       "GATE-BLOCK\n" + gate + "\nEND GATE-BLOCK",
@@ -145,11 +145,11 @@ describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
 
 describe("UI · Gemeinsame Session & Regal", () => {
   it("GOAL-BLOCK legt Aufträge mit AG/AI-Kennung an; MOMENT-BLOCK schließt ab", async () => {
-    const auftrag = JSON.stringify({ aenderungen: [
-      { op: "neu", art: "gemeinsam", text: "Wöchentlicher Spaziergang", vonBeidenBestaetigt: true, startwerte: { naehe: 6 } },
-      { op: "neu", art: "individuell", owner: "B", ownerBestaetigt: true, text: "Abends früher offline" },
+    const auftrag = JSON.stringify({ changes: [
+      { op: "new", art: "shared", text: "Wöchentlicher Spaziergang", confirmedByBoth: true, baseline: { naehe: 6 } },
+      { op: "new", art: "individual", owner: "B", ownerConfirmed: true, text: "Abends früher offline" },
     ]});
-    const moment = JSON.stringify({ zusammenfassung: "Verbunden gestartet, Zeit-Thema besprochen, Spaziergang vereinbart.", themen: ["Zeit"], zwischenzeitImpuls: "Kurzer Blick am Mittwoch" });
+    const moment = JSON.stringify({ summary: "Verbunden gestartet, Zeit-Thema besprochen, Spaziergang vereinbart.", topics: ["Zeit"], gentleInvitation: "Kurzer Blick am Mittwoch" });
     const mock = new MockLLM([
       "Schön, dass ihr beide da seid.",
       "GOAL-BLOCK\n" + auftrag + "\nEND GOAL-BLOCK",

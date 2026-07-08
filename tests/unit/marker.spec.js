@@ -3,7 +3,7 @@
 import { describe, it, expect } from "vitest";
 import { findeMarker, letzteZeile, pruefeMarkerOrder } from "../../core/contracts/marker.js";
 
-const ORDER = ["[[REGLER]]", "[[PARTNER-RANKING]]", "[[PARTNER-UNZUFRIEDEN]]", "[[RANKING]]"];
+const ORDER = ["[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]"];
 
 describe("Marker · Letzte-Zeile-Regel", () => {
   it("Marker allein in der letzten Zeile feuert", () => {
@@ -11,7 +11,7 @@ describe("Marker · Letzte-Zeile-Regel", () => {
   });
 
   it("nachlaufende Leerzeilen stören nicht", () => {
-    expect(findeMarker("Text.\n[[REGLER]]\n\n   \n", ORDER)).toBe("[[REGLER]]");
+    expect(findeMarker("Text.\n[[SLIDERS]]\n\n   \n", ORDER)).toBe("[[SLIDERS]]");
   });
 
   it("Restzeichen in der letzten Zeile stören nicht (Satzzeichen-Toleranz)", () => {

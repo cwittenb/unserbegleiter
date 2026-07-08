@@ -45,8 +45,8 @@ describe("Korpus-Invarianten (alle Sprachfassungen)", () => {
 
   it("de: Kernmarker sind vorhanden (Regressionsanker)", () => {
     expect(marker(ref.einzel)).toEqual(expect.arrayContaining(
-      ["[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]", "[[RANKING]]", "[[REGLER]]", "[[PARTNER-RANKING]]", "[[PARTNER-UNZUFRIEDEN]]"]));
-    expect(marker(ref.gemeinsam)).toContain("[[STARTWERTE]]");
-    expect(marker(ref.aufdeck)).toContain("[[AUFDECKEN]]");
+      ["[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]", "[[RANKING]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]"]));
+    expect(marker(ref.gemeinsam)).toContain("[[BASELINE]]");
+    expect(marker(ref.aufdeck)).toContain("[[REVEAL]]");
   });
 });

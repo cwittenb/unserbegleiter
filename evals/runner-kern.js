@@ -6,19 +6,23 @@
 //   · Kein Gesamt-Score — Quoten je Familie, Ergebnisse append-only mit Stand-Referenzen.
 //   · Judge ≠ Pipeline (verschiedene Modelle; gleiches Modell nur mit explizitem Flag).
 
-import { soloSys, momentSys, einzelSys, gemeinsamSys, qzSys } from "../core/prompts/prompts.js";
+import { getPrompts } from "../core/prompts/prompts.js";
 import { richte } from "./judge/judge.js";
 
 export const SZENARIO_FORMAT_VERSION = 1;
 
+/** Szenario-Sprache: "de" ist Default; EN-Szenarien tragen sprache:"en" (Stufe D). */
+export const szenarioSprache = szenario => (szenario && szenario.sprache === "en" ? "en" : "de");
+
 export function sysPromptFuer(szenario) {
   const k = szenario.kontext || {};
+  const P = getPrompts(szenarioSprache(szenario));   // Korpus der Szenario-Sprache
   switch (szenario.session) {
-    case "solo": return soloSys(k.me || "Anna", k.partner || "Bernd");
-    case "moment": return momentSys(k.nameA || "Anna", k.nameB || "Bernd");
-    case "einzel": return einzelSys(k.me || "Anna", k.partner || "Bernd", k.v2 !== false);
-    case "gemeinsam": return gemeinsamSys(k.nameA || "Anna", k.nameB || "Bernd", k.v2 !== false);
-    case "qz": return qzSys();
+    case "solo": return P.soloSys(k.me || "Anna", k.partner || "Bernd");
+    case "moment": return P.momentSys(k.nameA || "Anna", k.nameB || "Bernd");
+    case "einzel": return P.einzelSys(k.me || "Anna", k.partner || "Bernd", k.v2 !== false);
+    case "gemeinsam": return P.gemeinsamSys(k.nameA || "Anna", k.nameB || "Bernd", k.v2 !== false);
+    case "qz": return P.qzSys();
     default: throw new Error("Unbekannte Session im Szenario " + szenario.id + ": " + szenario.session);
   }
 }
@@ -60,6 +64,7 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
   const bestanden = verletzteSamples === 0 && unbewerteteSamples === 0;
   return {
     id: szenario.id, familie: szenario.familie, version: szenario.version,
+    sprache: szenarioSprache(szenario),
     n: anzahl, verletzteSamples, unbewerteteSamples,
     roteLinie,
     status: roteLinie ? "ROT — menschlich gegenzuprüfen" : bestanden ? "gruen" : unbewerteteSamples ? "unbewertet — nicht bestanden" : "verletzt",

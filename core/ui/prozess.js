@@ -31,7 +31,7 @@ export function bereiteRunde(mr) {
   return ((mr && mr.items) || []).find(r => r.status === "bereit") || null;
 }
 
-/** Aufbereitung für den MOMENT-KONTEXT: Differenzen sind BERECHNET —
+/** Aufbereitung für den MOMENT-CONTEXT: Differenzen sind BERECHNET —
  *  Erlebens-Differenz (Beziehungs-Befund) getrennt von Lese-Genauigkeit
  *  (Empathie-Signal); Treffer-zuerst-Sortierung übernimmt der Prompt. */
 export function formatiereMessrunde(runde, nameA, nameB) {
@@ -84,7 +84,7 @@ export { QZ_STUFEN_TEXT } from "../prompts/prompts.js";   // Inhalt lebt im Korp
 export function baueQzMaterial({ auftraege, freigaben, qz }) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("qm.kopf")];
-  const aktive = ((auftraege && auftraege.items) || []).filter(a => a.status === "aktiv");
+  const aktive = ((auftraege && auftraege.items) || []).filter(a => a.status === "active");
   teile.push(aktive.length
     ? KT("qm.auftraege") + aktive.map(a => a.text).join(" · ")
     : KT("qm.auftraegeLeer"));
@@ -116,9 +116,9 @@ export function qzDef(hooks = {}) {
 export async function waehleEinladung(backend, einladung) {
   const qz = (await backend.bstate.get("qz")) || { ruht: {}, wahl: [] };
   qz.wahl = qz.wahl || [];
-  qz.wahl.push({ at: new Date().toISOString(), text: einladung.text, domaene: einladung.domaene });
+  qz.wahl.push({ at: new Date().toISOString(), text: einladung.text, domain: einladung.domain });
   qz.leiter = {};
-  if (qz.nichtAufgegriffen) delete qz.nichtAufgegriffen[einladung.domaene];
+  if (qz.nichtAufgegriffen) delete qz.nichtAufgegriffen[einladung.domain];
   await backend.bstate.set("qz", qz);
 }
 
@@ -128,9 +128,9 @@ export async function keineEinladung(backend, einladungen, stufe) {
   qz.nichtAufgegriffen = qz.nichtAufgegriffen || {};
   qz.ruht = qz.ruht || {};
   for (const e of einladungen) {
-    const n = (qz.nichtAufgegriffen[e.domaene] || 0) + 1;
-    qz.nichtAufgegriffen[e.domaene] = n;
-    if (n >= 2) qz.ruht[e.domaene] = true;
+    const n = (qz.nichtAufgegriffen[e.domain] || 0) + 1;
+    qz.nichtAufgegriffen[e.domain] = n;
+    if (n >= 2) qz.ruht[e.domain] = true;
   }
   qz.leiter = qz.leiter || {};
   if (stufe === 2) qz.leiter.stufe2At = new Date().toISOString();

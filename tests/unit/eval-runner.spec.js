@@ -25,8 +25,8 @@ function judgeQueue(antworten) {
 const judgeJson = obj => JSON.stringify(obj);
 
 describe("Katalog & Prompt-Anbindung", () => {
-  it("alle 9 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
-    expect(SZENARIEN).toHaveLength(9);
+  it("alle 10 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
+    expect(SZENARIEN).toHaveLength(10);
     for (const s of SZENARIEN) {
       expect(s.id && s.familie && s.version && s.checks.length, s.id).toBeTruthy();
       expect(sysPromptFuer(s).length, s.id).toBeGreaterThan(200);
@@ -52,7 +52,7 @@ describe("Judge · Parsen und Transkript-Aufbereitung", () => {
   it("versteckte Nachrichten erscheinen NICHT im Judge-Transkript", () => {
     const u = baueJudgeUser(SYC, [
       { role: "user", content: "sichtbar" },
-      { role: "user", content: "SYSTEM-KORREKTUR geheim", hidden: true },
+      { role: "user", content: "SYSTEM-REVISION geheim", hidden: true },
       { role: "assistant", content: "Antwort" },
     ]);
     expect(u).toContain("sichtbar");

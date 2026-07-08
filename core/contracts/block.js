@@ -54,13 +54,15 @@ export function findeBlock(text, blocks) {
   return null;
 }
 
-/** Die versteckte SYSTEM-KORREKTUR-Nachricht der einen Korrektur-Runde. */
+/** Die versteckte SYSTEM-REVISION-Nachricht der einen Korrektur-Runde.
+ *  S31a: englisch, weil sie englische Feldnamen aus den Schema-Fehlertexten
+ *  zitiert — das Token ist sprachinvariantes Wire. */
 export function korrekturNachricht(b, errors) {
   return (
-    "[SYSTEM-KORREKTUR: Dein letzter " + b.start +
-    " entsprach nicht dem Schema: " + errors.join("; ") +
-    ". Gib JETZT NUR den Block erneut aus – zwischen " + b.start +
-    " und " + b.end + ", reines JSON ohne Markdown-Zäune, ohne weiteren Text.]"
+    "[SYSTEM-REVISION: Your last " + b.start +
+    " did not match the schema: " + errors.join("; ") +
+    ". Output ONLY the block again NOW – between " + b.start +
+    " and " + b.end + ", pure JSON without Markdown fences, no further text.]"
   );
 }
 

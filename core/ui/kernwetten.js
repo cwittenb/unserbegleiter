@@ -1,6 +1,6 @@
 // Kernwetten / Auftragsklärung — Session-Definitionen und Panel-Datenlogik.
-// Die Ergebnisformate (REGLER-ERGEBNIS, RANKING-ERGEBNIS, PARTNER-VERMUTUNG,
-// STARTWERTE-ERGEBNIS) sind 1:1 aus v0.29 portiert — sie sind Teil des
+// Die Ergebnisformate (SLIDERS-RESULT, RANKING-RESULT, PARTNER-GUESS,
+// BASELINE-RESULT) sind 1:1 aus v0.29 portiert — sie sind Teil des
 // Modell-Kontrakts (die Prompts referenzieren sie wörtlich).
 
 import { BLOECKE } from "../contracts/registry.js";
@@ -41,7 +41,7 @@ export const RANK_MODES = {
   },
 };
 
-/** REGLER-ERGEBNIS aus den 13 Domänen-Werten (Spektrum-Text bei Gegensatzpaaren). */
+/** SLIDERS-RESULT aus den 13 Domänen-Werten (Spektrum-Text bei Gegensatzpaaren). */
 export function reglerErgebnis(vals, me) {
   const lines = K().DOMAINS.map((d, k) => {
     const v = vals[k];
@@ -59,7 +59,7 @@ export function rankingErgebnis(mode, order, ctx) {
   return RANK_MODES[mode].result(lines, ctx);
 }
 
-/** STARTWERTE-ERGEBNIS: verdeckt erhoben, gleichzeitig aufgedeckt. */
+/** BASELINE-RESULT: verdeckt erhoben, gleichzeitig aufgedeckt. */
 export function startwerteErgebnis(nameA, wA, nameB, wB) {
   return KT("startwerte.kopf") + "\n" +
     nameA + ": " + wA + "\n" + nameB + ": " + wB;
@@ -72,15 +72,15 @@ export function einzelDef(backend, hooks = {}) {
     shared: false,
     titel: "Auftragsklärung",
     sysPrompt: ctx => K().einzelSys(ctx.me, ctx.partner, ctx.v2 !== false),
-    markerOrder: ["[[REGLER]]", "[[PARTNER-RANKING]]", "[[PARTNER-UNZUFRIEDEN]]", "[[RANKING]]", "[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]"],
+    markerOrder: ["[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
-      "[[REGLER]]": e => hooks.onRegler && hooks.onRegler(e),
+      "[[SLIDERS]]": e => hooks.onRegler && hooks.onRegler(e),
       "[[PARTNER-RANKING]]": e => hooks.onRanking && hooks.onRanking("pwichtig", e),
-      "[[PARTNER-UNZUFRIEDEN]]": e => hooks.onRanking && hooks.onRanking("punzufrieden", e),
+      "[[PARTNER-GUESS-CHANGE]]": e => hooks.onRanking && hooks.onRanking("punzufrieden", e),
       "[[RANKING]]": e => hooks.onRanking && hooks.onRanking("self", e),
-      "[[KAPITEL-1]]": e => hooks.onKapitel && hooks.onKapitel(1, e),
-      "[[KAPITEL-2]]": e => hooks.onKapitel && hooks.onKapitel(2, e),
-      "[[KAPITEL-3]]": e => hooks.onKapitel && hooks.onKapitel(3, e),
+      "[[CHAPTER-1]]": e => hooks.onKapitel && hooks.onKapitel(1, e),
+      "[[CHAPTER-2]]": e => hooks.onKapitel && hooks.onKapitel(2, e),
+      "[[CHAPTER-3]]": e => hooks.onKapitel && hooks.onKapitel(3, e),
     },
     canAct: c => c.status === "running",
     blocks: [
@@ -102,9 +102,9 @@ export function gemeinsamDef(backend, hooks = {}) {
     shared: true,
     titel: "Gemeinsame Klärung",
     sysPrompt: ctx => K().gemeinsamSys(ctx.nameA, ctx.nameB, ctx.v2 !== false),
-    markerOrder: ["[[STARTWERTE]]"],
+    markerOrder: ["[[BASELINE]]"],
     markers: {
-      "[[STARTWERTE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),
+      "[[BASELINE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),
     },
     canAct: c => c.status !== "finished",
     blocks: [
@@ -143,23 +143,23 @@ export function baueAufdeckung(name, ranks) {
   return { name: String(name), top5: r.self.map(String), tipp3: r.pwichtig.map(String), releasedAt: new Date().toISOString() };
 }
 
-/** AUFDECK-KONTEXT — versteckte erste Nachricht der Aufdeck-Runde (nur diese Daten, sonst nichts). */
+/** REVEAL-CONTEXT — versteckte erste Nachricht der Aufdeck-Runde (nur diese Daten, sonst nichts). */
 export function baueAufdeckKontext(gA, gB) {
   const teil = g => fuelle(KT("aufdeckk.top5"), { name: g.name }) + g.top5.map((x, i) => (i + 1) + ". " + x).join(" · ") +
     "\n" + fuelle(KT("aufdeckk.tipp3"), { name: g.name }) + g.tipp3.map((x, i) => (i + 1) + ". " + x).join(" · ");
-  return KT("aufdeckk.kopf") + "\n" + teil(gA) + "\n" + teil(gB) + "\nENDE AUFDECK-KONTEXT";
+  return KT("aufdeckk.kopf") + "\n" + teil(gA) + "\n" + teil(gB) + "\nEND REVEAL-CONTEXT";
 }
 
-/** Erste (versteckte) Nachricht der gemeinsamen Klärung: zwei ÜBERGABE-BLÖCKE + optionales AUFDECK-PROTOKOLL. */
+/** Erste (versteckte) Nachricht der gemeinsamen Klärung: zwei HANDOVER-BLOCKS + optionales REVEAL-PROTOCOL. */
 export function baueKlaerungsKontext(uA, uB, protokoll) {
-  const blk = u => "ÜBERGABE-BLOCK – " + u.name + "\n" + u.items.map(i => i.id + ": " + i.text).join("\n") + "\nENDE ÜBERGABE-BLOCK";
+  const blk = u => "HANDOVER-BLOCK – " + u.name + "\n" + u.items.map(i => i.id + ": " + i.text).join("\n") + "\nEND HANDOVER-BLOCK";
   let s = blk(uA) + "\n\n" + blk(uB);
   if (protokoll) {
-    s += "\n\n" + KT("klaerung.protokoll") + protokoll.zusammenfassung;
-    if (protokoll.beruehrungspunkte && protokoll.beruehrungspunkte.length)
-      s += "\n" + KT("klaerung.beruehr") + protokoll.beruehrungspunkte.join(" · ");
-    if (protokoll.fuerDieKlaerung && protokoll.fuerDieKlaerung.length)
-      s += "\n" + KT("klaerung.vorgemerkt") + protokoll.fuerDieKlaerung.join(" · ");
+    s += "\n\n" + KT("klaerung.protokoll") + protokoll.summary;
+    if (protokoll.touchingPoints && protokoll.touchingPoints.length)
+      s += "\n" + KT("klaerung.beruehr") + protokoll.touchingPoints.join(" · ");
+    if (protokoll.forClarification && protokoll.forClarification.length)
+      s += "\n" + KT("klaerung.vorgemerkt") + protokoll.forClarification.join(" · ");
   }
   return s;
 }
@@ -171,8 +171,8 @@ export function aufdeckDef(backend, hooks = {}) {
     shared: true,
     titel: "Aufdeck-Runde",
     sysPrompt: ctx => K().aufdeckSys(ctx.nameA, ctx.nameB),
-    markerOrder: ["[[AUFDECKEN]]"],
-    markers: { "[[AUFDECKEN]]": e => hooks.onAufdecken && hooks.onAufdecken(e) },
+    markerOrder: ["[[REVEAL]]"],
+    markers: { "[[REVEAL]]": e => hooks.onAufdecken && hooks.onAufdecken(e) },
     canAct: c => c.status !== "finished",
     blocks: [
       {

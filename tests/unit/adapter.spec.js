@@ -55,8 +55,8 @@ describe("Adapter · Anthropic keyless (Artefakt)", () => {
   it("versteckte Nachrichten gehen ANS MODELL mit (hidden ist reine Anzeige-Semantik)", async () => {
     const f = mockFetch(ANTHROPIC_OK);
     const call = makeAdapter({ mode: "keyless" }, f);
-    await call("SYS", [{ role: "user", content: "[SYSTEM-KORREKTUR: …]", hidden: true }]);
-    expect(f.calls[0].body.messages[0].content[0].text).toContain("SYSTEM-KORREKTUR");
+    await call("SYS", [{ role: "user", content: "[SYSTEM-REVISION: …]", hidden: true }]);
+    expect(f.calls[0].body.messages[0].content[0].text).toContain("SYSTEM-REVISION");
     expect(f.calls[0].body.messages[0].hidden).toBeUndefined();   // Meta-Felder bleiben draußen
   });
 });

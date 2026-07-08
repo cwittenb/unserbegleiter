@@ -15,7 +15,7 @@ import {
 describe("Kanarien · einzelSys (vier Kapitel)", () => {
   const p = einzelSys("Anna", "Bernd", true);
   it("Kapitel-Marken 1–3 vorhanden und in Reihenfolge", () => {
-    for (const m of ["[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]"]) expect(p).toContain(m);
+    for (const m of ["[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"]) expect(p).toContain(m);
     expect(p.indexOf("KAPITEL 1")).toBeLessThan(p.indexOf("KAPITEL 2"));
     expect(p.indexOf("KAPITEL 2")).toBeLessThan(p.indexOf("KAPITEL 3"));
     expect(p.indexOf("KAPITEL 3")).toBeLessThan(p.indexOf("KAPITEL 4"));
@@ -43,7 +43,7 @@ describe("Kanarien · einzelSys (vier Kapitel)", () => {
   });
   it("v1: Kapitel bleiben, BV-Erhebung entfällt", () => {
     const p1 = einzelSys("Anna", "Bernd", false);
-    expect(p1).toContain("[[KAPITEL-3]]");
+    expect(p1).toContain("[[CHAPTER-3]]");
     expect(p1).not.toContain("Vermutete Sorge (nur v2)");
     expect(p1).not.toContain("SORGEN-WEICHE");
   });
@@ -51,8 +51,8 @@ describe("Kanarien · einzelSys (vier Kapitel)", () => {
 
 describe("Kanarien · gemeinsamSys (Protokoll & Pausenmarke)", () => {
   const p = gemeinsamSys("Anna", "Bernd", true);
-  it("AUFDECK-PROTOKOLL wird respektiert (nicht wiederholen, Vormerkungen aufgreifen)", () => {
-    expect(p).toContain("AUFDECK-PROTOKOLL");
+  it("REVEAL-PROTOCOL wird respektiert (nicht wiederholen, Vormerkungen aufgreifen)", () => {
+    expect(p).toContain("REVEAL-PROTOCOL");
     expect(p).toContain("wiederhole diese Aufdeckung nicht");
   });
   it("PAUSENMARKE liegt vor der Ergänzungsfrage", () => {
@@ -68,7 +68,7 @@ describe("Kanarien · aufdeckSys", () => {
     expect(p).toContain("Berührungspunkt");
   });
   it("Marker- und Block-Vertrag benannt", () => {
-    expect(p).toContain("[[AUFDECKEN]] allein in der letzten Zeile");
+    expect(p).toContain("[[REVEAL]] allein in der letzten Zeile");
     expect(p).toContain("REVEAL-BLOCK");
   });
   it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("KEINE Themen-Vertiefung"));
@@ -77,12 +77,12 @@ describe("Kanarien · aufdeckSys", () => {
 
 describe("Vertrag · aufdeckSchema (REVEAL-BLOCK)", () => {
   it("gültig, leere Arrays erlaubt", () =>
-    expect(aufdeckSchema({ zusammenfassung: "a.", beruehrungspunkte: [], fuerDieKlaerung: [] })).toHaveLength(0));
+    expect(aufdeckSchema({ summary: "a.", touchingPoints: [], forClarification: [] })).toHaveLength(0));
   it("fehlende Zusammenfassung ungültig", () =>
-    expect(aufdeckSchema({ beruehrungspunkte: [], fuerDieKlaerung: [] }).length).toBeGreaterThan(0));
+    expect(aufdeckSchema({ touchingPoints: [], forClarification: [] }).length).toBeGreaterThan(0));
   it("Quoten/Scores sind strukturell verboten — Berührungspunkte statt Zählen", () =>
-    expect(aufdeckSchema({ zusammenfassung: "a.", beruehrungspunkte: [], fuerDieKlaerung: [], trefferquote: 2 }).join(" "))
-      .toContain("keine Quoten"));
+    expect(aufdeckSchema({ summary: "a.", touchingPoints: [], forClarification: [], trefferquote: 2 }).join(" "))
+      .toContain("no quotas"));
   it("Registry trägt den REVEAL-BLOCK", () => {
     expect(BLOECKE.aufdeck.start).toBe("REVEAL-BLOCK");
     expect(BLOECKE.aufdeck.schema).toBe(aufdeckSchema);
@@ -92,26 +92,26 @@ describe("Vertrag · aufdeckSchema (REVEAL-BLOCK)", () => {
 describe("Kernwetten · Kapitel-Marker & Aufdeck-Def", () => {
   it("einzelDef: Kapitel-Marker registriert, markerOrder besteht den Wächter", () => {
     const d = einzelDef({}, {});
-    for (const m of ["[[KAPITEL-1]]", "[[KAPITEL-2]]", "[[KAPITEL-3]]"]) expect(typeof d.markers[m]).toBe("function");
+    for (const m of ["[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"]) expect(typeof d.markers[m]).toBe("function");
     expect(pruefeMarkerOrder(d.markerOrder)).toEqual([]);
   });
   it("einzelDef: Kapitel-Marker reicht Nummer an den Hook", () => {
     const rufe = [];
     const d = einzelDef({}, { onKapitel: (n) => rufe.push(n) });
-    d.markers["[[KAPITEL-3]]"]({});
+    d.markers["[[CHAPTER-3]]"]({});
     expect(rufe).toEqual([3]);
   });
-  it("aufdeckDef: geteilte Session, [[AUFDECKEN]] registriert, Block persistiert Protokoll und beendet", async () => {
+  it("aufdeckDef: geteilte Session, [[REVEAL]] registriert, Block persistiert Protokoll und beendet", async () => {
     const gesetzt = [];
     const backend = { bstate: { set: async (f, v) => gesetzt.push([f, v]) } };
     const d = aufdeckDef(backend, {});
     expect(d.shared).toBe(true);
-    expect(typeof d.markers["[[AUFDECKEN]]"]).toBe("function");
+    expect(typeof d.markers["[[REVEAL]]"]).toBe("function");
     const engine = { chat: { status: "running" } };
-    await d.blocks[0].handle({ zusammenfassung: "Warm.", beruehrungspunkte: ["Nähe"], fuerDieKlaerung: [] }, engine);
+    await d.blocks[0].handle({ summary: "Warm.", touchingPoints: ["Nähe"], forClarification: [] }, engine);
     expect(engine.chat.status).toBe("finished");
     expect(gesetzt[0][0]).toBe("aufdeckprotokoll");
-    expect(gesetzt[0][1].zusammenfassung).toBe("Warm.");
+    expect(gesetzt[0][1].summary).toBe("Warm.");
     expect(gesetzt[0][1].at).toBeTruthy();
   });
   it("KAPITEL_TITEL trägt vier Kapitel", () => expect(KAPITEL_TITEL).toHaveLength(4));
@@ -137,7 +137,7 @@ describe("Kernwetten · Datenpfade der Aufdeck-Runde", () => {
     expect(beruehrungen(ranks.pwichtig, ranks.self)).toEqual(["Autonomie", "Nähe"]);
     expect(beruehrungen(["Abenteuer"], ranks.self)).toEqual([]);
   });
-  it("AUFDECK-KONTEXT: beide Namen, keine Unzufriedenheits-Vermutung", () => {
+  it("REVEAL-CONTEXT: beide Namen, keine Unzufriedenheits-Vermutung", () => {
     const gA = baueAufdeckung("Anna", ranks);
     const gB = baueAufdeckung("Bernd", { self: ["Autonomie", "Nähe", "Ehrlichkeit", "Abenteuer", "Wertschätzung"], pwichtig: ["Nähe", "Wertschätzung", "Harmonie"] });
     const k = baueAufdeckKontext(gA, gB);
@@ -145,14 +145,14 @@ describe("Kernwetten · Datenpfade der Aufdeck-Runde", () => {
     expect(k).toContain("Bernd – Tipp");
     expect(k).not.toContain("Sexualität");   // Unzufriedenheits-Tipp quert erst mit der Klärung
   });
-  it("Klärungs-Kontext: zwei ÜBERGABE-BLÖCKE, Protokoll-Zeile optional", () => {
+  it("Klärungs-Kontext: zwei HANDOVER-BLOCKS, Protokoll-Zeile optional", () => {
     const uA = { name: "Anna", items: [{ id: "S1", text: "Nähe sehr wichtig, dort unzufrieden" }] };
-    const uB = { name: "Bernd", items: [{ id: "V1", text: "Vermutet, dass Anna mehr Zweisamkeit wünscht" }] };
+    const uB = { name: "Bernd", items: [{ id: "G1", text: "Vermutet, dass Anna mehr Zweisamkeit wünscht" }] };
     const ohne = baueKlaerungsKontext(uA, uB, null);
-    expect(ohne.match(/ÜBERGABE-BLOCK – /g)).toHaveLength(2);
-    expect(ohne).not.toContain("AUFDECK-PROTOKOLL");
-    const mit = baueKlaerungsKontext(uA, uB, { zusammenfassung: "Warm gespielt.", beruehrungspunkte: ["Nähe"], fuerDieKlaerung: ["Wochenend-Rituale"] });
-    expect(mit).toContain("AUFDECK-PROTOKOLL");
+    expect(ohne.match(/HANDOVER-BLOCK – /g)).toHaveLength(2);
+    expect(ohne).not.toContain("REVEAL-PROTOCOL");
+    const mit = baueKlaerungsKontext(uA, uB, { summary: "Warm gespielt.", touchingPoints: ["Nähe"], forClarification: ["Wochenend-Rituale"] });
+    expect(mit).toContain("REVEAL-PROTOCOL");
     expect(mit).toContain("Wochenend-Rituale");
   });
 });

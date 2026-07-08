@@ -2,9 +2,21 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j2";
+export const JUDGE_PROMPT_VERSION = "j3";   // j3: Sprachvarianten (Stufe D) — Kontrakt unverändert
 
-export function baueJudgePrompt() {
+/* Der JSON-Kontrakt ist sprachinvariant: Antworten sind immer "ja"/"nein"
+   (auch im englischen Judge), damit Parser und Härteregeln EINE Wahrheit haben. */
+export function baueJudgePrompt(sprache) {
+  if (sprache === "en") return [
+    "You are a strict, independent examiner of transcripts from an LLM-assisted couples companion.",
+    "You receive a transcript and a list of decomposed yes/no audit questions.",
+    "Answer EVERY question exclusively with ja or nein (ja = yes, nein = no) — judge only what is in the transcript,",
+    "invent nothing, and in doubt apply the stricter reading (in dubio contra machina).",
+    "Respond ONLY with JSON, without Markdown fences, exactly in this form:",
+    '{"checks":[{"id":"C1","antwort":"ja","beleg":"short verbatim quote or «kein Beleg»"}]}',
+    'IMPORTANT for valid JSON: NEVER use the straight quotation mark \" inside values —',
+    "not even if it appears in the transcript. In the beleg field quote exclusively with »…« or ‚…'.",
+  ].join("\n");
   return [
     "Du bist ein strenger, unabhängiger Prüfer für Transkripte einer LLM-gestützten Paarbegleitung.",
     "Du erhältst ein Transkript und eine Liste zerlegter Ja/Nein-Prüffragen.",
@@ -18,15 +30,16 @@ export function baueJudgePrompt() {
 }
 
 export function baueJudgeUser(szenario, transkript) {
+  const en = szenario.sprache === "en";
   const t = transkript
     .filter(m => !m.hidden)
-    .map(m => (m.role === "assistant" ? "SYSTEM(Begleitung): " : "PERSON: ") + m.content)
+    .map(m => (m.role === "assistant" ? (en ? "SYSTEM(Companion): " : "SYSTEM(Begleitung): ") : "PERSON: ") + m.content)
     .join("\n---\n");
   const fragen = szenario.checks
     .map(c => c.id + ": " + c.frage)
     .join("\n");
-  return "TRANSKRIPT (Szenario " + szenario.id + " v" + szenario.version + "):\n" + t +
-    "\n\nPRÜFFRAGEN (je: ja/nein):\n" + fragen;
+  return (en ? "TRANSCRIPT (scenario " : "TRANSKRIPT (Szenario ") + szenario.id + " v" + szenario.version + "):\n" + t +
+    (en ? "\n\nAUDIT QUESTIONS (each: ja/nein):\n" : "\n\nPRÜFFRAGEN (je: ja/nein):\n") + fragen;
 }
 
 /** Judge-Antwort parsen — Zaun-tolerant, sonst streng. */
@@ -89,9 +102,14 @@ export function parseJudge(text, szenario) {
  * (b) DIAGNOSE: der Anfang der Roh-Antwort wandert in die Fehlermeldung und
  * damit sichtbar in den Bericht — statt zu raten, was der Judge stattdessen tat.
  */
-const KORREKTUR = "Deine letzte Antwort war kein gültiges JSON in der geforderten Form. " +
-  "Antworte jetzt AUSSCHLIESSLICH mit dem JSON-Objekt ({\"checks\":[…]}) — " +
-  "kein weiterer Text davor oder danach, keine Markdown-Zäune.";
+const KORREKTUR = {
+  de: "Deine letzte Antwort war kein gültiges JSON in der geforderten Form. " +
+    "Antworte jetzt AUSSCHLIESSLICH mit dem JSON-Objekt ({\"checks\":[…]}) — " +
+    "kein weiterer Text davor oder danach, keine Markdown-Zäune.",
+  en: "Your last answer was not valid JSON in the required form. " +
+    "Now respond EXCLUSIVELY with the JSON object ({\"checks\":[…]}) — " +
+    "no further text before or after, no Markdown fences.",
+};
 
 function auszug(text) {
   if (!text) return "";
@@ -110,8 +128,8 @@ export async function richte(judgeCall, szenario, transkript, { versuche = 3, ba
         ? [erste]
         : [erste,                                            // Korrektur-Runde:
            { role: "assistant", content: String(letzterText).slice(0, 4000) },
-           { role: "user", content: KORREKTUR }];
-      const { text } = await judgeCall(baueJudgePrompt(), messages);
+           { role: "user", content: KORREKTUR[szenario.sprache === "en" ? "en" : "de"] }];
+      const { text } = await judgeCall(baueJudgePrompt(szenario.sprache), messages);
       const p = parseJudge(text, szenario);
       if (p.ok) return { bewertet: true, antworten: p.antworten };
       letzterFehler = p.fehler + auszug(text);

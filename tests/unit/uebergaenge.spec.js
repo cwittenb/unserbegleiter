@@ -5,7 +5,7 @@ import { einzelSys } from "../../core/prompts/prompts.js";
 
 describe("Kanarien · einzelSys (Übergänge)", () => {
   const p = einzelSys("Anna", "Bernd", true);
-  it("Übergangs-Regel vorhanden: Drei-Schritt-Brücke statt abruptem Wechsel", () => {
+  it("Übergangs-Regel present: Drei-Schritt-Brücke statt abruptem Wechsel", () => {
     expect(p).toContain("ÜBERGÄNGE");
     expect(p).toContain("NIE abrupt");
   });

@@ -44,10 +44,10 @@ async function starteEinzel(mock, backend) {
 }
 
 describe("Ergebnisformate (Modell-Kontrakt, 1:1 v0.29)", () => {
-  it("REGLER-ERGEBNIS: 13 Zeilen, Spektrum-Text bei Gegensatzpaaren, qualitativ-spiegeln-Hinweis", () => {
+  it("SLIDERS-RESULT: 13 Zeilen, Spektrum-Text bei Gegensatzpaaren, qualitativ-spiegeln-Hinweis", () => {
     const vals = DOMAINS.map(() => ({ w: 7, z: 3 }));
     const r = reglerErgebnis(vals, "Anna");
-    expect(r).toContain("REGLER-ERGEBNIS");
+    expect(r).toContain("SLIDERS-RESULT");
     expect(r).toContain("Anna hat keine Zahlen gesehen");
     expect(r.split("\n")).toHaveLength(DOMAINS.length + 1);
     const paar = DOMAINS.findIndex(d => d.poles);
@@ -61,13 +61,13 @@ describe("Ergebnisformate (Modell-Kontrakt, 1:1 v0.29)", () => {
     expect(RANK_MODES.punzufrieden.topN).toBe(1);
     expect(RANK_ITEMS.length).toBeGreaterThan(DOMAINS.length);   // Pole getrennt
     const ctx = { me: "Anna", partner: "Bernd" };
-    expect(rankingErgebnis("self", [0, 1, 2, 3, 4], ctx)).toContain("RANKING-ERGEBNIS – Top 5");
-    expect(rankingErgebnis("pwichtig", [0, 1, 2], ctx)).toContain("PARTNER-VERMUTUNG (Top 3, geraten von Anna");
-    expect(rankingErgebnis("punzufrieden", [0], ctx)).toContain("PARTNER-VERMUTUNG UNZUFRIEDENHEIT");
+    expect(rankingErgebnis("self", [0, 1, 2, 3, 4], ctx)).toContain("RANKING-RESULT – Top 5");
+    expect(rankingErgebnis("pwichtig", [0, 1, 2], ctx)).toContain("PARTNER-GUESS (Top 3, geraten von Anna");
+    expect(rankingErgebnis("punzufrieden", [0], ctx)).toContain("PARTNER-GUESS-CHANGE");
     expect(rankingErgebnis("self", [1, 0, 2, 3, 4], ctx).split("\n")[1]).toBe("1. " + RANK_ITEMS[1].label);
   });
 
-  it("STARTWERTE-ERGEBNIS trägt beide Namen und Werte", () => {
+  it("BASELINE-RESULT trägt beide Namen und Werte", () => {
     const r = startwerteErgebnis("Anna", 4, "Bernd", 7);
     expect(r).toContain("Anna: 4");
     expect(r).toContain("Bernd: 7");
@@ -76,9 +76,9 @@ describe("Ergebnisformate (Modell-Kontrakt, 1:1 v0.29)", () => {
 });
 
 describe("UI · Regler-Panel-Drehbuch", () => {
-  it("[[REGLER]] öffnet das Panel; Durchlauf durch alle 13 Bereiche sendet GENAU EIN REGLER-ERGEBNIS", async () => {
+  it("[[SLIDERS]] öffnet das Panel; Durchlauf durch alle 13 Bereiche sendet GENAU EIN SLIDERS-RESULT", async () => {
     const mock = new MockLLM([
-      "Es kommen jetzt die Lebensbereiche.\n[[REGLER]]",
+      "Es kommen jetzt die Lebensbereiche.\n[[SLIDERS]]",
       "Danke für deine Einschätzungen!",
     ]);
     const backend = memoryBackend(mock);
@@ -97,10 +97,10 @@ describe("UI · Regler-Panel-Drehbuch", () => {
     expect(p.classList.contains("pb-hidden")).toBe(true);
     const userMsgs = mock.calls[1].messages.filter(m => m.role === "user");
     const letzte = userMsgs[userMsgs.length - 1];
-    expect(letzte.content).toContain("REGLER-ERGEBNIS");
+    expect(letzte.content).toContain("SLIDERS-RESULT");
     expect(letzte.content).toContain("Wichtigkeit 8 · Zufriedenheit 3");
     expect(letzte.slider).toBe(true);
-    expect(userMsgs.filter(m => m.content.includes("REGLER-ERGEBNIS"))).toHaveLength(1);   // genau EINE
+    expect(userMsgs.filter(m => m.content.includes("SLIDERS-RESULT"))).toHaveLength(1);   // genau EINE
   });
 });
 
@@ -124,7 +124,7 @@ describe("UI · Ranking-Panel-Drehbuch", () => {
 
     const userMsgs = mock.calls[1].messages.filter(m => m.role === "user");
     const letzte = userMsgs[userMsgs.length - 1].content;
-    expect(letzte).toContain("RANKING-ERGEBNIS – Top 5");
+    expect(letzte).toContain("RANKING-RESULT – Top 5");
     expect(letzte).toContain("1. " + RANK_ITEMS[0].label);
     expect(letzte).toContain("2. " + RANK_ITEMS[2].label);       // Item 1 wurde entfernt
   });
@@ -137,16 +137,16 @@ describe("UI · Ranking-Panel-Drehbuch", () => {
     for (const n of [2, 5, 7]) await klick(p.querySelector('[data-rein="' + n + '"]'));
     await klick(p.querySelector("#kwRankOk"));
     const userMsgs = mock.calls[1].messages.filter(m => m.role === "user");
-    expect(userMsgs[userMsgs.length - 1].content).toContain("PARTNER-VERMUTUNG (Top 3, geraten von Anna");
+    expect(userMsgs[userMsgs.length - 1].content).toContain("PARTNER-GUESS (Top 3, geraten von Anna");
   });
 });
 
 describe("UI · Freigabe-Drehbuch (CLOSURE → handover)", () => {
   const CLOSURE = JSON.stringify({
     items: [
-      { id: "S1", text: "Nähe sehr wichtig, dort unzufrieden", tag: "Erstbewertung" },
+      { id: "S1", text: "Nähe sehr wichtig, dort unzufrieden", tag: "FirstTake" },
       { id: "S2", text: "Verlässlichkeit trägt", tag: "Ranking" },
-      { id: "V1", text: "Bernd wünscht sich vermutlich mehr gemeinsame Ruhe" },
+      { id: "G1", text: "Bernd wünscht sich vermutlich mehr gemeinsame Ruhe" },
     ],
   });
 
@@ -165,8 +165,8 @@ describe("UI · Freigabe-Drehbuch (CLOSURE → handover)", () => {
     await klick(p.querySelector("#kwFgOk"));
 
     const u = await backend.uebergabe.get("A");
-    expect(u.items.map(x => x.id)).toEqual(["S1", "V1"]);
-    expect(JSON.stringify(u)).not.toContain("Erstbewertung");    // tag quert nicht (Vertrag 3)
+    expect(u.items.map(x => x.id)).toEqual(["S1", "G1"]);
+    expect(JSON.stringify(u)).not.toContain("FirstTake");    // tag quert nicht (Vertrag 3)
     expect(JSON.stringify(u)).not.toContain("Verlässlichkeit");  // abgewähltes Item fehlt
     expect(app._state.engine.chat.status).toBe("released");
     const userMsgs = mock.calls[1].messages.filter(m => m.role === "user");
@@ -187,17 +187,17 @@ describe("UI · Freigabe-Drehbuch (CLOSURE → handover)", () => {
 });
 
 describe("UI · Gemeinsame Klärung (Startwerte + CLARIFICATION)", () => {
-  it("[[STARTWERTE]] erhebt verdeckt nacheinander und deckt gleichzeitig auf; CLARIFICATION persistiert Befund", async () => {
+  it("[[BASELINE]] erhebt verdeckt nacheinander und deckt gleichzeitig auf; CLARIFICATION persistiert Befund", async () => {
     const befund = JSON.stringify({
-      funde: [{ typ: "treffer", text: "Beide: Verlässlichkeit zentral" }],
-      triangulation: { vorschlaege: 1, bestaetigt: 1, justiert: 0, abgelehnt: 0 },
-      gemeinsamerAuftrag: { text: "Wöchentlicher Abend nur für uns", vonBeidenBestaetigt: true, startwerte: { A: 4, B: 7 } },
-      individuelleAuftraege: [],
-      konstitutiveDivergenz: { vorhanden: false },
-      nachbefragung: [{ person: "Anna", wert: 8 }, { person: "Bernd", wert: 7 }],
+      findings: [{ typ: "treffer", text: "Beide: Verlässlichkeit zentral" }],
+      triangulation: { proposed: 1, confirmed: 1, adjusted: 0, declined: 0 },
+      sharedGoal: { text: "Wöchentlicher Abend nur für uns", confirmedByBoth: true, baseline: { A: 4, B: 7 } },
+      individualGoals: [],
+      misalignedAssumptions: { present: false },
+      closingCheck: [{ person: "Anna", value: 8 }, { person: "Bernd", value: 7 }],
     });
     const mock = new MockLLM([
-      "Der Auftrag trägt für euch beide — jetzt verdeckt die Startwerte.\n[[STARTWERTE]]",
+      "Der Auftrag trägt für euch beide — jetzt verdeckt die Startwerte.\n[[BASELINE]]",
       "CLARIFICATION-BLOCK\n" + befund + "\nEND CLARIFICATION-BLOCK",
     ]);
     const backend = memoryBackend(mock);
@@ -219,7 +219,7 @@ describe("UI · Gemeinsame Klärung (Startwerte + CLARIFICATION)", () => {
     expect(userMsgs[userMsgs.length - 1].content).toContain("Bernd: 7");
 
     const gespeichert = await backend.bstate.get("befund");
-    expect(gespeichert.gemeinsamerAuftrag.vonBeidenBestaetigt).toBe(true);
+    expect(gespeichert.sharedGoal.confirmedByBoth).toBe(true);
     expect(app._state.engine.chat.status).toBe("finished");
   });
 });

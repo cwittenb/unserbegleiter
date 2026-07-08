@@ -6,7 +6,7 @@ import { CORE_VERSION, APP_NAME } from "../../../core/index.js";
 import { makeAdapter } from "../../../core/llm/adapter.js";
 import { createApp } from "../../../core/ui/app.js";
 import { applyDesign } from "../../../core/ui/design.js";
-import { t, fehlerText } from "../../../core/i18n/index.js";
+import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../../core/i18n/index.js";
 
 const doc = document;
 const app = doc.getElementById("app");
@@ -36,7 +36,10 @@ function remoteBackend() {
     },
     pstate: {
       get: f => api("GET", "/api/pstate/" + f).then(r => r.value),
-      set: (f, v) => api("PUT", "/api/pstate/" + f, { value: v }),
+      set: (f, v) => {
+        if (f === "sprache") { try { localStorage.setItem("pb.sprache", v); } catch { /* z. B. Safari privat */ } }
+        return api("PUT", "/api/pstate/" + f, { value: v });
+      },
     },
     chat: {
       load: (art, id) => api("GET", "/api/chat/" + art + "/" + id).then(r => r.value),
@@ -55,6 +58,13 @@ function remoteBackend() {
 
 async function boot() {
   applyDesign(doc);   // Design ab Start — auch Wiedereinstieg/Fehler-Screens
+  // Vor-Session-Sprache (Stufe D): vor Anmeldung gibt es kein pstate —
+  // gespeicherte Wahl → Browser-Sprache → de. Nach der Anmeldung bleibt
+  // pstate maßgeblich (app.js) und spiegelt sich hierher zurück.
+  let gespeichert = null;
+  try { gespeichert = localStorage.getItem("pb.sprache"); } catch { /* privat-Modus */ }
+  setLocale(vorSessionSprache(gespeichert, typeof navigator !== "undefined" && navigator.language));
+  doc.documentElement.lang = getLocale();
   const frag = new URLSearchParams(location.hash.slice(1));
   const token = frag.get("t");
   if (token) {
@@ -86,6 +96,9 @@ async function boot() {
 function zeigeWiedereinstieg() {
   app.innerHTML =
     '<div style="max-width:440px;margin:0 auto;font-family:inherit">' +
+    '<div style="text-align:right;font-size:13px;letter-spacing:1px;user-select:none">' +
+    '<span data-wspr="de" style="cursor:pointer;font-weight:' + (getLocale() === "de" ? 700 : 400) + '">DE</span> · ' +
+    '<span data-wspr="en" style="cursor:pointer;font-weight:' + (getLocale() === "en" ? 700 : 400) + '">EN</span></div>' +
     '<h2 style="font-family:inherit;font-weight:400;font-size:26px">' + t("wieder.titel") + '</h2>' +
     '<p style="font-size:14px;color:var(--ink-soft)">' + t("wieder.intro") + '</p>' +
     '<div style="background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:18px;backdrop-filter:blur(8px)">' +
@@ -96,6 +109,15 @@ function zeigeWiedereinstieg() {
     'background:var(--accent);color:var(--me-ink,#fff);border:0;border-radius:999px">' + t("wieder.anfordern") + '</button>' +
     '<div id="recMsg" style="font-size:13px;margin-top:10px"></div>' +
     '</div></div>';
+  for (const el of app.querySelectorAll("[data-wspr]"))
+    el.addEventListener("click", () => {
+      const l = el.getAttribute("data-wspr");
+      if (l === getLocale()) return;
+      setLocale(l);
+      try { localStorage.setItem("pb.sprache", l); } catch { /* privat-Modus */ }
+      doc.documentElement.lang = l;
+      zeigeWiedereinstieg();   // Screen in der neuen Sprache neu aufbauen
+    });
   const go = doc.getElementById("recGo"), msg = doc.getElementById("recMsg");
   go.addEventListener("click", async () => {
     const email = doc.getElementById("recMail").value.trim();

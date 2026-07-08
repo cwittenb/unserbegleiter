@@ -8,7 +8,7 @@ import {
 describe("Übergabe · Schema", () => {
   const gueltig = () => ({
     _schema: 1, module: "kernwetten", name: "Anna",
-    items: [{ id: "BS1", text: "meine Fassung" }],
+    items: [{ id: "CS1", text: "meine Fassung" }],
     releasedAt: "2026-07-02T10:00:00.000Z",
   });
 
@@ -41,7 +41,7 @@ describe("Übergabe · Schema", () => {
 
 describe("Übergabe · Konstruktor", () => {
   it("baueUebergabe erzeugt gültiges Objekt mit aktueller Schema-Version", () => {
-    const u = baueUebergabe({ module: "kernwetten", name: "Anna", items: [{ id: "BS1", text: "t" }] });
+    const u = baueUebergabe({ module: "kernwetten", name: "Anna", items: [{ id: "CS1", text: "t" }] });
     expect(uebergabeSchema(u)).toEqual([]);
     expect(u._schema).toBe(UEBERGABE_SCHEMA_VERSION);
     expect(Date.parse(u.releasedAt)).not.toBeNaN();
@@ -52,9 +52,9 @@ describe("Übergabe · Konstruktor", () => {
     // beliebige Zusatzdaten aus dem Einzelraum dienen.
     const u = baueUebergabe({
       module: "m", name: "n",
-      items: [{ id: "BS1", text: "t", rohform: "GEHEIM", notiz: "privat" }],
+      items: [{ id: "CS1", text: "t", rohform: "GEHEIM", notiz: "privat" }],
     });
-    expect(u.items[0]).toEqual({ id: "BS1", text: "t" });
+    expect(u.items[0]).toEqual({ id: "CS1", text: "t" });
     expect(JSON.stringify(u)).not.toContain("GEHEIM");
   });
 

@@ -60,8 +60,8 @@ describe("Kanarien · einzelSys (Auftragsklärung, v2)", () => {
   it("Korrektur-Übernahme auch hier ausdrücklich (KOR)", () => {
     expect(p).toContain("übernimm die Korrektur AUSDRÜCKLICH");
   });
-  it("Marker-Konvention: [[REGLER]] allein in der letzten Zeile wird verlangt", () => {
-    expect(p).toContain("[[REGLER]] allein in der letzten Zeile");
+  it("Marker-Konvention: [[SLIDERS]] allein in der letzten Zeile wird verlangt", () => {
+    expect(p).toContain("[[SLIDERS]] allein in der letzten Zeile");
   });
   it("v2-Weiche ist schaltbar: ohne v2 keine Sorgen-Weiche", () => {
     expect(einzelSys("A", "B", false)).not.toContain("SORGEN-WEICHE");
@@ -71,7 +71,7 @@ describe("Kanarien · einzelSys (Auftragsklärung, v2)", () => {
 describe("Kanarien · gemeinsamSys (Auflösung)", () => {
   const p = gemeinsamSys("Anna", "Bernd", true);
   it("CLARIFICATION-BLOCK-Format wird verlangt", () => expect(p).toContain("CLARIFICATION-BLOCK"));
-  it("beidseitige Bestätigung ist verankert", () => expect(p).toContain("vonBeidenBestaetigt"));
+  it("beidseitige Bestätigung ist verankert", () => expect(p).toContain("confirmedByBoth"));
   it("Gegendruck-fest (AUF-01-Befund): Drängen einer Person macht nichts vereinbart", () => {
     expect(p).toContain("GEGENDRUCK-FEST");
     expect(p).toContain("hol es aktiv ein");

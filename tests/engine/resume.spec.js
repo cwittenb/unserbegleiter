@@ -18,7 +18,7 @@ describe("Engine · resume()", () => {
         status: "running",
         messages: [
           { role: "user", content: "Bereit." },
-          { role: "assistant", content: "Die Landkarte steht – gleich geht es weiter.\n[[KAPITEL-1]]" },
+          { role: "assistant", content: "Die Landkarte steht – gleich geht es weiter.\n[[CHAPTER-1]]" },
         ],
       },
       llm: async () => { throw new Error("resume darf hier NICHT das Modell rufen"); },
@@ -43,7 +43,7 @@ describe("Engine · resume()", () => {
     for (const status of ["released", "finished"]) {
       const e = new Engine({
         def: einzelDef({}, { onKapitel: () => { throw new Error("darf nicht feuern"); } }),
-        chat: { status, messages: [{ role: "assistant", content: "[[KAPITEL-1]]" }] },
+        chat: { status, messages: [{ role: "assistant", content: "[[CHAPTER-1]]" }] },
         llm: async () => { throw new Error("darf nicht rufen"); },
       });
       await e.resume();   // wirft nicht, tut nichts
@@ -59,10 +59,10 @@ describe("Engine · resume()", () => {
 });
 
 describe("Engine · Kapitel-Drehbuch (Marker-Vertrag)", () => {
-  it("[[KAPITEL-1]] allein in der letzten Zeile öffnet den Zwischenhalt; Weiter-Nachricht ist GENAU EINE User-Nachricht", async () => {
+  it("[[CHAPTER-1]] allein in der letzten Zeile öffnet den Zwischenhalt; Weiter-Nachricht ist GENAU EINE User-Nachricht", async () => {
     const geoeffnet = [];
     const mock = new MockLLM([
-      "Schön, dass du da bist – die Landkarte steht.\n[[KAPITEL-1]]",
+      "Schön, dass du da bist – die Landkarte steht.\n[[CHAPTER-1]]",
       "Willkommen in Kapitel 2.",
     ]);
     const e = new Engine({
@@ -82,7 +82,7 @@ describe("Engine · Kapitel-Drehbuch (Marker-Vertrag)", () => {
 
   it("Kapitel-Marke NICHT in der letzten Zeile feuert nicht (Letzte-Zeile-Regel gilt auch hier)", async () => {
     const geoeffnet = [];
-    const mock = new MockLLM(["Gleich kommt das [[KAPITEL-1]]-Panel.\nVorher: Wie geht es dir?"]);
+    const mock = new MockLLM(["Gleich kommt das [[CHAPTER-1]]-Panel.\nVorher: Wie geht es dir?"]);
     const e = new Engine({
       def: einzelDef({}, { onKapitel: n => geoeffnet.push(n) }),
       chat: neuerChat(), llm: mock.fn(),

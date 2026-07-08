@@ -5,13 +5,13 @@ import { blockDef, parseBlock, findeBlock, cleanDisplay, korrekturNachricht } fr
 import { zeitSchema } from "../../core/contracts/schemas.js";
 import { BLOECKE, ALLE_BLOECKE } from "../../core/contracts/registry.js";
 
-const GUELTIG = '{"zusammenfassung":"a.","themen":["x"],"wiederkehr":null}';
+const GUELTIG = '{"summary":"a.","topics":["x"],"recurrenceNote":null}';
 
 describe("Block · parseBlock", () => {
   it("reines JSON + Schema-Durchlauf (v0.29-Fall)", () => {
     const r = parseBlock({ schema: zeitSchema }, [null, GUELTIG]);
     expect(r.ok).toBe(true);
-    expect(r.data.themen[0]).toBe("x");
+    expect(r.data.topics[0]).toBe("x");
   });
 
   it("BEIBEHALTENE TOLERANZ: Markdown-Zaun wird entfernt (dokumentierender Test, Ballast-Register §1.4)", () => {
@@ -26,9 +26,9 @@ describe("Block · parseBlock", () => {
   });
 
   it("gültiges JSON, aber Schema-Verstoß → Fehlertexte des Schemas", () => {
-    const r = parseBlock({ schema: zeitSchema }, [null, '{"themen":[]}']);
+    const r = parseBlock({ schema: zeitSchema }, [null, '{"topics":[]}']);
     expect(r.ok).toBe(false);
-    expect(r.errors.join(" ")).toContain("zusammenfassung");
+    expect(r.errors.join(" ")).toContain("summary");
   });
 
   it("KEINE Reparatur kaputten JSONs über den Zaun hinaus (bewusste Grenze)", () => {
@@ -80,7 +80,7 @@ describe("Block · cleanDisplay", () => {
     expect(out).toContain("[Dein Zeitleisten-Eintrag wurde gespeichert.]");
     expect(out).not.toContain("TIMELINE-BLOCK");
     expect(out).not.toContain("[[RANKING]]");
-    expect(out).not.toContain('"zusammenfassung"');
+    expect(out).not.toContain('"summary"');
   });
 
   it("kollabiert Mehrfach-Leerzeilen", () => {
@@ -90,10 +90,10 @@ describe("Block · cleanDisplay", () => {
 
 describe("Block · Korrektur-Nachricht (Vertragsform der einen Korrektur-Runde)", () => {
   it("nennt Marke, Fehler und die Nur-Block-Anweisung", () => {
-    const n = korrekturNachricht(BLOECKE.zeitleiste, ['"themen" braucht 1–4 Schlagworte']);
-    expect(n).toContain("SYSTEM-KORREKTUR");
+    const n = korrekturNachricht(BLOECKE.zeitleiste, ['"topics" braucht 1–4 Schlagworte']);
+    expect(n).toContain("SYSTEM-REVISION");
     expect(n).toContain("TIMELINE-BLOCK");
-    expect(n).toContain('"themen" braucht 1–4 Schlagworte');
-    expect(n).toContain("NUR den Block");
+    expect(n).toContain('"topics" braucht 1–4 Schlagworte');
+    expect(n).toContain("ONLY the block");
   });
 });

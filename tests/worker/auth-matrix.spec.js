@@ -198,7 +198,7 @@ describe("Übergabe über die API", () => {
     const { anna, bernd } = await frischesPaar();
     const r = await anna.call("POST", "/api/handover", {
       module: "kernwetten", name: "Anna",
-      items: [{ id: "BS1", text: "meine Fassung", rohform: "GEHEIM" }],
+      items: [{ id: "CS1", text: "meine Fassung", rohform: "GEHEIM" }],
       role: "B",   // Einbruchsversuch: wird ignoriert
     });
     expect(r.status).toBe(200);

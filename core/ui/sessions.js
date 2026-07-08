@@ -38,8 +38,8 @@ export function soloDef(backend, hooks = {}) {
         ...BLOECKE.gate,
         handle: (data, engine) => {
           // Querung ist eine PERSONEN-Entscheidung: Panel öffnen, Engine wartet.
-          // Wire-Feld "fassung" → intern Selbstmitteilung (Prompt/Schema bleiben stabil).
-          if (hooks.onGate) hooks.onGate({ selbstmitteilung: data.fassung, wunsch: data.wunsch, wege: data.wege }, engine);
+          // Wire-Feld "wording" → intern Selbstmitteilung (Prompt/Schema bleiben stabil).
+          if (hooks.onGate) hooks.onGate({ selbstmitteilung: data.wording, wish: data.wish, paths: data.paths }, engine);
         },
       },
     ],
@@ -71,22 +71,22 @@ export function momentDef(backend, hooks = {}) {
         ...BLOECKE.auftrag,
         handle: async (data, engine) => {
           const auf = (await backend.bstate.get("auftraege")) || { items: [], seq: 0 };
-          for (const a of data.aenderungen) {
-            if (a.op === "neu") {
+          for (const a of data.changes) {
+            if (a.op === "new") {
               auf.seq = (auf.seq || 0) + 1;
               auf.items.push({
-                id: (a.art === "gemeinsam" ? "AG" : "AI") + auf.seq,
+                id: (a.art === "shared" ? "AG" : "AI") + auf.seq,
                 text: a.text, art: a.art, owner: a.owner || null,
-                status: "aktiv", startwerte: a.startwerte || {},
+                status: "active", baseline: a.baseline || {},
                 angelegt: new Date().toISOString(),
               });
             } else {
               const it = auf.items.find(x => x.id === a.id);
               if (!it) continue;
-              if (a.op === "revidieren") it.text = a.text;
-              if (a.op === "abschliessen") it.status = "abgeschlossen";
-              if (a.op === "ruhen") it.status = "ruhend";
-              if (a.op === "reaktivieren") it.status = "aktiv";
+              if (a.op === "revise") it.text = a.text;
+              if (a.op === "close") it.status = "closed";
+              if (a.op === "rest") it.status = "resting";
+              if (a.op === "reactivate") it.status = "active";
             }
           }
           await backend.bstate.set("auftraege", auf);
@@ -99,15 +99,15 @@ export function momentDef(backend, hooks = {}) {
 
 /** Querung ausführen, nachdem die Person im Gate-Panel Wege gewählt hat. */
 export async function quereGate(backend, gateDaten, gewaehlteWege) {
-  const erlaubt = new Set(gateDaten.wege);
+  const erlaubt = new Set(gateDaten.paths);
   for (const weg of gewaehlteWege) {
     if (!erlaubt.has(weg)) throw new Error("Weg " + weg + " war nicht freigegeben");
-    if (weg === "regal") {
+    if (weg === "shelf") {
       const regal = (await backend.bstate.get("regal")) || { items: [] };
       regal.items.push({
         id: "RG" + (regal.items.length + 1),   // Regal-Item = Einblick
         text: gateDaten.selbstmitteilung,
-        wunsch: gateDaten.wunsch,
+        wish: gateDaten.wish,
         von: (await backend.info()).name,
         at: new Date().toISOString(),
         gelesen: false,   // "merken statt melden": Pull, kein Push
@@ -119,7 +119,7 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
       agenda.items.push({
         id: "AGD" + (agenda.items.length + 1),   // auf der Agenda = Thema
         text: gateDaten.selbstmitteilung,
-        wunsch: gateDaten.wunsch,
+        wish: gateDaten.wish,
         von: (await backend.info()).name,
         at: new Date().toISOString(),
         zustand: "offen",
@@ -136,7 +136,7 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
 }
 
 /**
- * MOMENT-KONTEXT (app-intern, erste — versteckte — Nachricht der gemeinsamen
+ * MOMENT-CONTEXT (app-intern, erste — versteckte — Nachricht der gemeinsamen
  * Session). momentSys erwartet ihn und bringt ihn dramaturgisch ein; das Paar
  * sieht die Rohform nie (hidden = reine Anzeige-Semantik, geht ans Modell mit).
  */
@@ -144,19 +144,19 @@ export function baueMomentKontext({ auftraege, agenda, momentprotokoll, messrund
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];
 
-  const aktive = ((auftraege && auftraege.items) || []).filter(a => a.status !== "abgeschlossen");
+  const aktive = ((auftraege && auftraege.items) || []).filter(a => a.status !== "closed");
   teile.push(aktive.length
-    ? "AUFTRÄGE:\n" + aktive.map(a => "- " + a.id + " (" + a.art + (a.owner ? ", " + a.owner : "") + ", " + a.status + "): " + a.text).join("\n")
+    ? "GOALS:\n" + aktive.map(a => "- " + a.id + " (" + a.art + (a.owner ? ", " + a.owner : "") + ", " + a.status + "): " + a.text).join("\n")
     : KT("mk.auftraegeLeer"));
 
   const offen = ((agenda && agenda.items) || []).filter(i => i.zustand === "offen");
   teile.push(offen.length
-    ? KT("mk.agendaKopf") + "\n" + offen.map(i => fuelle(KT("mk.agendaVon"), { name: i.von }) + i.text + (i.wunsch ? fuelle(KT("mk.agendaWunsch"), { wunsch: i.wunsch }) : "")).join("\n")
+    ? KT("mk.agendaKopf") + "\n" + offen.map(i => fuelle(KT("mk.agendaVon"), { name: i.von }) + i.text + (i.wish ? fuelle(KT("mk.agendaWunsch"), { wish: i.wish }) : "")).join("\n")
     : KT("mk.agendaLeer"));
 
   const fruehere = ((momentprotokoll && momentprotokoll.eintraege) || []).slice(-3);
   teile.push(fruehere.length
-    ? KT("mk.fruehereKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.zusammenfassung + (e.zwischenzeitImpuls ? KT("mk.impulsWar") + e.zwischenzeitImpuls : "")).join("\n")
+    ? KT("mk.fruehereKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.summary + (e.gentleInvitation ? KT("mk.impulsWar") + e.gentleInvitation : "")).join("\n")
     : KT("mk.fruehereLeer"));
 
   teile.push(messrunde
@@ -189,7 +189,7 @@ export async function hebeInAgenda(backend, itemId) {
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
   agenda.items.push({
     id: "AGD" + (agenda.items.length + 1),
-    text: it.text, wunsch: it.wunsch || null,
+    text: it.text, wish: it.wish || null,
     von: it.von, herkunft: "regal",
     at: new Date().toISOString(), zustand: "offen",
   });
@@ -199,7 +199,7 @@ export async function hebeInAgenda(backend, itemId) {
 }
 
 /** Agenda-Punkt abräumen — beides ist legitim und wird nicht gewertet. */
-export async function raeumeAgendaAb(backend, itemId, wie /* "besprochen" | "selbstGeklaert" */) {
+export async function raeumeAgendaAb(backend, itemId, wie /* "besprochen" | "selfResolved" */) {
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
   const it = agenda.items.find(x => x.id === itemId);
   if (!it) return;

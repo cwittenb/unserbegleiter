@@ -1,59 +1,60 @@
 // Block-Schemas (Stufe 2 des Block-Vertrags).
-// Konvention: Schema(data) → [] bei gültig, sonst Liste deutscher Fehlertexte.
-// Treu aus v0.29 portiert — die Fehlertexte sind Teil des Vertrags, weil sie
-// in der SYSTEM-KORREKTUR-Nachricht ans Modell zurückgehen.
+// Konvention: Schema(data) → [] bei gültig, sonst Liste von Fehlertexten.
+// S31a: Wire vollständig englisch — Feldnamen, Wertelisten UND Fehlertexte,
+// denn die Fehlertexte gehen als SYSTEM-REVISION-Nachricht ans Modell zurück
+// und zitieren die (jetzt englischen) Feldnamen.
 
 /* ---- TIMELINE-BLOCK (Soloreflexion / Reflexionsgespräch) ---- */
 export function zeitSchema(d) {
   const e = [];
-  if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
-  if (typeof d.zusammenfassung !== "string" || !d.zusammenfassung.trim()) e.push('"zusammenfassung" fehlt');
-  if (!Array.isArray(d.themen) || !d.themen.length || d.themen.some(t => typeof t !== "string" || !t.trim()))
-    e.push('"themen" braucht 1–4 Schlagworte');
-  if (!("wiederkehr" in d) || (d.wiederkehr !== null && typeof d.wiederkehr !== "string"))
-    e.push('"wiederkehr" fehlt (null oder kurzer Satz)');
-  if (d.ziele !== undefined && (!Array.isArray(d.ziele) || d.ziele.some(z => typeof z !== "string")))
-    e.push('"ziele" muss ein Array aus Texten sein');
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (typeof d.summary !== "string" || !d.summary.trim()) e.push('"summary" is missing');
+  if (!Array.isArray(d.topics) || !d.topics.length || d.topics.some(t => typeof t !== "string" || !t.trim()))
+    e.push('"topics" needs 1–4 keywords');
+  if (!("recurrenceNote" in d) || (d.recurrenceNote !== null && typeof d.recurrenceNote !== "string"))
+    e.push('"recurrenceNote" is missing (null or one short sentence)');
+  if (d.goals !== undefined && (!Array.isArray(d.goals) || d.goals.some(z => typeof z !== "string")))
+    e.push('"goals" must be an array of texts');
   return e;
 }
 
 /* ---- MOMENT-BLOCK (Gemeinsame Qualitätszeit, Abschluss-Protokoll) ---- */
 export function momentSchema(d) {
   const e = [];
-  if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
-  if (typeof d.zusammenfassung !== "string" || !d.zusammenfassung.trim()) e.push('"zusammenfassung" fehlt');
-  if (!Array.isArray(d.themen) || !d.themen.length || d.themen.some(t => typeof t !== "string" || !t.trim()))
-    e.push('"themen" braucht 1–4 Schlagworte');
-  for (const k of ["behandelt", "vertagt", "selbstGeklaert"])
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (typeof d.summary !== "string" || !d.summary.trim()) e.push('"summary" is missing');
+  if (!Array.isArray(d.topics) || !d.topics.length || d.topics.some(t => typeof t !== "string" || !t.trim()))
+    e.push('"topics" needs 1–4 keywords');
+  for (const k of ["addressed", "deferred", "selfResolved"])
     if (d[k] !== undefined && (!Array.isArray(d[k]) || d[k].some(x => typeof x !== "string")))
-      e.push('"' + k + '" muss eine Liste von Agenda-IDs sein');
-  if (d.wandel !== undefined && d.wandel !== null && typeof d.wandel !== "string")
-    e.push('"wandel" muss Text oder null sein');
-  if (d.zwischenzeitImpuls !== undefined && d.zwischenzeitImpuls !== null && typeof d.zwischenzeitImpuls !== "string")
-    e.push('"zwischenzeitImpuls" muss Text oder null sein');
+      e.push('"' + k + '" must be a list of agenda IDs');
+  if (d.shift !== undefined && d.shift !== null && typeof d.shift !== "string")
+    e.push('"shift" must be text or null');
+  if (d.gentleInvitation !== undefined && d.gentleInvitation !== null && typeof d.gentleInvitation !== "string")
+    e.push('"gentleInvitation" must be text or null');
   return e;
 }
 
 /* ---- GOAL-BLOCK (Auftrags-Änderungen; Konsens-Regeln sind hart) ---- */
 export function auftragBlockSchema(d) {
   const e = [];
-  if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
-  if (!Array.isArray(d.aenderungen) || !d.aenderungen.length) return ['"aenderungen" braucht mindestens einen Eintrag'];
-  d.aenderungen.forEach((a, i) => {
-    const w = "Änderung " + (i + 1) + ": ";
-    if (!["neu", "revidieren", "abschliessen", "ruhen", "reaktivieren"].includes(a.op))
-      e.push(w + "op muss neu|revidieren|abschliessen|ruhen|reaktivieren sein");
-    if (!["gemeinsam", "individuell"].includes(a.art)) e.push(w + "art muss gemeinsam|individuell sein");
-    if (a.art === "gemeinsam" && a.vonBeidenBestaetigt !== true)
-      e.push(w + "gemeinsame Änderung ohne vonBeidenBestaetigt:true ist unzulässig – erst beide Okays einholen");
-    if (a.art === "individuell" && (typeof a.owner !== "string" || !a.owner.trim() || a.ownerBestaetigt !== true))
-      e.push(w + "individuelle Änderung braucht owner und ownerBestaetigt:true");
-    if (["neu", "revidieren"].includes(a.op) && (typeof a.text !== "string" || !a.text.trim()))
-      e.push(w + '"text" fehlt');
-    if (a.op !== "neu" && (typeof a.id !== "string" || !a.id.trim()))
-      e.push(w + '"id" des bestehenden Auftrags fehlt');
-    if (a.startwerte !== undefined && (typeof a.startwerte !== "object" || Array.isArray(a.startwerte)))
-      e.push(w + '"startwerte" muss ein Objekt {Name:Zahl} sein');
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (!Array.isArray(d.changes) || !d.changes.length) return ['"changes" needs at least one entry'];
+  d.changes.forEach((a, i) => {
+    const w = "change " + (i + 1) + ": ";
+    if (!["new", "revise", "close", "rest", "reactivate"].includes(a.op))
+      e.push(w + "op must be new|revise|close|rest|reactivate");
+    if (!["shared", "individual"].includes(a.art)) e.push(w + "art must be shared|individual");
+    if (a.art === "shared" && a.confirmedByBoth !== true)
+      e.push(w + "a shared change without confirmedByBoth:true is not permitted – collect both okays first");
+    if (a.art === "individual" && (typeof a.owner !== "string" || !a.owner.trim() || a.ownerConfirmed !== true))
+      e.push(w + "an individual change needs owner and ownerConfirmed:true");
+    if (["new", "revise"].includes(a.op) && (typeof a.text !== "string" || !a.text.trim()))
+      e.push(w + '"text" is missing');
+    if (a.op !== "new" && (typeof a.id !== "string" || !a.id.trim()))
+      e.push(w + '"id" of the existing goal is missing');
+    if (a.baseline !== undefined && (typeof a.baseline !== "object" || Array.isArray(a.baseline)))
+      e.push(w + '"baseline" must be an object {Name:number}');
   });
   return e;
 }
@@ -61,32 +62,32 @@ export function auftragBlockSchema(d) {
 /* ---- GATE-BLOCK (Querung Einzelraum → geteilt; Sicherheits-Weiche-Ausgang) ---- */
 export function gateArtSchema(d) {
   const e = [];
-  if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
-  if (typeof d.fassung !== "string" || !d.fassung.trim()) e.push('"fassung" fehlt');   // Wire-Feld "fassung" ≙ Selbstmitteilung (intern)
-  if (!("wunsch" in d) || (d.wunsch !== null && typeof d.wunsch !== "string")) e.push('"wunsch" fehlt (Text oder null)');
-  if (typeof d.begruendung !== "string" || !d.begruendung.trim()) e.push('"begruendung" fehlt');
-  const k = d.kriterien;
-  if (!k || k.charakterzuschreibung !== false || k.generalisierung !== false || k.situationsbezug !== true || k.selbstanteil !== true)
-    e.push('"kriterien" muss den bestandenen Check zeigen (charakterzuschreibung:false, generalisierung:false, situationsbezug:true, selbstanteil:true) – sonst nicht queren, sondern weiter redigieren');
-  const W = ["selbst", "regal", "moment"];
-  if (!Array.isArray(d.wege) || !d.wege.length || d.wege.some(w => !W.includes(w)))
-    e.push('"wege" braucht mindestens einen aus selbst/regal/moment');
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (typeof d.wording !== "string" || !d.wording.trim()) e.push('"wording" is missing');   // Wire-Feld "wording" ≙ Selbstmitteilung (intern)
+  if (!("wish" in d) || (d.wish !== null && typeof d.wish !== "string")) e.push('"wish" is missing (text or null)');
+  if (typeof d.reasoning !== "string" || !d.reasoning.trim()) e.push('"reasoning" is missing');
+  const k = d.criteria;
+  if (!k || k.characterJudgment !== false || k.generalization !== false || k.situationSpecific !== true || k.ownShare !== true)
+    e.push('"criteria" must show the passed check (characterJudgment:false, generalization:false, situationSpecific:true, ownShare:true) – otherwise do not cross, keep editing');
+  const W = ["self", "shelf", "moment"];
+  if (!Array.isArray(d.paths) || !d.paths.length || d.paths.some(w => !W.includes(w)))
+    e.push('"paths" needs at least one of self/shelf/moment');
   return e;
 }
 
 /* ---- CLOSURE-BLOCK (Auftragsklärung Einzelsession, Freigabe-Liste) ---- */
 export function gateSchema(d) {
   const e = [];
-  if (!d || !Array.isArray(d.items) || !d.items.length) { e.push('"items" fehlt oder ist leer'); return e; }
-  const TAGS = ["Erstbewertung", "Nachfrage", "Ranking", "Selbstverständlich"];
+  if (!d || !Array.isArray(d.items) || !d.items.length) { e.push('"items" is missing or empty'); return e; }
+  const TAGS = ["FirstTake", "FollowUp", "Ranking", "Given"];
   d.items.forEach((it, i) => {
-    const nr = "Item " + (i + 1);
-    if (!it || typeof it !== "object") { e.push(nr + " ist kein Objekt"); return; }
-    if (!/^(BS|BV|S|V)\d+$/.test(it.id || "")) e.push(nr + ': ungültige id "' + (it.id || "") + '"');
-    if (typeof it.text !== "string" || !it.text.trim()) e.push(nr + ': "text" fehlt oder ist leer');
-    if (/^S\d+$/.test(it.id || "") && !TAGS.includes(it.tag)) e.push((it.id || nr) + ': S-Item braucht ein "tag" aus ' + TAGS.join("/"));
-    if (/^V\d+$/.test(it.id || "") && it.tag !== undefined) e.push(it.id + ": V-Item darf kein tag tragen");
-    if (/^(BS|BV)\d+$/.test(it.id || "") && it.tag !== undefined) e.push(it.id + ": BS/BV-Items tragen kein tag (Typ steckt im Präfix)");
+    const nr = "item " + (i + 1);
+    if (!it || typeof it !== "object") { e.push(nr + " is not an object"); return; }
+    if (!/^(CS|CG|S|G)\d+$/.test(it.id || "")) e.push(nr + ': invalid id "' + (it.id || "") + '"');
+    if (typeof it.text !== "string" || !it.text.trim()) e.push(nr + ': "text" is missing or empty');
+    if (/^S\d+$/.test(it.id || "") && !TAGS.includes(it.tag)) e.push((it.id || nr) + ': an S item needs a "tag" from ' + TAGS.join("/"));
+    if (/^G\d+$/.test(it.id || "") && it.tag !== undefined) e.push(it.id + ": a G item must not carry a tag");
+    if (/^(CS|CG)\d+$/.test(it.id || "") && it.tag !== undefined) e.push(it.id + ": CS/CG items carry no tag (the type lives in the prefix)");
   });
   return e;
 }
@@ -94,38 +95,38 @@ export function gateSchema(d) {
 /* ---- CLARIFICATION-BLOCK (gemeinsame Auflösungs-Session) ---- */
 export function befundSchema(d) {
   const e = [];
-  if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
-  if (!Array.isArray(d.funde)) e.push('"funde" fehlt (Array, ggf. leer)');
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (!Array.isArray(d.findings)) e.push('"findings" is missing (array, may be empty)');
   const t = d.triangulation;
-  if (!t || ["vorschlaege", "bestaetigt", "justiert", "abgelehnt"].some(k => typeof t[k] !== "number"))
-    e.push('"triangulation" braucht die Zahlen vorschlaege/bestaetigt/justiert/abgelehnt');
-  if (d.gemeinsamerAuftrag !== null && d.gemeinsamerAuftrag !== undefined) {
-    const a = d.gemeinsamerAuftrag;
-    if (typeof a !== "object") { e.push('"gemeinsamerAuftrag" muss Objekt oder null sein'); }
+  if (!t || ["proposed", "confirmed", "adjusted", "declined"].some(k => typeof t[k] !== "number"))
+    e.push('"triangulation" needs the numbers proposed/confirmed/adjusted/declined');
+  if (d.sharedGoal !== null && d.sharedGoal !== undefined) {
+    const a = d.sharedGoal;
+    if (typeof a !== "object") { e.push('"sharedGoal" must be an object or null'); }
     else {
-      if (typeof a.text !== "string" || !a.text.trim()) e.push("gemeinsamerAuftrag.text fehlt");
-      if (a.vonBeidenBestaetigt !== true) e.push("gemeinsamerAuftrag ohne vonBeidenBestaetigt=true ist unzulässig – dann null senden");
-      if (!a.startwerte || typeof a.startwerte !== "object") e.push("gemeinsamerAuftrag.startwerte fehlt");
+      if (typeof a.text !== "string" || !a.text.trim()) e.push("sharedGoal.text is missing");
+      if (a.confirmedByBoth !== true) e.push("a sharedGoal without confirmedByBoth=true is not permitted – send null instead");
+      if (!a.baseline || typeof a.baseline !== "object") e.push("sharedGoal.baseline is missing");
     }
   }
-  if (!Array.isArray(d.individuelleAuftraege)) e.push('"individuelleAuftraege" fehlt (Array, ggf. leer)');
-  if (!d.konstitutiveDivergenz || typeof d.konstitutiveDivergenz.vorhanden !== "boolean")
-    e.push('"konstitutiveDivergenz.vorhanden" (true/false) fehlt');
-  if (d.sorgen !== undefined && d.sorgen !== null) {
-    const so = d.sorgen;
-    if (typeof so !== "object" || Array.isArray(so)) e.push('"sorgen" muss ein Objekt sein');
+  if (!Array.isArray(d.individualGoals)) e.push('"individualGoals" is missing (array, may be empty)');
+  if (!d.misalignedAssumptions || typeof d.misalignedAssumptions.present !== "boolean")
+    e.push('"misalignedAssumptions.present" (true/false) is missing');
+  if (d.concerns !== undefined && d.concerns !== null) {
+    const so = d.concerns;
+    if (typeof so !== "object" || Array.isArray(so)) e.push('"concerns" must be an object');
     else {
-      ["vorgelegt", "bestaetigt", "entkraeftet", "justiert", "stehenGelassen"].forEach(k => {
-        if (typeof so[k] !== "number") e.push('"sorgen.' + k + '" (Zahl) fehlt');
+      ["raised", "confirmed", "dispelled", "adjusted", "leftUntouched"].forEach(k => {
+        if (typeof so[k] !== "number") e.push('"concerns.' + k + '" (number) is missing');
       });
-      if (!Array.isArray(so.auftragsErgaenzungen)) e.push('"sorgen.auftragsErgaenzungen" fehlt (Array, ggf. leer)');
-      if (typeof so.notbremse !== "boolean") e.push('"sorgen.notbremse" (true/false) fehlt');
+      if (!Array.isArray(so.goalAdditions)) e.push('"concerns.goalAdditions" is missing (array, may be empty)');
+      if (typeof so.emergencyBrake !== "boolean") e.push('"concerns.emergencyBrake" (true/false) is missing');
     }
   }
-  if (!Array.isArray(d.nachbefragung) || !d.nachbefragung.length) e.push('"nachbefragung" fehlt oder ist leer');
-  else d.nachbefragung.forEach((n, i) => {
-    if (!n || typeof n.person !== "string" || typeof n.wert !== "number")
-      e.push("nachbefragung[" + (i + 1) + "] braucht person (Text) und wert (Zahl)");
+  if (!Array.isArray(d.closingCheck) || !d.closingCheck.length) e.push('"closingCheck" is missing or empty');
+  else d.closingCheck.forEach((n, i) => {
+    if (!n || typeof n.person !== "string" || typeof n.value !== "number")
+      e.push("closingCheck[" + (i + 1) + "] needs person (text) and value (number)");
   });
   return e;
 }
@@ -133,28 +134,28 @@ export function befundSchema(d) {
 /* ---- QZ-Einladungen (Qualitätszeit-Fächer) ---- */
 export function qzSchema(d) {
   const e = [];
-  if (!d || typeof d !== "object") return ["Wurzel ist kein Objekt"];
-  if (!Array.isArray(d.einladungen) || d.einladungen.length < 2 || d.einladungen.length > 3)
-    e.push('"einladungen" braucht 2–3 Einträge');
-  else d.einladungen.forEach((x, i) => {
-    if (typeof x.text !== "string" || !x.text.trim()) e.push("Einladung " + (i + 1) + ": text fehlt");
-    if (typeof x.domaene !== "string" || !x.domaene.trim()) e.push("Einladung " + (i + 1) + ": domaene fehlt");
-    if (!["resonanz", "negativraum"].includes(x.quelle)) e.push("Einladung " + (i + 1) + ": quelle muss resonanz|negativraum sein");
+  if (!d || typeof d !== "object") return ["root is not an object"];
+  if (!Array.isArray(d.invitations) || d.invitations.length < 2 || d.invitations.length > 3)
+    e.push('"invitations" needs 2–3 entries');
+  else d.invitations.forEach((x, i) => {
+    if (typeof x.text !== "string" || !x.text.trim()) e.push("invitation " + (i + 1) + ": text is missing");
+    if (typeof x.domain !== "string" || !x.domain.trim()) e.push("invitation " + (i + 1) + ": domain is missing");
+    if (!["resonance", "negativeSpace"].includes(x.source)) e.push("invitation " + (i + 1) + ": source must be resonance|negativeSpace");
   });
-  if (Array.isArray(d.einladungen) && !d.einladungen.some(x => x.quelle === "resonanz"))
-    e.push("mindestens eine Resonanz-Einladung nötig");
+  if (Array.isArray(d.invitations) && !d.invitations.some(x => x.source === "resonance"))
+    e.push("at least one resonance invitation is required");
   return e;
 }
 
 /* ---- REVEAL-BLOCK (Aufdeck-Runde, Kurzprotokoll — Berührungspunkte statt Zählen) ---- */
 export function aufdeckSchema(d) {
   const e = [];
-  if (!d || typeof d !== "object" || Array.isArray(d)) return ["Wurzel ist kein Objekt"];
-  if (typeof d.zusammenfassung !== "string" || !d.zusammenfassung.trim()) e.push('"zusammenfassung" fehlt');
-  for (const k of ["beruehrungspunkte", "fuerDieKlaerung"])
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (typeof d.summary !== "string" || !d.summary.trim()) e.push('"summary" is missing');
+  for (const k of ["touchingPoints", "forClarification"])
     if (!Array.isArray(d[k]) || d[k].some(x => typeof x !== "string"))
-      e.push('"' + k + '" fehlt (Array aus Texten, ggf. leer)');
-  if (Object.keys(d).some(k => /quote|score|treffer|prozent/i.test(k)))
-    e.push("keine Quoten oder Scores im Protokoll – Berührungspunkte statt Zählen");
+      e.push('"' + k + '" is missing (array of texts, may be empty)');
+  if (Object.keys(d).some(k => /quote|score|treffer|hit|percent|prozent/i.test(k)))
+    e.push("no quotas or scores in the protocol – touching points instead of counting");
   return e;
 }

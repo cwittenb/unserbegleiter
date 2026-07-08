@@ -10,6 +10,16 @@ const woerterbuecher = { de, en };
 let aktuell = "de";
 
 export function setLocale(l) { if (woerterbuecher[l]) aktuell = l; }
+
+/** Vor-Session-Sprache (Stufe D): Vor Anmeldung existiert kein pstate.
+ *  Auflösung: gespeicherte Wahl → Browser-Sprache → "de". Reine Funktion,
+ *  die Plattform liefert die Quellen (z. B. localStorage, navigator.language). */
+export function vorSessionSprache(gespeichert, navLang) {
+  if (gespeichert && woerterbuecher[gespeichert]) return gespeichert;
+  const nav = String(navLang || "").toLowerCase();
+  for (const l of Object.keys(woerterbuecher)) if (nav.startsWith(l)) return l;
+  return "de";
+}
 export function getLocale() { return aktuell; }
 export function registerDict(l, dict) { woerterbuecher[l] = dict; }
 
