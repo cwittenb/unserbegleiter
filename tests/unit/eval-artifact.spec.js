@@ -8,6 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createEvalApp } from "../../platforms/artifact/eval-app.js";
 import { SZENARIEN } from "../../evals/szenarien/start-katalog.js";
+import { SZENARIEN_EN } from "../../evals/szenarien/start-katalog.en.js";
 import { JUDGE_PROMPT_VERSION } from "../../evals/judge/judge.js";
 import { buildEvalArtifact } from "../../scripts/build-eval-artifact.js";
 
@@ -50,6 +51,25 @@ function nurSzenario(id) {
 }
 
 describe("Eval-Artefakt · Oberfläche", () => {
+  it("Sprachauswahl filtert die Liste wie --sprache im CLI-Runner (alle/de/en)", () => {
+    createEvalApp({ doc: document, root, szenarien: [...SZENARIEN, ...SZENARIEN_EN], machAdapter: fakeMachAdapter() });
+    const anzahl = () => root.querySelectorAll("[data-sz]").length;
+    expect(anzahl()).toBe(SZENARIEN.length + SZENARIEN_EN.length);   // Default: alle
+    const setze = wert => {
+      const r = root.querySelector(`[name="evSprache"][value="${wert}"]`);
+      r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+    setze("en");
+    expect(anzahl()).toBe(SZENARIEN_EN.length);
+    expect(root.querySelector('[data-sz="SPRA-01-EN"]')).toBeTruthy();
+    expect(root.querySelector('[data-sz="SPRA-01"]')).toBeNull();
+    setze("de");
+    expect(anzahl()).toBe(SZENARIEN.length);
+    expect(root.querySelector('[data-sz="SPRA-01"]')).toBeTruthy();
+    setze("alle");
+    expect(anzahl()).toBe(SZENARIEN.length + SZENARIEN_EN.length);
+  });
+
   it("zeigt alle Szenarien des Katalogs; rote-Linie-Szenarien tragen das Abzeichen", () => {
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: fakeMachAdapter() });
     for (const s of SZENARIEN) expect(root.textContent).toContain(s.id);

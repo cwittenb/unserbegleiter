@@ -12,6 +12,7 @@ describe("Kanarien · soloSys (Reflexionsgespräch)", () => {
   it("Widerspruchs-Pflicht", () => expect(p).toContain("WIDERSPRUCHS-PFLICHT"));
   it("Wort-Klärung bei Gewalt-Nähe (ESK-07-Befund): klären statt vertiefen, Gewalt nie selbst einführen", () => {
     expect(p).toContain("WORT-KLÄRUNG");
+    expect(p).toContain("gleichgewichtig und unausgeschmückt");   // ESK-07-v2-Befund: Richtungs-Symmetrie
     expect(p).toContain("NICHT von dir aus ein");
   });
   it("Versehens-Korrektur wird AUSDRÜCKLICH übernommen (KOR-01, Entscheidung Cars10)", () => {
@@ -56,6 +57,7 @@ describe("Kanarien · einzelSys (Auftragsklärung, v2)", () => {
   it("Weichen-Disziplin ist binär formuliert", () => expect(p).toContain("WEICHEN-DISZIPLIN (binär)"));
   it("Beide-Pole-Würdigung ist PFLICHT, nicht Kandidat (SPA-01-Befund)", () => {
     expect(p).toContain('IMMER kurz als "du willst beides"');
+    expect(p).toContain("REIHENFOLGE-PFLICHT");   // v5-Befund: Ordnungsregel statt Merkposten
   });
   it("Korrektur-Übernahme auch hier ausdrücklich (KOR)", () => {
     expect(p).toContain("übernimm die Korrektur AUSDRÜCKLICH");

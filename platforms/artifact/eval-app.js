@@ -42,6 +42,13 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
 
     <div class="ev-card">
       <div class="ev-sub">Szenarien</div>
+      <div style="font-size:13px;margin:4px 0 10px" id="evSpracheWahl">
+        Sprache:
+        <label style="margin-left:6px"><input type="radio" name="evSprache" value="alle" checked> alle</label>
+        <label style="margin-left:10px"><input type="radio" name="evSprache" value="de"> de</label>
+        <label style="margin-left:10px"><input type="radio" name="evSprache" value="en"> en</label>
+        <span class="ev-hint" style="margin-left:8px">(entspricht --sprache im CLI-Runner)</span>
+      </div>
       <div id="evSz"></div>
     </div>
 
@@ -76,14 +83,22 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
       </details>
     </div>`;
 
-  /* Szenario-Liste */
-  $("evSz").innerHTML = szenarien.map(s => {
-    const rot = s.checks.some(c => c.roteLinie);
-    return `<label class="ev-sz"><input type="checkbox" data-sz="${esc(s.id)}" checked>
-      <span><strong>${esc(s.id)}</strong> <span class="ev-hint">· ${esc(s.familie)} · ${esc(s.session)} · n=${s.n}</span>
-      ${rot ? ' <span class="ev-badge">rote Linie</span>' : ""}<br>
-      <span class="ev-hint">${esc(s.beschreibung)}</span></span></label>`;
-  }).join("");
+  /* Szenario-Liste — gefiltert nach Sprache (Gegenstück zu --sprache im CLI-Runner). */
+  const szSprache = s => (s.sprache === "en" ? "en" : "de");
+  let sprachWahl = "alle";
+  function renderSzenarien() {
+    const sichtbar = szenarien.filter(s => sprachWahl === "alle" || szSprache(s) === sprachWahl);
+    $("evSz").innerHTML = sichtbar.map(s => {
+      const rot = s.checks.some(c => c.roteLinie);
+      return `<label class="ev-sz"><input type="checkbox" data-sz="${esc(s.id)}" checked>
+        <span><strong>${esc(s.id)}</strong> <span class="ev-hint">· ${esc(s.familie)} · ${esc(s.session)} · ${szSprache(s)} · n=${s.n}</span>
+        ${rot ? ' <span class="ev-badge">rote Linie</span>' : ""}<br>
+        <span class="ev-hint">${esc(s.beschreibung)}</span></span></label>`;
+    }).join("");
+  }
+  renderSzenarien();
+  for (const r of root.querySelectorAll('[name="evSprache"]'))
+    r.addEventListener("change", e => { sprachWahl = e.target.value; renderSzenarien(); });
 
   function status(t, klasse) { $("evStatus").innerHTML = klasse ? `<span class="${klasse}">${esc(t)}</span>` : esc(t); }
 
