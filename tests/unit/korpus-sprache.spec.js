@@ -48,7 +48,7 @@ describe("EN-Korpus · Registrierung", () => {
 });
 
 describe("Sprach-Schnappschuss beim Session-Start", () => {
-  it("locale:'en' → neue Einzelsession startet englisch (Systemprompt, Titel, chat.sprache)", async () => {
+  it("locale:'en' → neue Einzelsession startet englisch (Systemprompt, Titel, chat.language)", async () => {
     const mock = new MockLLM(["Hello Anna."]);
     const backend = memoryBackend(mock, { locale: "en" });
     const app = createApp({ doc: document, backend, root });
@@ -62,7 +62,7 @@ describe("Sprach-Schnappschuss beim Session-Start", () => {
     expect(mock.calls[0].system).not.toContain("Du antwortest ausschließlich auf Deutsch");
     expect(document.getElementById("chatTitel").textContent).toBe("Clarifying Your Focus");
     const chat = backend.gespeicherte["mine:einzel"];
-    expect(chat && chat.sprache).toBe("en");
+    expect(chat && chat.language).toBe("en");
   });
 
   it("locale:'en', aber gespeicherte Session mit sprache:'de' → Resume bleibt deutsch", async () => {
@@ -70,7 +70,7 @@ describe("Sprach-Schnappschuss beim Session-Start", () => {
     const backend = memoryBackend(mock, {
       locale: "en",
       chatLoad: (scope, art) => (scope === "mine" && art === "einzel"
-        ? { messages: [{ role: "assistant", content: "Hallo Anna." }], status: "running", sprache: "de" }
+        ? { messages: [{ role: "assistant", content: "Hallo Anna." }], status: "running", language: "de" }
         : null),
     });
     const app = createApp({ doc: document, backend, root });

@@ -22,7 +22,7 @@ export function sysPromptFuer(szenario) {
     case "moment": return P.momentSys(k.nameA || "Anna", k.nameB || "Bernd");
     case "einzel": return P.einzelSys(k.me || "Anna", k.partner || "Bernd", k.v2 !== false);
     case "gemeinsam": return P.gemeinsamSys(k.nameA || "Anna", k.nameB || "Bernd", k.v2 !== false);
-    case "qz": return P.qzSys();
+    case "qualitytime": return P.qzSys();
     default: throw new Error("Unbekannte Session im Szenario " + szenario.id + ": " + szenario.session);
   }
 }

@@ -1,7 +1,7 @@
 // Vertrag 3 · ÜBERGABE-Schema.
 //
 // Der EINZIGE legitime Pfad von privat nach geteilt (Geheimnis-Architektur).
-// Spez §2.2: uebergabe:<A|B> = { _schema, module, name, items:[{id,text}], releasedAt }
+// Spez §2.2: handover:<A|B> = { _schema, module, name, items:[{id,text}], releasedAt }
 // Konsumenten lesen NUR diese Struktur, nie fremde Chats.
 
 export const UEBERGABE_SCHEMA_VERSION = 1;
@@ -41,5 +41,5 @@ export function baueUebergabe({ module, name, items, releasedAt }) {
 /** Der Storage-Teil-Key einer Übergabe je Rolle. */
 export function uebergabeTeilKey(role) {
   if (role !== "A" && role !== "B") throw new Error('Rolle muss "A" oder "B" sein');
-  return "uebergabe:" + role;
+  return "handover:" + role;
 }

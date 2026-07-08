@@ -39,8 +39,8 @@ async function paarMitDaten(namen) {
   const { data } = await init.call("POST", "/api/paar", namen, { "x-admin-token": ADMIN });
   const a = client();
   await a.call("POST", "/api/enroll", { token: data.links.A });
-  await a.call("PUT", "/api/bstate/regal", { value: { items: [{ id: "RG1", text: "MARKER-" + data.code, von: namen.nameA }] } });
-  await a.call("PUT", "/api/pstate/zeitleiste", { value: { eintraege: [{ text: "PRIVAT-" + data.code }] } });
+  await a.call("PUT", "/api/bstate/shelf", { value: { items: [{ id: "RG1", text: "MARKER-" + data.code, von: namen.nameA }] } });
+  await a.call("PUT", "/api/pstate/timeline", { value: { entries: [{ text: "PRIVAT-" + data.code }] } });
   await a.call("PUT", "/api/chat/mine/solo1", { value: { status: "running", messages: [{ role: "user", content: "CHAT-" + data.code }] } });
   return data.code;
 }

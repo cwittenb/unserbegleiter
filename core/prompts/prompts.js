@@ -10,7 +10,7 @@ export function registerKorpus(locale, korpus) { korpora[locale] = korpus; }
 export function alleKorpora() { return { ...korpora }; }
 
 /* Aktive Korpus-Sprache: Sprach-Schnappschuss der laufenden Session.
-   app.js setzt sie beim Session-Start (neu: Paarsprache; Resume: chat.sprache).
+   app.js setzt sie beim Session-Start (neu: Paarsprache; Resume: chat.language).
    Alle Korpus-Verbraucher (Session-Defs, Steuertexte, Inhalte) lesen über K()
    zur LAUFZEIT — nie zur Importzeit. Unbekannte Sprache fällt auf Deutsch. */
 let korpusSprache = "de";

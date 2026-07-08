@@ -22,7 +22,7 @@ function memoryBackend(mock, role = "A") {
     bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
     pstate: { get: f => pstate.get(role, f), set: (f, v) => pstate.set(role, f, v) },
     chat: { load: () => null, save: () => true },
-    uebergabe: { post: d => freigebeUebergabe(repo, role, d), get: r => repo.get(uebergabeTeilKey(r), true, "kernwetten") },
+    handover: { post: d => freigebeUebergabe(repo, role, d), get: r => repo.get(uebergabeTeilKey(r), true, "kernwetten") },
     llm: mock.fn(),
   };
 }
@@ -58,12 +58,12 @@ describe("Ergebnisformate (Modell-Kontrakt, 1:1 v0.29)", () => {
   it("Ranking-Modi: topN 5/3/1, getrennte Pole, korrekte Ergebnis-Präfixe", () => {
     expect(RANK_MODES.self.topN).toBe(5);
     expect(RANK_MODES.pwichtig.topN).toBe(3);
-    expect(RANK_MODES.punzufrieden.topN).toBe(1);
+    expect(RANK_MODES.pchange.topN).toBe(1);
     expect(RANK_ITEMS.length).toBeGreaterThan(DOMAINS.length);   // Pole getrennt
     const ctx = { me: "Anna", partner: "Bernd" };
     expect(rankingErgebnis("self", [0, 1, 2, 3, 4], ctx)).toContain("RANKING-RESULT – Top 5");
     expect(rankingErgebnis("pwichtig", [0, 1, 2], ctx)).toContain("PARTNER-GUESS (Top 3, geraten von Anna");
-    expect(rankingErgebnis("punzufrieden", [0], ctx)).toContain("PARTNER-GUESS-CHANGE");
+    expect(rankingErgebnis("pchange", [0], ctx)).toContain("PARTNER-GUESS-CHANGE");
     expect(rankingErgebnis("self", [1, 0, 2, 3, 4], ctx).split("\n")[1]).toBe("1. " + RANK_ITEMS[1].label);
   });
 
@@ -164,7 +164,7 @@ describe("UI · Freigabe-Drehbuch (CLOSURE → handover)", () => {
     p.querySelector('[data-fg="1"]').checked = false;            // S2 NICHT freigeben
     await klick(p.querySelector("#kwFgOk"));
 
-    const u = await backend.uebergabe.get("A");
+    const u = await backend.handover.get("A");
     expect(u.items.map(x => x.id)).toEqual(["S1", "G1"]);
     expect(JSON.stringify(u)).not.toContain("FirstTake");    // tag quert nicht (Vertrag 3)
     expect(JSON.stringify(u)).not.toContain("Verlässlichkeit");  // abgewähltes Item fehlt
@@ -181,7 +181,7 @@ describe("UI · Freigabe-Drehbuch (CLOSURE → handover)", () => {
     const backend = memoryBackend(mock);
     const app = await starteEinzel(mock, backend);
     await klick(root.querySelector("#kwPanel").querySelector("#kwFgNein"));
-    expect(await backend.uebergabe.get("A")).toBeNull();
+    expect(await backend.handover.get("A")).toBeNull();
     expect(app._state.engine.chat.status).toBe("running");
   });
 });
@@ -218,7 +218,7 @@ describe("UI · Gemeinsame Klärung (Startwerte + CLARIFICATION)", () => {
     expect(userMsgs[userMsgs.length - 1].content).toContain("Anna: 4");
     expect(userMsgs[userMsgs.length - 1].content).toContain("Bernd: 7");
 
-    const gespeichert = await backend.bstate.get("befund");
+    const gespeichert = await backend.bstate.get("findings");
     expect(gespeichert.sharedGoal.confirmedByBoth).toBe(true);
     expect(app._state.engine.chat.status).toBe("finished");
   });

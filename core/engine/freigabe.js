@@ -1,5 +1,5 @@
 // Vertrag 3 im Betrieb: freigebeUebergabe ist der EINZIGE Schreibpfad in die
-// geteilte uebergabe:<Rolle> — jede Freigabe läuft durch baueUebergabe
+// geteilte handover:<Rolle> — jede Freigabe läuft durch baueUebergabe
 // (Schema-Zwang, Fremdfeld-Filter).
 
 import { baueUebergabe, uebergabeTeilKey } from "../contracts/uebergabe.js";

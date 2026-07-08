@@ -55,7 +55,7 @@ describe("Dev-Panel · Zustand speichern & laden", () => {
     expect(nachher.shared[pKey]).toBeUndefined();
     // Und die echten Bausteine lesen den wiederhergestellten Zustand
     const { bstate } = bausteine(store, mock.meta);
-    expect((await bstate.get("regal")).items[0].von).toBe("Anna");
+    expect((await bstate.get("shelf")).items[0].by).toBe("Anna");
   });
 
   it("ungültiger Dump wird abgewiesen, ohne den Bestand anzufassen", async () => {
@@ -84,34 +84,34 @@ describe("Dev-Panel · Szenen", () => {
     const uB = await repo.get(uebergabeTeilKey("B"), true, "kernwetten");
     expect(uA.items.length).toBeGreaterThan(0);
     expect(uB.name).toBe("Bernd");
-    expect(await bstate.get("auftraege")).toBeNull();               // Betrieb noch leer
+    expect(await bstate.get("goals")).toBeNull();               // Betrieb noch leer
   });
 
   it("aufdecken-bereit: genau eine bereite Runde mit beiden Beiträgen", async () => {
     await szene("aufdecken-bereit").wende(store);
     const { bstate } = bausteine(store, MOCK_META);
-    const mr = await bstate.get("messrunden");
-    const bereit = mr.items.filter(r => r.status === "bereit");
+    const mr = await bstate.get("measurements");
+    const bereit = mr.items.filter(r => r.status === "ready");
     expect(bereit).toHaveLength(1);
-    expect(bereit[0].werte.A.naehe).toBe(4);
-    expect(bereit[0].werte.B.zweit).toBe(5);
+    expect(bereit[0].values.A.closeness).toBe(4);
+    expect(bereit[0].values.B.guess).toBe(5);
   });
 
   it("qz-stufe2: die echte Leiter-Logik ergibt Stufe 2; betrieb ergibt Stufe 1", async () => {
     await szene("qz-stufe2").wende(store);
     const { bstate } = bausteine(store, MOCK_META);
-    expect(qzStufe(await bstate.get("qz"))).toBe(2);
+    expect(qzStufe(await bstate.get("qualitytime"))).toBe(2);
 
     await szene("betrieb").wende(store);
     const { bstate: b2 } = bausteine(store, MOCK_META);
-    expect(qzStufe(await b2.get("qz"))).toBe(1);
+    expect(qzStufe(await b2.get("qualitytime"))).toBe(1);
   });
 
-  it("regal-ungelesen: der Einblick liegt mit gelesen:false im Regal", async () => {
+  it("regal-ungelesen: der Einblick liegt mit read:false im Regal", async () => {
     await szene("regal-ungelesen").wende(store);
     const { bstate } = bausteine(store, MOCK_META);
-    const regal = await bstate.get("regal");
-    expect(regal.items[0]).toMatchObject({ von: "Anna", gelesen: false });
+    const regal = await bstate.get("shelf");
+    expect(regal.items[0]).toMatchObject({ by: "Anna", read: false });
   });
 });
 

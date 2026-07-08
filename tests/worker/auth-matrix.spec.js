@@ -139,25 +139,25 @@ describe("Session · 15 Minuten, touch-to-extend", () => {
 describe("Auth-Matrix · „Bernd liest Anna nicht\"", () => {
   it("Pstate: Bernd erhält unter JEDER konstruierbaren Form nur SEINE Daten, nie Annas", async () => {
     const { anna, bernd } = await frischesPaar();
-    await anna.call("PUT", "/api/pstate/zeitleiste", { value: { eintraege: [{ at: "ANNAS-PRIVATES" }] } });
-    await bernd.call("PUT", "/api/pstate/zeitleiste", { value: { eintraege: [{ at: "bernds-eigenes" }] } });
+    await anna.call("PUT", "/api/pstate/timeline", { value: { entries: [{ at: "ANNAS-PRIVATES" }] } });
+    await bernd.call("PUT", "/api/pstate/timeline", { value: { entries: [{ at: "bernds-eigenes" }] } });
 
     // 1) regulärer Zugriff → nur Bernds Daten
-    const regulaer = await bernd.call("GET", "/api/pstate/zeitleiste");
+    const regulaer = await bernd.call("GET", "/api/pstate/timeline");
     expect(JSON.stringify(regulaer.data)).not.toContain("ANNAS-PRIVATES");
-    expect(regulaer.data.value.eintraege[0].at).toBe("bernds-eigenes");
+    expect(regulaer.data.value.entries[0].at).toBe("bernds-eigenes");
 
     // 2) Query-Manipulation ?role=A → ignoriert
-    const query = await bernd.call("GET", "/api/pstate/zeitleiste?role=A");
+    const query = await bernd.call("GET", "/api/pstate/timeline?role=A");
     expect(JSON.stringify(query.data)).not.toContain("ANNAS-PRIVATES");
 
     // 3) Body-Manipulation beim Schreiben {role:"A"} → landet in Bernds Pstate, nicht Annas
-    await bernd.call("PUT", "/api/pstate/zeitleiste", { role: "A", value: { eintraege: [{ at: "einbruchsversuch" }] } });
-    const annas = await anna.call("GET", "/api/pstate/zeitleiste");
-    expect(annas.data.value.eintraege[0].at).toBe("ANNAS-PRIVATES");
+    await bernd.call("PUT", "/api/pstate/timeline", { role: "A", value: { entries: [{ at: "einbruchsversuch" }] } });
+    const annas = await anna.call("GET", "/api/pstate/timeline");
+    expect(annas.data.value.entries[0].at).toBe("ANNAS-PRIVATES");
 
     // 4) Pfad-Trickserei → 404, kein Datenleck
-    for (const pfad of ["/api/pstate/zeitleiste:A", "/api/pstate/A/zeitleiste", "/api/pstate/pstate%3AA"]) {
+    for (const pfad of ["/api/pstate/timeline:A", "/api/pstate/A/zeitleiste", "/api/pstate/pstate%3AA"]) {
       const r = await bernd.call("GET", pfad);
       expect(r.status, pfad).toBeGreaterThanOrEqual(400);
       expect(JSON.stringify(r.data || {})).not.toContain("ANNAS-PRIVATES");
@@ -175,9 +175,9 @@ describe("Auth-Matrix · „Bernd liest Anna nicht\"", () => {
 
   it("Paar-Isolation: ein zweites Paar sieht NICHTS vom ersten", async () => {
     const p1 = await frischesPaar();
-    await p1.anna.call("PUT", "/api/bstate/regal", { value: { items: [{ id: "R1", text: "PAAR1-GETEILT" }] } });
+    await p1.anna.call("PUT", "/api/bstate/shelf", { value: { items: [{ id: "R1", text: "PAAR1-GETEILT" }] } });
     const p2 = await frischesPaar();
-    const fremd = await p2.anna.call("GET", "/api/bstate/regal");
+    const fremd = await p2.anna.call("GET", "/api/bstate/shelf");
     expect(JSON.stringify(fremd.data)).not.toContain("PAAR1-GETEILT");
     expect(fremd.data.value).toEqual({ items: [] });
   });
@@ -185,7 +185,7 @@ describe("Auth-Matrix · „Bernd liest Anna nicht\"", () => {
   it("ohne Session: alle Daten- und LLM-Endpunkte → 401", async () => {
     const fremd = client();
     for (const [m2, pfad] of [
-      ["GET", "/api/me"], ["GET", "/api/bstate/regal"], ["GET", "/api/pstate/zeitleiste"],
+      ["GET", "/api/me"], ["GET", "/api/bstate/shelf"], ["GET", "/api/pstate/timeline"],
       ["POST", "/api/llm"], ["POST", "/api/handover"], ["GET", "/api/chat/mine/solo"],
     ]) {
       expect((await fremd.call(m2, pfad, {})).status, m2 + " " + pfad).toBe(401);

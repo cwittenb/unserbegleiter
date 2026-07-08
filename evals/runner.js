@@ -49,7 +49,7 @@ async function main() {
   }
 
   let szenarien = [...SZENARIEN, ...SZENARIEN_EN];
-  const sprache = arg("sprache", null);
+  const sprache = arg("language", null);
   if (sprache) szenarien = szenarien.filter(s => (s.sprache === "en" ? "en" : "de") === sprache);
   const familie = arg("familie");
   const einzeln = arg("szenario");

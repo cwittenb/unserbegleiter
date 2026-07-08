@@ -55,6 +55,9 @@ export const en = {
   // Agenda
   "agenda.titel": "Shared Agenda",
   "agenda.leer": "The agenda is empty.",
+  "agenda.st.open": "open",
+  "agenda.st.discussed": "discussed",
+  "agenda.st.selfResolved": "self-resolved",
   "agenda.btnAbr": "We sorted this out ourselves ✓",
 
   // Chat
@@ -67,7 +70,7 @@ export const en = {
 
   // Gate (personal sharing)
   "gate.titel": "Your words, ready to share",
-  "gate.wunsch": "Wish: ",
+  "gate.wish": "Wish: ",
   "gate.weg.selbst": "Bring it up yourself",
   "gate.weg.regal": "Put it on the shelf (Glimpse)",
   "gate.weg.moment": "Add it to the agenda (Focus)",
@@ -118,9 +121,9 @@ export const en = {
   "mess.titel": "Process Reflection",
   "mess.abgegeben": "Your part is in — it will be revealed together in the next shared moment, bit by bit.",
   "mess.verdeckt": "Process Reflection — face down; {partner} sees your values only at the shared reveal",
-  "mess.naehe": "How close do you feel to {partner} right now? (1–10)",
-  "mess.zweit": "And your guess: how close does {partner} feel to you? (1–10)",
-  "mess.passung": "How well does \u201c{text}\u201d ({id}) fit the two of you right now? (1–10)",
+  "mess.closeness": "How close do you feel to {partner} right now? (1–10)",
+  "mess.guess": "And your guess: how close does {partner} feel to you? (1–10)",
+  "mess.fit": "How well does \u201c{text}\u201d ({id}) fit the two of you right now? (1–10)",
   "mess.abgeben": "Submit Face Down",
   "mess.danke": "Thank you — placed face down.",
   "mess.bereit": " You have both taken your turn: the reveal awaits in the next shared moment.",

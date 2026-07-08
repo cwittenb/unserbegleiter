@@ -216,7 +216,7 @@ export function createApp({ doc, backend, root, diktat }) {
   /* ── Kapitel-Zwischenhalt (Einzelsession) ──
      Nach Kapitel 3 zuerst das Mini-Gate. Die Entscheidung landet NIE im
      Transkript — nur im privaten Chat-Feld (minigate) und, bei Ja, als
-     Datenpaket (Top 5 + Tipp 3) im geteilten Bstate-Feld "aufdeckung". */
+     Datenpaket (Top 5 + Tipp 3) im geteilten Bstate-Feld "reveal". */
   async function kapitelPanel(n, engine) {
     engine.chat.kapitel = n;
     await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, engine.chat);
@@ -244,9 +244,9 @@ export function createApp({ doc, backend, root, diktat }) {
       p.querySelector("#kapJa").addEventListener("click", async () => {
         try {
           const eintrag = baueAufdeckung(state.info.name, engine.chat.ranks);
-          const alle = (await backend.bstate.get("aufdeckung")) || { A: null, B: null };
+          const alle = (await backend.bstate.get("reveal")) || { A: null, B: null };
           alle[state.info.role] = eintrag;
-          await backend.bstate.set("aufdeckung", alle);
+          await backend.bstate.set("reveal", alle);
           engine.chat.minigate = "ja";
           await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, engine.chat);
           zeigeWeiter(t("kapitel.jaNote"));
@@ -274,7 +274,7 @@ export function createApp({ doc, backend, root, diktat }) {
      strukturell keine Quote und kein Zählen. Bleibt während des Gesprächs
      sichtbar. ── */
   async function aufdeckPanel(engine) {
-    const alle = (await backend.bstate.get("aufdeckung")) || {};
+    const alle = (await backend.bstate.get("reveal")) || {};
     const gA = alle.A, gB = alle.B;
     if (!gA || !gB) { err(t("aufdeck.fehlt")); return; }
     const p = kw();
@@ -283,9 +283,9 @@ export function createApp({ doc, backend, root, diktat }) {
       `<div style="flex:1;min-width:150px"><div class="pb-sub">${esc(titel)}</div>` +
       liste.map((x, i) => `<div class="pb-item"${marks.includes(x) ? ' style="font-weight:700;border-left:3px solid var(--accent,#0f766e);padding-left:8px"' : ""}>${i + 1}. ${esc(x)}</div>`).join("") + `</div>`;
     const richtung = (tipper, owner) => {
-      const treff = beruehrungen(tipper.tipp3, owner.top5);
+      const treff = beruehrungen(tipper.guess3, owner.top5);
       return `<div style="margin-top:12px"><div class="pb-sub">${t("aufdeck.getippt", { tipper: esc(tipper.name), owner: esc(owner.name) })}</div>` +
-        `<div style="display:flex;gap:10px;flex-wrap:wrap">` + spalte(t("aufdeck.tippVon", { name: tipper.name }), tipper.tipp3, treff) + spalte(t("aufdeck.topVon", { name: owner.name }), owner.top5, treff) + `</div>` +
+        `<div style="display:flex;gap:10px;flex-wrap:wrap">` + spalte(t("aufdeck.tippVon", { name: tipper.name }), tipper.guess3, treff) + spalte(t("aufdeck.topVon", { name: owner.name }), owner.top5, treff) + `</div>` +
         (treff.length ? `<p class="pb-sub">${t("aufdeck.beruehrungen")}${treff.map(esc).join(" · ")}</p>`
                       : `<p class="pb-sub">${t("aufdeck.verschieden")}</p>`) + `</div>`;
     };
@@ -343,21 +343,21 @@ export function createApp({ doc, backend, root, diktat }) {
     // läuft der kollabierte Pfad — die Klärung startet direkt.
     if (art === "gemeinsam" && !gespeichert) {
       const [alleG, protokollG] = await Promise.all([
-        backend.bstate.get("aufdeckung").catch(() => null),
-        backend.bstate.get("aufdeckprotokoll").catch(() => null),
+        backend.bstate.get("reveal").catch(() => null),
+        backend.bstate.get("revealLog").catch(() => null),
       ]);
       if (alleG && alleG.A && alleG.B && !protokollG)
         throw new Error(t("fehler.aufdeckWartet"));
     }
     if (art === "aufdeck" && !gespeichert) {
-      const alleA = (await backend.bstate.get("aufdeckung")) || {};
+      const alleA = (await backend.bstate.get("reveal")) || {};
       if (!alleA.A || !alleA.B)
         throw new Error(t("fehler.aufdeckZu"));
     }
     const chat = gespeichert || { messages: [], status: "running" };
-    const korpusSprache = (gespeichert && gespeichert.sprache) || paarSprache;
+    const korpusSprache = (gespeichert && gespeichert.language) || paarSprache;
     setKorpusSprache(korpusSprache);
-    if (!gespeichert) chat.sprache = korpusSprache;
+    if (!gespeichert) chat.language = korpusSprache;
     const ctx = { me: info.name, partner: info.partner, nameA: info.nameA, nameB: info.nameB };
     state.engine = new Engine({
       def, chat, llm: backend.llm, ctx,
@@ -373,31 +373,31 @@ export function createApp({ doc, backend, root, diktat }) {
     if (chat.messages.length) { await state.engine.resume(); } else {
       if (art === "gemeinsam") {
         const [freiA, freiB, protokoll] = await Promise.all([
-          Promise.resolve().then(() => backend.uebergabe.get("A")).catch(() => null),
-          Promise.resolve().then(() => backend.uebergabe.get("B")).catch(() => null),
-          backend.bstate.get("aufdeckprotokoll").catch(() => null),
+          Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
+          Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
+          backend.bstate.get("revealLog").catch(() => null),
         ]);
         if (freiA && freiB)
           chat.messages.push({ role: "user", hidden: true, content: baueKlaerungsKontext(freiA, freiB, protokoll) });
       }
       if (art === "aufdeck") {
-        const alle = (await backend.bstate.get("aufdeckung")) || {};
+        const alle = (await backend.bstate.get("reveal")) || {};
         chat.messages.push({ role: "user", hidden: true, content: baueAufdeckKontext(alle.A, alle.B) });
       }
       if (art === "moment") {
-        const [auftraege, agenda, momentprotokoll, messrunden, freiA, freiB] = await Promise.all([
-          backend.bstate.get("auftraege"), backend.bstate.get("agenda"),
-          backend.bstate.get("momentprotokoll"), backend.bstate.get("messrunden"),
-          Promise.resolve().then(() => backend.uebergabe.get("A")).catch(() => null),
-          Promise.resolve().then(() => backend.uebergabe.get("B")).catch(() => null),
+        const [goals, agenda, momentLog, measurements, freiA, freiB] = await Promise.all([
+          backend.bstate.get("goals"), backend.bstate.get("agenda"),
+          backend.bstate.get("momentLog"), backend.bstate.get("measurements"),
+          Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
+          Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
         ]);
         chat.messages.push({
           role: "user", hidden: true,
           content: baueMomentKontext(
             {
-              auftraege, agenda, momentprotokoll,
-              messrunde: (() => { const r = bereiteRunde(messrunden); return r ? formatiereMessrunde(r, info.nameA, info.nameB) : null; })(),
-              freigaben: [freiA, freiB].filter(Boolean),
+              goals, agenda, momentLog,
+              messrunde: (() => { const r = bereiteRunde(measurements); return r ? formatiereMessrunde(r, info.nameA, info.nameB) : null; })(),
+              sharings: [freiA, freiB].filter(Boolean),
             },
             info.nameA, info.nameB
           ),
@@ -416,23 +416,23 @@ export function createApp({ doc, backend, root, diktat }) {
   }
 
   async function zeigeZeitleiste() {
-    const zl = (await backend.pstate.get("zeitleiste")) || { eintraege: [] };
+    const zl = (await backend.pstate.get("timeline")) || { entries: [] };
     $("boxZeitleiste").classList.remove("pb-hidden");
-    $("zlItems").innerHTML = zl.eintraege.length
-      ? zl.eintraege.map(e2 => `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}</div>`).join("")
+    $("zlItems").innerHTML = zl.entries.length
+      ? zl.entries.map(e2 => `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}</div>`).join("")
       : `<div class="pb-item">${t("zeitleiste.leer")}</div>`;
   }
 
   async function zeigeRegal() {
-    const regal = (await backend.bstate.get("regal")) || { items: [] };
+    const regal = (await backend.bstate.get("shelf")) || { items: [] };
     $("boxRegal").classList.remove("pb-hidden");
     $("regalItems").innerHTML = regal.items.length
       ? regal.items.map(i => {
-          const fremd = i.von !== state.info.name;
+          const fremd = i.by !== state.info.name;
           return `<div class="pb-item">${esc(i.text)}` +
             (i.wish ? `<br><span class="pb-sub">${t("gate.wish")}${esc(i.wish)}</span>` : "") +
-            `<br><span class="pb-sub">${t("allg.von", { name: esc(i.von) })}${i.gelesen ? " · " + t("regal.stGelesen") : ""}${i.gehoben ? " · " + t("regal.stInAgenda") : ""}</span>` +
-            (fremd && !i.gelesen ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
+            `<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })}${i.read ? " · " + t("regal.stGelesen") : ""}${i.gehoben ? " · " + t("regal.stInAgenda") : ""}</span>` +
+            (fremd && !i.read ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
             (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnHeben")}</button>` : "") +
             `</div>`;
         }).join("")
@@ -448,8 +448,8 @@ export function createApp({ doc, backend, root, diktat }) {
     $("boxAgenda").classList.remove("pb-hidden");
     $("agendaItems").innerHTML = agenda.items.length
       ? agenda.items.map(i =>
-          `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.von) })} · ${esc(i.zustand)}</span>` +
-          (i.zustand === "offen"
+          `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })} · ${t("agenda.st." + i.state)}</span>` +
+          (i.state === "open"
             ? ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">${t("agenda.btnAbr")}</button>`
             : "") + `</div>`
         ).join("")
@@ -465,21 +465,21 @@ export function createApp({ doc, backend, root, diktat }) {
   function sprachName(l) { return t("paarspr.name." + (l === "en" ? "en" : "de")); }
   function zeigePaarsprache(meldung) {
     const box = $("boxPaarsprache");
-    if (!backend.sprache) { box.classList.add("pb-hidden"); return; }
+    if (!backend.language) { box.classList.add("pb-hidden"); return; }
     box.classList.remove("pb-hidden");
     const aktuell = state.info.locale === "en" ? "en" : "de";
     const ziel = aktuell === "en" ? "de" : "en";
-    const w = state.info.sprachwunsch;
-    const meins = w && w.von === state.info.role;
+    const w = state.info.languageRequest;
+    const meins = w && w.by === state.info.role;
     let mitte, knoepfe;
     if (!w) {
       mitte = t("paarspr.aktuell", { sprache: sprachName(aktuell) });
       knoepfe = `<button class="pb-btn" id="psAntrag">${t("paarspr.vorschlagen", { sprache: sprachName(ziel) })}</button>`;
     } else if (meins) {
-      mitte = t("paarspr.wartet", { sprache: sprachName(w.ziel), partner: esc(state.info.partner) });
+      mitte = t("paarspr.wartet", { sprache: sprachName(w.target), partner: esc(state.info.partner) });
       knoepfe = `<button class="pb-btn" id="psZurueck">${t("paarspr.zurueckziehen")}</button>`;
     } else {
-      mitte = t("paarspr.vorschlag", { partner: esc(state.info.partner), sprache: sprachName(w.ziel) });
+      mitte = t("paarspr.vorschlag", { partner: esc(state.info.partner), sprache: sprachName(w.target) });
       knoepfe = `<button class="pb-btn primary" id="psJa">${t("paarspr.bestaetigen")}</button> ` +
                 `<button class="pb-btn" id="psNein">${t("paarspr.ablehnen")}</button>`;
     }
@@ -490,16 +490,16 @@ export function createApp({ doc, backend, root, diktat }) {
       `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>`;
     const anwenden = r => {
       state.info.locale = r.locale;
-      state.info.sprachwunsch = r.sprachwunsch;
-      zeigePaarsprache(r.status === "bestaetigt"
+      state.info.languageRequest = r.languageRequest;
+      zeigePaarsprache(r.status === "confirmed"
         ? t("paarspr.gewechselt", { sprache: sprachName(r.locale) })
         : "");
     };
     const knopf = (id, fn) => { const b = box.querySelector(id); if (b) b.addEventListener("click", () => fn().then(anwenden).catch(e => err(fehlerText(e)))); };
-    knopf("#psAntrag", () => backend.sprache.antrag(ziel));
-    knopf("#psJa", () => backend.sprache.antrag(w.ziel));
-    knopf("#psZurueck", () => backend.sprache.zurueckziehen());
-    knopf("#psNein", () => backend.sprache.zurueckziehen());
+    knopf("#psAntrag", () => backend.language.request(ziel));
+    knopf("#psJa", () => backend.language.request(w.target));
+    knopf("#psZurueck", () => backend.language.withdraw());
+    knopf("#psNein", () => backend.language.withdraw());
   }
 
   /* ---- Wiedereinstieg per E-Mail (nur wenn das Backend es unterstützt) ---- */
@@ -563,31 +563,31 @@ export function createApp({ doc, backend, root, diktat }) {
   async function zeigeMess() {
     const box = $("boxMess");
     box.classList.remove("pb-hidden");
-    const [mr, auftraege] = await Promise.all([backend.bstate.get("messrunden"), backend.bstate.get("auftraege")]);
-    const offen = ((mr && mr.items) || []).find(r => r.status === "offen");
-    if (offen && offen.werte[state.info.role]) {
+    const [mr, goals] = await Promise.all([backend.bstate.get("measurements"), backend.bstate.get("goals")]);
+    const offen = ((mr && mr.items) || []).find(r => r.status === "open");
+    if (offen && offen.values[state.info.role]) {
       box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.abgegeben")}</p>`;
       return;
     }
-    const aktive = (((auftraege && auftraege.items) || [])).filter(a => a.status === "active" && a.art === "shared");
+    const aktive = (((goals && goals.items) || [])).filter(a => a.status === "active" && a.art === "shared");
     box.innerHTML =
       `<div class="pb-sub">${t("mess.verdeckt", { partner: esc(state.info.partner) })}</div>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.naehe", { partner: esc(state.info.partner) })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.zweit", { partner: esc(state.info.partner) })}<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.closeness", { partner: esc(state.info.partner) })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.guess", { partner: esc(state.info.partner) })}<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
       aktive.map(a =>
-        `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.passung", { text: esc(a.text), id: esc(a.id) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
+        `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.fit", { text: esc(a.text), id: esc(a.id) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
       ).join("") +
       `<button class="pb-btn primary" id="msOk">${t("mess.abgeben")}</button>`;
     box.querySelector("#msOk").addEventListener("click", async () => {
-      const passung = {};
-      for (const inp of box.querySelectorAll("[data-pass]")) passung[inp.getAttribute("data-pass")] = +inp.value;
+      const fit = {};
+      for (const inp of box.querySelectorAll("[data-pass]")) fit[inp.getAttribute("data-pass")] = +inp.value;
       const runde = await trageMessbeitragEin(backend, state.info.role, {
-        naehe: +box.querySelector("#msNaehe").value,
-        zweit: +box.querySelector("#msZweit").value,
-        passung,
+        closeness: +box.querySelector("#msNaehe").value,
+        guess: +box.querySelector("#msZweit").value,
+        fit,
       });
       box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.danke")}` +
-        (runde.status === "bereit" ? t("mess.bereit") : "") + `</p>`;
+        (runde.status === "ready" ? t("mess.bereit") : "") + `</p>`;
     });
   }
 
@@ -595,11 +595,11 @@ export function createApp({ doc, backend, root, diktat }) {
   async function zeigeQz() {
     const box = $("boxQz");
     box.classList.remove("pb-hidden");
-    const qz = (await backend.bstate.get("qz")) || { ruht: {}, wahl: [] };
-    if (!qz.startAt) { qz.startAt = new Date().toISOString(); await backend.bstate.set("qz", qz); }
+    const qz = (await backend.bstate.get("qualitytime")) || { resting: {}, choices: [] };
+    if (!qz.startAt) { qz.startAt = new Date().toISOString(); await backend.bstate.set("qualitytime", qz); }
     const stufe = qzStufe(qz);
     if (stufe === "pause") {
-      box.innerHTML = `<div class="pb-sub">${t("qz.titel")}</div><p style="font-size:14px">${t("qz.pausiert", { datum: esc((qz.leiter.pausiertBis || "").slice(0, 10)) })}</p>`;
+      box.innerHTML = `<div class="pb-sub">${t("qz.titel")}</div><p style="font-size:14px">${t("qz.pausiert", { datum: esc((qz.ladder.pausedUntil || "").slice(0, 10)) })}</p>`;
       return;
     }
     const rahmen = K().QZ_STUFEN_TEXT[stufe];
@@ -611,10 +611,10 @@ export function createApp({ doc, backend, root, diktat }) {
       `<button class="pb-btn primary" id="qzHolen">${t("qz.holen")}</button><div id="qzKarten"></div>`;
     if (stufe === 4) box.querySelector("#qzPause").addEventListener("click", async () => { await vereinbarePause(backend, 4); zeigeQz(); });
     box.querySelector("#qzHolen").addEventListener("click", async () => {
-      const [auftraege, freiA, freiB] = await Promise.all([
-        backend.bstate.get("auftraege"),
-        Promise.resolve().then(() => backend.uebergabe.get("A")).catch(() => null),
-        Promise.resolve().then(() => backend.uebergabe.get("B")).catch(() => null),
+      const [goals, freiA, freiB] = await Promise.all([
+        backend.bstate.get("goals"),
+        Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
+        Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
       ]);
       setKorpusSprache(state.info && state.info.locale === "en" ? "en" : "de");   // QZ = geteilt, Paarsprache
       const def = qzDef({
@@ -637,7 +637,7 @@ export function createApp({ doc, backend, root, diktat }) {
         def, chat: { messages: [], status: "running" }, llm: backend.llm,
         ctx: {}, hooks: { onPersonError: err },
       });
-      await engine.sendUser(baueQzMaterial({ auftraege, freigaben: [freiA, freiB].filter(Boolean), qz }));
+      await engine.sendUser(baueQzMaterial({ goals, sharings: [freiA, freiB].filter(Boolean), qualitytime: qz }));
     });
   }
 
@@ -713,12 +713,12 @@ export function createApp({ doc, backend, root, diktat }) {
         engine.chat.ranks[mode] = order.map(ri => ITEMS[ri].label);
         if ((mode === "self" || mode === "pwichtig") && engine.chat.minigate === "ja") {
           try {
-            const protokoll = await backend.bstate.get("aufdeckprotokoll");
+            const protokoll = await backend.bstate.get("revealLog");
             if (!protokoll) {
-              const alle = (await backend.bstate.get("aufdeckung")) || {};
+              const alle = (await backend.bstate.get("reveal")) || {};
               if (alle[state.info.role]) {
                 alle[state.info.role] = baueAufdeckung(state.info.name, engine.chat.ranks);
-                await backend.bstate.set("aufdeckung", alle);
+                await backend.bstate.set("reveal", alle);
               }
             }
           } catch { /* Nachzug ist Komfort, kein Muss */ }
@@ -775,11 +775,11 @@ export function createApp({ doc, backend, root, diktat }) {
       const auchAufdecken = wieder && !!p.querySelector("#kwFgAufdeck") && p.querySelector("#kwFgAufdeck").checked;
       kwZu();
       try {
-        await backend.uebergabe.post({ module: "kernwetten", name: state.info.name, items });
+        await backend.handover.post({ module: "kernwetten", name: state.info.name, items });
         if (auchAufdecken) {
-          const alle = (await backend.bstate.get("aufdeckung")) || { A: null, B: null };
+          const alle = (await backend.bstate.get("reveal")) || { A: null, B: null };
           alle[state.info.role] = baueAufdeckung(state.info.name, engine.chat.ranks || {});
-          await backend.bstate.set("aufdeckung", alle);
+          await backend.bstate.set("reveal", alle);
           engine.chat.minigate = "ja";
         }
         engine.chat.status = "released";
@@ -841,7 +841,7 @@ export function createApp({ doc, backend, root, diktat }) {
   }
   $("btnMic").addEventListener("click", () => { rec ? diktatStopp() : diktatStart(); });
 
-  /* ── UI-Sprache: pro Person (pstate "sprache"), jederzeit umstellbar,
+  /* ── UI-Sprache: pro Person (pstate "language"), jederzeit umstellbar,
      folgenlos für den Partner. Der Wechsel baut die Oberfläche neu auf;
      Gespräche und Zustände liegen im Backend und bleiben unberührt.
      Die Begleitungssprache (Korpus) ist davon getrennt — Paar-Ebene, Stufe C. ── */
@@ -858,7 +858,7 @@ export function createApp({ doc, backend, root, diktat }) {
       const l = el2.getAttribute("data-spr");
       if (l === getLocale()) return;
       setLocale(l);
-      try { await backend.pstate.set("sprache", l); } catch { /* Umgebungen ohne pstate */ }
+      try { await backend.pstate.set("language", l); } catch { /* Umgebungen ohne pstate */ }
       relaunch();
     });
 
@@ -866,7 +866,7 @@ export function createApp({ doc, backend, root, diktat }) {
     applyDesign(doc);   // Design dokumentweit (idempotent)
     state.info = await backend.info();
     try {
-      const sp = await backend.pstate.get("sprache");
+      const sp = await backend.pstate.get("language");
       if (sp && sp !== getLocale()) { setLocale(sp); return relaunch(); }
     } catch { /* Umgebungen ohne pstate */ }
     doc.documentElement.lang = getLocale();

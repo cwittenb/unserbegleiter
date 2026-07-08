@@ -26,7 +26,7 @@ function memoryBackend(mock, role = "A") {
       load: (art, id) => repo.get("chat:" + (art === "shared" ? id : role + ":" + id), art === "shared"),
       save: (art, id, c) => repo.set("chat:" + (art === "shared" ? id : role + ":" + id), c, art === "shared"),
     },
-    uebergabe: { post: d => freigebeUebergabe(repo, role, d), get: () => null },
+    handover: { post: d => freigebeUebergabe(repo, role, d), get: () => null },
     llm: mock.fn(),
   };
 }
@@ -74,9 +74,9 @@ describe("UI · Reflexionsgespräch-Drehbuch", () => {
     expect(anzeige).toContain("[Dein Zeitleisten-Eintrag");
 
     // Persistenz: Eintrag in der Zeitleiste, Chat abgeschlossen
-    const zl = await backend.pstate.get("zeitleiste");
-    expect(zl.eintraege).toHaveLength(1);
-    expect(zl.eintraege[0].topics).toEqual(["Nähe"]);
+    const zl = await backend.pstate.get("timeline");
+    expect(zl.entries).toHaveLength(1);
+    expect(zl.entries[0].topics).toEqual(["Nähe"]);
     await klick(root.querySelector("#btnChatZurueck"));
     await klick(root.querySelector("#btnMyRoom"));
     await klick(root.querySelector("#btnZeitleiste"));
@@ -110,10 +110,10 @@ describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
     panel.querySelector('input[data-weg="shelf"]').checked = true;
     await klick(panel.querySelector("#btnGateOk"));
 
-    const regal = await backend.bstate.get("regal");
+    const regal = await backend.bstate.get("shelf");
     expect(regal.items).toHaveLength(1);
-    expect(regal.items[0].gelesen).toBe(false);           // merken statt melden
-    expect(regal.items[0].von).toBe("Anna");
+    expect(regal.items[0].read).toBe(false);           // merken statt melden
+    expect(regal.items[0].by).toBe("Anna");
 
     // Rückkanal: genau EINE user-Nachricht mit SHARING-RESULT in Runde 2
     const r2 = mock.calls[1].messages.filter(m => m.role === "user");
@@ -137,7 +137,7 @@ describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
     await klick(root.querySelector("#btnMyRoom"));
     await klick(root.querySelector("#btnSolo"));
     await klick(root.querySelector("#gatePanel").querySelector("#btnGateNein"));
-    expect((await backend.bstate.get("regal")).items).toHaveLength(0);
+    expect((await backend.bstate.get("shelf")).items).toHaveLength(0);
     const r2 = mock.calls[1].messages.filter(m => m.role === "user");
     expect(r2[r2.length - 1].content).toContain("weiter daran arbeiten");
   });
@@ -146,7 +146,7 @@ describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
 describe("UI · Gemeinsame Session & Regal", () => {
   it("GOAL-BLOCK legt Aufträge mit AG/AI-Kennung an; MOMENT-BLOCK schließt ab", async () => {
     const auftrag = JSON.stringify({ changes: [
-      { op: "new", art: "shared", text: "Wöchentlicher Spaziergang", confirmedByBoth: true, baseline: { naehe: 6 } },
+      { op: "new", art: "shared", text: "Wöchentlicher Spaziergang", confirmedByBoth: true, baseline: { closeness: 6 } },
       { op: "new", art: "individual", owner: "B", ownerConfirmed: true, text: "Abends früher offline" },
     ]});
     const moment = JSON.stringify({ summary: "Verbunden gestartet, Zeit-Thema besprochen, Spaziergang vereinbart.", topics: ["Zeit"], gentleInvitation: "Kurzer Blick am Mittwoch" });
@@ -163,18 +163,18 @@ describe("UI · Gemeinsame Session & Regal", () => {
     await tick();
     root.querySelector("#pbInput").value = "Wir möchten über Zeit sprechen.";
     await klick(root.querySelector("#btnSend"));
-    const auf = await backend.bstate.get("auftraege");
+    const auf = await backend.bstate.get("goals");
     expect(auf.items.map(i => i.id)).toEqual(["AG1", "AI2"]);
     expect(auf.items[1].owner).toBe("B");
     root.querySelector("#pbInput").value = "Danke, wir schließen ab.";
     await klick(root.querySelector("#btnSend"));
-    expect((await backend.bstate.get("momentprotokoll")).eintraege).toHaveLength(1);
+    expect((await backend.bstate.get("momentLog")).entries).toHaveLength(1);
     expect(app._state.engine.chat.status).toBe("finished");
   });
 
   it("Regal-Ansicht zeigt gequerte Einträge (Pull-Prinzip, keine Notification-Mechanik)", async () => {
     const backend = memoryBackend(new MockLLM([]));
-    await backend.bstate.set("regal", { items: [{ id: "RG1", text: "Eine Fassung", von: "Bernd", gelesen: false }] });
+    await backend.bstate.set("shelf", { items: [{ id: "RG1", text: "Eine Fassung", by: "Bernd", read: false }] });
     const app = createApp({ doc: document, backend, root });
     await app.boot();
     await klick(root.querySelector("#btnSharedRoom"));

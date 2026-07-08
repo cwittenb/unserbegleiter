@@ -201,7 +201,7 @@ describe("Engine · Vertrag 3, Freigabe", () => {
     });
     const keys = await store.list("", true);
     expect(keys).toHaveLength(1);
-    expect(keys[0]).toContain("uebergabe:A");
+    expect(keys[0]).toContain("handover:A");
     const u = await store.get(keys[0], true);
     expect(uebergabeSchema(u)).toEqual([]);
     expect(JSON.stringify(u)).not.toContain("PRIVAT-GEHEIM");   // Fremdfeld-Filter wirkt

@@ -33,11 +33,11 @@ export const RANK_MODES = {
     desc: ctx => fuelle(KT("rank.pwichtig.desc"), { partner: ctx.partner }) + " " + KT("rank.howto"),
     result: (lines, ctx) => fuelle(KT("rank.pwichtig.kopf"), { me: ctx.me, partner: ctx.partner }) + "\n" + lines,
   },
-  punzufrieden: {
+  pchange: {
     topN: 1,
-    title: ctx => fuelle(KT("rank.punzufrieden.titel"), { partner: ctx.partner }),
-    desc: ctx => fuelle(KT("rank.punzufrieden.desc"), { partner: ctx.partner }) + " " + KT("rank.howto"),
-    result: (lines, ctx) => fuelle(KT("rank.punzufrieden.kopf"), { me: ctx.me }) + "\n" + lines,
+    title: ctx => fuelle(KT("rank.pchange.titel"), { partner: ctx.partner }),
+    desc: ctx => fuelle(KT("rank.pchange.desc"), { partner: ctx.partner }) + " " + KT("rank.howto"),
+    result: (lines, ctx) => fuelle(KT("rank.pchange.kopf"), { me: ctx.me }) + "\n" + lines,
   },
 };
 
@@ -76,7 +76,7 @@ export function einzelDef(backend, hooks = {}) {
     markers: {
       "[[SLIDERS]]": e => hooks.onRegler && hooks.onRegler(e),
       "[[PARTNER-RANKING]]": e => hooks.onRanking && hooks.onRanking("pwichtig", e),
-      "[[PARTNER-GUESS-CHANGE]]": e => hooks.onRanking && hooks.onRanking("punzufrieden", e),
+      "[[PARTNER-GUESS-CHANGE]]": e => hooks.onRanking && hooks.onRanking("pchange", e),
       "[[RANKING]]": e => hooks.onRanking && hooks.onRanking("self", e),
       "[[CHAPTER-1]]": e => hooks.onKapitel && hooks.onKapitel(1, e),
       "[[CHAPTER-2]]": e => hooks.onKapitel && hooks.onKapitel(2, e),
@@ -111,7 +111,7 @@ export function gemeinsamDef(backend, hooks = {}) {
       {
         ...BLOECKE.befund,
         handle: async (data, engine) => {
-          await backend.bstate.set("befund", { at: new Date().toISOString(), ...data });
+          await backend.bstate.set("findings", { at: new Date().toISOString(), ...data });
           engine.chat.status = "finished";
           if (hooks.onBefund) hooks.onBefund(data);
         },
@@ -123,7 +123,7 @@ export function gemeinsamDef(backend, hooks = {}) {
 /* ─────────────────────────────────────────────────────────────────────
    Onboarding-Kapitel & Aufdeck-Runde (Sprint „Aufdeck")
    Datenpfad des Mini-Gates: NUR Top 5 + Tipp 3 queren in das geteilte
-   Bstate-Feld "aufdeckung" — Fremdfelder strukturell nie. Die Gate-
+   Bstate-Feld "reveal" — Fremdfelder strukturell nie. Die Gate-
    Entscheidung selbst lebt ausschließlich im privaten Chat-Feld
    (minigate) und erscheint NIE im Transkript.
    ───────────────────────────────────────────────────────────────────── */
@@ -140,13 +140,13 @@ export function baueAufdeckung(name, ranks) {
   const r = ranks || {};
   if (!Array.isArray(r.self) || r.self.length !== 5 || !Array.isArray(r.pwichtig) || r.pwichtig.length !== 3)
     throw new Error(t("fehler.aufdeckDaten"));
-  return { name: String(name), top5: r.self.map(String), tipp3: r.pwichtig.map(String), releasedAt: new Date().toISOString() };
+  return { name: String(name), top5: r.self.map(String), guess3: r.pwichtig.map(String), releasedAt: new Date().toISOString() };
 }
 
 /** REVEAL-CONTEXT — versteckte erste Nachricht der Aufdeck-Runde (nur diese Daten, sonst nichts). */
 export function baueAufdeckKontext(gA, gB) {
   const teil = g => fuelle(KT("aufdeckk.top5"), { name: g.name }) + g.top5.map((x, i) => (i + 1) + ". " + x).join(" · ") +
-    "\n" + fuelle(KT("aufdeckk.tipp3"), { name: g.name }) + g.tipp3.map((x, i) => (i + 1) + ". " + x).join(" · ");
+    "\n" + fuelle(KT("aufdeckk.guess3"), { name: g.name }) + g.guess3.map((x, i) => (i + 1) + ". " + x).join(" · ");
   return KT("aufdeckk.kopf") + "\n" + teil(gA) + "\n" + teil(gB) + "\nEND REVEAL-CONTEXT";
 }
 
@@ -178,7 +178,7 @@ export function aufdeckDef(backend, hooks = {}) {
       {
         ...BLOECKE.aufdeck,
         handle: async (data, engine) => {
-          await backend.bstate.set("aufdeckprotokoll", { at: new Date().toISOString(), ...data });
+          await backend.bstate.set("revealLog", { at: new Date().toISOString(), ...data });
           engine.chat.status = "finished";
           if (hooks.onProtokoll) hooks.onProtokoll(data);
         },

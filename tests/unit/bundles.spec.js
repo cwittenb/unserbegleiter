@@ -15,15 +15,15 @@ describe("Bstate · Lesen schreibt nie", () => {
   it("load() auf leerem Speicher liefert Defaults OHNE zu persistieren (v0.29-Prinzip)", async () => {
     const { store, b } = welt();
     const bundle = await b.load();
-    expect(bundle.regal).toEqual({ items: [] });
-    expect(bundle.qz).toEqual({ ruht: {}, wahl: [] });
+    expect(bundle.shelf).toEqual({ items: [] });
+    expect(bundle.qualitytime).toEqual({ resting: {}, choices: [] });
     expect(store.ops.set).toBe(0);                        // KEIN Migrations-/Default-Write
     expect(await store.list("", true)).toEqual([]);
   });
 
   it("get() eines Feldes schreibt ebenfalls nichts", async () => {
     const { store, b } = welt();
-    expect(await b.get("auftraege")).toBeNull();
+    expect(await b.get("goals")).toBeNull();
     expect(store.ops.set).toBe(0);
   });
 });
@@ -31,16 +31,16 @@ describe("Bstate · Lesen schreibt nie", () => {
 describe("Bstate · Feld-Roundtrip (portierter v0.29-Fall)", () => {
   it("set eines Feldes verliert keine Nachbarfelder", async () => {
     const { b } = welt();
-    await b.set("regal", { items: [{ id: "R1" }] });
-    const vorher = await b.get("regal");
+    await b.set("shelf", { items: [{ id: "R1" }] });
+    const vorher = await b.get("shelf");
     await b.set("agenda", { items: [{ id: "A1" }] });
     expect(await b.get("agenda")).toEqual({ items: [{ id: "A1" }] });
-    expect(await b.get("regal")).toEqual(vorher);         // Nachbar unverändert
+    expect(await b.get("shelf")).toEqual(vorher);         // Nachbar unverändert
   });
 
   it("unbekannte Felder im gespeicherten Bündel überleben ein set (vorwärtskompatibel)", async () => {
     const { store, repo, b } = welt();
-    await store.set(repo.key("bstate"), { regal: { items: [] }, zukunftsfeld: { x: 1 } }, true);
+    await store.set(repo.key("bstate"), { shelf: { items: [] }, zukunftsfeld: { x: 1 } }, true);
     await b.set("agenda", { items: [] });
     const roh = await store.get(repo.key("bstate"), true);
     expect(roh.zukunftsfeld).toEqual({ x: 1 });
@@ -48,10 +48,10 @@ describe("Bstate · Feld-Roundtrip (portierter v0.29-Fall)", () => {
 
   it("Defaults füllen fehlende Felder eines Alt-Bündels still auf (ohne Write)", async () => {
     const { store, repo, b } = welt();
-    await store.set(repo.key("bstate"), { regal: { items: [{ id: "R1" }] } }, true);
+    await store.set(repo.key("bstate"), { shelf: { items: [{ id: "R1" }] } }, true);
     const setsVorher = store.ops.set;
-    expect(await b.get("qz")).toEqual({ ruht: {}, wahl: [] });
-    expect(await b.get("regal")).toEqual({ items: [{ id: "R1" }] });
+    expect(await b.get("qualitytime")).toEqual({ resting: {}, choices: [] });
+    expect(await b.get("shelf")).toEqual({ items: [{ id: "R1" }] });
     expect(store.ops.set).toBe(setsVorher);
   });
 });
@@ -59,7 +59,7 @@ describe("Bstate · Feld-Roundtrip (portierter v0.29-Fall)", () => {
 describe("Bstate · Single-Flight (portierter v0.29-Fall)", () => {
   it("parallele Loads teilen EINEN Store-Zugriff und liefern dasselbe Objekt", async () => {
     const { store, repo, b } = welt();
-    await b.set("regal", { items: [] });                  // Bündel existiert
+    await b.set("shelf", { items: [] });                  // Bündel existiert
     repo.clearCache();                                    // Cache aus dem Spiel nehmen
     const getsVorher = store.ops.get;
     const [x, y, z, w] = await Promise.all([b.load(), b.load(), b.load(), b.load()]);
@@ -72,21 +72,21 @@ describe("Bstate · Single-Flight (portierter v0.29-Fall)", () => {
 describe("Pstate · Single-Writer je Rolle", () => {
   it("Roundtrip je Rolle, Rollen sauber getrennt (portierter v0.29-Fall)", async () => {
     const { p } = welt();
-    await p.set("A", "zeitleiste", { eintraege: [{ at: "x" }] });
-    expect((await p.get("A", "zeitleiste")).eintraege).toHaveLength(1);
-    expect((await p.get("B", "zeitleiste")).eintraege).toHaveLength(0);   // B unberührt
+    await p.set("A", "timeline", { entries: [{ at: "x" }] });
+    expect((await p.get("A", "timeline")).entries).toHaveLength(1);
+    expect((await p.get("B", "timeline")).entries).toHaveLength(0);   // B unberührt
   });
 
   it("Pstate liegt im PRIVATEN Namensraum (Geheimnis-Architektur, Schicht Speicher)", async () => {
     const { store, p } = welt();
-    await p.set("A", "selbstoffenbarungen", { items: [{ id: "G1" }] });
+    await p.set("A", "selfDisclosures", { items: [{ id: "G1" }] });
     expect(await store.list("", true)).toEqual([]);       // nichts im geteilten Raum
     expect((await store.list("", false)).some(k => k.includes("pstate:A"))).toBe(true);
   });
 
   it("Lesen schreibt nie + Defaults", async () => {
     const { store, p } = welt();
-    expect(await p.get("A", "zeitleiste")).toEqual({ eintraege: [] });
+    expect(await p.get("A", "timeline")).toEqual({ entries: [] });
     expect(store.ops.set).toBe(0);
   });
 

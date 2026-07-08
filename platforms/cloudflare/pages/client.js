@@ -26,9 +26,9 @@ async function api(method, pfad, body) {
 function remoteBackend() {
   return {
     info: () => api("GET", "/api/me"),
-    sprache: {
-      antrag: ziel => api("POST", "/api/sprache", { ziel }),
-      zurueckziehen: () => api("DELETE", "/api/sprache"),
+    language: {
+      request: ziel => api("POST", "/api/language", { target }),
+      withdraw: () => api("DELETE", "/api/language"),
     },
     bstate: {
       get: f => api("GET", "/api/bstate/" + f).then(r => r.value),
@@ -37,7 +37,7 @@ function remoteBackend() {
     pstate: {
       get: f => api("GET", "/api/pstate/" + f).then(r => r.value),
       set: (f, v) => {
-        if (f === "sprache") { try { localStorage.setItem("pb.sprache", v); } catch { /* z. B. Safari privat */ } }
+        if (f === "language") { try { localStorage.setItem("pb.sprache", v); } catch { /* z. B. Safari privat */ } }
         return api("PUT", "/api/pstate/" + f, { value: v });
       },
     },
@@ -45,7 +45,7 @@ function remoteBackend() {
       load: (art, id) => api("GET", "/api/chat/" + art + "/" + id).then(r => r.value),
       save: (art, id, chat) => api("PUT", "/api/chat/" + art + "/" + id, { value: chat }),
     },
-    uebergabe: {
+    handover: {
       post: d => api("POST", "/api/handover", d),
       get: r => api("GET", "/api/handover/" + r).then(x => x.value),
     },

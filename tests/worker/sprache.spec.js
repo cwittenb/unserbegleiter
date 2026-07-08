@@ -59,72 +59,72 @@ beforeAll(async () => {
 
 afterAll(async () => { if (mf) await mf.dispose(); });
 
-describe("Paarsprache · /api/sprache", () => {
+describe("Paarsprache · /api/language", () => {
   it("Vorschlag → wartet; Bestätigung der ANDEREN Rolle → gewechselt, Wunsch weg, /api/me spiegelt beides", async () => {
     const { anna, bernd } = await frischesPaar();
-    const r1 = await anna.call("POST", "/api/sprache", { ziel: "en" });
+    const r1 = await anna.call("POST", "/api/language", { target: "en" });
     expect(r1.status).toBe(200);
-    expect(r1.data).toMatchObject({ status: "wartet", locale: "de" });
-    expect(r1.data.sprachwunsch).toMatchObject({ ziel: "en", von: "A" });
+    expect(r1.data).toMatchObject({ status: "waiting", locale: "de" });
+    expect(r1.data.languageRequest).toMatchObject({ target: "en", by: "A" });
 
     const meB = (await bernd.call("GET", "/api/me")).data;
     expect(meB.locale).toBe("de");
-    expect(meB.sprachwunsch).toMatchObject({ ziel: "en", von: "A" });
+    expect(meB.languageRequest).toMatchObject({ target: "en", by: "A" });
 
-    const r2 = await bernd.call("POST", "/api/sprache", { ziel: "en" });
-    expect(r2.data).toMatchObject({ status: "bestaetigt", locale: "en", sprachwunsch: null });
-    expect((await anna.call("GET", "/api/me")).data).toMatchObject({ locale: "en", sprachwunsch: null });
+    const r2 = await bernd.call("POST", "/api/language", { target: "en" });
+    expect(r2.data).toMatchObject({ status: "confirmed", locale: "en", languageRequest: null });
+    expect((await anna.call("GET", "/api/me")).data).toMatchObject({ locale: "en", languageRequest: null });
   });
 
   it("EINSEITIG unmöglich: doppelter Antrag DERSELBEN Rolle wechselt nie (idempotent wartend)", async () => {
     const { anna } = await frischesPaar();
-    await anna.call("POST", "/api/sprache", { ziel: "en" });
-    const r = await anna.call("POST", "/api/sprache", { ziel: "en" });
-    expect(r.data.status).toBe("wartet");
+    await anna.call("POST", "/api/language", { target: "en" });
+    const r = await anna.call("POST", "/api/language", { target: "en" });
+    expect(r.data.status).toBe("waiting");
     expect(r.data.locale).toBe("de");
     expect((await anna.call("GET", "/api/me")).data.locale).toBe("de");
   });
 
   it("Ablehnen durch den Partner: Wunsch weg, Sprache unverändert", async () => {
     const { anna, bernd } = await frischesPaar();
-    await anna.call("POST", "/api/sprache", { ziel: "en" });
-    const r = await bernd.call("DELETE", "/api/sprache");
-    expect(r.data).toMatchObject({ status: "verworfen", locale: "de", sprachwunsch: null });
-    expect((await anna.call("GET", "/api/me")).data.sprachwunsch).toBe(null);
+    await anna.call("POST", "/api/language", { target: "en" });
+    const r = await bernd.call("DELETE", "/api/language");
+    expect(r.data).toMatchObject({ status: "discarded", locale: "de", languageRequest: null });
+    expect((await anna.call("GET", "/api/me")).data.languageRequest).toBe(null);
   });
 
   it("Zurückziehen durch die Vorschlagende: Wunsch weg; erneuter Zyklus funktioniert", async () => {
     const { anna, bernd } = await frischesPaar();
-    await anna.call("POST", "/api/sprache", { ziel: "en" });
-    await anna.call("DELETE", "/api/sprache");
-    expect((await bernd.call("GET", "/api/me")).data.sprachwunsch).toBe(null);
-    await bernd.call("POST", "/api/sprache", { ziel: "en" });
-    const r = await anna.call("POST", "/api/sprache", { ziel: "en" });
-    expect(r.data).toMatchObject({ status: "bestaetigt", locale: "en" });
+    await anna.call("POST", "/api/language", { target: "en" });
+    await anna.call("DELETE", "/api/language");
+    expect((await bernd.call("GET", "/api/me")).data.languageRequest).toBe(null);
+    await bernd.call("POST", "/api/language", { target: "en" });
+    const r = await anna.call("POST", "/api/language", { target: "en" });
+    expect(r.data).toMatchObject({ status: "confirmed", locale: "en" });
   });
 
   it("Antrag auf die aktive Sprache: stiller No-op, offener Wunsch bleibt unberührt", async () => {
     const { anna, bernd } = await frischesPaar();
-    await anna.call("POST", "/api/sprache", { ziel: "en" });
-    const r = await bernd.call("POST", "/api/sprache", { ziel: "de" });
+    await anna.call("POST", "/api/language", { target: "en" });
+    const r = await bernd.call("POST", "/api/language", { target: "de" });
     expect(r.data.status).toBe("aktiv");
     expect(r.data.locale).toBe("de");
-    expect(r.data.sprachwunsch).toMatchObject({ ziel: "en", von: "A" });   // unberührt
+    expect(r.data.languageRequest).toMatchObject({ target: "en", by: "A" });   // unberührt
   });
 
   it("Rückweg en→de mit demselben Mechanismus; ungültige Zielsprache → 400", async () => {
     const { anna, bernd } = await frischesPaar("en");
     expect((await anna.call("GET", "/api/me")).data.locale).toBe("en");
-    await bernd.call("POST", "/api/sprache", { ziel: "de" });
-    const r = await anna.call("POST", "/api/sprache", { ziel: "de" });
-    expect(r.data).toMatchObject({ status: "bestaetigt", locale: "de" });
-    const bad = await anna.call("POST", "/api/sprache", { ziel: "fr" });
+    await bernd.call("POST", "/api/language", { target: "de" });
+    const r = await anna.call("POST", "/api/language", { target: "de" });
+    expect(r.data).toMatchObject({ status: "confirmed", locale: "de" });
+    const bad = await anna.call("POST", "/api/language", { target: "fr" });
     expect(bad.status).toBe(400);
-    expect(bad.data.code).toBe("sprache_invalid");
+    expect(bad.data.code).toBe("language_invalid");
   });
 
   it("ohne Session → 401", async () => {
     const fremde = client();
-    expect((await fremde.call("POST", "/api/sprache", { ziel: "en" })).status).toBe(401);
+    expect((await fremde.call("POST", "/api/language", { target: "en" })).status).toBe(401);
   });
 });

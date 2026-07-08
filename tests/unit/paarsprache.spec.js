@@ -11,33 +11,33 @@ import { MemoryStore } from "../../core/store/store.js";
 import { getKorpusSprache, setKorpusSprache } from "../../core/prompts/prompts.js";
 
 /* Lokales Backend mit derselben Sprach-Zustandsmaschine wie Worker/Artifact. */
-function memoryBackend(mock, { role = "A", locale = "de", sprachwunsch = null } = {}) {
+function memoryBackend(mock, { role = "A", locale = "de", languageRequest = null } = {}) {
   const store = new MemoryStore();
   const repo = new Repo({ store, ns: "T", code: "ps", activeModuleId: "betrieb" });
   const bstate = new Bstate(repo), pstate = new Pstate(repo);
-  const meta = { locale, ...(sprachwunsch ? { sprachwunsch } : {}) };
+  const meta = { locale, ...(languageRequest ? { languageRequest } : {}) };
   return {
     store, repo, meta,
     async info() {
       return { role, name: "Anna", partner: "Bernd", nameA: "Anna", nameB: "Bernd",
-               locale: meta.locale, sprachwunsch: meta.sprachwunsch || null };
+               locale: meta.locale, languageRequest: meta.languageRequest || null };
     },
     bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
     pstate: { get: f => pstate.get(role, f), set: (f, v) => pstate.set(role, f, v) },
     chat: { load: () => null, save: () => true },
-    sprache: {
-      antrag: async ziel => {
+    language: {
+      request: async target => {
         const aktuell = meta.locale || "de";
         let status;
-        if (ziel === aktuell) status = "aktiv";
-        else if (meta.sprachwunsch && meta.sprachwunsch.ziel === ziel && meta.sprachwunsch.von !== role) {
-          meta.locale = ziel; delete meta.sprachwunsch; status = "bestaetigt";
-        } else { meta.sprachwunsch = { ziel, von: role, at: 1 }; status = "wartet"; }
-        return { locale: meta.locale, sprachwunsch: meta.sprachwunsch || null, status };
+        if (target === aktuell) status = "active";
+        else if (meta.languageRequest && meta.languageRequest.target === target && meta.languageRequest.by !== role) {
+          meta.locale = target; delete meta.languageRequest; status = "confirmed";
+        } else { meta.languageRequest = { target, by: role, at: 1 }; status = "waiting"; }
+        return { locale: meta.locale, languageRequest: meta.languageRequest || null, status };
       },
-      zurueckziehen: async () => {
-        delete meta.sprachwunsch;
-        return { locale: meta.locale, sprachwunsch: null, status: "verworfen" };
+      withdraw: async () => {
+        delete meta.languageRequest;
+        return { locale: meta.locale, languageRequest: null, status: "discarded" };
       },
     },
     llm: mock.fn(),
@@ -69,46 +69,46 @@ describe("Paarsprache-Karte · drei Zustände", () => {
     const antrag = box.querySelector("#psAntrag");
     expect(antrag).toBeTruthy();
     await klick(antrag);
-    expect(backend.meta.sprachwunsch).toMatchObject({ ziel: "en", von: "A" });
+    expect(backend.meta.languageRequest).toMatchObject({ target: "en", by: "A" });
     expect(box.querySelector("#psZurueck")).toBeTruthy();
     expect(box.textContent).toContain("Bernd");   // wartet auf Partner
   });
 
   it("eigener Wunsch offen: Zurückziehen räumt auf und zeigt wieder Vorschlagen", async () => {
-    const backend = memoryBackend(new MockLLM([]), { sprachwunsch: { ziel: "en", von: "A", at: 1 } });
+    const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "A", at: 1 } });
     await booten(backend);
     const box = document.getElementById("boxPaarsprache");
     await klick(box.querySelector("#psZurueck"));
-    expect(backend.meta.sprachwunsch).toBeUndefined();
+    expect(backend.meta.languageRequest).toBeUndefined();
     expect(box.querySelector("#psAntrag")).toBeTruthy();
   });
 
   it("Partner-Wunsch offen: Bestätigen wechselt mit Von-beiden-bestätigt-Meldung", async () => {
-    const backend = memoryBackend(new MockLLM([]), { sprachwunsch: { ziel: "en", von: "B", at: 1 } });
+    const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "B", at: 1 } });
     await booten(backend);
     const box = document.getElementById("boxPaarsprache");
     expect(box.querySelector("#psJa")).toBeTruthy();
     expect(box.querySelector("#psNein")).toBeTruthy();
     await klick(box.querySelector("#psJa"));
     expect(backend.meta.locale).toBe("en");
-    expect(backend.meta.sprachwunsch).toBeUndefined();
+    expect(backend.meta.languageRequest).toBeUndefined();
     expect(box.querySelector("#psMeldung").textContent).toContain("bestätigt");
     expect(box.textContent).toContain("Englisch");
   });
 
   it("Ablehnen des Partner-Wunschs: Sprache unverändert, Wunsch weg", async () => {
-    const backend = memoryBackend(new MockLLM([]), { sprachwunsch: { ziel: "en", von: "B", at: 1 } });
+    const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "B", at: 1 } });
     await booten(backend);
     const box = document.getElementById("boxPaarsprache");
     await klick(box.querySelector("#psNein"));
     expect(backend.meta.locale).toBe("de");
-    expect(backend.meta.sprachwunsch).toBeUndefined();
+    expect(backend.meta.languageRequest).toBeUndefined();
     expect(box.querySelector("#psAntrag")).toBeTruthy();
   });
 
   it("Backend ohne sprache-Fassade: Karte bleibt verborgen", async () => {
     const backend = memoryBackend(new MockLLM([]));
-    delete backend.sprache;
+    delete backend.language;
     await booten(backend);
     expect(document.getElementById("boxPaarsprache").classList.contains("pb-hidden")).toBe(true);
   });
@@ -117,7 +117,7 @@ describe("Paarsprache-Karte · drei Zustände", () => {
 describe("Wechselwirkung mit dem Sprach-Schnappschuss (C1/C2)", () => {
   it("nach beidseitiger Bestätigung startet eine NEUE Einzelsession englisch", async () => {
     const mock = new MockLLM(["Hello Anna."]);
-    const backend = memoryBackend(mock, { sprachwunsch: { ziel: "en", von: "B", at: 1 } });
+    const backend = memoryBackend(mock, { languageRequest: { target: "en", by: "B", at: 1 } });
     await booten(backend);
     await klick(document.querySelector("#psJa"));
     await klick(root.querySelector("#btnMyRoom"));

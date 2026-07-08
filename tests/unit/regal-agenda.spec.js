@@ -18,7 +18,7 @@ function memoryBackend(mock, { role = "B", name = "Bernd", partner = "Anna" } = 
     bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
     pstate: { get: f => pstate.get(role, f), set: (f, v) => pstate.set(role, f, v) },
     chat: { load: () => null, save: () => true },
-    uebergabe: { post: () => {}, get: () => null },
+    handover: { post: () => {}, get: () => null },
     llm: mock ? mock.fn() : async () => ({ text: "ok" }),
   };
 }
@@ -34,18 +34,18 @@ beforeEach(() => {
 describe("baueMomentKontext (Modell-Kontrakt: app-interne erste Nachricht)", () => {
   it("voller Kontext: Aufträge/Agenda/frühere Momente/Freigaben, Namen am Ende", () => {
     const k = baueMomentKontext({
-      auftraege: { items: [
+      goals: { items: [
         { id: "AG1", art: "shared", status: "active", text: "Wöchentlicher Abend" },
         { id: "AI2", art: "individual", owner: "B", status: "resting", text: "Früher offline" },
         { id: "AG3", art: "shared", status: "closed", text: "Alt" },
       ]},
       agenda: { items: [
-        { von: "Anna", text: "Mehr gemeinsame Abende", wish: "2/Woche", zustand: "offen" },
-        { von: "Bernd", text: "Erledigt", zustand: "besprochen" },
+        { by: "Anna", text: "Mehr gemeinsame Abende", wish: "2/Woche", state: "open" },
+        { by: "Bernd", text: "Erledigt", state: "discussed" },
       ]},
-      momentprotokoll: { eintraege: [{ at: "2026-06-20T10:00:00Z", summary: "Gut verbunden.", gentleInvitation: "Spaziergang" }] },
+      momentLog: { entries: [{ at: "2026-06-20T10:00:00Z", summary: "Gut verbunden.", gentleInvitation: "Spaziergang" }] },
       messrunde: null,
-      freigaben: [{ name: "Anna", items: [{ id: "S1", text: "Nähe zentral" }] }],
+      sharings: [{ name: "Anna", items: [{ id: "S1", text: "Nähe zentral" }] }],
     }, "Anna", "Bernd");
     expect(k).toContain("MOMENT-CONTEXT");
     expect(k).toContain("AG1 (shared, active): Wöchentlicher Abend");
@@ -59,7 +59,7 @@ describe("baueMomentKontext (Modell-Kontrakt: app-interne erste Nachricht)", () 
   });
 
   it("Erst-Termin: leere Quellen werden ehrlich benannt (keine offene Tür)", () => {
-    const k = baueMomentKontext({ auftraege: null, agenda: null, momentprotokoll: null, messrunde: null, freigaben: [] }, "Anna", "Bernd");
+    const k = baueMomentKontext({ goals: null, agenda: null, momentLog: null, messrunde: null, sharings: [] }, "Anna", "Bernd");
     expect(k).toContain("GOALS: noch keine.");
     expect(k).toContain("AGENDA: leer.");
     expect(k).toContain("erste Termin (keine offene Tür)");
@@ -70,9 +70,9 @@ describe("baueMomentKontext (Modell-Kontrakt: app-interne erste Nachricht)", () 
 describe("UI · Regal-Heben und Gelesen (Pull-Prinzip)", () => {
   it("Bernd sieht bei Annas Eintrag Gelesen/Heben; eigener Eintrag hat keine Knöpfe; Heben erzeugt Agenda-Item mit Herkunft", async () => {
     const backend = memoryBackend(null);   // Bernd
-    await backend.bstate.set("regal", { items: [
-      { id: "RG1", text: "Annas Fassung", wish: "Mehr Zeit", von: "Anna", gelesen: false },
-      { id: "RG2", text: "Bernds eigene", von: "Bernd", gelesen: false },
+    await backend.bstate.set("shelf", { items: [
+      { id: "RG1", text: "Annas Fassung", wish: "Mehr Zeit", by: "Anna", read: false },
+      { id: "RG2", text: "Bernds eigene", by: "Bernd", read: false },
     ]});
     const app = createApp({ doc: document, backend, root });
     await app.boot();
@@ -84,14 +84,14 @@ describe("UI · Regal-Heben und Gelesen (Pull-Prinzip)", () => {
     expect(root.querySelector('[data-gelesen="RG2"]')).toBeNull();   // eigener Eintrag: keine Knöpfe
 
     await klick(root.querySelector('[data-gelesen="RG1"]'));
-    expect((await backend.bstate.get("regal")).items[0].gelesen).toBe(true);
+    expect((await backend.bstate.get("shelf")).items[0].read).toBe(true);
     expect(root.querySelector("#regalItems").textContent).toContain("gelesen");
 
     await klick(root.querySelector('[data-heben="RG1"]'));
     const agenda = await backend.bstate.get("agenda");
     expect(agenda.items).toHaveLength(1);
-    expect(agenda.items[0]).toMatchObject({ text: "Annas Fassung", wish: "Mehr Zeit", von: "Anna", herkunft: "regal", zustand: "offen" });
-    expect((await backend.bstate.get("regal")).items[0].gehoben).toBe(true);
+    expect(agenda.items[0]).toMatchObject({ text: "Annas Fassung", wish: "Mehr Zeit", by: "Anna", herkunft: "shelf", state: "open" });
+    expect((await backend.bstate.get("shelf")).items[0].gehoben).toBe(true);
     expect(root.querySelector('[data-heben="RG1"]')).toBeNull();     // kein Doppel-Heben
     await hebeInAgenda(backend, "RG1");                              // auch mechanisch idempotent
     expect((await backend.bstate.get("agenda")).items).toHaveLength(1);
@@ -100,7 +100,7 @@ describe("UI · Regal-Heben und Gelesen (Pull-Prinzip)", () => {
   it("Agenda-Ansicht: offene Punkte lassen sich als „selbst geklärt\" abräumen", async () => {
     const backend = memoryBackend(null);
     await backend.bstate.set("agenda", { items: [
-      { id: "AGD1", text: "Mehr Abende", von: "Anna", zustand: "offen" },
+      { id: "AGD1", text: "Mehr Abende", by: "Anna", state: "open" },
     ]});
     const app = createApp({ doc: document, backend, root });
     await app.boot();
@@ -108,7 +108,7 @@ describe("UI · Regal-Heben und Gelesen (Pull-Prinzip)", () => {
     await klick(root.querySelector("#btnAgenda"));
     expect(root.querySelector("#agendaItems").textContent).toContain("offen");
     await klick(root.querySelector('[data-abr="AGD1"]'));
-    expect((await backend.bstate.get("agenda")).items[0].zustand).toBe("selfResolved");
+    expect((await backend.bstate.get("agenda")).items[0].state).toBe("selfResolved");
     expect(root.querySelector('[data-abr="AGD1"]')).toBeNull();
   });
 });
@@ -117,7 +117,7 @@ describe("UI · MOMENT-CONTEXT fließt in die gemeinsame Session", () => {
   it("neue Session: Kontext geht als VERSTECKTE erste Nachricht ans Modell, erscheint aber nicht im Chat", async () => {
     const mock = new MockLLM(["Schön, dass ihr da seid."]);
     const backend = memoryBackend(mock);
-    await backend.bstate.set("agenda", { items: [{ id: "AGD1", text: "GEHOBENES-THEMA", von: "Anna", zustand: "offen" }] });
+    await backend.bstate.set("agenda", { items: [{ id: "AGD1", text: "GEHOBENES-THEMA", by: "Anna", state: "open" }] });
     const app = createApp({ doc: document, backend, root });
     await app.boot();
     await app.startChat("moment");

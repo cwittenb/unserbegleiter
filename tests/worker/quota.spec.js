@@ -178,7 +178,7 @@ describe("Abgrenzung", () => {
     const { anna } = await frischesPaar();
     for (let i = 0; i < 7; i++) await llm(anna, "verbrauch " + i);
     expect((await llm(anna, "jetzt zu")).status).toBe(429);
-    expect((await anna.call("GET", "/api/bstate/regal")).status).toBe(200);      // Lesen geht weiter
-    expect((await anna.call("PUT", "/api/pstate/zeitleiste", { value: { eintraege: [] } })).status).toBe(200);
+    expect((await anna.call("GET", "/api/bstate/shelf")).status).toBe(200);      // Lesen geht weiter
+    expect((await anna.call("PUT", "/api/pstate/timeline", { value: { entries: [] } })).status).toBe(200);
   });
 });

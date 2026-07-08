@@ -58,25 +58,25 @@ export function baueMockdaten(meta = MOCK_META) {
   shared[META_KEY] = meta;
 
   shared[key(meta, "bstate")] = stempel({
-    auftraege: { items: [
+    goals: { items: [
       { id: "AG1", art: "gemeinsam", status: "aktiv", text: "Ein fester gemeinsamer Abend pro Woche, nur für uns.", startwerte: { A: 4, B: 6 }, vonBeidenBestaetigt: true, at: vor(21) },
       { id: "AI2", art: "individuell", owner: "B", status: "aktiv", text: "Abends eine Stunde früher offline sein.", at: vor(21) },
     ]},
-    regal: { items: [
-      { id: "RG1", text: "Anna wünscht sich, dass Verabredungen verlässlicher gelten — Absagen in letzter Minute treffen sie stärker, als sie lange gezeigt hat.", wunsch: "Kurz Bescheid geben, sobald sich etwas abzeichnet.", von: "Anna", at: vor(5), gelesen: false },
+    shelf: { items: [
+      { id: "RG1", text: "Anna wünscht sich, dass Verabredungen verlässlicher gelten — Absagen in letzter Minute treffen sie stärker, als sie lange gezeigt hat.", wunsch: "Kurz Bescheid geben, sobald sich etwas abzeichnet.", by: "Anna", at: vor(5), read: false },
     ]},
     agenda: { items: [
-      { id: "AGD1", text: "Wie wir mit spontanen Planänderungen umgehen.", wunsch: null, von: "Anna", herkunft: "regal", at: vor(4), zustand: "offen" },
+      { id: "AGD1", text: "Wie wir mit spontanen Planänderungen umgehen.", wunsch: null, by: "Anna", herkunft: "shelf", at: vor(4), state: "open" },
     ]},
-    messrunden: { items: [
-      { id: "MR1", startAt: vor(10), status: "aufgedeckt", aufgedecktAt: vor(8),
-        werte: { A: { naehe: 5, zweit: 6, passung: { AG1: 6 } }, B: { naehe: 6, zweit: 5, passung: { AG1: 7 } } } },
+    measurements: { items: [
+      { id: "MR1", startAt: vor(10), status: "revealed", revealedAt: vor(8),
+        values: { A: { closeness: 5, guess: 6, fit: { AG1: 6 } }, B: { closeness: 6, guess: 5, fit: { AG1: 7 } } } },
     ]},
-    momentprotokoll: { eintraege: [
+    momentLog: { entries: [
       { at: vor(8), zusammenfassung: "Über den gemeinsamen Abend gesprochen; beide wollen ihn schützen.", themen: ["gemeinsame Zeit"], zwischenzeitImpuls: "Ein Spaziergang unter der Woche." },
     ]},
-    qz: { startAt: vor(45), ruht: {}, wahl: [{ at: vor(9), text: "Zusammen kochen am Sonntag.", domaene: "Alltagsgestaltung" }] },
-    befund: {
+    qualitytime: { startAt: vor(45), resting: {}, choices: [{ at: vor(9), text: "Zusammen kochen am Sonntag.", domain: "Alltagsgestaltung" }] },
+    findings: {
       at: vor(21),
       funde: [{ typ: "treffer", text: "Beiden ist Verlässlichkeit zentral — sie lesen sich dort gut." }],
       triangulation: { vorschlaege: 2, bestaetigt: 1, justiert: 1, abgelehnt: 0 },
@@ -88,22 +88,22 @@ export function baueMockdaten(meta = MOCK_META) {
   });
 
   privat[key(meta, "pstate:A")] = stempel({
-    zeitleiste: { eintraege: [{ at: vor(6), text: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat." }] },
-    selbstoffenbarungen: { items: [{ at: vor(6), text: "„Mir ist unser Abend wichtig — wenn er kippt, sag es mir bitte früh.“" }] },
+    timeline: { entries: [{ at: vor(6), text: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat." }] },
+    selfDisclosures: { items: [{ at: vor(6), text: "„Mir ist unser Abend wichtig — wenn er kippt, sag es mir bitte früh.“" }] },
   });
   privat[key(meta, "pstate:B")] = stempel({
-    zeitleiste: { eintraege: [{ at: vor(3), text: "Der Arbeitsdruck frisst die Abende — das will ich nicht so lassen." }] },
-    selbstoffenbarungen: { items: [] },
+    timeline: { entries: [{ at: vor(3), text: "Der Arbeitsdruck frisst die Abende — das will ich nicht so lassen." }] },
+    selfDisclosures: { items: [] },
   });
 
   const uebergabe = (role, name, items) => stempel({
     _schema: 1, module: "kernwetten", name, items, releasedAt: vor(22),
   });
-  shared[key(meta, "uebergabe:A", "kernwetten")] = uebergabe("A", meta.nameA, [
+  shared[key(meta, "handover:A", "kernwetten")] = uebergabe("A", meta.nameA, [
     { id: "S1", text: "Nähe und Verlässlichkeit liegen mir am meisten am Herzen; bei Verlässlichkeit bin ich gerade unzufrieden." },
     { id: "V1", text: "Ich vermute, Bernd wünscht sich vor allem weniger Druck im Alltag." },
   ]);
-  shared[key(meta, "uebergabe:B", "kernwetten")] = uebergabe("B", meta.nameB, [
+  shared[key(meta, "handover:B", "kernwetten")] = uebergabe("B", meta.nameB, [
     { id: "S1", text: "Gemeinsame Ruhe ist mir wichtiger geworden, als ich lange dachte." },
   ]);
 
@@ -154,7 +154,7 @@ export const SZENEN = [
   {
     id: "regal-ungelesen", titel: "Regal · Einblick wartet ungelesen",
     beschreibung: "Annas Einblick liegt im Regal, Bernd hat ihn noch nicht gelesen — Pull-Prinzip erlebbar (als Bernd einsteigen).",
-    async wende(store) { const m = baueMockdaten(); await setzeZustand(store, m); },   // RG1 ist gelesen:false
+    async wende(store) { const m = baueMockdaten(); await setzeZustand(store, m); },   // RG1 ist read:false
   },
   {
     id: "aufdecken-bereit", titel: "Prozessreflexion · Aufdecken bereit",
@@ -162,9 +162,9 @@ export const SZENEN = [
     async wende(store) {
       const m = baueMockdaten();
       const bk = key(m.meta, "bstate");
-      m.shared[bk].messrunden.items.push({
-        id: "MR2", startAt: vor(1), status: "bereit",
-        werte: { A: { naehe: 4, zweit: 7, passung: { AG1: 6 } }, B: { naehe: 8, zweit: 5, passung: { AG1: 9 } } },
+      m.shared[bk].measurements.items.push({
+        id: "MR2", startAt: vor(1), status: "ready",
+        values: { A: { closeness: 4, guess: 7, fit: { AG1: 6 } }, B: { closeness: 8, guess: 5, fit: { AG1: 9 } } },
       });
       await setzeZustand(store, m);
     },
@@ -175,7 +175,7 @@ export const SZENEN = [
     async wende(store) {
       const m = baueMockdaten();
       const bk = key(m.meta, "bstate");
-      m.shared[bk].qz = { startAt: vor(90), ruht: {}, wahl: [{ at: vor(35), text: "Zusammen kochen am Sonntag.", domaene: "Alltagsgestaltung" }] };
+      m.shared[bk].qualitytime = { startAt: vor(90), resting: {}, choices: [{ at: vor(35), text: "Zusammen kochen am Sonntag.", domain: "Alltagsgestaltung" }] };
       await setzeZustand(store, m);
     },
   },

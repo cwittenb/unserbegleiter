@@ -65,8 +65,8 @@ describe("Übergabe · Konstruktor", () => {
 
 describe("Übergabe · Teil-Key", () => {
   it("nur A oder B", () => {
-    expect(uebergabeTeilKey("A")).toBe("uebergabe:A");
-    expect(uebergabeTeilKey("B")).toBe("uebergabe:B");
+    expect(uebergabeTeilKey("A")).toBe("handover:A");
+    expect(uebergabeTeilKey("B")).toBe("handover:B");
     expect(() => uebergabeTeilKey("C")).toThrow();
   });
 });

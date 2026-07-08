@@ -35,7 +35,7 @@ export async function runSelftest(store) {
   t("gateArtSchema: nicht bestandener Check ungültig", () =>
     gateArtSchema({ fassung: "x", wunsch: null, begruendung: "y",
       kriterien: { charakterzuschreibung: true, generalisierung: false, situationsbezug: true, selbstanteil: true },
-      wege: ["regal"] }).length > 0);
+      wege: ["shelf"] }).length > 0);
   t("Übergabe: Fremdfelder queren nicht mit", () => {
     const u = baueUebergabe({ module: "m", name: "n", items: [{ id: "i", text: "t", geheim: "X" }] });
     return !JSON.stringify(u).includes("geheim");

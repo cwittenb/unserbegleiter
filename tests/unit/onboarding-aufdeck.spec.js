@@ -110,7 +110,7 @@ describe("Kernwetten · Kapitel-Marker & Aufdeck-Def", () => {
     const engine = { chat: { status: "running" } };
     await d.blocks[0].handle({ summary: "Warm.", touchingPoints: ["Nähe"], forClarification: [] }, engine);
     expect(engine.chat.status).toBe("finished");
-    expect(gesetzt[0][0]).toBe("aufdeckprotokoll");
+    expect(gesetzt[0][0]).toBe("revealLog");
     expect(gesetzt[0][1].summary).toBe("Warm.");
     expect(gesetzt[0][1].at).toBeTruthy();
   });
@@ -121,14 +121,14 @@ describe("Kernwetten · Datenpfade der Aufdeck-Runde", () => {
   const ranks = {
     self: ["Nähe", "Ehrlichkeit", "Wertschätzung", "Autonomie", "Harmonie"],
     pwichtig: ["Autonomie", "Beständigkeit", "Nähe"],
-    punzufrieden: ["Sexualität & körperliche Nähe"],   // wird bewusst NICHT gequert (erst G2)
+    pchange: ["Sexualität & körperliche Nähe"],   // wird bewusst NICHT gequert (erst G2)
     geheim: "Rohform",
   };
   it("baueAufdeckung: nur name/top5/tipp3/releasedAt queren — Fremdfelder nie", () => {
     const g = baueAufdeckung("Anna", ranks);
-    expect(Object.keys(g).sort()).toEqual(["name", "releasedAt", "tipp3", "top5"]);
+    expect(Object.keys(g).sort()).toEqual(["guess3", "name", "releasedAt", "top5"]);
     expect(g.top5).toHaveLength(5);
-    expect(g.tipp3).toHaveLength(3);
+    expect(g.guess3).toHaveLength(3);
   });
   it("baueAufdeckung: ohne vollständige Stapel wird geworfen (Korrektur-Runde statt Lücke)", () => {
     expect(() => baueAufdeckung("Anna", { self: ["x"], pwichtig: [] })).toThrow(/Korrektur-Runde/);
@@ -159,9 +159,9 @@ describe("Kernwetten · Datenpfade der Aufdeck-Runde", () => {
 
 describe("Store · Bstate-Felder (Worker-Whitelist folgt aus FIELDS)", () => {
   it("aufdeckung + aufdeckprotokoll sind Bündel-Felder mit Defaults", () => {
-    expect(Bstate.FIELDS).toContain("aufdeckung");
-    expect(Bstate.FIELDS).toContain("aufdeckprotokoll");
-    expect(Bstate.DEFAULTS.aufdeckung).toEqual({ A: null, B: null });
-    expect(Bstate.DEFAULTS.aufdeckprotokoll).toBeNull();
+    expect(Bstate.FIELDS).toContain("reveal");
+    expect(Bstate.FIELDS).toContain("revealLog");
+    expect(Bstate.DEFAULTS.reveal).toEqual({ A: null, B: null });
+    expect(Bstate.DEFAULTS.revealLog).toBeNull();
   });
 });

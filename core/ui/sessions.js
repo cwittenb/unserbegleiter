@@ -6,7 +6,7 @@
 //   backend.bstate.get/set(feld[,wert])
 //   backend.pstate.get/set(feld[,wert])  — Rolle implizit (Session/lokal)
 //   backend.chat.load/save(art, id, chat)
-//   backend.uebergabe.post({module,name,items}) / .get(rolle)
+//   backend.handover.post({module,name,items}) / .get(rolle)
 //   backend.llm(system, messages)        → {text, stop, usage}
 
 import { BLOECKE } from "../contracts/registry.js";
@@ -27,9 +27,9 @@ export function soloDef(backend, hooks = {}) {
       {
         ...BLOECKE.zeitleiste,
         handle: async (data, engine) => {
-          const zl = (await backend.pstate.get("zeitleiste")) || { eintraege: [] };
-          zl.eintraege.push({ at: new Date().toISOString(), ...data });
-          await backend.pstate.set("zeitleiste", zl);
+          const zl = (await backend.pstate.get("timeline")) || { entries: [] };
+          zl.entries.push({ at: new Date().toISOString(), ...data });
+          await backend.pstate.set("timeline", zl);
           engine.chat.status = "finished";
           if (hooks.onZeitleiste) hooks.onZeitleiste(data);
         },
@@ -60,9 +60,9 @@ export function momentDef(backend, hooks = {}) {
       {
         ...BLOECKE.moment,
         handle: async (data, engine) => {
-          const mp = (await backend.bstate.get("momentprotokoll")) || { eintraege: [] };
-          mp.eintraege.push({ at: new Date().toISOString(), ...data });
-          await backend.bstate.set("momentprotokoll", mp);
+          const mp = (await backend.bstate.get("momentLog")) || { entries: [] };
+          mp.entries.push({ at: new Date().toISOString(), ...data });
+          await backend.bstate.set("momentLog", mp);
           engine.chat.status = "finished";
           if (hooks.onMomentEnde) hooks.onMomentEnde(data);
         },
@@ -70,7 +70,7 @@ export function momentDef(backend, hooks = {}) {
       {
         ...BLOECKE.auftrag,
         handle: async (data, engine) => {
-          const auf = (await backend.bstate.get("auftraege")) || { items: [], seq: 0 };
+          const auf = (await backend.bstate.get("goals")) || { items: [], seq: 0 };
           for (const a of data.changes) {
             if (a.op === "new") {
               auf.seq = (auf.seq || 0) + 1;
@@ -78,7 +78,7 @@ export function momentDef(backend, hooks = {}) {
                 id: (a.art === "shared" ? "AG" : "AI") + auf.seq,
                 text: a.text, art: a.art, owner: a.owner || null,
                 status: "active", baseline: a.baseline || {},
-                angelegt: new Date().toISOString(),
+                createdAt: new Date().toISOString(),
               });
             } else {
               const it = auf.items.find(x => x.id === a.id);
@@ -89,7 +89,7 @@ export function momentDef(backend, hooks = {}) {
               if (a.op === "reactivate") it.status = "active";
             }
           }
-          await backend.bstate.set("auftraege", auf);
+          await backend.bstate.set("goals", auf);
           if (hooks.onAuftraege) hooks.onAuftraege(auf);
         },
       },
@@ -103,16 +103,16 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
   for (const weg of gewaehlteWege) {
     if (!erlaubt.has(weg)) throw new Error("Weg " + weg + " war nicht freigegeben");
     if (weg === "shelf") {
-      const regal = (await backend.bstate.get("regal")) || { items: [] };
+      const regal = (await backend.bstate.get("shelf")) || { items: [] };
       regal.items.push({
         id: "RG" + (regal.items.length + 1),   // Regal-Item = Einblick
         text: gateDaten.selbstmitteilung,
         wish: gateDaten.wish,
-        von: (await backend.info()).name,
+        by: (await backend.info()).name,
         at: new Date().toISOString(),
-        gelesen: false,   // "merken statt melden": Pull, kein Push
+        read: false,   // "merken statt melden": Pull, kein Push
       });
-      await backend.bstate.set("regal", regal);
+      await backend.bstate.set("shelf", regal);
     }
     if (weg === "moment") {
       const agenda = (await backend.bstate.get("agenda")) || { items: [] };
@@ -120,17 +120,17 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
         id: "AGD" + (agenda.items.length + 1),   // auf der Agenda = Thema
         text: gateDaten.selbstmitteilung,
         wish: gateDaten.wish,
-        von: (await backend.info()).name,
+        by: (await backend.info()).name,
         at: new Date().toISOString(),
-        zustand: "offen",
+        state: "open",
       });
       await backend.bstate.set("agenda", agenda);
     }
     // "selbst" → Selbstoffenbarung: bleibt im persönlichen Raum (selbst ansprechen)
     if (weg === "selbst") {
-      const so = (await backend.pstate.get("selbstoffenbarungen")) || { items: [] };
+      const so = (await backend.pstate.get("selfDisclosures")) || { items: [] };
       so.items.push({ text: gateDaten.selbstmitteilung, at: new Date().toISOString() });
-      await backend.pstate.set("selbstoffenbarungen", so);
+      await backend.pstate.set("selfDisclosures", so);
     }
   }
 }
@@ -140,21 +140,21 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
  * Session). momentSys erwartet ihn und bringt ihn dramaturgisch ein; das Paar
  * sieht die Rohform nie (hidden = reine Anzeige-Semantik, geht ans Modell mit).
  */
-export function baueMomentKontext({ auftraege, agenda, momentprotokoll, messrunde, freigaben }, nameA, nameB) {
+export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings }, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];
 
-  const aktive = ((auftraege && auftraege.items) || []).filter(a => a.status !== "closed");
+  const aktive = ((goals && goals.items) || []).filter(a => a.status !== "closed");
   teile.push(aktive.length
     ? "GOALS:\n" + aktive.map(a => "- " + a.id + " (" + a.art + (a.owner ? ", " + a.owner : "") + ", " + a.status + "): " + a.text).join("\n")
     : KT("mk.auftraegeLeer"));
 
-  const offen = ((agenda && agenda.items) || []).filter(i => i.zustand === "offen");
+  const offen = ((agenda && agenda.items) || []).filter(i => i.state === "open");
   teile.push(offen.length
-    ? KT("mk.agendaKopf") + "\n" + offen.map(i => fuelle(KT("mk.agendaVon"), { name: i.von }) + i.text + (i.wish ? fuelle(KT("mk.agendaWunsch"), { wish: i.wish }) : "")).join("\n")
+    ? KT("mk.agendaKopf") + "\n" + offen.map(i => fuelle(KT("mk.agendaVon"), { name: i.by }) + i.text + (i.wish ? fuelle(KT("mk.agendaWunsch"), { wish: i.wish }) : "")).join("\n")
     : KT("mk.agendaLeer"));
 
-  const fruehere = ((momentprotokoll && momentprotokoll.eintraege) || []).slice(-3);
+  const fruehere = ((momentLog && momentLog.entries) || []).slice(-3);
   teile.push(fruehere.length
     ? KT("mk.fruehereKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.summary + (e.gentleInvitation ? KT("mk.impulsWar") + e.gentleInvitation : "")).join("\n")
     : KT("mk.fruehereLeer"));
@@ -163,7 +163,7 @@ export function baueMomentKontext({ auftraege, agenda, momentprotokoll, messrund
     ? KT("mk.prozessKopf") + "\n" + messrunde
     : KT("mk.prozessLeer"));
 
-  const frei = freigaben || [];
+  const frei = sharings || [];
   teile.push(frei.length
     ? KT("mk.zwischenzeitKopf") + "\n" + frei.map(f => fuelle(KT("mk.materialVon"), { name: f.name }) + f.items.map(i => i.text).join(" · ")).join("\n")
     : KT("mk.materialLeer"));
@@ -174,35 +174,35 @@ export function baueMomentKontext({ auftraege, agenda, momentprotokoll, messrund
 
 /** Regal-Item als gelesen markieren (Pull-Prinzip: die lesende Person entscheidet). */
 export async function markiereGelesen(backend, itemId) {
-  const regal = (await backend.bstate.get("regal")) || { items: [] };
+  const regal = (await backend.bstate.get("shelf")) || { items: [] };
   const it = regal.items.find(x => x.id === itemId);
   if (!it) return;
-  it.gelesen = true;
-  await backend.bstate.set("regal", regal);
+  it.read = true;
+  await backend.bstate.set("shelf", regal);
 }
 
 /** Regal-Item in die gemeinsame Agenda heben (Herkunft bleibt sichtbar). */
 export async function hebeInAgenda(backend, itemId) {
-  const regal = (await backend.bstate.get("regal")) || { items: [] };
+  const regal = (await backend.bstate.get("shelf")) || { items: [] };
   const it = regal.items.find(x => x.id === itemId);
   if (!it || it.gehoben) return;
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
   agenda.items.push({
     id: "AGD" + (agenda.items.length + 1),
     text: it.text, wish: it.wish || null,
-    von: it.von, herkunft: "regal",
-    at: new Date().toISOString(), zustand: "offen",
+    by: it.by, herkunft: "shelf",
+    at: new Date().toISOString(), state: "open",
   });
   it.gehoben = true;
   await backend.bstate.set("agenda", agenda);
-  await backend.bstate.set("regal", regal);
+  await backend.bstate.set("shelf", regal);
 }
 
 /** Agenda-Punkt abräumen — beides ist legitim und wird nicht gewertet. */
-export async function raeumeAgendaAb(backend, itemId, wie /* "besprochen" | "selfResolved" */) {
+export async function raeumeAgendaAb(backend, itemId, wie /* "discussed" | "selfResolved" */) {
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
   const it = agenda.items.find(x => x.id === itemId);
   if (!it) return;
-  it.zustand = wie;
+  it.state = wie;
   await backend.bstate.set("agenda", agenda);
 }

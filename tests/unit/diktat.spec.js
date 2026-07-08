@@ -18,7 +18,7 @@ function memoryBackend() {
     bstate: { get: f => bstate.get(f), set: (f, v) => bstate.set(f, v) },
     pstate: { get: f => pstate.get("A", f), set: (f, v) => pstate.set("A", f, v) },
     chat: { load: () => null, save: () => true },
-    uebergabe: { post: () => {}, get: () => null },
+    handover: { post: () => {}, get: () => null },
     llm: new MockLLM(["Hallo!"]).fn(),
   };
 }

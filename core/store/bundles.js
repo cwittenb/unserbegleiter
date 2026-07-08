@@ -12,17 +12,17 @@
 // Pstate — persönliches Bündel je Rolle, Single-Writer, gleiche Prinzipien.
 
 export class Bstate {
-  static FIELDS = ["auftraege", "regal", "agenda", "messrunden", "momentprotokoll", "qz", "befund", "aufdeckung", "aufdeckprotokoll"];
+  static FIELDS = ["goals", "shelf", "agenda", "measurements", "momentLog", "qualitytime", "findings", "reveal", "revealLog"];
   static DEFAULTS = {
-    auftraege: null,
-    regal: { items: [] },
+    goals: null,
+    shelf: { items: [] },
     agenda: { items: [] },
-    messrunden: { items: [] },
-    momentprotokoll: { eintraege: [] },
-    qz: { ruht: {}, wahl: [] },
-    befund: null,
-    aufdeckung: { A: null, B: null },
-    aufdeckprotokoll: null,
+    measurements: { items: [] },
+    momentLog: { entries: [] },
+    qualitytime: { resting: {}, choices: [] },
+    findings: null,
+    reveal: { A: null, B: null },
+    revealLog: null,
   };
 
   constructor(repo) {
@@ -74,7 +74,7 @@ export class Pstate {
 
   key(role) { return "pstate:" + role; }
 
-  _defaults() { return { zeitleiste: { eintraege: [] }, selbstoffenbarungen: { items: [] } }; }
+  _defaults() { return { timeline: { entries: [] }, selfDisclosures: { items: [] } }; }
 
   async _doLoad(role) {
     const p = await this.repo.get(this.key(role), false, "betrieb");

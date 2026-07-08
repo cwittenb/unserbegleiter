@@ -13,7 +13,7 @@ function baseBackend(extra) {
     bstate: { get: async () => null, set: async () => true },
     pstate: { get: async () => null, set: async () => true },
     chat: { load: async () => null, save: async () => true },
-    uebergabe: { post: async () => {}, get: async () => null },
+    handover: { post: async () => {}, get: async () => null },
     llm: async () => ({ text: "ok" }),
   };
 }

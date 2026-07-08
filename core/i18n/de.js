@@ -53,6 +53,9 @@ export const de = {
   // Agenda
   "agenda.titel": "Gemeinsame Agenda",
   "agenda.leer": "Die Agenda ist leer.",
+  "agenda.st.open": "offen",
+  "agenda.st.discussed": "besprochen",
+  "agenda.st.selfResolved": "selbst geklärt",
   "agenda.btnAbr": "Haben wir selbst geklärt ✓",
 
   // Chat
@@ -65,7 +68,7 @@ export const de = {
 
   // Gate (Selbstmitteilung)
   "gate.titel": "Deine Selbstmitteilung zur Freigabe",
-  "gate.wunsch": "Wunsch: ",
+  "gate.wish": "Wunsch: ",
   "gate.weg.selbst": "Selbst ansprechen",
   "gate.weg.regal": "Ins Regal legen (Einblick)",
   "gate.weg.moment": "Auf die Agenda (Thema)",
@@ -116,9 +119,9 @@ export const de = {
   "mess.titel": "Prozessreflexion",
   "mess.abgegeben": "Dein Beitrag ist abgegeben — aufgedeckt wird gemeinsam im nächsten Moment, häppchenweise.",
   "mess.verdeckt": "Prozessreflexion — verdeckt; {partner} sieht deine Werte erst bei der gemeinsamen Aufdeckung",
-  "mess.naehe": "Wie nah fühlst du dich {partner} gerade? (1–10)",
-  "mess.zweit": "Und was schätzt du: Wie nah fühlt sich {partner} dir? (1–10)",
-  "mess.passung": "Wie gut passt „{text}\" ({id}) gerade zu euch? (1–10)",
+  "mess.closeness": "Wie nah fühlst du dich {partner} gerade? (1–10)",
+  "mess.guess": "Und was schätzt du: Wie nah fühlt sich {partner} dir? (1–10)",
+  "mess.fit": "Wie gut passt „{text}\" ({id}) gerade zu euch? (1–10)",
   "mess.abgeben": "Verdeckt abgeben",
   "mess.danke": "Danke — verdeckt abgelegt.",
   "mess.bereit": " Ihr seid beide dran gewesen: Die Aufdeckung wartet im nächsten gemeinsamen Moment.",

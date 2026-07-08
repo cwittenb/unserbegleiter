@@ -22,7 +22,7 @@ function backendMit(llm) {
     bstate: { get: async () => null, set: async () => true },
     pstate: { get: async () => null, set: async () => true },
     chat: { load: async () => null, save: async () => true },
-    uebergabe: { post: async () => {}, get: async () => null },
+    handover: { post: async () => {}, get: async () => null },
     llm,
   };
 }
@@ -98,7 +98,7 @@ describe("Chat-UX · Markdown", () => {
 
 describe("Chat-UX · Skalenfragen", () => {
   it("Skala-Frage blendet den Slider ein; Senden schickt die Zahl; normale Antwort blendet aus", async () => {
-    root.querySelector("#pbInput").value = "bereit";
+    root.querySelector("#pbInput").value = "ready";
     root.querySelector("#btnSend").click(); await tick();
     llm.antworte("Wie sicher fühlst du dich bei Bernd – auf einer Skala von 1 bis 10?");
     await ruhe();

@@ -39,17 +39,17 @@ describe("Kern über KV · Repo + Bstate/Pstate unverändert", () => {
   it("Bstate-Feld-Roundtrip mit Nachbarfeld-Erhalt über echtem KV", async () => {
     const repo = new Repo({ store: new KVStore(kv), ns: "T", code: "kvpaar", activeModuleId: "betrieb" });
     const b = new Bstate(repo);
-    await b.set("regal", { items: [{ id: "R1", text: "aus KV" }] });
+    await b.set("shelf", { items: [{ id: "R1", text: "aus KV" }] });
     await b.set("agenda", { items: [{ id: "A1" }] });
-    expect((await b.get("regal")).items[0].text).toBe("aus KV");
+    expect((await b.get("shelf")).items[0].text).toBe("aus KV");
     expect((await b.get("agenda")).items).toHaveLength(1);
   });
 
   it("Pstate-Rollen-Trennung über echtem KV", async () => {
     const repo = new Repo({ store: new KVStore(kv), ns: "T", code: "kvpaar", activeModuleId: "betrieb" });
     const p = new Pstate(repo);
-    await p.set("A", "zeitleiste", { eintraege: [{ at: "kv" }] });
-    expect((await p.get("A", "zeitleiste")).eintraege).toHaveLength(1);
-    expect((await p.get("B", "zeitleiste")).eintraege).toHaveLength(0);
+    await p.set("A", "timeline", { entries: [{ at: "kv" }] });
+    expect((await p.get("A", "timeline")).entries).toHaveLength(1);
+    expect((await p.get("B", "timeline")).entries).toHaveLength(0);
   });
 });
