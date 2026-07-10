@@ -42,7 +42,7 @@ describe("EN-Korpus · Registrierung", () => {
   it("getPrompts('en') liefert den englischen Korpus (Sprachdisziplin-Zeile enthalten)", () => {
     const en = getPrompts("en");
     expect(en).not.toBe(getPrompts("de"));
-    expect(en.soloSys("Anna", "Bernd")).toContain("You respond exclusively in English");
+    expect(en.reflexionsPrompt("Anna", "Bernd")).toContain("You respond exclusively in English");
     expect(en.korpusTexte["titel.einzel"]).toBe("Clarifying Your Focus");
   });
 });

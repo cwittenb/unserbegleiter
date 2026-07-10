@@ -6,7 +6,7 @@ import { parseBlock, cleanDisplay } from "../../core/contracts/block.js";
 import { BLOECKE, ALLE_BLOECKE } from "../../core/contracts/registry.js";
 import { zeitSchema, befundSchema, gateArtSchema } from "../../core/contracts/schemas.js";
 import { baueUebergabe } from "../../core/contracts/uebergabe.js";
-import { soloSys, momentSys } from "../../core/prompts/prompts.js";
+import { reflexionsPrompt, momentPrompt } from "../../core/prompts/prompts.js";
 import { Engine } from "../../core/engine/engine.js";
 import { MockLLM } from "../../core/engine/mock-llm.js";
 import { CORE_VERSION } from "../../core/index.js";
@@ -41,9 +41,9 @@ export async function runSelftest(store) {
     return !JSON.stringify(u).includes("geheim");
   });
   t("Kanarien: Weiche/Spiegel/Not-Frage in den Prompts", () =>
-    soloSys("A", "B").includes("SICHERHEITS-WEICHE") &&
-    soloSys("A", "B").includes("SPIEGEL-GRAMMATIK") &&
-    momentSys("A", "B").includes("NOT-FRAGE AN BEIDE"));
+    reflexionsPrompt("A", "B").includes("SICHERHEITS-WEICHE") &&
+    reflexionsPrompt("A", "B").includes("SPIEGEL-GRAMMATIK") &&
+    momentPrompt("A", "B").includes("NOT-FRAGE AN BEIDE"));
   t("Engine: genau eine Korrektur-Runde", async () => {
     const mock = new MockLLM([
       'TIMELINE-BLOCK\n{"themen":[]}\nEND TIMELINE-BLOCK',

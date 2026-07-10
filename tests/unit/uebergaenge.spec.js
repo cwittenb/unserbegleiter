@@ -1,10 +1,10 @@
 // Übergangs-Regel — weiches Weitergehen nach Pacing (kein abrupter Themenwechsel).
 
 import { describe, it, expect } from "vitest";
-import { einzelSys } from "../../core/prompts/prompts.js";
+import { klaerungsPrompt } from "../../core/prompts/prompts.js";
 
-describe("Kanarien · einzelSys (Übergänge)", () => {
-  const p = einzelSys("Anna", "Bernd", true);
+describe("Kanarien · klaerungsPrompt (Übergänge)", () => {
+  const p = klaerungsPrompt("Anna", "Bernd", true);
   it("Übergangs-Regel present: Drei-Schritt-Brücke statt abruptem Wechsel", () => {
     expect(p).toContain("ÜBERGÄNGE");
     expect(p).toContain("NIE abrupt");

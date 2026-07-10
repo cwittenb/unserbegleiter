@@ -11,7 +11,7 @@ import { uebergabeTeilKey } from "../../core/contracts/uebergabe.js";
 import { makeAdapter } from "../../core/llm/adapter.js";
 import { createApp } from "../../core/ui/app.js";
 import { applyDesign } from "../../core/ui/design.js";
-import { t } from "../../core/i18n/index.js";
+import { t, setLocale, getLocale } from "../../core/i18n/index.js";
 import { runSelftest } from "./selftest.js";
 import { createDevPanel } from "./dev-panel.js";
 
@@ -80,6 +80,20 @@ async function boot() {
   const store = new ArtifactStore(window.storage);
   let meta = await store.get("PBDEV:meta", true);
   if (!meta) {
+    einrichtung(store);
+    return;
+  }
+  // Vorwahl der UI-Sprache aus der Paarsprache — das Personen-pstate ("language")
+  // gewinnt nach der Rollenwahl (app.js boot liest es und baut ggf. neu).
+  setLocale(meta.locale === "en" ? "en" : "de");
+  doc.documentElement.lang = getLocale();
+  rollenwahl(store, meta);
+}
+
+/** Ersteinrichtung (dev): Sprachwahl wirkt SOFORT auf die Oberfläche —
+ *  sie ist zugleich Paarsprache (Korpus) und beste Vorwahl der UI-Sprache. */
+function einrichtung(store, vorbelegt = {}) {
+  {
     app.innerHTML = `
       <h1 style="font-family:inherit;font-weight:400;font-size:26px;margin:0 0 4px">${APP_NAME} · ${t("einr.titel")}</h1>
       <p style="color:var(--ink-soft);font-size:13px">${t("einr.umgebung", { version: CORE_VERSION })}</p>
@@ -87,10 +101,20 @@ async function boot() {
         <label style="display:block;font-size:14px;margin:6px 0">${t("einr.nameA")}<input id="inA" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Anna"></label>
         <label style="display:block;font-size:14px;margin:6px 0">${t("einr.nameB")}<input id="inB" style="display:block;padding:9px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px;width:220px;font:inherit" value="Bernd"></label>
         <button id="btnStart" style="margin-top:8px;background:var(--accent);color:var(--me-ink,#fff);border:0;border-radius:999px;padding:11px 24px;font:inherit;cursor:pointer">${t("einr.los")}</button>
-        <label style="display:block;font-size:13px;margin:10px 0 0;color:var(--ink-soft)">${t("einr.sprache")}<select id="inSpr" style="font:inherit;padding:4px 8px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px"><option value="de">Deutsch</option><option value="en">English</option></select></label>
+        <label style="display:block;font-size:13px;margin:10px 0 0;color:var(--ink-soft)">${t("einr.sprache")}<select id="inSpr" style="font:inherit;padding:4px 8px;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);border-radius:9px"><option value="de"${getLocale() === "de" ? " selected" : ""}>Deutsch</option><option value="en"${getLocale() === "en" ? " selected" : ""}>English</option></select></label>
       </div>`;
+    if (vorbelegt.a !== undefined) doc.getElementById("inA").value = vorbelegt.a;
+    if (vorbelegt.b !== undefined) doc.getElementById("inB").value = vorbelegt.b;
+    doc.getElementById("inSpr").addEventListener("change", e => {
+      setLocale(e.target.value === "en" ? "en" : "de");
+      doc.documentElement.lang = getLocale();
+      einrichtung(store, {                                   // Screen in neuer Sprache, Eingaben bleiben
+        a: doc.getElementById("inA").value,
+        b: doc.getElementById("inB").value,
+      });
+    });
     doc.getElementById("btnStart").onclick = async () => {
-      meta = {
+      const meta = {
         code: "dev-" + Math.random().toString(36).slice(2, 8),
         nameA: doc.getElementById("inA").value.trim() || "A",
         nameB: doc.getElementById("inB").value.trim() || "B",
@@ -101,7 +125,6 @@ async function boot() {
     };
     return;
   }
-  rollenwahl(store, meta);
 }
 
 function rollenwahl(store, meta) {

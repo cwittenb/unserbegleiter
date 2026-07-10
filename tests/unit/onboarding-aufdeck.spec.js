@@ -2,7 +2,7 @@
 // Kanarien + Vertrags- und Datenpfad-Tests.
 
 import { describe, it, expect } from "vitest";
-import { einzelSys, gemeinsamSys, aufdeckSys } from "../../core/prompts/prompts.js";
+import { klaerungsPrompt, aufloesungsPrompt, aufdeckPrompt } from "../../core/prompts/prompts.js";
 import { aufdeckSchema } from "../../core/contracts/schemas.js";
 import { BLOECKE } from "../../core/contracts/registry.js";
 import { pruefeMarkerOrder } from "../../core/contracts/marker.js";
@@ -12,8 +12,8 @@ import {
   beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext,
 } from "../../core/ui/kernwetten.js";
 
-describe("Kanarien · einzelSys (vier Kapitel)", () => {
-  const p = einzelSys("Anna", "Bernd", true);
+describe("Kanarien · klaerungsPrompt (vier Kapitel)", () => {
+  const p = klaerungsPrompt("Anna", "Bernd", true);
   it("Kapitel-Marken 1–3 vorhanden und in Reihenfolge", () => {
     for (const m of ["[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"]) expect(p).toContain(m);
     expect(p.indexOf("KAPITEL 1")).toBeLessThan(p.indexOf("KAPITEL 2"));
@@ -42,15 +42,15 @@ describe("Kanarien · einzelSys (vier Kapitel)", () => {
     expect(p).toContain("Trifft das noch den Kern dessen");
   });
   it("v1: Kapitel bleiben, BV-Erhebung entfällt", () => {
-    const p1 = einzelSys("Anna", "Bernd", false);
+    const p1 = klaerungsPrompt("Anna", "Bernd", false);
     expect(p1).toContain("[[CHAPTER-3]]");
     expect(p1).not.toContain("Vermutete Sorge (nur v2)");
     expect(p1).not.toContain("SORGEN-WEICHE");
   });
 });
 
-describe("Kanarien · gemeinsamSys (Protokoll & Pausenmarke)", () => {
-  const p = gemeinsamSys("Anna", "Bernd", true);
+describe("Kanarien · aufloesungsPrompt (Protokoll & Pausenmarke)", () => {
+  const p = aufloesungsPrompt("Anna", "Bernd", true);
   it("REVEAL-PROTOCOL wird respektiert (nicht wiederholen, Vormerkungen aufgreifen)", () => {
     expect(p).toContain("REVEAL-PROTOCOL");
     expect(p).toContain("wiederhole diese Aufdeckung nicht");
@@ -61,8 +61,8 @@ describe("Kanarien · gemeinsamSys (Protokoll & Pausenmarke)", () => {
   });
 });
 
-describe("Kanarien · aufdeckSys", () => {
-  const p = aufdeckSys("Anna", "Bernd");
+describe("Kanarien · aufdeckPrompt", () => {
+  const p = aufdeckPrompt("Anna", "Bernd");
   it("kein richtig/falsch, Berührungspunkte statt Quote", () => {
     expect(p).toContain("kein richtig und kein falsch");
     expect(p).toContain("Berührungspunkt");

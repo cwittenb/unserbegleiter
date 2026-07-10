@@ -19,7 +19,7 @@ export function soloDef(backend, hooks = {}) {
     id: "solo",
     shared: false,
     titel: "Reflexionsgespräch",
-    sysPrompt: ctx => K().soloSys(ctx.me, ctx.partner) + K().THEMEN_RAHMEN,
+    sysPrompt: ctx => K().reflexionsPrompt(ctx.me, ctx.partner) + K().THEMEN_RAHMEN,
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",
@@ -52,7 +52,7 @@ export function momentDef(backend, hooks = {}) {
     id: "moment",
     shared: true,
     titel: "Gemeinsame Session",
-    sysPrompt: ctx => K().momentSys(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
+    sysPrompt: ctx => K().momentPrompt(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",
@@ -137,7 +137,7 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
 
 /**
  * MOMENT-CONTEXT (app-intern, erste — versteckte — Nachricht der gemeinsamen
- * Session). momentSys erwartet ihn und bringt ihn dramaturgisch ein; das Paar
+ * Session). momentPrompt erwartet ihn und bringt ihn dramaturgisch ein; das Paar
  * sieht die Rohform nie (hidden = reine Anzeige-Semantik, geht ans Modell mit).
  */
 export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings }, nameA, nameB) {

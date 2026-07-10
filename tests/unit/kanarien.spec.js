@@ -3,10 +3,10 @@
 // Marker-Konvention in den Prompts selbst).
 
 import { describe, it, expect } from "vitest";
-import { einzelSys, gemeinsamSys, momentSys, soloSys, qzSys, DOMAINS } from "../../core/prompts/prompts.js";
+import { klaerungsPrompt, aufloesungsPrompt, momentPrompt, reflexionsPrompt, qzMenuePrompt, DOMAINS } from "../../core/prompts/prompts.js";
 
-describe("Kanarien · soloSys (Reflexionsgespräch)", () => {
-  const p = soloSys("Anna", "Bernd");
+describe("Kanarien · reflexionsPrompt (Reflexionsgespräch)", () => {
+  const p = reflexionsPrompt("Anna", "Bernd");
   it("Sicherheits-Weiche am Gate", () => expect(p).toContain("SICHERHEITS-WEICHE"));
   it("Spiegel-Grammatik", () => expect(p).toContain("SPIEGEL-GRAMMATIK"));
   it("Widerspruchs-Pflicht", () => expect(p).toContain("WIDERSPRUCHS-PFLICHT"));
@@ -31,8 +31,8 @@ describe("Kanarien · soloSys (Reflexionsgespräch)", () => {
   it("Namen sind eingewoben", () => { expect(p).toContain("Anna"); expect(p).toContain("Bernd"); });
 });
 
-describe("Kanarien · momentSys (Gemeinsame Session)", () => {
-  const p = momentSys("Anna", "Bernd");
+describe("Kanarien · momentPrompt (Gemeinsame Session)", () => {
+  const p = momentPrompt("Anna", "Bernd");
   it("Not-Frage an beide", () => expect(p).toContain("NOT-FRAGE AN BEIDE"));
   it("keine Sicherheitsdiagnosen im Raum", () => expect(p).toContain("KEINE Sicherheitsdiagnosen"));
   it("offene Tür ab Termin 2", () => expect(p).toContain("OFFENE TÜR (nur ab dem zweiten Termin"));
@@ -44,12 +44,12 @@ describe("Kanarien · momentSys (Gemeinsame Session)", () => {
   });
 });
 
-describe("Kanarien · qzSys (Qualitätszeit-Einladungen)", () => {
-  it("Angebots-Grammatik statt Deutung", () => expect(qzSys()).toContain("NIE eine Diagnose"));
+describe("Kanarien · qzMenuePrompt (Qualitätszeit-Einladungen)", () => {
+  it("Angebots-Grammatik statt Deutung", () => expect(qzMenuePrompt()).toContain("NIE eine Diagnose"));
 });
 
-describe("Kanarien · einzelSys (Auftragsklärung, v2)", () => {
-  const p = einzelSys("Anna", "Bernd", true);
+describe("Kanarien · klaerungsPrompt (Auftragsklärung, v2)", () => {
+  const p = klaerungsPrompt("Anna", "Bernd", true);
   it("Sorgen-Weiche (Angst UM vs. Angst VOR) vorhanden", () => {
     expect(p).toContain("SORGEN-WEICHE");
     expect(p).toContain("Angst VOR");
@@ -66,12 +66,12 @@ describe("Kanarien · einzelSys (Auftragsklärung, v2)", () => {
     expect(p).toContain("[[SLIDERS]] allein in der letzten Zeile");
   });
   it("v2-Weiche ist schaltbar: ohne v2 keine Sorgen-Weiche", () => {
-    expect(einzelSys("A", "B", false)).not.toContain("SORGEN-WEICHE");
+    expect(klaerungsPrompt("A", "B", false)).not.toContain("SORGEN-WEICHE");
   });
 });
 
-describe("Kanarien · gemeinsamSys (Auflösung)", () => {
-  const p = gemeinsamSys("Anna", "Bernd", true);
+describe("Kanarien · aufloesungsPrompt (Auflösung)", () => {
+  const p = aufloesungsPrompt("Anna", "Bernd", true);
   it("CLARIFICATION-BLOCK-Format wird verlangt", () => expect(p).toContain("CLARIFICATION-BLOCK"));
   it("beidseitige Bestätigung ist verankert", () => expect(p).toContain("confirmedByBoth"));
   it("Gegendruck-fest (AUF-01-Befund): Drängen einer Person macht nichts vereinbart", () => {

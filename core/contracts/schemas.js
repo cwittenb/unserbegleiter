@@ -131,7 +131,7 @@ export function befundSchema(d) {
   return e;
 }
 
-/* ---- QZ-Einladungen (Qualitätszeit-Fächer) ---- */
+/* ---- QZ-Einladungen (Qualitätszeit-Menü) ---- */
 export function qzSchema(d) {
   const e = [];
   if (!d || typeof d !== "object") return ["root is not an object"];

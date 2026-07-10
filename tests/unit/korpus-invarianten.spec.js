@@ -11,12 +11,12 @@ const A = "Anna", B = "Bernd";
 const marker = s => [...new Set([...String(s).matchAll(/\[\[[A-ZÄÖÜ0-9-]+\]\]/g)].map(m => m[0]))].sort();
 const bloecke = s => [...new Set([...String(s).matchAll(/[A-ZÄÖÜ-]+-BLOCK/g)].map(m => m[0]))].sort();
 const sysTexte = k => ({
-  einzel: k.einzelSys(A, B, true),
-  gemeinsam: k.gemeinsamSys(A, B, true),
-  moment: k.momentSys(A, B),
-  solo: k.soloSys(A, B),
-  aufdeck: k.aufdeckSys(A, B),
-  qz: k.qzSys(),
+  einzel: k.klaerungsPrompt(A, B, true),
+  gemeinsam: k.aufloesungsPrompt(A, B, true),
+  moment: k.momentPrompt(A, B),
+  solo: k.reflexionsPrompt(A, B),
+  aufdeck: k.aufdeckPrompt(A, B),
+  qz: k.qzMenuePrompt(),
 });
 
 describe("Korpus-Invarianten (alle Sprachfassungen)", () => {

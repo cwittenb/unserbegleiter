@@ -25,6 +25,10 @@
 
 `eval-main.js` bündelt jetzt beide Kataloge (`[...SZENARIEN, ...SZENARIEN_EN]`) — der EN-Lauf war im Bestätigungslauf nicht enthalten, weil das Artefakt nur den de-Katalog trug. Dazu eine **Sprachauswahl** (alle/de/en) über der Szenarien-Liste als Gegenstück zu `--sprache` im CLI-Runner: sie filtert die Liste, jede Zeile zeigt ihre Sprache, Default ist „alle". Neuer Test deckt den Filter ab (348. Testfall); Tests: **348 grün**.
 
+## Dev-Artefakt: Sprachwahl der Einrichtung wirkt sofort
+
+Befund aus dem Testen: Die Sprachwahl auf dem Einrichtungsscreen setzte nur die Paarsprache (`meta.locale`, Korpus) — die Oberfläche blieb unverändert, aus Nutzersicht „passiert nichts". Jetzt: Der Wechsel im Dropdown stellt die UI **sofort** um (Screen wird in der neuen Sprache neu aufgebaut, eingegebene Namen bleiben erhalten); die Wahl ist zugleich Paarsprache und beste Vorwahl der UI-Sprache. Bei Wiederkehr (meta vorhanden) wird die UI mit der Paarsprache vorbelegt; das Personen-pstate `language` gewinnt wie gehabt nach der Rollenwahl. Die Architektur-Trennung UI-Sprache (pro Person) vs. Paarsprache (pro Paar, Stufe C) bleibt unberührt — manuell im Dev-Artefakt verifizierbar.
+
 ## Backlog-Kandidaten (nicht umgesetzt, aus Sample-Lektüre)
 
 - **SPA-Marker-Disziplin:** Sample 1 emittierte nach der „Was fehlt zur 10?"-Abzweigung kein `[[SLIDERS]]` und blockierte später die RANKING-Verarbeitung — Kandidat für eine eigene Prüffrage (Marke vor Ergebnis emittiert?).

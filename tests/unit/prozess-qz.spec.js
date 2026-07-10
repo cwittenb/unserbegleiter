@@ -126,7 +126,7 @@ describe("QZ · Leiter-Logik", () => {
   });
 });
 
-describe("UI · QZ-Fächer-Drehbuch (echte Engine, QUALITYTIME-BLOCK)", () => {
+describe("UI · QZ-Menü-Drehbuch (echte Engine, QUALITYTIME-BLOCK)", () => {
   const FAECHER = JSON.stringify({ invitations: [
     { text: "Lust, am Sonntag zusammen zu kochen?", domain: "Alltagsgestaltung", source: "resonance" },
     { text: "Lust auf einen kleinen Ausflug ins Grüne?", domain: "Abenteuer", source: "negativeSpace" },
@@ -144,7 +144,7 @@ describe("UI · QZ-Fächer-Drehbuch (echte Engine, QUALITYTIME-BLOCK)", () => {
     const karten = root.querySelector("#qzKarten");
     expect(karten.textContent).toContain("zusammen zu kochen");
     expect(karten.textContent).toContain("Ausflug ins Grüne");
-    expect(mock.calls[0].messages[0].content).toContain("MATERIAL");       // qzSys arbeitet nur damit
+    expect(mock.calls[0].messages[0].content).toContain("MATERIAL");       // qzMenuePrompt arbeitet nur damit
 
     await klick(karten.querySelector('[data-qzw="0"]'));
     const qz = await backend.bstate.get("qualitytime");
@@ -152,7 +152,7 @@ describe("UI · QZ-Fächer-Drehbuch (echte Engine, QUALITYTIME-BLOCK)", () => {
     expect(karten.textContent).toContain("nichts nachgehalten");
   });
 
-  it("ungültiger Fächer (nur 1 Einladung) läuft durch die Korrektur-Runde der Engine", async () => {
+  it("ungültiges Menü (nur 1 Einladung) läuft durch die Korrektur-Runde der Engine", async () => {
     const kaputt = JSON.stringify({ invitations: [{ text: "x", domain: "y", source: "resonance" }] });
     const mock = new MockLLM([
       "QUALITYTIME-BLOCK\n" + kaputt + "\nEND QUALITYTIME-BLOCK",

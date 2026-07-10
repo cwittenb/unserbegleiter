@@ -80,7 +80,7 @@ export function qzStufe(qz, now = Date.now) {
 
 export { QZ_STUFEN_TEXT } from "../prompts/prompts.js";   // Inhalt lebt im Korpus (Sprachfassung)
 
-/** Material-Nachricht für den Fächer-Generator (qzSys arbeitet NUR damit). */
+/** Material-Nachricht für den Menü-Generator (qzMenuePrompt arbeitet NUR damit). */
 export function baueQzMaterial({ goals, sharings, qualitytime }) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("qm.kopf")];
@@ -98,13 +98,13 @@ export function baueQzMaterial({ goals, sharings, qualitytime }) {
   return teile.join("\n\n");
 }
 
-/** Ephemere Fächer-Session: ein Aufruf, ein QUALITYTIME-BLOCK (Korrektur-Runde inklusive). */
+/** Ephemere Menü-Session: ein Aufruf, ein QUALITYTIME-BLOCK (Korrektur-Runde inklusive). */
 export function qzDef(hooks = {}) {
   return {
     id: "qualitytime",
     shared: true,
     titel: "Gemeinsame Momente",
-    sysPrompt: () => K().qzSys(),
+    sysPrompt: () => K().qzMenuePrompt(),
     markerOrder: [],
     markers: {},
     canAct: () => true,

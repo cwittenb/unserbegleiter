@@ -591,7 +591,7 @@ export function createApp({ doc, backend, root, diktat }) {
     });
   }
 
-  /* ---- Qualitätszeit: Einladungs-Fächer mit Leiter ---- */
+  /* ---- Qualitätszeit: Einladungs-Menü mit Leiter ---- */
   async function zeigeQz() {
     const box = $("boxQz");
     box.classList.remove("pb-hidden");

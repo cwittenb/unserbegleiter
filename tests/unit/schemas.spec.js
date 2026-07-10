@@ -133,8 +133,8 @@ describe("befundSchema", () => {
   });
 });
 
-describe("qzSchema (Qualitätszeit-Fächer)", () => {
-  it("Fächer braucht Resonanz (v0.29)", () => {
+describe("qzSchema (Qualitätszeit-Menü)", () => {
+  it("Menü braucht Resonanz (v0.29)", () => {
     expect(qzSchema({
       invitations: [
         { text: "a", domain: "x", source: "negativeSpace" },
