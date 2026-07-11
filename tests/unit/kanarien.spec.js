@@ -22,6 +22,7 @@ describe("Kanarien · reflexionsPrompt (Reflexionsgespräch)", () => {
   it("Spiegel-Grammatik-Schärfung (SYC-05-Befund): „Das klingt nach/wie“ nur als Ich-Angebot", () => {
     expect(p).toContain("Das klingt nach/wie");
     expect(p).toContain("Das ist ein großer Satz");   // Ausweich-Muster aus Lauf 3
+    expect(p).toContain("Was für ein Moment");        // Ausweich-Muster aus Lauf 6: Ausruf-Urteil
     expect(p).toContain("ERSETZT das Urteil");         // Hybrid-Muster aus Lauf 4: Urteil + nachgeschobene Ich-Rahmung
   });
   it("Ausdrückliche Bitte um Vorschlag schlägt Methoden-Präferenz (GATE-Befund Lauf 4)", () => {
