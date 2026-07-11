@@ -13,6 +13,7 @@ export const en = {
   "allg.fertig": "Done",
   "allg.freigeben": "Share",
   "allg.nochNicht": "Not yet",
+  "scale.ok": "Confirm",
   "allg.von": "from {name}",
 
   // Start overview

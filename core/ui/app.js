@@ -152,8 +152,9 @@ export function createApp({ doc, backend, root, diktat }) {
       for (const m of state.engine.chat.messages) {
         if (m.hidden) continue;
         const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
-        if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, [], ALLE_BLOECKE));
-        else d.textContent = cleanDisplay(m.content, [], ALLE_BLOECKE);
+        const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
+        if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, mkListe, ALLE_BLOECKE));
+        else d.textContent = cleanDisplay(m.content, mkListe, ALLE_BLOECKE);
         box.appendChild(d);
       }
     }
@@ -325,6 +326,8 @@ export function createApp({ doc, backend, root, diktat }) {
       onStartwerte: e2 => startwertePanel(e2),
       onFreigabe: (d, e2) => freigabePanel(d, e2),
       onKapitel: (n, e2) => kapitelPanel(n, e2),
+      onScale: (art, e2) => scalePanel(art, e2),
+      onChoice: (art, e2) => choicePanel(art, e2),
       onAufdecken: e2 => aufdeckPanel(e2),
       onMomentEnde: () => markiereAufgedeckt(backend).catch(() => {}),
     };
@@ -643,7 +646,60 @@ export function createApp({ doc, backend, root, diktat }) {
 
   /* ---- Kernwetten-Panels (Regler · Ranking · Startwerte · Freigabe) ---- */
   const kw = () => $("kwPanel");
+  const KTX = (key, weich) => (K().korpusTexte[key] !== undefined ? K().korpusTexte[key] : (weich ? "" : key));
   function kwZu() { kw().classList.add("pb-hidden"); kw().innerHTML = ""; }
+
+  /* S34 · Skalen-Panel: ersetzt konversationale Zahlenfragen (Sicherheits-
+   * skala, Nachbefragung). Beschriftung aus korpusTexte (Paarsprache) —
+   * single point of Sicherheitsskalierung; das Modell fragt keine Zahl. */
+  function scalePanel(art, engine) {
+    const p = kw();
+    p.classList.remove("pb-hidden");
+    const kt = k => fuelle(KTX("scale." + art + "." + k), { partner: esc(state.info.partner) });
+    const slider = id => `<input type="range" min="1" max="10" value="5" id="${id}" style="width:100%">` +
+      `<div class="pb-sub" style="display:flex;justify-content:space-between"><span>${kt("min")}</span><strong id="${id}W">5</strong><span>${kt("max")}</span></div>`;
+    const doppel = art === "closing";
+    p.innerHTML =
+      `<p style="font-size:15px"><strong>${kt("titel")}</strong></p>` +
+      (KTX("scale." + art + ".text", true) ? `<p class="pb-sub">${kt("text")}</p>` : "") +
+      (doppel
+        ? `<p class="pb-sub">${esc(state.info.nameA)}</p>` + slider("scA") +
+          `<p class="pb-sub" style="margin-top:10px">${esc(state.info.nameB)}</p>` + slider("scB")
+        : slider("scA")) +
+      `<button class="pb-btn primary" id="scOk" style="margin-top:10px">${t("scale.ok")}</button>`;
+    for (const id of doppel ? ["scA", "scB"] : ["scA"]) {
+      p.querySelector("#" + id).addEventListener("input", e =>
+        (p.querySelector("#" + id + "W").textContent = e.target.value));
+    }
+    p.querySelector("#scOk").addEventListener("click", async () => {
+      const a = p.querySelector("#scA").value;
+      const text = doppel
+        ? fuelle(K().steuerTexte.scaleClosingErgebnis, { nameA: state.info.nameA, nameB: state.info.nameB, a, b: p.querySelector("#scB").value })
+        : fuelle(K().steuerTexte.scaleErgebnis, { id: art, wert: a });
+      kwZu();
+      await engine.submitToolResult(text);
+    });
+  }
+
+  /* S34 · Auswahl-Panel: kleines Karten-Menü (z. B. Verbindendes Angebot);
+   * "ohne" ist gleichwertige Option — kein Nachhaken (Prompt-Regel). */
+  function choicePanel(art, engine) {
+    const p = kw();
+    p.classList.remove("pb-hidden");
+    const opt = k => KTX("choice." + art + "." + k, true);
+    const karten = ["o1", "o2", "o3", "o4"].map(k => opt(k)).filter(Boolean);
+    p.innerHTML =
+      `<p style="font-size:15px"><strong>${esc(opt("titel"))}</strong></p>` +
+      karten.map((txt, i) => `<button class="pb-btn" data-ch="${i}" style="display:block;width:100%;text-align:left;margin:6px 0">${esc(txt)}</button>`).join("") +
+      `<button class="pb-btn" data-ch="ohne" style="display:block;width:100%;text-align:left;margin:10px 0 0;opacity:.85">${esc(opt("ohne"))}</button>`;
+    for (const b of p.querySelectorAll("[data-ch]")) {
+      b.addEventListener("click", async () => {
+        const wahl = b.getAttribute("data-ch") === "ohne" ? opt("ohne") : karten[Number(b.getAttribute("data-ch"))];
+        kwZu();
+        await engine.submitToolResult(fuelle(K().steuerTexte.choiceErgebnis, { id: art, wahl }));
+      });
+    }
+  }
 
   function reglerPanel(engine) {
     const vals = K().DOMAINS.map(() => ({ w: 5, z: 5, tw: false, tz: false }));

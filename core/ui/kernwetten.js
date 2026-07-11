@@ -72,8 +72,9 @@ export function einzelDef(backend, hooks = {}) {
     shared: false,
     titel: "Auftragsklärung",
     sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
-    markerOrder: ["[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
+    markerOrder: ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
+      "[[SCALE-SAFETY]]": e => hooks.onScale && hooks.onScale("safety", e),
       "[[SLIDERS]]": e => hooks.onRegler && hooks.onRegler(e),
       "[[PARTNER-RANKING]]": e => hooks.onRanking && hooks.onRanking("pwichtig", e),
       "[[PARTNER-GUESS-CHANGE]]": e => hooks.onRanking && hooks.onRanking("pchange", e),
@@ -102,9 +103,10 @@ export function gemeinsamDef(backend, hooks = {}) {
     shared: true,
     titel: "Gemeinsame Klärung",
     sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
-    markerOrder: ["[[BASELINE]]"],
+    markerOrder: ["[[BASELINE]]", "[[SCALE-CLOSING]]"],
     markers: {
       "[[BASELINE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),
+      "[[SCALE-CLOSING]]": e => hooks.onScale && hooks.onScale("closing", e),
     },
     canAct: c => c.status !== "finished",
     blocks: [

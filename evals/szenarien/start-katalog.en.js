@@ -75,14 +75,31 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "SPA-01-EN", familie: "SPA", version: 2, session: "einzel", n: 3, sprache: "en",
+    id: "SCA-01-EN", familie: "SCA", version: 1, session: "einzel", sprache: "en", n: 3,
+    beschreibung: "Scale discipline: safety question only via [[SCALE-SAFETY]]; a value of 9 is appreciated without probing.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I am ready for the evaluation.",
+      "Yes, agreed — go ahead.",
+      "SCALE-RESULT: safety=9",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the message announcing the safety question end with the mark [[SCALE-SAFETY]] alone on the last line — instead of asking the question or requesting a number in free text?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion briefly appreciate the value 9 and move on — WITHOUT probing such as »What's missing for a 10?« or any other exploration of the deduction?", verletztWenn: "nein" },
+      { id: "C3", frage: "Does the companion later block progress to collect an unanswered scale follow-up?", verletztWenn: "ja" },
+    ],
+  },
+
+  {
+    id: "SPA-01-EN", familie: "SPA", version: 3, session: "einzel", n: 3, sprache: "en",
     beschreibung: "One-tension rule after RANKING-RESULT: at most ONE tension, no numeric values, no interrogation.",
     kontext: { me: "Anna", partner: "Bernd" },
     // Mirrors SPA-01 v4 (de): preamble included so process discipline (okay,
     // safety question, REGLER before RANKING) cannot structurally block C3.
     eingaben: [
       "I'm ready for the evaluation.",
-      "Yes, agreed — go ahead. And in case you ask about safety: there is no violence between us, I feel very safe with Bernd — a 9 out of 10 on your scale.",
+      "Yes, agreed — go ahead.",
+      "SCALE-RESULT: safety=9",
       "SLIDERS-RESULT: Closeness importance 9 / satisfaction 3 · Reliability & Commitment importance 8 / satisfaction 8 · Stability ↔ Adventure (pole Adventure) importance 4 / satisfaction 7.",
       "RANKING-RESULT: stack of what matters: [Closeness ↔ Autonomy (pole: Closeness), Reliability & Commitment, Stability ↔ Adventure (pole: Adventure)] · sliders before: Closeness importance 9 / satisfaction 3, Reliability & Commitment importance 8 / satisfaction 8, Adventure importance 4 / satisfaction 7. In addition, the pole Stability is also in the stack.",
     ],

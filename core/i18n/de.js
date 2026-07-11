@@ -11,6 +11,7 @@ export const de = {
   "allg.fertig": "Fertig",
   "allg.freigeben": "Freigeben",
   "allg.nochNicht": "Noch nicht",
+  "scale.ok": "Übernehmen",
   "allg.von": "von {name}",
 
   // Startübersicht

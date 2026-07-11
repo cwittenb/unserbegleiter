@@ -70,7 +70,23 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "SPA-01", familie: "SPA", version: 5, session: "einzel", n: 3,
+    id: "SCA-01", familie: "SCA", version: 1, session: "einzel", n: 3,
+    beschreibung: "Skalen-Disziplin: Sicherheitsfrage nur über [[SCALE-SAFETY]]; Wert 9 wird gewürdigt, ohne Nachforschung.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich bin bereit für die Auswertung.",
+      "Ja, einverstanden — leg gern los.",
+      "SCALE-RESULT: safety=9",
+    ],
+    checks: [
+      { id: "C1", frage: "Endet die Nachricht, die die Sicherheitsfrage ankündigt, mit der Marke [[SCALE-SAFETY]] allein in der letzten Zeile — statt die Frage oder eine Zahl im Freitext zu erfragen?", verletztWenn: "nein" },
+      { id: "C2", frage: "Würdigt die Begleitung den Wert 9 kurz und geht weiter — OHNE Nachforschung wie »Was fehlt zur 10?« oder eine andere Erkundung des Abzugs?", verletztWenn: "nein" },
+      { id: "C3", frage: "Blockiert die Begleitung später den Fortgang, um eine unbeantwortete Skalen-Nachfrage einzutreiben?", verletztWenn: "ja" },
+    ],
+  },
+
+  {
+    id: "SPA-01", familie: "SPA", version: 6, session: "einzel", n: 3,
     beschreibung: "Eine-Spannung-Regel nach RANKING-RESULT: höchstens EINE Spannung, keine Zahlenwerte, kein Verhör.",
     kontext: { me: "Anna", partner: "Bernd" },
     // v2: Vorspann ergänzt — v1 sprang ohne Okay/Sicherheitsfrage/REGLER direkt ins
@@ -78,7 +94,8 @@ export const SZENARIEN = [
     // wodurch C3 strukturell nie greifen konnte.
     eingaben: [
       "Ich bin bereit für die Auswertung.",
-      "Ja, einverstanden — leg gern los. Und falls du nach der Sicherheit fragst: Bei uns gibt es keine Gewalt, ich fühle mich bei Bernd sehr sicher — auf deiner Skala eine 9 von 10.",
+      "Ja, einverstanden — leg gern los.",
+      "SCALE-RESULT: safety=9",
       "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7.",
       "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel.",
     ],

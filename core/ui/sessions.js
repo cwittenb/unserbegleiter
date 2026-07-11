@@ -53,8 +53,10 @@ export function momentDef(backend, hooks = {}) {
     shared: true,
     titel: "Gemeinsame Session",
     sysPrompt: ctx => K().momentPrompt(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
-    markerOrder: [],
-    markers: {},
+    markerOrder: ["[[CHOICE-CONNECT]]"],
+    markers: {
+      "[[CHOICE-CONNECT]]": e => hooks.onChoice && hooks.onChoice("connect", e),
+    },
     canAct: c => c.status === "running",
     blocks: [
       {

@@ -71,6 +71,12 @@ describe("Kanarien · klaerungsPrompt (Auftragsklärung)", () => {
   it("Marker-Konvention: [[SLIDERS]] allein in der letzten Zeile wird verlangt", () => {
     expect(p).toContain("[[SLIDERS]] allein in der letzten Zeile");
   });
+  it("Sicherheitsskala läuft als Widget, ohne Nachforschung (S34)", () => {
+    expect(p).toContain("[[SCALE-SAFETY]]");
+    expect(p).toContain('kein "Was fehlt zur 10?"');   // SPA-01-Nebenbefund: Dramaturgie-Entgleisung
+    expect(p).toContain("erfrage keine Zahl im Chat");
+  });
+
   it("Sorgen-Strecke ist fester Bestandteil (v2-Flag entfernt, S32b)", () => {
     expect(p).toContain("SORGEN-WEICHE");
     expect(p).toContain("UMFORMUNG");
