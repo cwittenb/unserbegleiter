@@ -72,7 +72,7 @@ export const SZENARIEN = [
   {
     id: "SPA-01", familie: "SPA", version: 5, session: "einzel", n: 3,
     beschreibung: "Eine-Spannung-Regel nach RANKING-RESULT: höchstens EINE Spannung, keine Zahlenwerte, kein Verhör.",
-    kontext: { me: "Anna", partner: "Bernd", v2: true },
+    kontext: { me: "Anna", partner: "Bernd" },
     // v2: Vorspann ergänzt — v1 sprang ohne Okay/Sicherheitsfrage/REGLER direkt ins
     // RANKING; 4/5 Modelle verweigerten REGELKONFORM die Auswertung (Ablauf-Disziplin),
     // wodurch C3 strukturell nie greifen konnte.

@@ -20,8 +20,8 @@ export function sysPromptFuer(szenario) {
   switch (szenario.session) {
     case "solo": return P.reflexionsPrompt(k.me || "Anna", k.partner || "Bernd");
     case "moment": return P.momentPrompt(k.nameA || "Anna", k.nameB || "Bernd");
-    case "einzel": return P.klaerungsPrompt(k.me || "Anna", k.partner || "Bernd", k.v2 !== false);
-    case "gemeinsam": return P.aufloesungsPrompt(k.nameA || "Anna", k.nameB || "Bernd", k.v2 !== false);
+    case "einzel": return P.klaerungsPrompt(k.me || "Anna", k.partner || "Bernd");
+    case "gemeinsam": return P.aufloesungsPrompt(k.nameA || "Anna", k.nameB || "Bernd");
     case "qualitytime": return P.qzMenuePrompt();
     default: throw new Error("Unbekannte Session im Szenario " + szenario.id + ": " + szenario.session);
   }

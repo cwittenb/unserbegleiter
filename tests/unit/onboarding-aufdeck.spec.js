@@ -13,7 +13,7 @@ import {
 } from "../../core/ui/kernwetten.js";
 
 describe("Kanarien · klaerungsPrompt (vier Kapitel)", () => {
-  const p = klaerungsPrompt("Anna", "Bernd", true);
+  const p = klaerungsPrompt("Anna", "Bernd");
   it("Kapitel-Marken 1–3 vorhanden und in Reihenfolge", () => {
     for (const m of ["[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"]) expect(p).toContain(m);
     expect(p.indexOf("KAPITEL 1")).toBeLessThan(p.indexOf("KAPITEL 2"));
@@ -30,22 +30,16 @@ describe("Kanarien · klaerungsPrompt (vier Kapitel)", () => {
   });
   it("Rate-Runde erhebt keine Sorgen; BV wandert nach Kapitel 4", () => {
     expect(p).toContain("KEINE Sorgen und keine vermuteten Sorgen");
-    expect(p.indexOf("Vermutete Sorge (nur v2)")).toBeGreaterThan(p.indexOf("KAPITEL 4"));
+    expect(p.indexOf("Vermutete Sorge,")).toBeGreaterThan(p.indexOf("KAPITEL 4"));
   });
   it("2d/2e liegen NACH der Rate-Runde (BV-Verschiebung, Zieldramaturgie)", () => {
     expect(p.indexOf("nicht verhandelbar")).toBeGreaterThan(p.indexOf("RATE-RUNDE"));
   });
   it("Mini-Gate ist reine App-Sache — nie kommentieren", () => expect(p).toContain("reine App-Sache"));
-  it("Weiche und Umformung bleiben intakt (v2)", () => {
+  it("Weiche und Umformung bleiben intakt", () => {
     expect(p).toContain("SORGEN-WEICHE (gilt in Kapitel 4");
     expect(p).toContain("WEICHEN-DISZIPLIN (binär)");
     expect(p).toContain("Trifft das noch den Kern dessen");
-  });
-  it("v1: Kapitel bleiben, BV-Erhebung entfällt", () => {
-    const p1 = klaerungsPrompt("Anna", "Bernd", false);
-    expect(p1).toContain("[[CHAPTER-3]]");
-    expect(p1).not.toContain("Vermutete Sorge (nur v2)");
-    expect(p1).not.toContain("SORGEN-WEICHE");
   });
 });
 

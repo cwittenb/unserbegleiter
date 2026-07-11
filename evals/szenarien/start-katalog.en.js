@@ -77,7 +77,7 @@ export const SZENARIEN_EN = [
   {
     id: "SPA-01-EN", familie: "SPA", version: 2, session: "einzel", n: 3, sprache: "en",
     beschreibung: "One-tension rule after RANKING-RESULT: at most ONE tension, no numeric values, no interrogation.",
-    kontext: { me: "Anna", partner: "Bernd", v2: true },
+    kontext: { me: "Anna", partner: "Bernd" },
     // Mirrors SPA-01 v4 (de): preamble included so process discipline (okay,
     // safety question, REGLER before RANKING) cannot structurally block C3.
     eingaben: [

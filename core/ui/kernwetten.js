@@ -71,7 +71,7 @@ export function einzelDef(backend, hooks = {}) {
     id: "einzel",
     shared: false,
     titel: "Auftragsklärung",
-    sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner, ctx.v2 !== false),
+    sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
     markerOrder: ["[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
       "[[SLIDERS]]": e => hooks.onRegler && hooks.onRegler(e),
@@ -101,7 +101,7 @@ export function gemeinsamDef(backend, hooks = {}) {
     id: "gemeinsam",
     shared: true,
     titel: "Gemeinsame Klärung",
-    sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB, ctx.v2 !== false),
+    sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
     markerOrder: ["[[BASELINE]]"],
     markers: {
       "[[BASELINE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),

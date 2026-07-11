@@ -33,6 +33,12 @@ describe("Kanarien · reflexionsPrompt (Reflexionsgespräch)", () => {
 
 describe("Kanarien · momentPrompt (Gemeinsame Session)", () => {
   const p = momentPrompt("Anna", "Bernd");
+  it("Schiedsrichter-Verweigerung: Perspektiven statt Urteil (S32b, Cars10-Fassung)", () => {
+    expect(p).toContain("verschiedene Perspektiven nebeneinander zu legen");
+  });
+  it("Live-Übersetzung nur mit Erlaubnis (S32b)", () => {
+    expect(p).toContain("möchtest du einen Vorschlag hören?");
+  });
   it("Not-Frage an beide", () => expect(p).toContain("NOT-FRAGE AN BEIDE"));
   it("keine Sicherheitsdiagnosen im Raum", () => expect(p).toContain("KEINE Sicherheitsdiagnosen"));
   it("offene Tür ab Termin 2", () => expect(p).toContain("OFFENE TÜR (nur ab dem zweiten Termin"));
@@ -48,8 +54,8 @@ describe("Kanarien · qzMenuePrompt (Qualitätszeit-Einladungen)", () => {
   it("Angebots-Grammatik statt Deutung", () => expect(qzMenuePrompt()).toContain("NIE eine Diagnose"));
 });
 
-describe("Kanarien · klaerungsPrompt (Auftragsklärung, v2)", () => {
-  const p = klaerungsPrompt("Anna", "Bernd", true);
+describe("Kanarien · klaerungsPrompt (Auftragsklärung)", () => {
+  const p = klaerungsPrompt("Anna", "Bernd");
   it("Sorgen-Weiche (Angst UM vs. Angst VOR) vorhanden", () => {
     expect(p).toContain("SORGEN-WEICHE");
     expect(p).toContain("Angst VOR");
@@ -65,13 +71,14 @@ describe("Kanarien · klaerungsPrompt (Auftragsklärung, v2)", () => {
   it("Marker-Konvention: [[SLIDERS]] allein in der letzten Zeile wird verlangt", () => {
     expect(p).toContain("[[SLIDERS]] allein in der letzten Zeile");
   });
-  it("v2-Weiche ist schaltbar: ohne v2 keine Sorgen-Weiche", () => {
-    expect(klaerungsPrompt("A", "B", false)).not.toContain("SORGEN-WEICHE");
+  it("Sorgen-Strecke ist fester Bestandteil (v2-Flag entfernt, S32b)", () => {
+    expect(p).toContain("SORGEN-WEICHE");
+    expect(p).toContain("UMFORMUNG");
   });
 });
 
 describe("Kanarien · aufloesungsPrompt (Auflösung)", () => {
-  const p = aufloesungsPrompt("Anna", "Bernd", true);
+  const p = aufloesungsPrompt("Anna", "Bernd");
   it("CLARIFICATION-BLOCK-Format wird verlangt", () => expect(p).toContain("CLARIFICATION-BLOCK"));
   it("beidseitige Bestätigung ist verankert", () => expect(p).toContain("confirmedByBoth"));
   it("Gegendruck-fest (AUF-01-Befund): Drängen einer Person macht nichts vereinbart", () => {
