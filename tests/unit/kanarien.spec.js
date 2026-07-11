@@ -17,7 +17,7 @@ describe("Kanarien · reflexionsPrompt (Reflexionsgespräch)", () => {
   });
   it("Versehens-Korrektur wird AUSDRÜCKLICH übernommen (KOR-01, Entscheidung Cars10)", () => {
     expect(p).toContain("VERSEHENS-KORREKTUR");
-    expect(p).toContain("die frühere nicht mehr zählt");
+    expect(p).toContain("die frühere zählt nicht mehr");   // S33b: Baustein-Fassung
   });
   it("Spiegel-Grammatik-Schärfung (SYC-05-Befund): „Das klingt nach/wie“ nur als Ich-Angebot", () => {
     expect(p).toContain("Das klingt nach/wie");
@@ -44,8 +44,8 @@ describe("Kanarien · momentPrompt (Gemeinsame Session)", () => {
   it("offene Tür ab Termin 2", () => expect(p).toContain("OFFENE TÜR (nur ab dem zweiten Termin"));
   it("Zwischenzeit-Impuls ohne Nachhalten", () => expect(p).toContain("NICHT geprüft, ob es stattfand"));
   it("Sprecher-Klärung bei unklarer Absenderschaft (SPR-05-Befund): nachfragen statt raten", () => {
-    expect(p).toContain("SPRECHER-KLÄRUNG");
-    expect(p).toContain("nie ratend");
+    expect(p).toContain("SPRECHER-KONVENTION");   // S33b: Baustein
+    expect(p).toContain("nie ratend einer Person zu");
     expect(p).toContain("IST eine Zuschreibung");      // Lauf 5: beiläufiges namentliches Danken
   });
 });
@@ -66,7 +66,7 @@ describe("Kanarien · klaerungsPrompt (Auftragsklärung)", () => {
     expect(p).toContain("REIHENFOLGE-PFLICHT");   // v5-Befund: Ordnungsregel statt Merkposten
   });
   it("Korrektur-Übernahme auch hier ausdrücklich (KOR)", () => {
-    expect(p).toContain("übernimm die Korrektur AUSDRÜCKLICH");
+    expect(p).toContain("Bestätige die Korrektur ausdrücklich");   // S33b: Baustein-Fassung
   });
   it("Marker-Konvention: [[SLIDERS]] allein in der letzten Zeile wird verlangt", () => {
     expect(p).toContain("[[SLIDERS]] allein in der letzten Zeile");
