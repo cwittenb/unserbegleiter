@@ -85,6 +85,8 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-reihe .pb-btn{margin:6px 6px 0}
       .pb-ikon{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px}
       .pb-ikon svg{width:20px;height:20px;display:block}
+      .pb-drei{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+      .pb-badge{background:var(--accent);color:var(--on-accent);border-radius:999px;font-size:11px;font-weight:650;padding:1px 7px;margin-left:4px;display:inline-block;vertical-align:middle}
       .pb-platz{border:1px solid var(--card-bd);border-radius:12px;padding:9px 13px;margin:6px 0;cursor:grab}
       .pb-platz.leer{border-style:dashed;color:var(--ink-faint);cursor:default}
       .pb-platz.gewaehlt{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}

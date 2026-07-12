@@ -49,6 +49,16 @@ const IKON = {
   send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>',
 };
 
+/* S41 · Anzeige-Wächter: Ergebnis-Nachrichten der Panels sind Wire — seit
+   S35/S37 gehen sie hidden über den Draht, aber Sessions aus der Zeit davor
+   tragen das Flag nicht. Diese Köpfe werden deshalb IMMER unterdrückt. */
+export const WIRE_KOEPFE = [
+  "SLIDERS-RESULT", "RANKING-RESULT", "PARTNER-GUESS-CHANGE", "PARTNER-GUESS",
+  "BASELINE-RESULT", "SCALE-RESULT", "CHOICE-RESULT", "SHARING-RESULT", "REVEAL-SHOWN",
+];
+const istWireNachricht = m =>
+  m.role === "user" && WIRE_KOEPFE.some(k => String(m.content || "").startsWith(k));
+
 export function createApp({ doc, backend, root, diktat }) {
   const rohBackend = backend;   // Relaunch umhüllt selbst neu (kein Doppel-Zählen)
   let laufend = 0;
@@ -100,7 +110,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <p class="pb-sub" id="startMeinSub" style="margin:0"></p>
         </div>
         <div class="pb-card">
-          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")}</button>
+          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")} <span class="pb-badge pb-hidden" id="badgeTeil"></span></button>
           <p class="pb-sub" id="startTeilSub" style="margin:0"></p>
         </div>
       </div>
@@ -134,27 +144,37 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck1">${t("allg.zurueck")}</button></div>
     </div>
     <div id="scrShared" class="pb-hidden">
-      <div class="pb-card">
+      <div class="pb-card" style="padding:18px 26px">
         <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("start.teilRaum")}</div>
-        <p class="pb-sub" id="sharedIntro" style="margin:0 0 4px">${t("teil.intro")}</p>
-        <div class="pb-gruppe"><span class="pb-sub">${t("teil.gruppeRaeume")}</span>
-          <button class="pb-btn primary" id="btnMoment">${t("teil.moment")}</button>
-          <button class="pb-btn primary" id="btnAufdeck">${t("teil.aufdeck")}</button>
-          <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
-        </div>
-        <div class="pb-gruppe"><span class="pb-sub">${t("teil.gruppeRegale")}</span>
-          <button class="pb-btn" id="btnRegal">${t("teil.regal")}</button>
-          <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
-          <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
-        </div>
-        <button class="pb-btn" id="btnZurueck2" style="margin-top:12px">${t("allg.zurueck")}</button>
+        <p class="pb-sub" id="sharedIntro" style="margin:0">${t("teil.intro")}</p>
+        <div class="pb-weg pb-hidden" id="wegTeil" style="margin-top:12px"></div>
       </div>
-      <p class="pb-sub pb-hidden" id="miZeile" style="margin:10px 4px 0"></p>
-      <div class="pb-card pb-hidden" id="boxMessIv"></div>
-      <div class="pb-card pb-weg pb-hidden" id="wegTeil"></div>
+      <div class="pb-drei pb-mitte">
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnMoment">${t("teil.moment")}</button>
+          <p class="pb-sub" style="margin:0">${t("teil.momentSub")}</p>
+        </div>
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnAufdeck">${t("teil.aufdeck")}</button>
+          <p class="pb-sub pb-hidden" id="aufdeckHinweis" style="margin:0"></p>
+        </div>
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
+          <p class="pb-sub pb-hidden" id="gemeinsamHinweis" style="margin:0"></p>
+        </div>
+      </div>
+      <div class="pb-card pb-reihe">
+        <div class="pb-sub">${t("teil.gruppeRegale")}</div>
+        <button class="pb-btn" id="btnRegal">${t("teil.regal")} <span class="pb-badge pb-hidden" id="badgeRegal"></span></button>
+        <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
+        <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
+      </div>
       <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">${t("regal.titel")}</div><p class="pb-sub" style="margin:6px 0 4px">${t("regal.intro")}</p><div id="regalItems"></div></div>
       <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
       <div class="pb-card pb-hidden" id="boxQz"></div>
+      <p class="pb-sub pb-hidden" id="miZeile" style="margin:10px 4px 0"></p>
+      <div class="pb-card pb-hidden" id="boxMessIv"></div>
+      <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck2">${t("allg.zurueck")}</button></div>
     </div>
     <div id="scrChat" class="pb-hidden">
       <div class="pb-card">
@@ -223,6 +243,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const offeneRunde = (((measurements && measurements.items) || [])).find(r => r.status === "open");
     return {
       aufdeckBereit: !!(reveal && reveal.A && reveal.B && !revealLog),
+      aufdeckGelaufen: !!revealLog,
       handMeins: !!(rolle === "A" ? hA : hB),
       handPartner: !!(rolle === "A" ? hB : hA),
       handBeide: !!(hA && hB),
@@ -268,12 +289,36 @@ export function createApp({ doc, backend, root, diktat }) {
     return h.slice(0, 3);
   }
 
+  /* S41 · Lage sichtbar machen: Badges für ungelesene Freigaben und
+     Ausgrauen gesperrter Sessions MIT stets sichtbarem Hinweis unter dem
+     Knopf (Touch-tauglich, kein Hover, kein Fehler-Popup). */
+  function wendeLageAn(lage, screenId) {
+    const badge = (id, n) => {
+      const b = wurzel.querySelector("#" + id);
+      if (!b) return;
+      b.textContent = String(n || "");
+      b.classList.toggle("pb-hidden", !n);
+    };
+    if (screenId === "scrStart") badge("badgeTeil", lage.regalNeu);
+    if (screenId !== "scrShared") return;
+    badge("badgeRegal", lage.regalNeu);
+    const sperre = (btnId, hinweisId, zu, text) => {
+      const b = $(btnId), h = $(hinweisId);
+      if (!b) return;
+      b.disabled = zu;
+      if (h) { h.textContent = text || ""; h.classList.toggle("pb-hidden", !zu || !text); }
+    };
+    sperre("btnGemeinsam", "gemeinsamHinweis", !lage.handBeide, t("teil.gateAufloesung"));
+    sperre("btnAufdeck", "aufdeckHinweis", !lage.aufdeckBereit,
+      lage.aufdeckGelaufen ? t("teil.gateAufdeckGelaufen") : t("teil.gateAufdeck"));
+  }
+
   /* S36 · Feste Wegweiser-Zeilen: sie halten alle Optionen offen, statt
      einen Pfad zu drängen. Die dritte Zeile in "Mein Raum" richtet sich
      danach, ob schon Inhalte da sind (Rückblick vs. Ausblick). */
   function wegOptionen(lage, screenId) {
     if (screenId === "scrStart")
-      return [t("weg.soloErster"), t("weg.optAuftragDich"), t("weg.optQz")];
+      return [t("weg.startAuftrag"), t("weg.startSolo"), t("weg.optQz")];
     if (screenId === "scrMyRoom")
       return [t("weg.soloErster"), t("weg.optAuftragEuch"),
               lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick")];
@@ -289,7 +334,7 @@ export function createApp({ doc, backend, root, diktat }) {
     if (!boxId) return;
     try {
       const lage = await ladeLage();
-      if (screenId === "scrShared") $("btnGemeinsam").disabled = !lage.handBeide;
+      wendeLageAn(lage, screenId);
       const zeilen = [...wegHinweise(lage, screenId), ...wegOptionen(lage, screenId)];
       const box = $(boxId);
       if (!zeilen.length) { box.classList.add("pb-hidden"); return; }
@@ -434,7 +479,7 @@ export function createApp({ doc, backend, root, diktat }) {
     box.innerHTML = "";
     if (state.engine) {
       for (const m of state.engine.chat.messages) {
-        if (m.hidden) continue;
+        if (m.hidden || istWireNachricht(m)) continue;   // S41: Wächter auch für Alt-Sessions
         const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
         const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
         if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, mkListe, ALLE_BLOECKE));
