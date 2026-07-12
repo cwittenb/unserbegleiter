@@ -9,3 +9,10 @@ node_modules/
 
 # Lock file
 package-lock.json
+
+# commit script
+push_patch.sh
+
+# for security: do not commit patch files in root
+/*.mjs
+/*.patch
