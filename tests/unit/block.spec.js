@@ -77,7 +77,7 @@ describe("Block · cleanDisplay", () => {
   it("ersetzt Block durch Platzhalter und entfernt Marker", () => {
     const text = "Hier dein Eintrag.\nTIMELINE-BLOCK\n" + GUELTIG + "\nEND TIMELINE-BLOCK\n[[RANKING]]";
     const out = cleanDisplay(text, ["[[RANKING]]"], [BLOECKE.zeitleiste]);
-    expect(out).toContain("[Dein Zeitleisten-Eintrag wurde gespeichert.]");
+    expect(out).toContain("Dein Zeitleisten-Eintrag wurde gespeichert.");   // S37: Platzhalter ohne eckige Klammern
     expect(out).not.toContain("TIMELINE-BLOCK");
     expect(out).not.toContain("[[RANKING]]");
     expect(out).not.toContain('"summary"');

@@ -39,7 +39,7 @@ describe("Kanarien · klaerungsPrompt (vier Kapitel)", () => {
   it("Weiche und Umformung bleiben intakt", () => {
     expect(p).toContain("SORGEN-WEICHE (gilt in Kapitel 4");
     expect(p).toContain("WEICHEN-DISZIPLIN (binär)");
-    expect(p).toContain("Trifft das noch den Kern dessen");
+    expect(p).toContain("trifft das noch den Kern dessen");   // S37: neue hörende Einleitung, Kleinschreibung nach Gedankenstrich
   });
 });
 

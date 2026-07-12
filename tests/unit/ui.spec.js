@@ -71,7 +71,7 @@ describe("UI · Reflexionsgespräch-Drehbuch", () => {
     // Anzeige-Hygiene: Rohform durch Platzhalter ersetzt
     const anzeige = root.querySelector("#pbMsgs").textContent;
     expect(anzeige).not.toContain("TIMELINE-BLOCK");
-    expect(anzeige).toContain("[Dein Zeitleisten-Eintrag");
+    expect(anzeige).toContain("Dein Zeitleisten-Eintrag");
 
     // Persistenz: Eintrag in der Zeitleiste, Chat abgeschlossen
     const zl = await backend.pstate.get("timeline");

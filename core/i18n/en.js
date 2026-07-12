@@ -85,8 +85,6 @@ export const en = {
   // Chapter checkpoint
   "kapitel.geschafft": "Chapter {n} complete – {titel}",
   "kapitel.weitermachen": "Keep going: Chapter {n} · {titel}",
-  "kapitel.pause": "Take a Break",
-  "kapitel.gespeichert": "Saved – you can pick up right here whenever you like.",
   "kapitel.frageTitel": "One question about the Reveal Round:",
   "kapitel.frage": "Would it bring you joy to reveal your Top 5 to each other in the Reveal Round – even if the thought stirs a little excitement and uncertainty at first?",
   "kapitel.frageSub": "Only this would be shown: your Top 5 and your three guesses for {partner} – nothing from your conversation here.",
@@ -133,6 +131,8 @@ export const en = {
   "weg.optRueckblick": "Or look into your past conversations and answer the process reflection.",
   /* Couple language — bilaterally confirmed switch (S30·C3) */
   "paarspr.titel": "Companion language (couple)",
+  "paarspr.uiWechsel": "Change UI language only ({sprache})",
+  "paarspr.uiHinweis": "The UI language only affects your view of the interface — nothing changes for {partner}.",
   "paarspr.link": "Companion language: {sprache} · change",
   "paarspr.linkOffen": "Companion language: {sprache} · a suggestion is pending",
   "paarspr.aktuell": "Your shared companion language: {sprache}.",

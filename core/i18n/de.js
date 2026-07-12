@@ -83,8 +83,6 @@ export const de = {
   // Kapitel-Zwischenhalt
   "kapitel.geschafft": "Kapitel {n} geschafft – {titel}",
   "kapitel.weitermachen": "Weitermachen: Kapitel {n} · {titel}",
-  "kapitel.pause": "Pause machen",
-  "kapitel.gespeichert": "Gespeichert – du kannst jederzeit genau hier weitermachen.",
   "kapitel.frageTitel": "Eine Frage zur Aufdeck-Runde:",
   "kapitel.frage": "Hättest du Freude daran, wenn ihr eure Top 5 in der Aufdeck-Runde einander preisgebt – auch wenn der Gedanke im ersten Moment vielleicht etwas Aufregung und Unsicherheit auslöst?",
   "kapitel.frageSub": "Gezeigt würden dabei nur: deine Top 5 und deine drei Tipps für {partner} – nichts aus eurem Gespräch hier.",
@@ -131,6 +129,8 @@ export const de = {
   "weg.optRueckblick": "Oder schaue in die vergangenen Gespräche und beantworte die Prozessreflexion.",
   /* Paarsprache — beidseitig bestätigter Wechsel (S30·C3) */
   "paarspr.titel": "Begleitungssprache (Paar)",
+  "paarspr.uiWechsel": "Nur UI-Sprache ändern ({sprache})",
+  "paarspr.uiHinweis": "Die UI-Sprache betrifft nur deine Ansicht der Oberfläche — für {partner} ändert sich nichts.",
   "paarspr.link": "Begleitungssprache: {sprache} · ändern",
   "paarspr.linkOffen": "Begleitungssprache: {sprache} · ein Vorschlag ist offen",
   "paarspr.aktuell": "Eure gemeinsame Begleitungssprache: {sprache}.",

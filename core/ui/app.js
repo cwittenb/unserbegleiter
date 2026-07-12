@@ -80,8 +80,10 @@ export function createApp({ doc, backend, root, diktat }) {
   wurzel.innerHTML = `
     <div id="pbBusy" class="pb-busy pb-hidden"><span class="pb-busydots"><span></span><span></span><span></span></span><span id="pbBusyTxt"></span></div>
     <div class="pb-top">
-      <h1 class="pb-h1" id="pbHallo"></h1>
-      <span class="pb-sub" id="pbKern"></span>
+      <div class="pb-brand">
+        <h1 class="pb-h1" id="pbHallo"></h1>
+        <span class="pb-sub" id="pbKern"></span>
+      </div>
     </div>
     <div id="pbErr" class="pb-err pb-hidden"></div>
     <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
@@ -466,8 +468,7 @@ export function createApp({ doc, backend, root, diktat }) {
       `<div class="pb-sub">${t("kapitel.geschafft", { n, titel: esc(K().KAPITEL_TITEL[n - 1]) })}</div>` +
       `<div style="letter-spacing:5px;font-size:16px;margin:4px 0 10px">${dots}</div>` + gateHtml +
       `<div id="kapWeiter"${gateOffen ? ' class="pb-hidden"' : ""}>` +
-      `<button class="pb-btn primary" id="kapNext">${t("kapitel.weitermachen", { n: n + 1, titel: esc(K().KAPITEL_TITEL[n]) })}</button>` +
-      `<button class="pb-btn" id="kapPause">${t("kapitel.pause")}</button></div>` +
+      `<button class="pb-btn primary" id="kapNext">${t("kapitel.weitermachen", { n: n + 1, titel: esc(K().KAPITEL_TITEL[n]) })}</button></div>` +
       `<p class="pb-sub pb-hidden" id="kapNote"></p>`;
     const zeigeWeiter = txt => {
       for (const id of ["kapJa", "kapNein"]) { const b = p.querySelector("#" + id); if (b) b.remove(); }
@@ -495,11 +496,6 @@ export function createApp({ doc, backend, root, diktat }) {
     p.querySelector("#kapNext").addEventListener("click", async () => {
       kwZu();
       await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.weiterMitKapitel, { n: n + 1 }), { hidden: true }));
-    });
-    p.querySelector("#kapPause").addEventListener("click", () => {
-      kwZu();
-      show("scrMyRoom");
-      err(t("kapitel.gespeichert"));
     });
   }
   
@@ -740,11 +736,14 @@ export function createApp({ doc, backend, root, diktat }) {
       knoepfe = `<button class="pb-btn primary" id="psJa">${t("paarspr.bestaetigen")}</button> ` +
                 `<button class="pb-btn" id="psNein">${t("paarspr.ablehnen")}</button>`;
     }
+    const uiZiel = getLocale() === "en" ? "de" : "en";
     box.innerHTML =
       `<div class="pb-sub">${t("paarspr.titel")}</div>` +
       `<p style="font-size:13px;margin:6px 0">${mitte}</p>` + knoepfe +
+      ` <button class="pb-btn" id="psUi">${t("paarspr.uiWechsel", { sprache: sprachName(uiZiel) })}</button>` +
       (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650" id="psMeldung">${meldung}</p>` : "") +
-      `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>`;
+      `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>` +
+      `<p class="pb-sub" style="margin:4px 0 0">${t("paarspr.uiHinweis", { partner: esc(state.info.partner) })}</p>`;
     const anwenden = r => {
       state.info.locale = r.locale;
       state.info.languageRequest = r.languageRequest;
@@ -754,6 +753,11 @@ export function createApp({ doc, backend, root, diktat }) {
         : "");
     };
     const knopf = (id, fn) => { const b = box.querySelector(id); if (b) b.addEventListener("click", () => fn().then(anwenden).catch(e => err(fehlerText(e)))); };
+    box.querySelector("#psUi").addEventListener("click", async () => {
+      setLocale(uiZiel);
+      try { await backend.pstate.set("language", uiZiel); } catch { /* Umgebungen ohne pstate */ }
+      relaunch();
+    });
     knopf("#psAntrag", () => backend.language.request(ziel));
     knopf("#psJa", () => backend.language.request(w.target));
     knopf("#psZurueck", () => backend.language.withdraw());
@@ -998,7 +1002,7 @@ export function createApp({ doc, backend, root, diktat }) {
         if (!(vals[i].tw && vals[i].tz)) return;
         if (i < K().DOMAINS.length - 1) { i++; zeichne(); return; }
         kwZu();
-        await warteAntwort(() => engine.submitToolResult(reglerErgebnis(vals, state.info.name), { slider: true }));
+        await warteAntwort(() => engine.submitToolResult(reglerErgebnis(vals, state.info.name), { slider: true, hidden: true }));
       });
     }
     zeichne();
@@ -1045,7 +1049,7 @@ export function createApp({ doc, backend, root, diktat }) {
             }
           } catch { /* Nachzug ist Komfort, kein Muss */ }
         }
-        await warteAntwort(() => engine.submitToolResult(rankingErgebnis(mode, order, ctx), { ranking: mode }));
+        await warteAntwort(() => engine.submitToolResult(rankingErgebnis(mode, order, ctx), { ranking: mode, hidden: true }));
       });
     }
     zeichne();
@@ -1070,7 +1074,7 @@ export function createApp({ doc, backend, root, diktat }) {
         werte.push(+inp.value);
         if (werte.length < 2) { frage(1); return; }
         kwZu();
-        await warteAntwort(() => engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { baseline: true }));
+        await warteAntwort(() => engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { baseline: true, hidden: true }));
       });
     }
     frage(0);
