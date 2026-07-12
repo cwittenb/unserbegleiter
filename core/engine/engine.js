@@ -18,9 +18,10 @@ export class Engine {
    *   def: {sysPrompt:function, markerOrder:string[], markers:object,
    *          blocks:object[], canAct:function},
    *   chat: {messages:object[], status:string, blockFix?:boolean},
-   *   llm: (system:string, messages:object[]) => Promise<{text:string, stop?:string}>,
+   *   llm: (system:string, messages:object[], onDelta?:function) => Promise<{text:string, stop?:string}>,
    *   ctx?: object,
-   *   hooks?: {onSave?:function, onPersonError?:function, onRender?:function}
+   *   hooks?: {onSave?:function, onPersonError?:function, onRender?:function,
+   *            onDelta?:function}   // onDelta(teilText) — kumulierter Stream
    * }} cfg
    */
   constructor({ def, chat, llm, ctx = {}, hooks = {} }) {
@@ -77,7 +78,13 @@ export class Engine {
     if (this.busy) return;
     this.busy = true;
     try {
-      const { text, stop } = await this.llm(this.def.sysPrompt(this.ctx), this.chat.messages);
+      // Streaming: Deltas kumulieren und als wachsenden Teiltext an die UI
+      // reichen (reine Anzeige — dispatcht wird erst der vollständige Text).
+      let teil = "";
+      const onDelta = this.hooks.onDelta
+        ? (d) => { teil += d; this.hooks.onDelta(teil); }
+        : undefined;
+      const { text, stop } = await this.llm(this.def.sysPrompt(this.ctx), this.chat.messages, onDelta);
       this.chat.messages.push({ role: "assistant", content: text });
       this.chat.lastStop = stop || null;
       await this._save();

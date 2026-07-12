@@ -7,7 +7,8 @@
 //   backend.pstate.get/set(feld[,wert])  — Rolle implizit (Session/lokal)
 //   backend.chat.load/save(art, id, chat)
 //   backend.handover.post({module,name,items}) / .get(rolle)
-//   backend.llm(system, messages)        → {text, stop, usage}
+//   backend.llm(system, messages[, onDelta]) → {text, stop, usage}; onDelta
+//                                          streamt Text-Häppchen (optional)
 
 import { BLOECKE } from "../contracts/registry.js";
 import { K } from "../prompts/prompts.js";

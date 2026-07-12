@@ -61,7 +61,7 @@ export function createApp({ doc, backend, root, diktat }) {
     if (html !== undefined) d.innerHTML = html;
     return d;
   };
-  const state = { info: null, engine: null, chatId: null, screen: null };
+  const state = { info: null, engine: null, chatId: null, screen: null, streamText: null };
 
   const wurzel = root || doc.getElementById("app");
   wurzel.innerHTML = `
@@ -296,7 +296,45 @@ export function createApp({ doc, backend, root, diktat }) {
     boxS.classList.toggle("offen", !!skala);
   }
 
+  /* Streaming-sichere Anzeige eines UNVOLLSTÄNDIGEN Assistant-Textes:
+     fertige Marker/Blöcke entfernt cleanDisplay; ANGEFANGENE Protokoll-
+     Artefakte (Block ohne Ende, "[["-Marker, angerissenes Start-Token am
+     Textende) werden abgeschnitten, damit während des Stroms nie rohe
+     Protokollzeichen sichtbar werden (S34-Lehre, auf Teiltexte übertragen). */
+  function streamAnzeige(roh) {
+    const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
+    let txt = cleanDisplay(roh, mkListe, ALLE_BLOECKE);
+    let schnitt = txt.length;
+    for (const b of ALLE_BLOECKE) {
+      const i = txt.indexOf(b.start);
+      if (i >= 0 && i < schnitt) schnitt = i;        // Block begonnen, Ende fehlt noch
+    }
+    const iM = txt.indexOf("[[");
+    if (iM >= 0 && iM < schnitt) schnitt = iM;        // Marker im Entstehen
+    txt = txt.slice(0, schnitt);
+    if (txt.endsWith("[")) txt = txt.slice(0, -1);    // halbe Marker-Klammer
+    for (const tok of ALLE_BLOECKE.map(b => b.start)) // angerissenes Start-Token
+      for (let l = tok.length - 1; l >= 4; l--)
+        if (txt.endsWith(tok.slice(0, l))) { txt = txt.slice(0, -l); l = 0; }
+    return txt.replace(/\s+$/, "");
+  }
+
+  /** Live-Update der Stream-Blase — gezielt, ohne Voll-Rerender je Delta. */
+  function zeigeStream(teil) {
+    state.streamText = teil;
+    const box = $("pbMsgs");
+    if (!box) return;
+    let d = box.querySelector("#pbStream");
+    if (!d) { d = el("div", "pb-msg ai"); d.id = "pbStream"; box.appendChild(d); }
+    const anzeige = streamAnzeige(teil);
+    d.innerHTML = anzeige
+      ? mdRender(anzeige)
+      : '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
+    box.scrollTop = box.scrollHeight;
+  }
+
   function renderMsgs() {
+    state.streamText = null;   // Voll-Rerender ersetzt jede laufende Stream-Blase
     const box = $("pbMsgs");
     box.innerHTML = "";
     if (state.engine) {
@@ -311,6 +349,7 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     if (state.warten) {
       const d = el("div", "pb-msg ai");
+      d.id = "pbStream";
       d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
       box.appendChild(d);
     }
@@ -530,6 +569,7 @@ export function createApp({ doc, backend, root, diktat }) {
         onSave: c => backend.chat.save(def.shared ? "shared" : "mine", art, c),
         onPersonError: err,
         onRender: renderMsgs,
+        onDelta: zeigeStream,
       },
     });
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;

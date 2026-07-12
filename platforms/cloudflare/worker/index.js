@@ -222,7 +222,7 @@ async function route(request, env) {
           Davor der Missbrauchsschutz (§5.4): Duplikat-Wächter → Raten-Limit →
           Kontingent — alles OHNE Upstream-Kontakt abgewiesen. ---- */
   if (p === "/api/llm" && request.method === "POST") {
-    const { system, messages } = await request.json();
+    const { system, messages, stream } = await request.json();
     if (typeof system !== "string" || !Array.isArray(messages)) return fehler("system und messages sind Pflicht", 400);
     const letzte = [...messages].reverse().find(x => x.role === "user");
     const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
@@ -232,6 +232,35 @@ async function route(request, env) {
       { provider: env.LLM_PROVIDER || "anthropic", mode: "direct", apiKey: env.LLM_API_KEY || "test", models: env.LLM_MODEL ? { anthropic: env.LLM_MODEL } : {} },
       fetchFn
     );
+    if (stream === true) {
+      // Streaming-Pfad: Upstream-SSE wird vom Adapter geparst und hier als
+      // provider-neutrale SSE re-emittiert ({delta}… {done} | {error}).
+      // Der Client bleibt so frei von Provider-Wissen; Kontingent-Hinweise
+      // reisen im done-Event mit. Fehler NACH Response-Start können keinen
+      // HTTP-Status mehr ändern — darum das error-Event im Strom.
+      const enc = new TextEncoder();
+      const { readable, writable } = new TransformStream();
+      const writer = writable.getWriter();
+      const sende = obj => writer.write(enc.encode("data: " + JSON.stringify(obj) + "\n\n"));
+      (async () => {
+        try {
+          const antwort = await call(system, messages, d => { sende({ delta: d }); });
+          if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
+          await sende({ done: antwort });
+        } catch (e) {
+          await sende({ error: e.message || "LLM-Fehler" });
+        } finally {
+          try { await writer.close(); } catch { /* Client weg */ }
+        }
+      })();
+      return new Response(readable, {
+        headers: {
+          "content-type": "text/event-stream; charset=utf-8",
+          "cache-control": "no-cache",
+          "x-accel-buffering": "no",
+        },
+      });
+    }
     const antwort = await call(system, messages);
     if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
     return json(antwort);
