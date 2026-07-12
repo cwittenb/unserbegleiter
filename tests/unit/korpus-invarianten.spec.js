@@ -15,7 +15,7 @@ const sysTexte = k => ({
   gemeinsam: k.aufloesungsPrompt(A, B, true),
   moment: k.momentPrompt(A, B),
   solo: k.reflexionsPrompt(A, B),
-  aufdeck: k.aufdeckPrompt(A, B),
+  aufdeck: k.aufloesungsPrompt(A, B),   // S43: Auftakt lebt im Auflösungs-Prompt
   qz: k.qzMenuePrompt(),
 });
 

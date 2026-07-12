@@ -49,9 +49,6 @@ export const de = {
   "momente.aufdeckStandard": "Ihr habt eure Top 5 und Tipps einander aufgedeckt.",
   "momente.impuls": "Zwischenzeit-Impuls:",
   "teil.gateAufloesung": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung freigegeben habt.",
-  "teil.gateAufdeck": "Die Aufdeck-Runde öffnet, sobald ihr beide eure Auftragsklärung so weit geführt und die Aufdeckung gewählt habt.",
-  "teil.gateAufdeckGelaufen": "Eure Aufdeck-Runde ist gelaufen — weiter geht es mit der Gemeinsamen Auflösung.",
-  "teil.aufdeck": "Aufdeck-Runde beginnen",
   "teil.gemeinsam": "Gemeinsame Auflösung beginnen",
   "teil.regal": "Regal ansehen",
   "teil.agenda": "Agenda ansehen",
@@ -77,6 +74,17 @@ export const de = {
 
   // Agenda
   "agenda.titel": "Gemeinsame Agenda",
+  "weg.optQzTeil": "Qualitätszeit — gestaltet eure gemeinsame Zeit; ich begleite euch, ob ihr etwas zu besprechen habt oder einfach Zeit miteinander verbringen wollt.",
+  "weg.optAufloesung": "Startet eure Gemeinsame Auflösung, um eure gemeinsamen Ziele zu finden.",
+  "weg.optAufloesungMitAufdeck": "Startet eure Gemeinsame Auflösung — sie beginnt mit der Auflösung eurer Rate-Runde aus der Auftragsklärung und führt zu euren gemeinsamen Zielen.",
+  "weg.optRegalTeil": "Oder schaut ins Regal nach geteilten Erlebnissen — oder durch eure vergangenen gemeinsamen Momente.",
+  "agenda.gruppeAuftraege": "Laufende Aufträge",
+  "agenda.auftraegeLeer": "Noch keine Aufträge — sie entstehen in eurer Gemeinsamen Auflösung.",
+  "agenda.gruppePunkte": "Gesprächspunkte",
+  "agenda.gruppeBacklog": "Backlog — ruht gerade",
+  "agenda.backlogHinweis": "Zurückgestellt, weil gerade an höher Priorisiertem gearbeitet wird — reaktiviert wird gemeinsam in euren Sessions.",
+  "agenda.artGemeinsam": "gemeinsam",
+  "agenda.artIndividuell": "individuell",
   "agenda.leer": "Die Agenda ist leer.",
   "agenda.st.open": "offen",
   "agenda.st.discussed": "besprochen",
@@ -121,15 +129,12 @@ export const de = {
   "aufdeck.fehlt": "Aufdeck-Daten fehlen – bitte die Runde neu beginnen.",
 
   // Start-Fehler
-  "fehler.aufdeckWartet": "Die Aufdeck-Runde wartet noch auf euch – sie kommt vor der Klärung.",
-  "fehler.aufdeckZu": "Die Aufdeck-Runde öffnet erst, wenn beide sie gewählt haben und so weit sind.",
   "fehler.aufdeckDaten": "Für die Aufdeck-Runde fehlen Stapel (Top 5) oder Tipps (Top 3) – bitte im Gespräch um eine Korrektur-Runde bitten.",
   "fehler.aufloesungFehlt": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung abgeschlossen und freigegeben habt.",
 
   // Wegweiser (Nutzerführung, S35) — aus dem Zustand berechnete nächste Schritte
   "weg.titel": "Wegweiser",
   "weg.einzelPause": "Deine Auftragsklärung ist bei Kapitel {n} pausiert — du kannst genau dort weitermachen.",
-  "weg.aufdeckBereit": "Ihr seid beide so weit: Die Aufdeck-Runde wartet auf euch.",
   "weg.aufloesungBereit": "Eure Freigaben liegen bereit — die Gemeinsame Auflösung kann starten.",
   "weg.aufloesungFehltDu": "Für die Gemeinsame Auflösung fehlt noch deine Freigabe aus der Auftragsklärung.",
   "weg.aufloesungFehltPartner": "Für die Gemeinsame Auflösung fehlt noch die Freigabe von {partner}.",

@@ -101,15 +101,26 @@ export function gemeinsamDef(backend, hooks = {}) {
   return {
     id: "gemeinsam",
     shared: true,
-    titel: "Gemeinsame Klärung",
+    titel: "Gemeinsame Auflösung",
     sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
-    markerOrder: ["[[BASELINE]]", "[[SCALE-CLOSING]]"],
+    markerOrder: ["[[REVEAL]]", "[[BASELINE]]", "[[SCALE-CLOSING]]"],
     markers: {
+      "[[REVEAL]]": e => hooks.onAufdecken && hooks.onAufdecken(e),
       "[[BASELINE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),
       "[[SCALE-CLOSING]]": e => hooks.onScale && hooks.onScale("closing", e),
     },
     canAct: c => c.status !== "finished",
     blocks: [
+      {
+        // S43 · Aufdeck-AUFTAKT in der Auflösung: Das Kurzprotokoll der Tafel
+        // wird persistiert, die Session läuft danach in die Klärung WEITER
+        // (kein finished — anders als in der früheren separaten Runde).
+        ...BLOECKE.aufdeck,
+        handle: async (data, engine) => {
+          await backend.bstate.set("revealLog", { at: new Date().toISOString(), ...data });
+          if (hooks.onProtokoll) hooks.onProtokoll(data);
+        },
+      },
       {
         ...BLOECKE.befund,
         handle: async (data, engine) => {
@@ -153,9 +164,10 @@ export function baueAufdeckKontext(gA, gB) {
 }
 
 /** Erste (versteckte) Nachricht der gemeinsamen Klärung: zwei HANDOVER-BLOCKS + optionales REVEAL-PROTOCOL. */
-export function baueKlaerungsKontext(uA, uB, protokoll) {
+export function baueKlaerungsKontext(uA, uB, protokoll, aufdeckKontext) {
   const blk = u => "HANDOVER-BLOCK – " + u.name + "\n" + u.items.map(i => i.id + ": " + i.text).join("\n") + "\nEND HANDOVER-BLOCK";
   let s = blk(uA) + "\n\n" + blk(uB);
+  if (aufdeckKontext) s += "\n\n" + KT("klaerung.aufdeckAussteht") + "\n" + aufdeckKontext;
   if (protokoll) {
     s += "\n\n" + KT("klaerung.protokoll") + protokoll.summary;
     if (protokoll.touchingPoints && protokoll.touchingPoints.length)
@@ -167,24 +179,7 @@ export function baueKlaerungsKontext(uA, uB, protokoll) {
 }
 
 /** Aufdeck-Runde (geteilter Raum, ein Gerät) — G1, kommt vor der Klärung. */
-export function aufdeckDef(backend, hooks = {}) {
-  return {
-    id: "aufdeck",
-    shared: true,
-    titel: "Aufdeck-Runde",
-    sysPrompt: ctx => K().aufdeckPrompt(ctx.nameA, ctx.nameB),
-    markerOrder: ["[[REVEAL]]"],
-    markers: { "[[REVEAL]]": e => hooks.onAufdecken && hooks.onAufdecken(e) },
-    canAct: c => c.status !== "finished",
-    blocks: [
-      {
-        ...BLOECKE.aufdeck,
-        handle: async (data, engine) => {
-          await backend.bstate.set("revealLog", { at: new Date().toISOString(), ...data });
-          engine.chat.status = "finished";
-          if (hooks.onProtokoll) hooks.onProtokoll(data);
-        },
-      },
-    ],
-  };
-}
+/* S43: Die separate Aufdeck-Runde ist als Sessiontyp entfallen — die
+   Aufdeckung ist AUFTAKT der Gemeinsamen Auflösung (kollabiert unsichtbar,
+   wenn nicht beide sie gewählt haben). Tafel-Panel und REVEAL-BLOCK leben
+   weiter; das Mini-Gate in der Auftragsklärung bleibt unverändert. */

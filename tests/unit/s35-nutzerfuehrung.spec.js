@@ -142,10 +142,13 @@ describe("S35 · Wegweiser", () => {
     const app = createApp({ doc: document, backend, root });
     await app.boot();
     await ruhe();
-    expect(root.querySelector("#wegStart").textContent).toContain("Aufdeck-Runde");
+    // S43: kein separater Aufdeck-Hinweis mehr; ohne beidseitige Freigabe
+    // erscheint auch keine Auflösungs-Options-Zeile (Lage-Hinweise übernehmen).
+    expect(root.querySelector("#wegStart").textContent).not.toContain("Aufdeck-Runde");
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
-    expect(root.querySelector("#wegTeil").textContent).toContain("Aufdeck-Runde");
+    expect(root.querySelector("#wegTeil").textContent).not.toContain("Aufdeck-Runde");
+    expect(root.querySelector("#wegTeil").textContent).toContain("Qualitätszeit");
   });
 
   it("Mein Raum: pausierte Auftragsklärung wird mit Kapitel benannt", async () => {

@@ -24,7 +24,7 @@ describe("Prompt-Bausteine (S33a)", () => {
     for (const [m, b] of [[D, de], [E, en]]) {
       const alle = [
         m.reflexionsPrompt("A", "B"), m.klaerungsPrompt("A", "B"), m.aufloesungsPrompt("A", "B"),
-        m.momentPrompt("A", "B"), m.qzMenuePrompt(), m.aufdeckPrompt("A", "B"),
+        m.momentPrompt("A", "B"), m.qzMenuePrompt(),
       ];
       for (const p of alle) expect(p).toContain(b.sprache);
     }

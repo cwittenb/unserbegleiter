@@ -5,7 +5,7 @@ import { Engine } from "../engine/engine.js";
 import { cleanDisplay } from "../contracts/block.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
-import { einzelDef, gemeinsamDef, aufdeckDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
+import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt } from "./prozess.js";
@@ -155,10 +155,6 @@ export function createApp({ doc, backend, root, diktat }) {
           <p class="pb-sub" style="margin:0">${t("teil.momentSub")}</p>
         </div>
         <div class="pb-card">
-          <button class="pb-btn primary" id="btnAufdeck">${t("teil.aufdeck")}</button>
-          <p class="pb-sub pb-hidden" id="aufdeckHinweis" style="margin:0"></p>
-        </div>
-        <div class="pb-card">
           <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
           <p class="pb-sub pb-hidden" id="gemeinsamHinweis" style="margin:0"></p>
         </div>
@@ -228,7 +224,7 @@ export function createApp({ doc, backend, root, diktat }) {
      erreichbar ist, zählt als "nicht vorhanden". */
   async function ladeLage() {
     const still = p => Promise.resolve().then(p).catch(() => null);
-    const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat] = await Promise.all([
+    const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat, findings] = await Promise.all([
       still(() => backend.bstate.get("reveal")),
       still(() => backend.bstate.get("revealLog")),
       still(() => backend.bstate.get("shelf")),
@@ -239,12 +235,14 @@ export function createApp({ doc, backend, root, diktat }) {
       still(() => backend.handover.get("B")),
       still(() => backend.chat.load("mine", "einzel")),
       still(() => backend.chat.load("shared", "moment")),
+      still(() => backend.bstate.get("findings")),
     ]);
     const rolle = state.info.role;
     const offeneRunde = (((measurements && measurements.items) || [])).find(r => r.status === "open");
     return {
       aufdeckBereit: !!(reveal && reveal.A && reveal.B && !revealLog),
       aufdeckGelaufen: !!revealLog,
+      aufloesungGelaufen: !!findings,
       handMeins: !!(rolle === "A" ? hA : hB),
       handPartner: !!(rolle === "A" ? hB : hA),
       handBeide: !!(hA && hB),
@@ -269,8 +267,7 @@ export function createApp({ doc, backend, root, diktat }) {
       : h.push(t("weg.aufloesungFehltPartner", { partner }));
     if (screenId === "scrStart") {
       if (lage.einzelKapitel) h.push(t("weg.einzelPause", { n: lage.einzelKapitel }));
-      if (lage.aufdeckBereit) h.push(t("weg.aufdeckBereit"));
-      else if (lage.handBeide) h.push(t("weg.aufloesungBereit"));
+      if (lage.handBeide && !lage.aufloesungGelaufen) h.push(t("weg.aufloesungBereit"));
       if (lage.momentOffen) h.push(t("weg.momentOffen"));
       if (lage.regalNeu) h.push(t("weg.regalNeu", { n: lage.regalNeu }));
       if (lage.messOffen) h.push(t("weg.messOffen"));
@@ -281,8 +278,7 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     if (screenId === "scrShared") {
       if (lage.momentOffen) h.push(t("weg.momentOffen"));
-      if (lage.aufdeckBereit) h.push(t("weg.aufdeckBereit"));
-      aufloesung();
+      if (!lage.aufloesungGelaufen) aufloesung();
       if (lage.regalNeu) h.push(t("weg.regalNeu", { n: lage.regalNeu }));
       if (lage.agendaOffen) h.push(t("weg.agendaOffen", { n: lage.agendaOffen }));
       if (lage.messBereit) h.push(t("weg.messBereit"));
@@ -312,8 +308,6 @@ export function createApp({ doc, backend, root, diktat }) {
     const bm = $("btnMoment");
     if (bm) bm.textContent = lage.momentOffen ? t("teil.momentWeiter") : t("teil.moment");
     sperre("btnGemeinsam", "gemeinsamHinweis", !lage.handBeide, t("teil.gateAufloesung"));
-    sperre("btnAufdeck", "aufdeckHinweis", !lage.aufdeckBereit,
-      lage.aufdeckGelaufen ? t("teil.gateAufdeckGelaufen") : t("teil.gateAufdeck"));
   }
 
   /* S36 · Feste Wegweiser-Zeilen: sie halten alle Optionen offen, statt
@@ -325,6 +319,13 @@ export function createApp({ doc, backend, root, diktat }) {
     if (screenId === "scrMyRoom")
       return [t("weg.soloErster"), t("weg.optAuftragEuch"),
               lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick")];
+    if (screenId === "scrShared") {
+      const zeilen = [t("weg.optQzTeil")];
+      if (lage.handBeide && !lage.aufloesungGelaufen)
+        zeilen.push(lage.aufdeckBereit ? t("weg.optAufloesungMitAufdeck") : t("weg.optAufloesung"));
+      zeilen.push(t("weg.optRegalTeil"));
+      return zeilen;
+    }
     return [];
   }
 
@@ -666,7 +667,6 @@ export function createApp({ doc, backend, root, diktat }) {
     };
     const def =
       art === "solo" ? soloDef(backend, hooks) :
-      art === "aufdeck" ? aufdeckDef(backend, hooks) :
       art === "einzel" ? einzelDef(backend, hooks) :
       art === "gemeinsam" ? gemeinsamDef(backend, hooks) :
       momentDef(backend, hooks);
@@ -684,22 +684,6 @@ export function createApp({ doc, backend, root, diktat }) {
         Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
       ]);
       if (!hA || !hB) throw new Error(t("fehler.aufloesungFehlt"));
-    }
-    // G1 vor G2: Sind beide Aufdeck-Freigaben da, aber kein Protokoll, kommt
-    // erst die Aufdeck-Runde (verbinden vor verhandeln). Ohne beide Mini-Gates
-    // läuft der kollabierte Pfad — die Klärung startet direkt.
-    if (art === "gemeinsam" && !gespeichert) {
-      const [alleG, protokollG] = await Promise.all([
-        backend.bstate.get("reveal").catch(() => null),
-        backend.bstate.get("revealLog").catch(() => null),
-      ]);
-      if (alleG && alleG.A && alleG.B && !protokollG)
-        throw new Error(t("fehler.aufdeckWartet"));
-    }
-    if (art === "aufdeck" && !gespeichert) {
-      const alleA = (await backend.bstate.get("reveal")) || {};
-      if (!alleA.A || !alleA.B)
-        throw new Error(t("fehler.aufdeckZu"));
     }
     // S42 · Eine abgeschlossene Qualitätszeit wird nicht wieder aufgemacht —
     // ihr Protokoll liegt in "Gemeinsame Momente"; der nächste Klick beginnt frisch.
@@ -733,17 +717,21 @@ export function createApp({ doc, backend, root, diktat }) {
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelRueckkehr, { hidden: true }));
     } else {
       if (art === "gemeinsam") {
-        const [freiA, freiB, protokoll] = await Promise.all([
+        const [freiA, freiB, protokoll, alleG] = await Promise.all([
           Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
           Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
           backend.bstate.get("revealLog").catch(() => null),
+          backend.bstate.get("reveal").catch(() => null),
         ]);
+        // S43 · Aufdeckung als Auftakt: Haben BEIDE sie gewählt und sie lief
+        // noch nicht, wandert der REVEAL-CONTEXT mit in die Klärung — die
+        // Session beginnt mit der Tafel und geht dann in die Klärung über.
+        // Ohne beidseitige Wahl kollabiert der Pfad unsichtbar (kein Hinweis,
+        // woran es lag — die Mini-Gate-Entscheidung bleibt privat).
+        const auftakt = alleG && alleG.A && alleG.B && !protokoll
+          ? baueAufdeckKontext(alleG.A, alleG.B) : null;
         if (freiA && freiB)
-          chat.messages.push({ role: "user", hidden: true, content: baueKlaerungsKontext(freiA, freiB, protokoll) });
-      }
-      if (art === "aufdeck") {
-        const alle = (await backend.bstate.get("reveal")) || {};
-        chat.messages.push({ role: "user", hidden: true, content: baueAufdeckKontext(alle.A, alle.B) });
+          chat.messages.push({ role: "user", hidden: true, content: baueKlaerungsKontext(freiA, freiB, protokoll, auftakt) });
       }
       // S39 · Reflexionsgespräch kennt den Stand: COMPANION-CONTEXT aus
       // Aufträgen, freigegebenem Material beider, EIGENER Zeitleiste und den
@@ -816,18 +804,40 @@ export function createApp({ doc, backend, root, diktat }) {
       b.addEventListener("click", async () => { await hebeInAgenda(backend, b.getAttribute("data-heben")); zeigeRegal(); });
   }
 
+  /* S43 · Agenda-Regal v2: EIN Regal, zwei Konzepte getrennt — die
+     LAUFENDEN AUFTRÄGE (aus der Gemeinsamen Auflösung, langlebig) und die
+     GESPRÄCHSPUNKTE (aus Regal-Hebungen und Gates, flüchtig). Dazu das
+     BACKLOG: ruhende Aufträge, die gerade keinen Platz haben, weil an
+     höher Priorisiertem gearbeitet wird — zurückgestellt/reaktiviert wird
+     in den Sessions (beidseitig), das Regal zeigt nur. */
   async function zeigeAgenda() {
-    const agenda = (await backend.bstate.get("agenda")) || { items: [] };
+    const [agenda, goals] = await Promise.all([
+      backend.bstate.get("agenda").catch(() => null),
+      backend.bstate.get("goals").catch(() => null),
+    ]);
     zeigeNur("boxAgenda");
     $("boxAgenda").classList.remove("pb-hidden");
-    $("agendaItems").innerHTML = agenda.items.length
-      ? agenda.items.map(i =>
-          `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })} · ${t("agenda.st." + i.state)}</span>` +
-          (i.state === "open"
-            ? ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">${t("agenda.btnAbr")}</button>`
-            : "") + `</div>`
-        ).join("")
-      : `<div class="pb-item">${t("agenda.leer")}</div>`;
+    const items = (agenda && agenda.items) || [];
+    const auftraege = ((goals && goals.items) || []);
+    const aktiv = auftraege.filter(a => a.status === "active");
+    const ruht = auftraege.filter(a => a.status === "rest");
+    const auftragZeile = a =>
+      `<div class="pb-item">${esc(a.text)}<br><span class="pb-sub">${esc(a.id)} · ${t(a.art === "shared" ? "agenda.artGemeinsam" : "agenda.artIndividuell")}${a.owner ? " · " + esc(a.owner) : ""}</span></div>`;
+    const punktZeile = i =>
+      `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })} · ${t("agenda.st." + i.state)}</span>` +
+      (i.state === "open"
+        ? ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">${t("agenda.btnAbr")}</button>`
+        : "") + `</div>`;
+    $("agendaItems").innerHTML =
+      `<div class="pb-sub" style="margin-top:6px">${t("agenda.gruppeAuftraege")}</div>` +
+      (aktiv.length ? aktiv.map(auftragZeile).join("") : `<div class="pb-item">${t("agenda.auftraegeLeer")}</div>`) +
+      `<div class="pb-sub" style="margin-top:10px">${t("agenda.gruppePunkte")}</div>` +
+      (items.length ? items.map(punktZeile).join("") : `<div class="pb-item">${t("agenda.leer")}</div>`) +
+      (ruht.length
+        ? `<div class="pb-sub" style="margin-top:10px">${t("agenda.gruppeBacklog")}</div>` +
+          `<p class="pb-sub" style="margin:2px 0 4px">${t("agenda.backlogHinweis")}</p>` +
+          ruht.map(auftragZeile).join("")
+        : "");
     for (const b of $("agendaItems").querySelectorAll("[data-abr]"))
       b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selfResolved"); zeigeAgenda(); });
   }
@@ -943,7 +953,6 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnSolo").addEventListener("click", () => startChat("solo").catch(e => err(e.message)));
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
-    $("btnAufdeck").addEventListener("click", () => startChat("aufdeck").catch(e => err(e.message)));
   $("btnMoment").addEventListener("click", () => startChat("moment").catch(e => err(e.message)));
   $("btnZeitleiste").addEventListener("click", () => infoToggle("boxZeitleiste", () => zeigeZeitleiste()).catch(e => err(e.message)));
   $("btnMess").addEventListener("click", () => infoToggle("boxMess", () => zeigeMess()).catch(e => err(e.message)));

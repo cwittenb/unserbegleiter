@@ -51,9 +51,6 @@ export const en = {
   "momente.aufdeckStandard": "You revealed your top 5 and guesses to each other.",
   "momente.impuls": "In-between impulse:",
   "teil.gateAufloesung": "The shared resolution opens once you have both released your mandate clarification.",
-  "teil.gateAufdeck": "The reveal round opens once you have both taken your mandate clarification far enough and chosen the reveal.",
-  "teil.gateAufdeckGelaufen": "Your reveal round has taken place — next comes the shared resolution.",
-  "teil.aufdeck": "Start the Reveal Round",
   "teil.gemeinsam": "Start a Shared Resolution",
   "teil.regal": "View the Shelf",
   "teil.agenda": "View the Agenda",
@@ -79,6 +76,17 @@ export const en = {
 
   // Agenda
   "agenda.titel": "Shared Agenda",
+  "weg.optQzTeil": "Quality time — shape your time together; I accompany you, whether you have something to talk through or simply want to spend time with each other.",
+  "weg.optAufloesung": "Start your shared resolution to find your shared goals.",
+  "weg.optAufloesungMitAufdeck": "Start your shared resolution — it opens by revealing your guessing round from the mandate clarification and leads to your shared goals.",
+  "weg.optRegalTeil": "Or look at the shelf for shared glimpses — or through your past shared moments.",
+  "agenda.gruppeAuftraege": "Active goals",
+  "agenda.auftraegeLeer": "No goals yet — they emerge in your shared resolution.",
+  "agenda.gruppePunkte": "Talking points",
+  "agenda.gruppeBacklog": "Backlog — resting for now",
+  "agenda.backlogHinweis": "Set aside because higher-priority work is under way — reactivated together in your sessions.",
+  "agenda.artGemeinsam": "shared",
+  "agenda.artIndividuell": "individual",
   "agenda.leer": "The agenda is empty.",
   "agenda.st.open": "open",
   "agenda.st.discussed": "discussed",
@@ -123,15 +131,12 @@ export const en = {
   "aufdeck.fehlt": "Reveal data is missing – please start the round again.",
 
   // Start errors
-  "fehler.aufdeckWartet": "The Reveal Round is still waiting for you – it comes before the clarification.",
-  "fehler.aufdeckZu": "The Reveal Round opens once both of you have chosen it and are ready.",
   "fehler.aufdeckDaten": "The Reveal Round is missing the stack (Top 5) or the guesses (Top 3) – please ask for a correction round in the conversation.",
   "fehler.aufloesungFehlt": "The Shared Resolution opens once you have both completed and released your goal clarifications.",
 
   // Signpost (guidance, S35) — next steps computed from state
   "weg.titel": "Signpost",
   "weg.einzelPause": "Your goal clarification is paused at chapter {n} — you can continue exactly there.",
-  "weg.aufdeckBereit": "You are both ready: the Reveal Round is waiting for you.",
   "weg.aufloesungBereit": "Your releases are in place — the Shared Resolution can start.",
   "weg.aufloesungFehltDu": "The Shared Resolution still needs your release from the goal clarification.",
   "weg.aufloesungFehltPartner": "The Shared Resolution still needs the release from {partner}.",

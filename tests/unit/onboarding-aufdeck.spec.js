@@ -2,13 +2,13 @@
 // Kanarien + Vertrags- und Datenpfad-Tests.
 
 import { describe, it, expect } from "vitest";
-import { klaerungsPrompt, aufloesungsPrompt, aufdeckPrompt } from "../../core/prompts/prompts.js";
+import { klaerungsPrompt, aufloesungsPrompt } from "../../core/prompts/prompts.js";
 import { aufdeckSchema } from "../../core/contracts/schemas.js";
 import { BLOECKE } from "../../core/contracts/registry.js";
 import { pruefeMarkerOrder } from "../../core/contracts/marker.js";
 import { Bstate } from "../../core/store/bundles.js";
 import {
-  einzelDef, aufdeckDef, KAPITEL_TITEL,
+  einzelDef, gemeinsamDef, KAPITEL_TITEL,
   beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext,
 } from "../../core/ui/kernwetten.js";
 
@@ -55,8 +55,8 @@ describe("Kanarien · aufloesungsPrompt (Protokoll & Pausenmarke)", () => {
   });
 });
 
-describe("Kanarien · aufdeckPrompt", () => {
-  const p = aufdeckPrompt("Anna", "Bernd");
+describe("Kanarien · Aufdeck-AUFTAKT im aufloesungsPrompt (S43: integriert)", () => {
+  const p = aufloesungsPrompt("Anna", "Bernd");
   it("kein richtig/falsch, Berührungspunkte statt Quote", () => {
     expect(p).toContain("kein richtig und kein falsch");
     expect(p).toContain("Berührungspunkt");
@@ -66,7 +66,11 @@ describe("Kanarien · aufdeckPrompt", () => {
     expect(p).toContain("REVEAL-BLOCK");
   });
   it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("KEINE Themen-Vertiefung"));
-  it("keine Sicherheitsdiagnosen im gemeinsamen Raum", () => expect(p).toContain("Keine Sicherheitsdiagnosen"));
+  it("kollabierter Pfad bleibt unsichtbar; nahtloser Übergang statt Abschied", () => {
+    expect(p).toContain("erwähne eine Aufdeckung mit KEINEM Wort");
+    expect(p).toContain("KEIN Abschied");
+    expect(p).toContain("Beginne mit dem AUFTAKT, falls ein REVEAL-CONTEXT vorliegt");
+  });
 });
 
 describe("Vertrag · aufdeckSchema (REVEAL-BLOCK)", () => {
@@ -95,15 +99,15 @@ describe("Kernwetten · Kapitel-Marker & Aufdeck-Def", () => {
     d.markers["[[CHAPTER-3]]"]({});
     expect(rufe).toEqual([3]);
   });
-  it("aufdeckDef: geteilte Session, [[REVEAL]] registriert, Block persistiert Protokoll und beendet", async () => {
+  it("gemeinsamDef (S43): [[REVEAL]] registriert, Auftakt-Block persistiert Protokoll und läuft WEITER", async () => {
     const gesetzt = [];
     const backend = { bstate: { set: async (f, v) => gesetzt.push([f, v]) } };
-    const d = aufdeckDef(backend, {});
+    const d = gemeinsamDef(backend, {});
     expect(d.shared).toBe(true);
     expect(typeof d.markers["[[REVEAL]]"]).toBe("function");
     const engine = { chat: { status: "running" } };
     await d.blocks[0].handle({ summary: "Warm.", touchingPoints: ["Nähe"], forClarification: [] }, engine);
-    expect(engine.chat.status).toBe("finished");
+    expect(engine.chat.status).toBe("running");   // Auftakt beendet NICHT — die Klärung folgt
     expect(gesetzt[0][0]).toBe("revealLog");
     expect(gesetzt[0][1].summary).toBe("Warm.");
     expect(gesetzt[0][1].at).toBeTruthy();

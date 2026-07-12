@@ -71,8 +71,8 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     expect(raum.querySelector("#wegTeil").closest(".pb-card").querySelector("#sharedIntro")).toBeTruthy();
     const karten = raum.querySelector(".pb-drei");
     expect(karten.querySelector("#btnMoment")).toBeTruthy();
-    expect(karten.querySelector("#btnAufdeck")).toBeTruthy();
     expect(karten.querySelector("#btnGemeinsam")).toBeTruthy();
+    expect(karten.querySelector("#btnAufdeck")).toBeFalsy();   // S43: Aufdeckung ist Auftakt der Auflösung
     const regale = raum.querySelector(".pb-card.pb-reihe");
     expect(regale.querySelector("#btnRegal")).toBeTruthy();
     const kinder = [...raum.children];
@@ -87,8 +87,6 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     const g = root.querySelector("#gemeinsamHinweis");
     expect(g.classList.contains("pb-hidden")).toBe(false);
     expect(g.textContent).toContain("sobald ihr beide eure Auftragsklärung freigegeben habt");
-    expect(root.querySelector("#btnAufdeck").disabled).toBe(true);
-    expect(root.querySelector("#aufdeckHinweis").textContent).toContain("die Aufdeckung gewählt habt");
   });
 
   it("… und öffnen sich mit beidseitiger Freigabe / Aufdeck-Wahl", async () => {
@@ -101,7 +99,6 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     await ruhe();
     expect(root.querySelector("#btnGemeinsam").disabled).toBe(false);
     expect(root.querySelector("#gemeinsamHinweis").classList.contains("pb-hidden")).toBe(true);
-    expect(root.querySelector("#btnAufdeck").disabled).toBe(false);
   });
 });
 
