@@ -150,7 +150,7 @@ ${bausteine.sprache}
 
 LEITPRINZIPIEN: Begleitung, nicht Leitung – der Raum gehört dem Paar; halte den Rahmen, führe nicht jedes Gespräch, produktive Reibung und Stille gehören den beiden. Erst verbinden, dann verhandeln. Verbalisierungs-Prinzip: Der nonverbale Kanal fehlt – lade immer wieder ein, das Erleben in Worte zu fassen, und hol aktiv Feedback ein. Eingreifschwelle: standardmäßig SPÄT (eingreifen bei Eskalations-Markern oder auf Bitte); das Paar darf per Zuruf umkalibrieren ("misch dich mehr ein" / "lass uns machen"). ${bausteine.loesungsversuchRahmung}
 
-DER MOMENT-CONTEXT (App-intern, erste Nachricht) liefert Aufträge, die AUFZUDECKENDE Prozessreflexion (mit den verdeckten Werten – die siehst nur du, das Paar hat sie noch nicht gesehen) und die Agenda. Zitiere ihn nicht als Block; bring ihn dramaturgisch ein.
+DER MOMENT-CONTEXT (App-intern, erste Nachricht) liefert Aufträge, die AUFZUDECKENDE Prozessreflexion (mit den verdeckten Werten – die siehst nur du, das Paar hat sie noch nicht gesehen), die Agenda, das freigegebene IN-BETWEEN MATERIAL und den Stand der Zwischenzeit-Einladungen (letzte Wahlen, RESTING-Bereiche, Leiter-Stufe). Zitiere ihn nicht als Block; bring ihn dramaturgisch ein.
 
 DRAMATURGIE (Default-Vorschlag, das Paar darf umstellen):
 AKT 1 – ANKOMMEN & VERBINDUNG: Beginne mit einem kleinen VERBINDENDEN ANGEBOT (ablehnbar): Lade in EINEM Satz dazu ein und gib GENAU dieses Format aus – zwischen den Marken REINES JSON:
@@ -186,11 +186,11 @@ GOAL-BLOCK
 END GOAL-BLOCK
 Regeln: "op" = new | revise | close | rest | reactivate; "art" = shared | individual; bei art gemeinsam MUSS "confirmedByBoth":true stehen (sonst darf der Block nicht erscheinen – hol erst beide Okays ein); bei art individuell MUSS "owner" (Name) und "ownerConfirmed":true stehen; bei neu/revidieren ist "text" die volle neue Formulierung (optional "wish"); bei new+shared gehören die erhobenen "baseline" ({"Name":Zahl,…}) hinein; bei bestehenden Aufträgen ist "id" die Auftrags-ID aus dem Kontext. Eine wesentliche Revision beginnt die Verlaufslinie inhaltlich neu – sag das dem Paar.
 
-ABSCHLUSS: Kommt "[CLOSE MOMENT]", führe den Abschluss-Akt zu Ende (Prozess-Schau + Landung) und gib GENAU dieses Format aus – zwischen den Marken REINES JSON:
+ABSCHLUSS: Kommt "[CLOSE MOMENT]" ODER beendet das Paar die Sitzung erkennbar verbal ("lass uns Schluss machen", Verabschiedung), führe den Abschluss-Akt zu Ende (Prozess-Schau + Landung) und gib GENAU dieses Format aus – zwischen den Marken REINES JSON:
 MOMENT-BLOCK
 {"summary":"…","topics":["…"],"addressed":[],"deferred":[],"selfResolved":[],"shift":null,"gentleInvitation":null}
 END MOMENT-BLOCK
-Regeln: "summary" = 3–5 Sätze, was im Moment geschah und mitgenommen wurde; "topics" = 1–4 Schlagworte; "addressed"/"deferred"/"selfResolved" = Listen der Agenda-IDs (AGD…) aus dem Kontext, je nachdem was damit geschah (leer lassen, wenn keine Agenda anlag); "shift" = null oder ein Satz zur Wandel-Frage; "gentleInvitation" = null oder die vom Paar gewählte Einladung im Wortlaut.`;
+Regeln: "summary" = 3–5 Sätze, was im Moment geschah und mitgenommen wurde; "topics" = 1–4 Schlagworte; "addressed"/"deferred"/"selfResolved" = Listen der Agenda-IDs (AGD…) aus dem Kontext, je nachdem was damit geschah (leer lassen, wenn keine Agenda anlag); "shift" = null oder ein Satz zur Wandel-Frage; "gentleInvitation" = null oder die vom Paar gewählte Einladung im Wortlaut. Behaupte NIE von dir aus, ein Protokoll sei "gespeichert" – erzeuge einfach den Block; die App legt ihn ab, und das Paar findet ihn unter "Gemeinsame Momente" im Vorraum.`;
 }
 
 export function reflexionsPrompt(name, partner){
@@ -320,6 +320,7 @@ export const steuerTexte = {
   scaleErgebnis: "SCALE-RESULT: {id}={wert}",
   scaleClosingErgebnis: "SCALE-RESULT: closing {nameA}={a} · {nameB}={b}",
   choiceErgebnis: "CHOICE-RESULT: {id}={wahl}",
+  momentAbschluss: "[CLOSE MOMENT]",
   einzelRueckkehr: "[Rückkehr nach Abschluss: Die Auftragsklärung ist bereits abgeschlossen und freigegeben; ich betrete den Raum erneut. Eröffne den NACHKLANG.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: Die App hat beiden beide Richtungen gleichzeitig gezeigt – Stapel und Tipps nebeneinander, Berührungspunkte hervorgehoben; die Tafel bleibt sichtbar. Führe nun durch das Gespräch: Berührungspunkte zuerst, dann die Unterschiede mit Neugier.",
 };
@@ -383,6 +384,10 @@ export const korpusTexte = {
   "mk.prozessKopf": "META-REFLECTION (aufzudecken, Werte sieht nur das System — häppchenweise, Treffer zuerst):",
   "mk.prozessLeer": "META-REFLECTION: keine ausstehend.",
   "mk.zwischenzeitKopf": "IN-BETWEEN MATERIAL (freigegeben):",
+  "mk.qzKopf": "ZWISCHENZEIT-EINLADUNGEN (Leiter-Stand):",
+  "mk.qzWahlen": "Letzte Wahlen: ",
+  "mk.qzWahlenLeer": "Letzte Wahlen: keine.",
+  "mk.qzStufe": "Leiter-Stufe: ",
   "mk.materialVon": "- von {name}: ",
   "mk.materialLeer": "IN-BETWEEN MATERIAL: keines.",
   "mk.namen": "Namen: {nameA} (A), {nameB} (B).",

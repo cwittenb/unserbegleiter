@@ -8,7 +8,7 @@ import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, mark
 import { einzelDef, gemeinsamDef, aufdeckDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
-  trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
+  trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt } from "./prozess.js";
 import { applyDesign } from "./design.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
@@ -193,6 +193,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <button class="pb-btn pb-ikon" id="btnMic" data-icon="mic" title="${t("chat.diktieren")}" aria-label="${t("chat.diktieren")}">${IKON.mic}</button>
           <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
         </div>
+        <button class="pb-btn pb-hidden" id="btnChatEnde">${t("chat.abschliessen")}</button>
         <button class="pb-btn" id="btnChatZurueck">${t("chat.raumVerlassen")}</button>
       </div>
     </div>`;
@@ -308,6 +309,8 @@ export function createApp({ doc, backend, root, diktat }) {
       b.disabled = zu;
       if (h) { h.textContent = text || ""; h.classList.toggle("pb-hidden", !zu || !text); }
     };
+    const bm = $("btnMoment");
+    if (bm) bm.textContent = lage.momentOffen ? t("teil.momentWeiter") : t("teil.moment");
     sperre("btnGemeinsam", "gemeinsamHinweis", !lage.handBeide, t("teil.gateAufloesung"));
     sperre("btnAufdeck", "aufdeckHinweis", !lage.aufdeckBereit,
       lage.aufdeckGelaufen ? t("teil.gateAufdeckGelaufen") : t("teil.gateAufdeck"));
@@ -659,7 +662,7 @@ export function createApp({ doc, backend, root, diktat }) {
       onScale: (art, e2) => scalePanel(art, e2),
       onChoice: (art, e2, daten) => choicePanel(art, e2, daten),
       onAufdecken: e2 => aufdeckPanel(e2),
-      onMomentEnde: () => markiereAufgedeckt(backend).catch(() => {}),
+      onMomentEnde: () => { markiereAufgedeckt(backend).catch(() => {}); aktualisiereChatEnde(); },
     };
     const def =
       art === "solo" ? soloDef(backend, hooks) :
@@ -670,7 +673,7 @@ export function createApp({ doc, backend, root, diktat }) {
     state.chatId = art;
     state.chatShared = null;
     state.herkunft = def.shared ? "scrShared" : "scrMyRoom";   // Raum verlassen → Vorraum
-    const gespeichert = await backend.chat.load(def.shared ? "shared" : "mine", art);
+    let gespeichert = await backend.chat.load(def.shared ? "shared" : "mine", art);
     state.chatShared = def.shared;
     // Gemeinsame Auflösung nur, wenn die Spekulation da ist: Beide Handover-
     // Blocks (Selbstangaben + Vermutungen) müssen vorliegen — sonst würde die
@@ -698,6 +701,9 @@ export function createApp({ doc, backend, root, diktat }) {
       if (!alleA.A || !alleA.B)
         throw new Error(t("fehler.aufdeckZu"));
     }
+    // S42 · Eine abgeschlossene Qualitätszeit wird nicht wieder aufgemacht —
+    // ihr Protokoll liegt in "Gemeinsame Momente"; der nächste Klick beginnt frisch.
+    if (art === "moment" && gespeichert && gespeichert.status !== "running") gespeichert = null;
     const chat = gespeichert || { messages: [], status: "running" };
     // S38 · Abschluss-Bewusstsein: Eine freigegebene Auftragsklärung öffnet
     // beim Wiederbetreten den NACHKLANG (hinzufügen / richtigstellen /
@@ -718,6 +724,7 @@ export function createApp({ doc, backend, root, diktat }) {
       },
     });
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;
+    aktualisiereChatEnde();
     show("scrChat");
     renderMsgs();
     if (chat.messages.length) {
@@ -764,6 +771,7 @@ export function createApp({ doc, backend, root, diktat }) {
           content: baueMomentKontext(
             {
               goals, agenda, momentLog,
+              qualitytime: await backend.bstate.get("qualitytime").catch(() => null),
               messrunde: (() => { const r = bereiteRunde(measurements); return r ? formatiereMessrunde(r, info.nameA, info.nameB) : null; })(),
               sharings: [freiA, freiB].filter(Boolean),
             },
@@ -924,6 +932,14 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));
   $("btnZurueck2").addEventListener("click", () => betrete("scrStart"));
   $("btnChatZurueck").addEventListener("click", () => betrete(state.herkunft || "scrStart"));
+  // S42 · Expliziter Abschluss der Qualitätszeit: bittet die Begleitung um den
+  // Abschluss-Akt; das Modell erzeugt das Protokoll (MOMENT-BLOCK), die App
+  // legt es in "Gemeinsame Momente" ab und schließt die Session wirklich.
+  $("btnChatEnde").addEventListener("click", async () => {
+    if (!state.engine || state.engine.chat.status !== "running") return;
+    await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.momentAbschluss, { hidden: true }));
+    aktualisiereChatEnde();
+  });
   $("btnSolo").addEventListener("click", () => startChat("solo").catch(e => err(e.message)));
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
@@ -933,7 +949,7 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnMess").addEventListener("click", () => infoToggle("boxMess", () => zeigeMess()).catch(e => err(e.message)));
   $("btnRegal").addEventListener("click", () => infoToggle("boxRegal", () => zeigeRegal()).catch(e => err(e.message)));
   $("btnAgenda").addEventListener("click", () => infoToggle("boxAgenda", () => zeigeAgenda()).catch(e => err(e.message)));
-  $("btnQz").addEventListener("click", () => infoToggle("boxQz", () => zeigeQz()).catch(e => err(e.message)));
+  $("btnQz").addEventListener("click", () => infoToggle("boxQz", () => zeigeMomente()).catch(e => err(e.message)));
   $("btnSend").addEventListener("click", () => {
     const t = $("pbInput").value.trim();
     if (!t) return;
@@ -1008,55 +1024,37 @@ export function createApp({ doc, backend, root, diktat }) {
     });
   }
 
-  /* ---- Qualitätszeit: Einladungs-Menü mit Leiter ---- */
-  async function zeigeQz() {
+  /* S42 · Gemeinsame Momente: der geteilte Protokoll-Zeitstrahl. Hier liegen
+     die Abschluss-Protokolle der Qualitätszeiten (und der Aufdeck-Runde) —
+     chronologisch, nur lesbar, analog "Meine Zeitleiste". */
+  async function zeigeMomente() {
     const box = $("boxQz");
     zeigeNur("boxQz");
     box.classList.remove("pb-hidden");
-    const qz = (await backend.bstate.get("qualitytime")) || { resting: {}, choices: [] };
-    if (!qz.startAt) { qz.startAt = new Date().toISOString(); await backend.bstate.set("qualitytime", qz); }
-    const stufe = qzStufe(qz);
-    if (stufe === "pause") {
-      box.innerHTML = `<div class="pb-sub">${t("qz.titel")}</div><p style="font-size:14px">${t("qz.pausiert", { datum: esc((qz.ladder.pausedUntil || "").slice(0, 10)) })}</p>`;
-      return;
-    }
-    const rahmen = K().QZ_STUFEN_TEXT[stufe];
-    box.innerHTML =
-      `<div class="pb-sub">${t("qz.titel")}</div>` +
-      `<p class="pb-sub" style="margin:6px 0 4px">${t("qz.intro")}</p>` +
-      (rahmen ? `<p style="font-size:14px">${esc(rahmen)}</p>` : "") +
-      (stufe === 4 ? `<button class="pb-btn" id="qzPause">${t("qz.pauseBtn")}</button>` : "") +
-      `<button class="pb-btn primary" id="qzHolen">${t("qz.holen")}</button><div id="qzKarten"></div>`;
-    if (stufe === 4) box.querySelector("#qzPause").addEventListener("click", async () => { await vereinbarePause(backend, 4); zeigeQz(); });
-    box.querySelector("#qzHolen").addEventListener("click", async () => {
-      const [goals, freiA, freiB] = await Promise.all([
-        backend.bstate.get("goals"),
-        Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
-        Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
-      ]);
-      setKorpusSprache(state.info && state.info.locale === "en" ? "en" : "de");   // QZ = geteilt, Paarsprache
-      const def = qzDef({
-        onFaecher: async (data) => {
-          $("qzKarten").innerHTML = data.invitations.map((e2, i) =>
-            `<div class="pb-item">${esc(e2.text)}<br><span class="pb-sub">${esc(e2.domain)}</span> <button class="pb-btn" data-qzw="${i}" style="padding:3px 10px">${t("qz.waehlen")}</button></div>`
-          ).join("") + `<button class="pb-btn" id="qzKeine" style="margin-top:6px">${t("qz.keine")}</button>`;
-          for (const b of $("qzKarten").querySelectorAll("[data-qzw]"))
-            b.addEventListener("click", async () => {
-              await waehleEinladung(backend, data.invitations[+b.getAttribute("data-qzw")]);
-              $("qzKarten").innerHTML = `<p style="font-size:14px">${t("qz.gewaehlt")}</p>`;
-            });
-          $("qzKarten").querySelector("#qzKeine").addEventListener("click", async () => {
-            await keineEinladung(backend, data.invitations, stufe);
-            $("qzKarten").innerHTML = `<p style="font-size:14px">${t("qz.ok")}</p>`;
-          });
-        },
-      });
-      const engine = new Engine({
-        def, chat: { messages: [], status: "running" }, llm: backend.llm,
-        ctx: {}, hooks: { onPersonError: err },
-      });
-      await engine.sendUser(baueQzMaterial({ goals, sharings: [freiA, freiB].filter(Boolean), qualitytime: qz }));
-    });
+    const [momentLog, revealLog] = await Promise.all([
+      backend.bstate.get("momentLog").catch(() => null),
+      backend.bstate.get("revealLog").catch(() => null),
+    ]);
+    const eintraege = [];
+    for (const e2 of ((momentLog && momentLog.entries) || []))
+      eintraege.push({ at: e2.at || "", art: t("momente.artQz"), text: e2.summary || "",
+        themen: (e2.topics || []).join(" · "), impuls: e2.gentleInvitation || null });
+    if (revealLog && revealLog.at)
+      eintraege.push({ at: revealLog.at, art: t("momente.artAufdeck"), text: revealLog.summary || t("momente.aufdeckStandard"), themen: "", impuls: null });
+    eintraege.sort((a, b) => (a.at < b.at ? -1 : 1));
+    box.innerHTML = `<div class="pb-sub">${t("momente.titel")}</div>` +
+      `<p class="pb-sub" style="margin:6px 0 4px">${t("momente.intro")}</p>` +
+      (eintraege.length ? eintraege.map(e2 =>
+        `<div class="pb-item"><span class="pb-sub">${esc((e2.at || "").slice(0, 10))} · ${esc(e2.art)}${e2.themen ? " · " + esc(e2.themen) : ""}</span><br>${esc(e2.text)}` +
+        (e2.impuls ? `<br><span class="pb-sub">${t("momente.impuls")} ${esc(e2.impuls)}</span>` : "") + `</div>`
+      ).join("") : `<p style="font-size:14px">${t("momente.leer")}</p>`);
+  }
+
+  /* S42 · Abschluss-Knopf nur in einer LAUFENDEN Qualitätszeit anbieten. */
+  function aktualisiereChatEnde() {
+    const b = $("btnChatEnde");
+    if (b) b.classList.toggle("pb-hidden",
+      !(state.engine && state.engine.def && state.engine.def.id === "moment" && state.engine.chat.status === "running"));
   }
 
   /* S38 · Persönliche Zeitleiste fortschreiben (Auftragsklärung, Prozess-

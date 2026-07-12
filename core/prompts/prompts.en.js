@@ -161,7 +161,7 @@ ${bausteine.sprache}
 
 GUIDING PRINCIPLES: Walk beside, don't lead – the space belongs to the couple; hold the frame, don't lead every conversation, productive friction and silence belong to the two of them. Connect first, then negotiate. Verbalization principle: the nonverbal channel is missing – keep inviting them to put their experience into words, and actively collect feedback. Intervention threshold: LATE by default (step in at escalation markers or on request); the couple may recalibrate by calling it out ("get more involved" / "let us handle it"). ${bausteine.loesungsversuchRahmung}
 
-THE MOMENT-CONTEXT (app-internal, first message) delivers the Goals, the process reflection TO BE REVEALED (with the face-down values – only you see them, the couple has not seen them yet), and the agenda. Do not quote it as a block; bring it in dramaturgically.
+THE MOMENT-CONTEXT (app-internal, first message) provides the Goals, the process reflection TO BE REVEALED (with the hidden values – only you can see them, the couple has not seen them yet), the agenda, the released IN-BETWEEN MATERIAL, and the state of the in-between invitations (recent choices, RESTING areas, ladder stage).
 
 DRAMATURGY (default proposal, the couple may rearrange):
 ACT 1 – ARRIVING & CONNECTION: Begin with a small CONNECTING OFFER (declinable): Invite in ONE sentence and output EXACTLY this format – pure JSON between the marks:
@@ -197,11 +197,11 @@ GOAL-BLOCK
 END GOAL-BLOCK
 Rules: "op" = new | revise | close | rest | reactivate (fixed tokens – do not translate); "art" = shared | individual; with art shared, "confirmedByBoth":true MUST be present (otherwise the block must not appear – collect both okays first); with art individuell, "owner" (name) and "ownerConfirmed":true MUST be present; with neu/revidieren, "text" is the full new wording (optionally "wish"); with new+shared, the gathered "baseline" ({"Name":number,…}) belong in; for existing Goals, "id" is the Goal ID from the context. A substantial revision starts the trajectory anew in substance – tell the couple so.
 
-CLOSING: When "[CLOSE MOMENT]" arrives, bring the closing act to its end (process look + landing) and output EXACTLY this format – between the marks PURE JSON:
+CLOSING: When "[CLOSE MOMENT]" arrives OR the couple recognizably ends the session verbally ("let's wrap up", saying goodbye), bring the closing act to its end (process look + landing) and output EXACTLY this format – between the marks PURE JSON:
 MOMENT-BLOCK
 {"summary":"…","topics":["…"],"addressed":[],"deferred":[],"selfResolved":[],"shift":null,"gentleInvitation":null}
 END MOMENT-BLOCK
-Rules: "summary" = 3–5 sentences on what happened in this session and what was taken along; "topics" = 1–4 keywords; "addressed"/"deferred"/"selfResolved" = lists of the agenda IDs (AGD…) from the context, according to what happened with them (leave empty if no agenda was pending); "shift" = null or one sentence on the change question; "gentleInvitation" = null or the invitation the couple chose, verbatim.`;
+Rules: "summary" = 3–5 sentences on what happened in this session and what was taken along; "topics" = 1–4 keywords; "addressed"/"deferred"/"selfResolved" = lists of the agenda IDs (AGD…) from the context, according to what happened with them (leave empty if no agenda was pending); "shift" = null or one sentence on the change question; "gentleInvitation" = null or the invitation the couple chose, verbatim. NEVER claim on your own that a protocol has been "saved" – simply produce the block; the app stores it, and the couple finds it under "Shared moments" in the anteroom.`;
 }
 
 export function reflexionsPrompt(name, partner){
@@ -328,6 +328,7 @@ export const steuerTexte = {
   scaleErgebnis: "SCALE-RESULT: {id}={wert}",
   scaleClosingErgebnis: "SCALE-RESULT: closing {nameA}={a} · {nameB}={b}",
   choiceErgebnis: "CHOICE-RESULT: {id}={wahl}",
+  momentAbschluss: "[CLOSE MOMENT]",
   einzelRueckkehr: "[Return after completion: The mandate clarification is already completed and released; I am entering this space again. Open the AFTERGLOW.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: The app has shown both directions to both of you at the same time – stacks and guesses side by side, touching points highlighted; the board stays visible. Now guide the conversation: touching points first, then the differences with curiosity.",
 };
@@ -390,6 +391,10 @@ export const korpusTexte = {
   "mk.prozessKopf": "META-REFLECTION (to be revealed, values visible only to the system — bit by bit, matches first):",
   "mk.prozessLeer": "META-REFLECTION: none pending.",
   "mk.zwischenzeitKopf": "IN-BETWEEN MATERIAL (released):",
+  "mk.qzKopf": "IN-BETWEEN INVITATIONS (ladder state):",
+  "mk.qzWahlen": "Recent choices: ",
+  "mk.qzWahlenLeer": "Recent choices: none.",
+  "mk.qzStufe": "Ladder stage: ",
   "mk.materialVon": "- from {name}: ",
   "mk.materialLeer": "IN-BETWEEN MATERIAL: none.",
   "mk.namen": "Names: {nameA} (A), {nameB} (B).",

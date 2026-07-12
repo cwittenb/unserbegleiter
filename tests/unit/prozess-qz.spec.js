@@ -128,49 +128,10 @@ describe("QZ · Leiter-Logik", () => {
   });
 });
 
-describe("UI · QZ-Menü-Drehbuch (echte Engine, QUALITYTIME-BLOCK)", () => {
-  const FAECHER = JSON.stringify({ invitations: [
-    { text: "Lust, am Sonntag zusammen zu kochen?", domain: "Alltagsgestaltung", source: "resonance" },
-    { text: "Lust auf einen kleinen Ausflug ins Grüne?", domain: "Abenteuer", source: "negativeSpace" },
-  ]});
-
-  it("Einladungen holen → Karten erscheinen; Wählen persistiert die Wahl", async () => {
-    const mock = new MockLLM(["QUALITYTIME-BLOCK\n" + FAECHER + "\nEND QUALITYTIME-BLOCK"]);
-    const backend = memoryBackend(mock);
-    const app = createApp({ doc: document, backend, root });
-    await app.boot();
-    await klick(root.querySelector("#btnSharedRoom"));
-    await klick(root.querySelector("#btnQz"));
-    await klick(root.querySelector("#qzHolen"));
-
-    const karten = root.querySelector("#qzKarten");
-    expect(karten.textContent).toContain("zusammen zu kochen");
-    expect(karten.textContent).toContain("Ausflug ins Grüne");
-    expect(mock.calls[0].messages[0].content).toContain("MATERIAL");       // qzMenuePrompt arbeitet nur damit
-
-    await klick(karten.querySelector('[data-qzw="0"]'));
-    const qz = await backend.bstate.get("qualitytime");
-    expect(qz.choices[0].domain).toBe("Alltagsgestaltung");
-    expect(karten.textContent).toContain("nichts nachgehalten");
-  });
-
-  it("ungültiges Menü (nur 1 Einladung) läuft durch die Korrektur-Runde der Engine", async () => {
-    const kaputt = JSON.stringify({ invitations: [{ text: "x", domain: "y", source: "resonance" }] });
-    const mock = new MockLLM([
-      "QUALITYTIME-BLOCK\n" + kaputt + "\nEND QUALITYTIME-BLOCK",
-      "QUALITYTIME-BLOCK\n" + FAECHER + "\nEND QUALITYTIME-BLOCK",
-    ]);
-    const backend = memoryBackend(mock);
-    const app = createApp({ doc: document, backend, root });
-    await app.boot();
-    await klick(root.querySelector("#btnSharedRoom"));
-    await klick(root.querySelector("#btnQz"));
-    await klick(root.querySelector("#qzHolen"));
-    expect(mock.calls).toHaveLength(2);                                    // genau eine Korrektur
-    expect(mock.calls[1].messages.some(m => m.hidden && m.content.includes("SYSTEM-REVISION"))).toBe(true);
-    expect(root.querySelector("#qzKarten").textContent).toContain("zusammen zu kochen");
-  });
-});
+/* S42: Das separate QZ-Einladungs-Menü (boxQz/qzHolen) ist in die
+   Qualitätszeit-Session gewandert; "Gemeinsame Momente" ist jetzt der
+   Protokoll-Zeitstrahl. Die Drehbücher dazu liegen in s42-qualitaetszeit.spec.js;
+   die Leiter-Logik oben bleibt unverändert in Kraft. */
 
 describe("UI · Aufdeckung im Moment", () => {
   it("bereite Runde fließt formatiert in den MOMENT-CONTEXT; MOMENT-BLOCK markiert sie aufgedeckt", async () => {

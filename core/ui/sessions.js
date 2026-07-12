@@ -11,6 +11,7 @@
 //                                          streamt Text-Häppchen (optional)
 
 import { BLOECKE } from "../contracts/registry.js";
+import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { fuelle } from "../i18n/index.js";
 
@@ -52,7 +53,7 @@ export function momentDef(backend, hooks = {}) {
   return {
     id: "moment",
     shared: true,
-    titel: "Gemeinsame Session",
+    titel: "Qualitätszeit",
     sysPrompt: ctx => K().momentPrompt(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
     markerOrder: ["[[CHOICE-CONNECT]]"],
     markers: {
@@ -74,6 +75,9 @@ export function momentDef(backend, hooks = {}) {
           const mp = (await backend.bstate.get("momentLog")) || { entries: [] };
           mp.entries.push({ at: new Date().toISOString(), ...data });
           await backend.bstate.set("momentLog", mp);
+          // S42 · Eine gewählte Zwischenzeit-Einladung speist die Leiter
+          // (Wahl setzt sie zurück; die Domänen-Ruhe-Logik bleibt in prozess.js).
+          if (data.gentleInvitation) await waehleEinladung(backend, { text: data.gentleInvitation }).catch(() => {});
           engine.chat.status = "finished";
           if (hooks.onMomentEnde) hooks.onMomentEnde(data);
         },
@@ -180,7 +184,7 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog }) {
   return KT("sk.kopf") + "\n" + teile.join("\n\n");
 }
 
-export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings }, nameA, nameB) {
+export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings, qualitytime }, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];
 
@@ -207,6 +211,16 @@ export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharing
   teile.push(frei.length
     ? KT("mk.zwischenzeitKopf") + "\n" + frei.map(f => fuelle(KT("mk.materialVon"), { name: f.name }) + f.items.map(i => i.text).join(" · ")).join("\n")
     : KT("mk.materialLeer"));
+
+  // S42 · Stand der Zwischenzeit-Einladungen (Leiter): ruhende Bereiche und
+  // die letzten Wahlen — damit der Zwischenzeit-Impuls RESTING respektiert
+  // und an Gewähltem anknüpfen kann.
+  const ruht = Object.keys((qualitytime && qualitytime.resting) || {}).filter(k => qualitytime.resting[k]);
+  const wahlen = ((qualitytime && qualitytime.choices) || []).slice(-3);
+  teile.push(KT("mk.qzKopf") + "\n" +
+    (ruht.length ? KT("qm.ruhend") + ruht.join(", ") : KT("qm.ruhendLeer")) + "\n" +
+    (wahlen.length ? KT("mk.qzWahlen") + wahlen.map(w => w.text || w).join(" · ") : KT("mk.qzWahlenLeer")) +
+    (qualitytime ? "\n" + KT("mk.qzStufe") + qzStufe(qualitytime) : ""));
 
   teile.push(fuelle(KT("mk.namen"), { nameA, nameB }));
   return teile.join("\n\n");
