@@ -596,6 +596,11 @@ export function createApp({ doc, backend, root, diktat }) {
         throw new Error(t("fehler.aufdeckZu"));
     }
     const chat = gespeichert || { messages: [], status: "running" };
+    // S38 · Abschluss-Bewusstsein: Eine freigegebene Auftragsklärung öffnet
+    // beim Wiederbetreten den NACHKLANG (hinzufügen / richtigstellen /
+    // Zusammenfassung) statt stumm abgeschlossen zu sein.
+    const einzelRueckkehr = art === "einzel" && !!chat.freigegeben && chat.status === "released";
+    if (einzelRueckkehr) chat.status = "running";
     const korpusSprache = (gespeichert && gespeichert.language) || paarSprache;
     setKorpusSprache(korpusSprache);
     if (!gespeichert) chat.language = korpusSprache;
@@ -612,7 +617,11 @@ export function createApp({ doc, backend, root, diktat }) {
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;
     show("scrChat");
     renderMsgs();
-    if (chat.messages.length) { await state.engine.resume(); } else {
+    if (chat.messages.length) {
+      await state.engine.resume();
+      if (einzelRueckkehr)
+        await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelRueckkehr, { hidden: true }));
+    } else {
       if (art === "gemeinsam") {
         const [freiA, freiB, protokoll] = await Promise.all([
           Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
@@ -851,6 +860,7 @@ export function createApp({ doc, backend, root, diktat }) {
         guess: +box.querySelector("#msZweit").value,
         fit,
       });
+      await zeitleistenEintrag(t("zeitleiste.tpMess"), t("zeitleiste.eintragMess"));
       box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.danke")}` +
         (runde.status === "ready" ? t("mess.bereit") : "") + `</p>`;
     });
@@ -905,6 +915,16 @@ export function createApp({ doc, backend, root, diktat }) {
       });
       await engine.sendUser(baueQzMaterial({ goals, sharings: [freiA, freiB].filter(Boolean), qualitytime: qz }));
     });
+  }
+
+  /* S38 · Persönliche Zeitleiste fortschreiben (Auftragsklärung, Prozess-
+     reflexion). Fehlertolerant — die Zeitleiste ist Chronik, kein Muss. */
+  async function zeitleistenEintrag(topic, summary) {
+    try {
+      const zl = (await backend.pstate.get("timeline")) || { entries: [] };
+      zl.entries.push({ topics: [topic], summary, at: new Date().toISOString() });
+      await backend.pstate.set("timeline", zl);
+    } catch { /* Chronik ist Komfort, kein Muss */ }
   }
 
   /* ---- Kernwetten-Panels (Regler · Ranking · Startwerte · Freigabe) ---- */
@@ -1008,30 +1028,79 @@ export function createApp({ doc, backend, root, diktat }) {
     zeichne();
   }
 
+  /* S38 · Prioritäten-Board: topN nummerierte Plätze; Pool-Chips lassen sich
+     per Drag & Drop auf einen Platz ziehen (besetzt → ersetzen, das alte Item
+     fällt in den Pool zurück), Platz-Items lassen sich per Drag & Drop
+     umsortieren. Tipp-Fallback für Touch: Chip antippen → erster freier
+     Platz (wie bisher); Platz-Item antippen → auswählen, zweiten Platz
+     antippen → dorthin verschieben. ✕ entfernt. */
   function rankPanel(mode, engine) {
     const cfg = RANK_MODES[mode];
     const ITEMS = rankItems();
     const ctx = { me: state.info.name, partner: state.info.partner };
-    const order = [];
+    const order = [];        // kompakte Platzliste (Index = Platz)
+    let zieh = null;         // laufender Drag: {art:"pool",ri} | {art:"platz",pos}
+    let gewaehlt = null;     // Tipp-Fallback: ausgewählter Platz (Index)
     const p = kw();
     p.classList.remove("pb-hidden");
+    function setze(pos, ri) {                       // Pool → Platz (ersetzen/anhängen)
+      const alt = order.indexOf(ri);
+      if (alt >= 0) order.splice(alt, 1);
+      if (pos >= order.length) { if (order.length < cfg.topN) order.push(ri); }
+      else order[pos] = ri;                         // ersetztes Item fällt in den Pool zurück
+    }
+    function verschiebe(von, nach) {                // Platz → Platz (umsortieren)
+      if (von === nach || von < 0 || von >= order.length) return;
+      const [x] = order.splice(von, 1);
+      order.splice(Math.min(nach, order.length), 0, x);
+    }
     function zeichne() {
       const titel = typeof cfg.title === "function" ? cfg.title(ctx) : cfg.title;
       const desc = typeof cfg.desc === "function" ? cfg.desc(ctx) : cfg.desc;
       p.innerHTML =
         `<div class="pb-sub">${esc(titel)}</div><p style="font-size:13px">${esc(desc)}</p>` +
         `<div id="kwStack">` +
-        order.map((ri, pos) =>
-          `<div class="pb-item">${pos + 1}. ${esc(ITEMS[ri].label)} <button class="pb-btn" data-raus="${ri}" style="padding:2px 8px;float:right">✕</button></div>`
-        ).join("") + `</div><div id="kwPool" style="margin:8px 0">` +
+        Array.from({ length: cfg.topN }, (_, pos) => {
+          const ri = order[pos];
+          return ri === undefined
+            ? `<div class="pb-item pb-platz leer" data-platz="${pos}">${pos + 1}. <span class="pb-sub">${t("rank.frei")}</span></div>`
+            : `<div class="pb-item pb-platz${gewaehlt === pos ? " gewaehlt" : ""}" data-platz="${pos}" draggable="true">${pos + 1}. ${esc(ITEMS[ri].label)} <button class="pb-btn" data-raus="${ri}" style="padding:2px 8px;float:right">✕</button></div>`;
+        }).join("") + `</div><div id="kwPool" style="margin:8px 0">` +
         ITEMS.map((it, ri) => order.includes(ri) ? "" :
-          `<button class="pb-btn" data-rein="${ri}"${order.length >= cfg.topN ? " disabled" : ""}>${esc(it.label)}</button>`
+          `<button class="pb-btn" data-rein="${ri}" draggable="true">${esc(it.label)}</button>`
         ).join("") + `</div>` +
         `<button class="pb-btn primary" id="kwRankOk"${order.length === cfg.topN ? "" : " disabled"}>${t("allg.fertig")}</button>`;
-      for (const b of p.querySelectorAll("[data-rein]"))
-        b.addEventListener("click", () => { order.push(+b.getAttribute("data-rein")); zeichne(); });
+      for (const b of p.querySelectorAll("[data-rein]")) {
+        const ri = +b.getAttribute("data-rein");
+        b.addEventListener("click", () => {          // Tipp: erster freier Platz
+          if (order.length >= cfg.topN) return;
+          order.push(ri); gewaehlt = null; zeichne();
+        });
+        b.addEventListener("dragstart", () => { zieh = { art: "pool", ri }; });
+        b.addEventListener("dragend", () => { zieh = null; });
+      }
+      for (const pl of p.querySelectorAll("[data-platz]")) {
+        const pos = +pl.getAttribute("data-platz");
+        pl.addEventListener("dragstart", () => { if (order[pos] !== undefined) zieh = { art: "platz", pos }; });
+        pl.addEventListener("dragend", () => { zieh = null; });
+        pl.addEventListener("dragover", ev => ev.preventDefault());
+        pl.addEventListener("drop", ev => {
+          ev.preventDefault();
+          if (!zieh) return;
+          if (zieh.art === "pool") setze(pos, zieh.ri);
+          else verschiebe(zieh.pos, pos);
+          zieh = null; gewaehlt = null; zeichne();
+        });
+        pl.addEventListener("click", ev => {         // Tipp-Fallback (Touch)
+          if (ev.target.hasAttribute && ev.target.hasAttribute("data-raus")) return;
+          if (gewaehlt === null) { if (order[pos] !== undefined) { gewaehlt = pos; zeichne(); } return; }
+          if (gewaehlt === pos) { gewaehlt = null; zeichne(); return; }
+          verschiebe(gewaehlt, pos);
+          gewaehlt = null; zeichne();
+        });
+      }
       for (const b of p.querySelectorAll("[data-raus]"))
-        b.addEventListener("click", () => { order.splice(order.indexOf(+b.getAttribute("data-raus")), 1); zeichne(); });
+        b.addEventListener("click", () => { order.splice(order.indexOf(+b.getAttribute("data-raus")), 1); gewaehlt = null; zeichne(); });
       p.querySelector("#kwRankOk").addEventListener("click", async () => {
         if (order.length !== cfg.topN) return;
         kwZu();
@@ -1106,7 +1175,9 @@ export function createApp({ doc, backend, root, diktat }) {
           await backend.bstate.set("reveal", alle);
           engine.chat.minigate = "ja";
         }
+        engine.chat.freigegeben = true;   // S38: Abschluss-Bewusstsein über den Session-Zustand
         engine.chat.status = "released";
+        await zeitleistenEintrag(t("zeitleiste.tpAuftrag"), t("zeitleiste.eintragAuftrag", { n: items.length, gesamt: data.items.length }));
       } catch (e) { err(e.message); return; }
       await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.freigabeAnzahl, { n: items.length, gesamt: data.items.length })));
     });

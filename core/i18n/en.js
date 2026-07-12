@@ -48,6 +48,11 @@ export const en = {
 
   // Timeline
   "zeitleiste.titel": "Timeline",
+  "rank.frei": "free — drag here or tap",
+  "zeitleiste.tpAuftrag": "Mandate clarification",
+  "zeitleiste.tpMess": "Process reflection",
+  "zeitleiste.eintragAuftrag": "Mandate clarification completed — {n} of {gesamt} items released for the shared session.",
+  "zeitleiste.eintragMess": "Hidden contribution submitted — it will be revealed together in your next session.",
   "zeitleiste.leer": "No entries yet — they grow out of your reflection sessions, with a date and a short summary.",
 
   // Shelf

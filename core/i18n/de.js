@@ -46,6 +46,11 @@ export const de = {
 
   // Zeitleiste
   "zeitleiste.titel": "Zeitleiste",
+  "rank.frei": "frei — hierhin ziehen oder antippen",
+  "zeitleiste.tpAuftrag": "Auftragsklärung",
+  "zeitleiste.tpMess": "Prozessreflexion",
+  "zeitleiste.eintragAuftrag": "Auftragsklärung abgeschlossen — {n} von {gesamt} Punkten für die gemeinsame Session freigegeben.",
+  "zeitleiste.eintragMess": "Verdeckter Beitrag abgegeben — aufgedeckt wird gemeinsam in eurer nächsten Session.",
   "zeitleiste.leer": "Noch keine Einträge — sie entstehen aus deinen Reflexionsgesprächen, mit Datum und Kurzfassung.",
 
   // Regal

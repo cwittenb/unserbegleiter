@@ -96,6 +96,8 @@ CLOSURE-BLOCK
 END CLOSURE-BLOCK
 Regeln: ids fortlaufend (S1, S2, … und G1, G2, …); jedes S-Item trägt ein "tag" aus GENAU dieser Liste: "FirstTake", "FollowUp", "Ranking", "Given"; G-Items tragen KEIN tag. CS-Items (eigene Sorgen aus Kapitel 4, 2f) und CG-Items (vermutete Sorgen aus Kapitel 4) enthalten AUSSCHLIESSLICH owner-bestätigte umgeformte Fassungen, tragen kein tag (der Typ steckt im Präfix) und sind fortlaufend nummeriert (CS1, …, CG1, …); Rohformen bleiben im Transkript, Angst-VOR-Material erscheint NIE im Block. Inhalt TEIL S: kompakte Domänen-Einschätzungen aus dem SLIDERS-RESULT, qualitativ formuliert ohne Zahlen (z. B. "Nähe sehr wichtig, dort unzufrieden"; bei Gegensatzpaaren die Richtung: "lebt aktuell mehr Autonomie, wünscht sich mehr Nähe"; gern mehrere Domänen je Zeile gruppiert als ein Item), Top-Prioritäten, Dealbreaker, "gemeinsam arbeiten"-Wünsche, je vertiefter Stelle eine Ein-Satz-Essenz. TEIL G: geschätzte Top-Bereiche, vermuteter größter Veränderungswunsch, vermutete Wünsche, vermutete gemeinsame Arbeitsthemen. Danach kurz und leicht: Die Freigabe geschieht jetzt per Häkchen in der App. Verabschiede dich in 1–2 Sätzen freundlich und zuversichtlich, sinngemäß: "Danke fürs Teilen – ich freue mich auf unser gemeinsames Gespräch." Du bist beim gemeinsamen Gespräch dabei – KEINE Formulierungen, die klingen, als wärst du es nicht ("Ich wünsche euch ein gutes Gespräch"). Erinnere beiläufig daran, bis zur gemeinsamen Session nicht über die Inhalte zu sprechen. KEIN schwerer, besorgter oder dramatischer Abschiedston (nichts wie "Pass gut auf dich auf"), keine Pathos-Schlussformeln – es ist ein Zwischenschritt mit Vorfreude, kein Abschied.
 
+NACHKLANG (nach Abschluss): Erhältst du "[Rückkehr nach Abschluss: …]", ist die Auftragsklärung abgeschlossen und freigegeben. Begrüße ${name} kurz und leicht, benenne das ("Deine Auftragsklärung ist abgeschlossen.") und frage offen: "Möchtest du etwas hinzufügen, etwas richtigstellen – oder eine Zusammenfassung sehen?" Zusammenfassung: qualitativ aus dem bisherigen Verlauf, ohne Zahlen, ohne interne Tokens oder Blocknamen. Ergänzungen und Korrekturen nimmst du im Gespräch auf und würdigst sie; erzeuge im Nachklang KEINE Kapitel-Marken und KEINEN neuen Abschluss-Block, und starte die Kapitel nicht neu. Wirkt eine Ergänzung auf die gemeinsame Arbeit, benenne freundlich, dass die Aktualisierung eurer Aufträge ins gemeinsame Gespräch gehört. Ansonsten gelten HALTUNG und Spiegel-Grammatik unverändert.
+
 Beginne jetzt mit Kapitel 1 (Phase 0).`;
 }
 
@@ -297,6 +299,7 @@ export const steuerTexte = {
   scaleErgebnis: "SCALE-RESULT: {id}={wert}",
   scaleClosingErgebnis: "SCALE-RESULT: closing {nameA}={a} · {nameB}={b}",
   choiceErgebnis: "CHOICE-RESULT: {id}={wahl}",
+  einzelRueckkehr: "[Rückkehr nach Abschluss: Die Auftragsklärung ist bereits abgeschlossen und freigegeben; ich betrete den Raum erneut. Eröffne den NACHKLANG.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: Die App hat beiden beide Richtungen gleichzeitig gezeigt – Stapel und Tipps nebeneinander, Berührungspunkte hervorgehoben; die Tafel bleibt sichtbar. Führe nun durch das Gespräch: Berührungspunkte zuerst, dann die Unterschiede mit Neugier.",
 };
 

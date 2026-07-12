@@ -85,6 +85,10 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-reihe .pb-btn{margin:6px 6px 0}
       .pb-ikon{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px}
       .pb-ikon svg{width:20px;height:20px;display:block}
+      .pb-platz{border:1px solid var(--card-bd);border-radius:12px;padding:9px 13px;margin:6px 0;cursor:grab}
+      .pb-platz.leer{border-style:dashed;color:var(--ink-faint);cursor:default}
+      .pb-platz.gewaehlt{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+      #kwPool [draggable]{cursor:grab}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">
