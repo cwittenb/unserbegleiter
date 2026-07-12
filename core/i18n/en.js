@@ -15,14 +15,15 @@ export const en = {
   "allg.nochNicht": "Not yet",
   "scale.ok": "Confirm",
   "allg.von": "from {name}",
+  "allg.arbeitet": "one moment …",
 
   // Start overview
   "start.hallo": "Good to see you, {name}.",
   "start.intro": "Two spaces, one simple rule: what stays with you, stays with you — only what you explicitly share is shared.",
   "start.meinRaum": "My Private Space",
-  "start.meinSub": "Just for you: to sort, practice, and set things down. Nothing here reaches {partner} unless you share it.",
+  "start.meinSub": "This is where I accompany you. To reflect, to sort, to practice and to set things down. Nothing from here reaches {partner} unless you release it.",
   "start.teilRaum": "Our Shared Space",
-  "start.teilSub": "For both of you: your shared sessions — and everything one of you has made readable.",
+  "start.teilSub": "Your space for your shared time. Exchange, encounter, reflection — and for reading what one of you has made readable.",
 
   // My Private Space
   "mein.intro": "This space is yours alone — nothing from here reaches {partner} unless you explicitly release it. Whenever you like, you can share what you've worked out: your companion helps you find a formulation, and only your checkmark releases it. Take the time you need.",
@@ -32,10 +33,12 @@ export const en = {
   "mein.mess": "Process Reflection",
 
   // Our Shared Space
-  "teil.intro": "Only what has been shared lives here — plus everything you do together.",
+  "teil.intro": "Your anteroom: this is where you get an overview — the shelves hold only what has been shared. The rooms beyond you enter deliberately, for everything you do together.",
+  "teil.gruppeRaeume": "Rooms — enter and begin",
+  "teil.gruppeRegale": "Shelves — browse without starting anything",
   "teil.moment": "Start a Shared Session",
   "teil.aufdeck": "Start the Reveal Round",
-  "teil.gemeinsam": "Start a Shared Clarification",
+  "teil.gemeinsam": "Start a Shared Resolution",
   "teil.regal": "View the Shelf",
   "teil.agenda": "View the Agenda",
   "teil.qz": "Shared Moments",
@@ -104,8 +107,27 @@ export const en = {
   "fehler.aufdeckWartet": "The Reveal Round is still waiting for you – it comes before the clarification.",
   "fehler.aufdeckZu": "The Reveal Round opens once both of you have chosen it and are ready.",
   "fehler.aufdeckDaten": "The Reveal Round is missing the stack (Top 5) or the guesses (Top 3) – please ask for a correction round in the conversation.",
+  "fehler.aufloesungFehlt": "The Shared Resolution opens once you have both completed and released your goal clarifications.",
+
+  // Signpost (guidance, S35) — next steps computed from state
+  "weg.titel": "Signpost",
+  "weg.einzelPause": "Your goal clarification is paused at chapter {n} — you can continue exactly there.",
+  "weg.aufdeckBereit": "You are both ready: the Reveal Round is waiting for you.",
+  "weg.aufloesungBereit": "Your releases are in place — the Shared Resolution can start.",
+  "weg.aufloesungFehltDu": "The Shared Resolution still needs your release from the goal clarification.",
+  "weg.aufloesungFehltPartner": "The Shared Resolution still needs the release from {partner}.",
+  "weg.aufloesungFehltBeide": "The Shared Resolution opens once you have both released your goal clarifications.",
+  "weg.regalNeu": "Something new is on the shelf for you ({n}) — to read, if you like.",
+  "weg.agendaOffen": "Open items on your agenda: {n}.",
+  "weg.messBereit": "Your process reflection is complete — the reveal awaits in the next Shared Session.",
+  "weg.messOffen": "A process-reflection round is waiting for your concealed contribution.",
+  "weg.momentOffen": "Your Shared Session is open — you can continue exactly there.",
+  "weg.soloErster": "A good first step: a reflection session — your private space for sorting.",
+  "weg.startFrei": "Take whatever fits right now: your own space for you, the shared one for both of you.",
   /* Couple language — bilaterally confirmed switch (S30·C3) */
   "paarspr.titel": "Companion language (couple)",
+  "paarspr.link": "Companion language: {sprache} · change",
+  "paarspr.linkOffen": "Companion language: {sprache} · a suggestion is pending",
   "paarspr.aktuell": "Your shared companion language: {sprache}.",
   "paarspr.vorschlagen": "Suggest switching to {sprache}",
   "paarspr.wartet": "Your suggestion ({sprache}) is waiting for {partner}'s confirmation.",

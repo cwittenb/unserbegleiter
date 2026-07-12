@@ -5,14 +5,14 @@ import { t as uiText } from "../i18n/index.js";
 export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&display=swap');
       :root{
         --bg1:#f7f4ea;--bg2:#edf1e2;--ink:#313c31;--ink-soft:#64705c;--ink-faint:#909a86;
-        --accent:#7ba05b;--accent-ink:#41562c;--me-bg:#7ba05b;--me-ink:#ffffff;
+        --accent:#7ba05b;--accent-ink:#41562c;--on-accent:#ffffff;--me-bg:#7ba05b;--me-ink:#ffffff;
         --card:rgba(255,255,255,.60);--card-bd:rgba(90,110,80,.15);
         --ai-bg:rgba(255,255,255,.72);--ai-bd:rgba(90,110,80,.13);
         --field:rgba(255,255,255,.74);--field-bd:rgba(90,110,80,.22);
       }
       html[data-theme=dark]{
         --bg1:#2a3a34;--bg2:#151f1c;--ink:#edf1e8;--ink-soft:#b3c1aa;--ink-faint:#889481;
-        --accent:#aeca8d;--accent-ink:#e2ecd4;--me-bg:#5b7a51;--me-ink:#f4f7ef;
+        --accent:#aeca8d;--accent-ink:#e2ecd4;--on-accent:#1d2a1a;--me-bg:#42583b;--me-ink:#f4f7ef;
         --card:rgba(255,255,255,.055);--card-bd:rgba(255,255,255,.10);
         --ai-bg:rgba(255,255,255,.06);--ai-bd:rgba(255,255,255,.09);
         --field:rgba(255,255,255,.06);--field-bd:rgba(255,255,255,.16);
@@ -34,8 +34,10 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .pb-btn{display:inline-block;border:1px solid var(--accent);background:transparent;color:var(--accent-ink);
               border-radius:999px;padding:10px 22px;font-family:inherit;font-size:16px;cursor:pointer;margin:6px 8px 0 0;transition:.22s}
-      .pb-btn:hover{background:var(--accent);color:var(--me-ink)}
-      .pb-btn.primary{background:var(--accent);color:var(--me-ink)}
+      .pb-btn:hover{background:var(--accent);color:var(--on-accent)}
+      .pb-btn.primary{background:var(--accent);color:var(--on-accent)}
+      .pb-btn[disabled]{opacity:.45;cursor:not-allowed}
+      .pb-btn[disabled]:hover{background:transparent;color:var(--accent-ink)}
       .pb-btn.primary:hover{filter:brightness(1.05)}
       .pb-msgs{display:flex;flex-direction:column;gap:13px;margin:16px 0}
       .pb-msg{max-width:82%;padding:14px 19px;border-radius:19px;font-size:17px;line-height:1.62;white-space:pre-wrap}
@@ -62,7 +64,20 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                 border:1px solid var(--card-bd);border-radius:999px;padding:4px;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
       .pb-theme button{font-family:inherit;font-size:14px;border:0;background:transparent;color:var(--ink-soft);
                 border-radius:999px;padding:6px 14px;cursor:pointer;transition:.2s}
-      .pb-theme button.an{background:var(--accent);color:var(--me-ink)}
+      .pb-theme button.an{background:var(--accent);color:var(--on-accent)}
+      .pb-busydots{display:inline-flex;gap:4px;align-items:center}
+      .pb-busydots span{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
+      .pb-busydots span:nth-child(2){animation-delay:.2s}.pb-busydots span:nth-child(3){animation-delay:.4s}
+      .pb-busy{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:9px;align-items:center;
+               background:var(--card);border:1px solid var(--card-bd);border-radius:999px;padding:7px 16px;font-size:13px;
+               color:var(--ink-soft);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
+      .pb-zwei{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:stretch}
+      .pb-zwei .pb-card{display:flex;flex-direction:column;gap:6px}
+      @media(max-width:540px){.pb-zwei{grid-template-columns:1fr}}
+      .pb-gruppe{margin:14px 0 2px}
+      .pb-gruppe>.pb-sub{display:block;margin-bottom:2px}
+      .pb-weg .pb-item{border-bottom:0;padding:5px 0;font-size:14px;color:var(--ink-soft)}
+      .pb-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">

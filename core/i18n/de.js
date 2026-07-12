@@ -13,14 +13,15 @@ export const de = {
   "allg.nochNicht": "Noch nicht",
   "scale.ok": "Übernehmen",
   "allg.von": "von {name}",
+  "allg.arbeitet": "einen Moment …",
 
   // Startübersicht
   "start.hallo": "Schön, dass du da bist, {name}.",
   "start.intro": "Zwei Räume, eine einfache Regel: Was bei dir bleibt, bleibt bei dir — geteilt wird nur, was du ausdrücklich freigibst.",
   "start.meinRaum": "Mein Raum",
-  "start.meinSub": "Nur für dich: zum Sortieren, Üben und Ablegen. Nichts von hier erreicht {partner}, außer du gibst es frei.",
+  "start.meinSub": "Hier begleite ich dich. Zum Reflektieren, zum Sortieren, Üben und Ablegen. Nichts von hier erreicht {partner}, außer du gibst es frei.",
   "start.teilRaum": "Gemeinsamer Raum",
-  "start.teilSub": "Für euch beide: eure gemeinsamen Sessions — und alles, was einer von euch lesbar gemacht hat.",
+  "start.teilSub": "Euer Raum für eure gemeinsame Zeit. Austausch, Begegnung, Reflexion — und zum Lesen, was einer von euch lesbar gemacht hat.",
 
   // Mein Raum
   "mein.intro": "Dieser Raum ist nur für dich — nichts von hier erreicht {partner}, außer du gibst es ausdrücklich frei. Wenn du magst, kannst du Erarbeitetes jederzeit teilen: Die Begleitung hilft dir dann bei einer Formulierung, und erst dein Häkchen gibt sie frei. Nimm dir die Zeit, die du brauchst.",
@@ -30,10 +31,12 @@ export const de = {
   "mein.mess": "Prozessreflexion",
 
   // Gemeinsamer Raum
-  "teil.intro": "Hier liegt nur, was freigegeben wurde — und alles, was ihr zu zweit macht.",
+  "teil.intro": "Euer Vorraum: Hier verschafft ihr euch Überblick — in den Regalen liegt nur, was freigegeben wurde. Die Räume dahinter betretet ihr bewusst, für alles, was ihr zu zweit macht.",
+  "teil.gruppeRaeume": "Räume — betreten und beginnen",
+  "teil.gruppeRegale": "Regale — ansehen, ohne etwas zu beginnen",
   "teil.moment": "Gemeinsame Session beginnen",
   "teil.aufdeck": "Aufdeck-Runde beginnen",
-  "teil.gemeinsam": "Gemeinsame Klärung beginnen",
+  "teil.gemeinsam": "Gemeinsame Auflösung beginnen",
   "teil.regal": "Regal ansehen",
   "teil.agenda": "Agenda ansehen",
   "teil.qz": "Gemeinsame Momente",
@@ -102,8 +105,27 @@ export const de = {
   "fehler.aufdeckWartet": "Die Aufdeck-Runde wartet noch auf euch – sie kommt vor der Klärung.",
   "fehler.aufdeckZu": "Die Aufdeck-Runde öffnet erst, wenn beide sie gewählt haben und so weit sind.",
   "fehler.aufdeckDaten": "Für die Aufdeck-Runde fehlen Stapel (Top 5) oder Tipps (Top 3) – bitte im Gespräch um eine Korrektur-Runde bitten.",
+  "fehler.aufloesungFehlt": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung abgeschlossen und freigegeben habt.",
+
+  // Wegweiser (Nutzerführung, S35) — aus dem Zustand berechnete nächste Schritte
+  "weg.titel": "Wegweiser",
+  "weg.einzelPause": "Deine Auftragsklärung ist bei Kapitel {n} pausiert — du kannst genau dort weitermachen.",
+  "weg.aufdeckBereit": "Ihr seid beide so weit: Die Aufdeck-Runde wartet auf euch.",
+  "weg.aufloesungBereit": "Eure Freigaben liegen bereit — die Gemeinsame Auflösung kann starten.",
+  "weg.aufloesungFehltDu": "Für die Gemeinsame Auflösung fehlt noch deine Freigabe aus der Auftragsklärung.",
+  "weg.aufloesungFehltPartner": "Für die Gemeinsame Auflösung fehlt noch die Freigabe von {partner}.",
+  "weg.aufloesungFehltBeide": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung freigegeben habt.",
+  "weg.regalNeu": "Im Regal liegt Neues für dich ({n}) — zum Lesen, wenn du magst.",
+  "weg.agendaOffen": "Offene Punkte auf eurer Agenda: {n}.",
+  "weg.messBereit": "Eure Prozessreflexion ist vollständig — die Aufdeckung wartet in der nächsten Gemeinsamen Session.",
+  "weg.messOffen": "Eine Prozessreflexions-Runde wartet auf deinen verdeckten Beitrag.",
+  "weg.momentOffen": "Eure Gemeinsame Session ist offen — ihr könnt genau dort weitermachen.",
+  "weg.soloErster": "Ein guter erster Schritt: ein Reflexionsgespräch — dein privater Raum zum Sortieren.",
+  "weg.startFrei": "Nimm dir, was gerade passt: dein Raum für dich, der gemeinsame für euch beide.",
   /* Paarsprache — beidseitig bestätigter Wechsel (S30·C3) */
   "paarspr.titel": "Begleitungssprache (Paar)",
+  "paarspr.link": "Begleitungssprache: {sprache} · ändern",
+  "paarspr.linkOffen": "Begleitungssprache: {sprache} · ein Vorschlag ist offen",
   "paarspr.aktuell": "Eure gemeinsame Begleitungssprache: {sprache}.",
   "paarspr.vorschlagen": "Wechsel zu {sprache} vorschlagen",
   "paarspr.wartet": "Dein Vorschlag ({sprache}) wartet auf die Bestätigung von {partner}.",

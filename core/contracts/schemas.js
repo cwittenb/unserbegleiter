@@ -147,6 +147,19 @@ export function qzSchema(d) {
   return e;
 }
 
+/* ---- CHOICE-BLOCK (verbindendes Angebot — die Optionen erfindet das Modell,
+        S35; die App ergänzt selbst die gleichwertige Ohne-Übung-Option) ---- */
+export function choiceSchema(d) {
+  const e = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (typeof d.id !== "string" || !d.id.trim()) e.push('"id" is missing');
+  if (typeof d.title !== "string" || !d.title.trim()) e.push('"title" is missing');
+  if (!Array.isArray(d.options) || d.options.length < 2 || d.options.length > 4 ||
+      d.options.some(x => typeof x !== "string" || !x.trim()))
+    e.push('"options" needs 2–4 short texts');
+  return e;
+}
+
 /* ---- REVEAL-BLOCK (Aufdeck-Runde, Kurzprotokoll — Berührungspunkte statt Zählen) ---- */
 export function aufdeckSchema(d) {
   const e = [];

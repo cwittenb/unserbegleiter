@@ -65,8 +65,9 @@ describe("S34 · [[SCALE-SAFETY]] in der Einzelsession", () => {
     const gesendet = mock.calls.flatMap(c => c.messages).filter(m => m.role === "user").map(m => m.content).join("\n");
     expect(gesendet).toContain("SCALE-RESULT: safety=9");
     expect(panel.classList.contains("pb-hidden")).toBe(true);
-    // Roh-Marker nie im sichtbaren Chat
+    // Roh-Marker und Wire-Token nie im sichtbaren Chat (S35: Ergebnis ist hidden)
     expect(root.querySelector("#pbMsgs").textContent).not.toContain("[[SCALE-SAFETY]]");
+    expect(root.querySelector("#pbMsgs").textContent).not.toContain("SCALE-RESULT");
   });
 });
 
@@ -93,5 +94,6 @@ describe("S34 · [[CHOICE-CONNECT]] im gemeinsamen Moment", () => {
     const gesendet = mock.calls.flatMap(c => c.messages).filter(m => m.role === "user").map(m => m.content).join("\n");
     expect(gesendet).toContain("CHOICE-RESULT: connect=Ohne Übung weiter");
     expect(panel.classList.contains("pb-hidden")).toBe(true);
+    expect(root.querySelector("#pbMsgs").textContent).not.toContain("CHOICE-RESULT");   // Wire, nicht Chat (S35)
   });
 });

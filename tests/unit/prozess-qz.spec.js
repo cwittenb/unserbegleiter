@@ -73,7 +73,9 @@ describe("UI · Prozessreflexion-Widget (verdeckt)", () => {
     await klick(box.querySelector("#msOk"));
     expect(box.textContent).toContain("verdeckt abgelegt");
 
-    await klick(root.querySelector("#btnMess"));                          // erneut öffnen
+    await klick(root.querySelector("#btnMess"));                          // S35-Toggle: erst zuklappen …
+    expect(box.classList.contains("pb-hidden")).toBe(true);
+    await klick(root.querySelector("#btnMess"));                          // … dann frisch öffnen
     expect(box.textContent).toContain("Dein Beitrag ist abgegeben");
     expect(box.querySelector("#msNaehe")).toBeNull();
 

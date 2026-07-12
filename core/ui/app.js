@@ -13,7 +13,41 @@ import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
+/* S35 · Ladeanzeige: dünner Zähl-Proxy um die Backend-Fassade. Jede laufende
+   asynchrone Anfrage (Backend ODER LLM) hebt einen Zähler; solange er >0 ist,
+   zeigt die App eine dezente Arbeits-Pille. Nur bekannte Fassaden-Schlüssel
+   werden umhüllt — fremde Felder (store, meta, …) bleiben unangetastet, damit
+   this-Bindungen und Test-Zugriffe intakt bleiben. */
+const FASSADEN_SCHLUESSEL = ["info", "bstate", "pstate", "chat", "handover", "llm", "language", "recovery"];
+function umhuelleBackend(roh, tick) {
+  const zaehle = fn => new Proxy(fn, {
+    apply(ziel, dies, args) {
+      const r = Reflect.apply(ziel, dies, args);
+      if (r && typeof r.then === "function") { tick(+1); return r.finally(() => tick(-1)); }
+      return r;
+    },
+  });
+  const aus = { ...roh };
+  for (const k of FASSADEN_SCHLUESSEL) {
+    const v = roh[k];
+    if (typeof v === "function") aus[k] = zaehle(v);   // Proxy: llm.kontingent bleibt lesbar
+    else if (v && typeof v === "object") {
+      const o = {};
+      for (const kk of Object.keys(v)) o[kk] = typeof v[kk] === "function" ? zaehle(v[kk]) : v[kk];
+      aus[k] = o;
+    }
+  }
+  return aus;
+}
+
 export function createApp({ doc, backend, root, diktat }) {
+  const rohBackend = backend;   // Relaunch umhüllt selbst neu (kein Doppel-Zählen)
+  let laufend = 0;
+  backend = umhuelleBackend(rohBackend, d => {
+    laufend = Math.max(0, laufend + d);
+    const b = wurzel && wurzel.querySelector("#pbBusy");
+    if (b) b.classList.toggle("pb-hidden", laufend <= 0);
+  });
   // Diktat: echte Browser-Spracherkennung, wo verfügbar; sonst OS-Tipp.
   // Injizierbar für Tests: diktat = { SR: Konstruktor|null, ua: string }
   const dk = {
@@ -31,8 +65,7 @@ export function createApp({ doc, backend, root, diktat }) {
 
   const wurzel = root || doc.getElementById("app");
   wurzel.innerHTML = `
-    
-    
+    <div id="pbBusy" class="pb-busy pb-hidden"><span class="pb-busydots"><span></span><span></span><span></span></span><span id="pbBusyTxt"></span></div>
     <div class="pb-top">
       <h1 class="pb-h1" id="pbHallo"></h1>
       <span class="pb-sub" id="pbKern"></span>
@@ -41,14 +74,22 @@ export function createApp({ doc, backend, root, diktat }) {
     <div id="pbErr" class="pb-err pb-hidden"></div>
     <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
     <div id="scrStart">
-      <div class="pb-card">
+      <div class="pb-card" style="padding:18px 26px">
         <div id="startHallo" style="font-size:17px;font-weight:650;margin-bottom:4px"></div>
-        <p class="pb-sub" id="startIntro" style="margin:0 0 12px"></p>
-        <button class="pb-btn primary" id="btnMyRoom">${t("start.meinRaum")}</button>
-        <p class="pb-sub" id="startMeinSub" style="margin:4px 0 12px"></p>
-        <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")}</button>
-        <p class="pb-sub" id="startTeilSub" style="margin:4px 0 0"></p>
+        <p class="pb-sub" id="startIntro" style="margin:0"></p>
       </div>
+      <div class="pb-zwei">
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnMyRoom" style="align-self:flex-start">${t("start.meinRaum")}</button>
+          <p class="pb-sub" id="startMeinSub" style="margin:0"></p>
+        </div>
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnSharedRoom" style="align-self:flex-start">${t("start.teilRaum")}</button>
+          <p class="pb-sub" id="startTeilSub" style="margin:0"></p>
+        </div>
+      </div>
+      <div class="pb-card pb-weg pb-hidden" id="wegStart"></div>
+      <p class="pb-sub pb-hidden" id="psZeile" style="margin:10px 4px 0"></p>
       <div class="pb-card pb-hidden" id="boxPaarsprache"></div>
     </div>
     <div id="scrMyRoom" class="pb-hidden">
@@ -61,6 +102,7 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="pb-btn" id="btnMess">${t("mein.mess")}</button>
         <button class="pb-btn" id="btnZurueck1">${t("allg.zurueck")}</button>
       </div>
+      <div class="pb-card pb-weg pb-hidden" id="wegMein"></div>
       <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
       <div class="pb-card pb-hidden" id="boxMess"></div>
       <div class="pb-card pb-hidden" id="boxRecovery"></div>
@@ -68,15 +110,20 @@ export function createApp({ doc, backend, root, diktat }) {
     <div id="scrShared" class="pb-hidden">
       <div class="pb-card">
         <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("start.teilRaum")}</div>
-        <p class="pb-sub" id="sharedIntro" style="margin:0 0 12px">${t("teil.intro")}</p>
-        <button class="pb-btn primary" id="btnMoment">${t("teil.moment")}</button>
-        <button class="pb-btn primary" id="btnAufdeck">${t("teil.aufdeck")}</button>
-        <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
-        <button class="pb-btn" id="btnRegal">${t("teil.regal")}</button>
-        <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
-        <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
-        <button class="pb-btn" id="btnZurueck2">${t("allg.zurueck")}</button>
+        <p class="pb-sub" id="sharedIntro" style="margin:0 0 4px">${t("teil.intro")}</p>
+        <div class="pb-gruppe"><span class="pb-sub">${t("teil.gruppeRaeume")}</span>
+          <button class="pb-btn primary" id="btnMoment">${t("teil.moment")}</button>
+          <button class="pb-btn primary" id="btnAufdeck">${t("teil.aufdeck")}</button>
+          <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
+        </div>
+        <div class="pb-gruppe"><span class="pb-sub">${t("teil.gruppeRegale")}</span>
+          <button class="pb-btn" id="btnRegal">${t("teil.regal")}</button>
+          <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
+          <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
+        </div>
+        <button class="pb-btn" id="btnZurueck2" style="margin-top:12px">${t("allg.zurueck")}</button>
       </div>
+      <div class="pb-card pb-weg pb-hidden" id="wegTeil"></div>
       <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">${t("regal.titel")}</div><p class="pb-sub" style="margin:6px 0 4px">${t("regal.intro")}</p><div id="regalItems"></div></div>
       <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
       <div class="pb-card pb-hidden" id="boxQz"></div>
@@ -108,6 +155,110 @@ export function createApp({ doc, backend, root, diktat }) {
     state.screen = id;
     for (const s of screens) $(s).classList.toggle("pb-hidden", s !== id);
   }
+
+  /* S35 · Ein Info-Bereich pro Vorraum: die Regal-Ansichten verdrängen
+     einander, statt sich zu stapeln. zeigeNur blendet die Geschwister aus;
+     die zeige*-Funktionen rufen es vor dem Befüllen auf. */
+  const INFO_GRUPPEN = {
+    scrMyRoom: ["boxZeitleiste", "boxMess"],
+    scrShared: ["boxRegal", "boxAgenda", "boxQz"],
+  };
+  function zeigeNur(id) {
+    for (const g of Object.values(INFO_GRUPPEN))
+      if (g.includes(id)) for (const b of g) if (b !== id) $(b).classList.add("pb-hidden");
+  }
+  /** Knopf-Verhalten: sichtbare Box erneut angefragt → zuklappen (Toggle). */
+  function infoToggle(id, oeffnen) {
+    const box = $(id);
+    if (!box.classList.contains("pb-hidden")) { box.classList.add("pb-hidden"); return Promise.resolve(); }
+    return oeffnen();
+  }
+
+  /* S35 · Lagebild für Wegweiser und Gating — ein paralleler Rundflug über
+     den geteilten und persönlichen Zustand. Fehlertolerant: was nicht
+     erreichbar ist, zählt als "nicht vorhanden". */
+  async function ladeLage() {
+    const still = p => Promise.resolve().then(p).catch(() => null);
+    const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat] = await Promise.all([
+      still(() => backend.bstate.get("reveal")),
+      still(() => backend.bstate.get("revealLog")),
+      still(() => backend.bstate.get("shelf")),
+      still(() => backend.bstate.get("agenda")),
+      still(() => backend.bstate.get("measurements")),
+      still(() => backend.pstate.get("timeline")),
+      still(() => backend.handover.get("A")),
+      still(() => backend.handover.get("B")),
+      still(() => backend.chat.load("mine", "einzel")),
+      still(() => backend.chat.load("shared", "moment")),
+    ]);
+    const rolle = state.info.role;
+    const offeneRunde = (((measurements && measurements.items) || [])).find(r => r.status === "open");
+    return {
+      aufdeckBereit: !!(reveal && reveal.A && reveal.B && !revealLog),
+      handMeins: !!(rolle === "A" ? hA : hB),
+      handPartner: !!(rolle === "A" ? hB : hA),
+      handBeide: !!(hA && hB),
+      regalNeu: (((shelf && shelf.items) || [])).filter(i => i.by !== state.info.name && !i.read).length,
+      agendaOffen: (((agenda && agenda.items) || [])).filter(i => i.state === "open").length,
+      messBereit: (((measurements && measurements.items) || [])).some(r => r.status === "ready"),
+      messOffen: !!(offeneRunde && !offeneRunde.values[rolle]),
+      einzelKapitel: (einzelChat && einzelChat.status === "running" && einzelChat.kapitel) || 0,
+      momentOffen: !!(momentChat && momentChat.status === "running" && (momentChat.messages || []).length),
+      zeitleisteLeer: !((timeline && timeline.entries) || []).length,
+    };
+  }
+
+  /** Hinweise je Screen, wichtigste zuerst; die UI zeigt maximal drei. */
+  function wegHinweise(lage, screenId) {
+    const h = [];
+    const partner = state.info.partner;
+    const aufloesung = () =>
+      lage.handBeide ? h.push(t("weg.aufloesungBereit"))
+      : !lage.handMeins && !lage.handPartner ? h.push(t("weg.aufloesungFehltBeide"))
+      : !lage.handMeins ? h.push(t("weg.aufloesungFehltDu"))
+      : h.push(t("weg.aufloesungFehltPartner", { partner }));
+    if (screenId === "scrStart") {
+      if (lage.einzelKapitel) h.push(t("weg.einzelPause", { n: lage.einzelKapitel }));
+      if (lage.aufdeckBereit) h.push(t("weg.aufdeckBereit"));
+      else if (lage.handBeide) h.push(t("weg.aufloesungBereit"));
+      if (lage.momentOffen) h.push(t("weg.momentOffen"));
+      if (lage.regalNeu) h.push(t("weg.regalNeu", { n: lage.regalNeu }));
+      if (lage.messOffen) h.push(t("weg.messOffen"));
+      if (!h.length) h.push(lage.zeitleisteLeer && !lage.einzelKapitel ? t("weg.soloErster") : t("weg.startFrei"));
+    }
+    if (screenId === "scrMyRoom") {
+      if (lage.einzelKapitel) h.push(t("weg.einzelPause", { n: lage.einzelKapitel }));
+      if (lage.messOffen) h.push(t("weg.messOffen"));
+      if (lage.zeitleisteLeer) h.push(t("weg.soloErster"));
+    }
+    if (screenId === "scrShared") {
+      if (lage.momentOffen) h.push(t("weg.momentOffen"));
+      if (lage.aufdeckBereit) h.push(t("weg.aufdeckBereit"));
+      aufloesung();
+      if (lage.regalNeu) h.push(t("weg.regalNeu", { n: lage.regalNeu }));
+      if (lage.agendaOffen) h.push(t("weg.agendaOffen", { n: lage.agendaOffen }));
+      if (lage.messBereit) h.push(t("weg.messBereit"));
+    }
+    return h.slice(0, 3);
+  }
+
+  /** Wegweiser zeichnen + Gating anwenden (Gemeinsame Auflösung nur mit
+      beiden Freigaben). Läuft still im Hintergrund bei jedem Vorraum-Betreten. */
+  async function aktualisiereWegweiser(screenId) {
+    const boxId = { scrStart: "wegStart", scrMyRoom: "wegMein", scrShared: "wegTeil" }[screenId];
+    if (!boxId) return;
+    try {
+      const lage = await ladeLage();
+      if (screenId === "scrShared") $("btnGemeinsam").disabled = !lage.handBeide;
+      const hin = wegHinweise(lage, screenId);
+      const box = $(boxId);
+      if (!hin.length) { box.classList.add("pb-hidden"); return; }
+      box.innerHTML = `<div class="pb-sub">${t("weg.titel")}</div>` +
+        hin.map(x => `<div class="pb-item">‣ ${esc(x)}</div>`).join("");
+      box.classList.remove("pb-hidden");
+    } catch { /* Wegweiser ist Komfort, kein Muss */ }
+  }
+  function betrete(screenId) { show(screenId); aktualisiereWegweiser(screenId); }
   function hint(msg) {
     const b = $("pbHint");
     if (!msg) { b.classList.add("pb-hidden"); return; }
@@ -327,7 +478,7 @@ export function createApp({ doc, backend, root, diktat }) {
       onFreigabe: (d, e2) => freigabePanel(d, e2),
       onKapitel: (n, e2) => kapitelPanel(n, e2),
       onScale: (art, e2) => scalePanel(art, e2),
-      onChoice: (art, e2) => choicePanel(art, e2),
+      onChoice: (art, e2, daten) => choicePanel(art, e2, daten),
       onAufdecken: e2 => aufdeckPanel(e2),
       onMomentEnde: () => markiereAufgedeckt(backend).catch(() => {}),
     };
@@ -339,8 +490,19 @@ export function createApp({ doc, backend, root, diktat }) {
       momentDef(backend, hooks);
     state.chatId = art;
     state.chatShared = null;
+    state.herkunft = def.shared ? "scrShared" : "scrMyRoom";   // Raum verlassen → Vorraum
     const gespeichert = await backend.chat.load(def.shared ? "shared" : "mine", art);
     state.chatShared = def.shared;
+    // Gemeinsame Auflösung nur, wenn die Spekulation da ist: Beide Handover-
+    // Blocks (Selbstangaben + Vermutungen) müssen vorliegen — sonst würde die
+    // Session ins Leere starten und nach Blöcken fragen (S35).
+    if (art === "gemeinsam" && !gespeichert) {
+      const [hA, hB] = await Promise.all([
+        Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
+        Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
+      ]);
+      if (!hA || !hB) throw new Error(t("fehler.aufloesungFehlt"));
+    }
     // G1 vor G2: Sind beide Aufdeck-Freigaben da, aber kein Protokoll, kommt
     // erst die Aufdeck-Runde (verbinden vor verhandeln). Ohne beide Mini-Gates
     // läuft der kollabierte Pfad — die Klärung startet direkt.
@@ -420,6 +582,7 @@ export function createApp({ doc, backend, root, diktat }) {
 
   async function zeigeZeitleiste() {
     const zl = (await backend.pstate.get("timeline")) || { entries: [] };
+    zeigeNur("boxZeitleiste");
     $("boxZeitleiste").classList.remove("pb-hidden");
     $("zlItems").innerHTML = zl.entries.length
       ? zl.entries.map(e2 => `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}</div>`).join("")
@@ -428,6 +591,7 @@ export function createApp({ doc, backend, root, diktat }) {
 
   async function zeigeRegal() {
     const regal = (await backend.bstate.get("shelf")) || { items: [] };
+    zeigeNur("boxRegal");
     $("boxRegal").classList.remove("pb-hidden");
     $("regalItems").innerHTML = regal.items.length
       ? regal.items.map(i => {
@@ -448,6 +612,7 @@ export function createApp({ doc, backend, root, diktat }) {
 
   async function zeigeAgenda() {
     const agenda = (await backend.bstate.get("agenda")) || { items: [] };
+    zeigeNur("boxAgenda");
     $("boxAgenda").classList.remove("pb-hidden");
     $("agendaItems").innerHTML = agenda.items.length
       ? agenda.items.map(i =>
@@ -467,12 +632,25 @@ export function createApp({ doc, backend, root, diktat }) {
      erzwingt der Worker bzw. das lokale Backend, nie die UI. ---- */
   function sprachName(l) { return t("paarspr.name." + (l === "en" ? "en" : "de")); }
   function zeigePaarsprache(meldung) {
-    const box = $("boxPaarsprache");
-    if (!backend.language) { box.classList.add("pb-hidden"); return; }
-    box.classList.remove("pb-hidden");
+    // S35: Die Karte ist hinter einem kleinen Link versteckt; ein offener
+    // Vorschlag des Partners klappt sie von selbst auf (Bestätigung wartet).
+    const box = $("boxPaarsprache"), zeile = $("psZeile");
+    if (!backend.language) { box.classList.add("pb-hidden"); zeile.classList.add("pb-hidden"); return; }
     const aktuell = state.info.locale === "en" ? "en" : "de";
+    const wunsch = state.info.languageRequest;
+    if (wunsch && wunsch.by !== state.info.role) state.psOffen = true;
+    zeile.innerHTML = `<span class="pb-link" id="psLink">${wunsch
+      ? t("paarspr.linkOffen", { sprache: sprachName(aktuell) })
+      : t("paarspr.link", { sprache: sprachName(aktuell) })}</span>`;
+    zeile.classList.remove("pb-hidden");
+    zeile.querySelector("#psLink").addEventListener("click", () => {
+      state.psOffen = !state.psOffen;
+      zeigePaarsprache();
+    });
+    box.classList.toggle("pb-hidden", !state.psOffen);
+    if (!state.psOffen) return;
     const ziel = aktuell === "en" ? "de" : "en";
-    const w = state.info.languageRequest;
+    const w = wunsch;
     const meins = w && w.by === state.info.role;
     let mitte, knoepfe;
     if (!w) {
@@ -494,6 +672,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const anwenden = r => {
       state.info.locale = r.locale;
       state.info.languageRequest = r.languageRequest;
+      state.psOffen = true;   // Ergebnis-Meldung sichtbar lassen
       zeigePaarsprache(r.status === "confirmed"
         ? t("paarspr.gewechselt", { sprache: sprachName(r.locale) })
         : "");
@@ -531,22 +710,24 @@ export function createApp({ doc, backend, root, diktat }) {
     });
   }
 
-  /* Verdrahtung */
-  $("btnMyRoom").addEventListener("click", () => show("scrMyRoom"));
-  $("btnSharedRoom").addEventListener("click", () => show("scrShared"));
-  $("btnZurueck1").addEventListener("click", () => show("scrStart"));
-  $("btnZurueck2").addEventListener("click", () => show("scrStart"));
-  $("btnChatZurueck").addEventListener("click", () => show("scrStart"));
+  /* Verdrahtung — die Zurück-Wege führen in den Vorraum, aus dem man kam:
+     Raum verlassen landet nicht mehr auf der Hauptübersicht, sondern im
+     jeweiligen Vorraum (Erwartungs-Kontinuität, S35). */
+  $("btnMyRoom").addEventListener("click", () => betrete("scrMyRoom"));
+  $("btnSharedRoom").addEventListener("click", () => betrete("scrShared"));
+  $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));
+  $("btnZurueck2").addEventListener("click", () => betrete("scrStart"));
+  $("btnChatZurueck").addEventListener("click", () => betrete(state.herkunft || "scrStart"));
   $("btnSolo").addEventListener("click", () => startChat("solo").catch(e => err(e.message)));
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
     $("btnAufdeck").addEventListener("click", () => startChat("aufdeck").catch(e => err(e.message)));
   $("btnMoment").addEventListener("click", () => startChat("moment").catch(e => err(e.message)));
-  $("btnZeitleiste").addEventListener("click", () => zeigeZeitleiste().catch(e => err(e.message)));
-  $("btnMess").addEventListener("click", () => zeigeMess().catch(e => err(e.message)));
-  $("btnRegal").addEventListener("click", () => zeigeRegal().catch(e => err(e.message)));
-  $("btnAgenda").addEventListener("click", () => zeigeAgenda().catch(e => err(e.message)));
-  $("btnQz").addEventListener("click", () => zeigeQz().catch(e => err(e.message)));
+  $("btnZeitleiste").addEventListener("click", () => infoToggle("boxZeitleiste", () => zeigeZeitleiste()).catch(e => err(e.message)));
+  $("btnMess").addEventListener("click", () => infoToggle("boxMess", () => zeigeMess()).catch(e => err(e.message)));
+  $("btnRegal").addEventListener("click", () => infoToggle("boxRegal", () => zeigeRegal()).catch(e => err(e.message)));
+  $("btnAgenda").addEventListener("click", () => infoToggle("boxAgenda", () => zeigeAgenda()).catch(e => err(e.message)));
+  $("btnQz").addEventListener("click", () => infoToggle("boxQz", () => zeigeQz()).catch(e => err(e.message)));
   $("btnSend").addEventListener("click", () => {
     const t = $("pbInput").value.trim();
     if (!t) return;
@@ -565,6 +746,7 @@ export function createApp({ doc, backend, root, diktat }) {
   /* ---- Prozessreflexion (Mess-Runde, verdeckt — Aufdeckung im Moment) ---- */
   async function zeigeMess() {
     const box = $("boxMess");
+    zeigeNur("boxMess");
     box.classList.remove("pb-hidden");
     const [mr, goals] = await Promise.all([backend.bstate.get("measurements"), backend.bstate.get("goals")]);
     const offen = ((mr && mr.items) || []).find(r => r.status === "open");
@@ -597,6 +779,7 @@ export function createApp({ doc, backend, root, diktat }) {
   /* ---- Qualitätszeit: Einladungs-Menü mit Leiter ---- */
   async function zeigeQz() {
     const box = $("boxQz");
+    zeigeNur("boxQz");
     box.classList.remove("pb-hidden");
     const qz = (await backend.bstate.get("qualitytime")) || { resting: {}, choices: [] };
     if (!qz.startAt) { qz.startAt = new Date().toISOString(); await backend.bstate.set("qualitytime", qz); }
@@ -677,26 +860,34 @@ export function createApp({ doc, backend, root, diktat }) {
         ? fuelle(K().steuerTexte.scaleClosingErgebnis, { nameA: state.info.nameA, nameB: state.info.nameB, a, b: p.querySelector("#scB").value })
         : fuelle(K().steuerTexte.scaleErgebnis, { id: art, wert: a });
       kwZu();
-      await engine.submitToolResult(text);
+      await engine.submitToolResult(text, { hidden: true });   // Wire, nicht Chat (S35)
     });
   }
 
   /* S34 · Auswahl-Panel: kleines Karten-Menü (z. B. Verbindendes Angebot);
    * "ohne" ist gleichwertige Option — kein Nachhaken (Prompt-Regel). */
-  function choicePanel(art, engine) {
+  function choicePanel(art, engine, daten) {
+    // S35: Optionen kommen bevorzugt aus dem CHOICE-BLOCK des Modells
+    // (kontextgespeist erfunden); der Marker-Alt-Pfad ohne daten fällt auf
+    // die kuratierten Korpus-Optionen zurück. "Ohne Übung weiter" ergänzt
+    // IMMER die App selbst — die Gleichwertigkeit ist App-Invariante.
     const p = kw();
     p.classList.remove("pb-hidden");
     const opt = k => KTX("choice." + art + "." + k, true);
-    const karten = ["o1", "o2", "o3", "o4"].map(k => opt(k)).filter(Boolean);
+    const karten = (daten && Array.isArray(daten.options) && daten.options.length)
+      ? daten.options.slice(0, 4).map(String)
+      : ["o1", "o2", "o3", "o4"].map(k => opt(k)).filter(Boolean);
+    const titel = (daten && daten.title) || opt("titel");
     p.innerHTML =
-      `<p style="font-size:15px"><strong>${esc(opt("titel"))}</strong></p>` +
+      `<p style="font-size:15px"><strong>${esc(titel)}</strong></p>` +
       karten.map((txt, i) => `<button class="pb-btn" data-ch="${i}" style="display:block;width:100%;text-align:left;margin:6px 0">${esc(txt)}</button>`).join("") +
       `<button class="pb-btn" data-ch="ohne" style="display:block;width:100%;text-align:left;margin:10px 0 0;opacity:.85">${esc(opt("ohne"))}</button>`;
     for (const b of p.querySelectorAll("[data-ch]")) {
       b.addEventListener("click", async () => {
         const wahl = b.getAttribute("data-ch") === "ohne" ? opt("ohne") : karten[Number(b.getAttribute("data-ch"))];
         kwZu();
-        await engine.submitToolResult(fuelle(K().steuerTexte.choiceErgebnis, { id: art, wahl }));
+        // hidden: das Steuer-Token ist Wire, keine Äußerung der Person (S35)
+        await engine.submitToolResult(fuelle(K().steuerTexte.choiceErgebnis, { id: art, wahl }), { hidden: true });
       });
     }
   }
@@ -934,9 +1125,10 @@ export function createApp({ doc, backend, root, diktat }) {
     $("startMeinSub").textContent = t("start.meinSub", { partner: state.info.partner });
     $("startTeilSub").textContent = t("start.teilSub");
     $("meinIntro").textContent = t("mein.intro", { partner: state.info.partner });
+    $("pbBusyTxt").textContent = t("allg.arbeitet");
     zeigeRecovery();
     zeigePaarsprache();
-    show("scrStart");
+    betrete("scrStart");
   }
 
   return { boot, show, startChat, _state: state, _err: err };

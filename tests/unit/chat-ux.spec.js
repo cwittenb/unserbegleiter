@@ -123,7 +123,7 @@ describe("Nutzerführung · Begrüßung, Raum-Erklärungen, System eröffnet (Sp
     expect(root.querySelector("#startHallo").textContent).toContain("Anna");
     expect(root.querySelector("#startIntro").textContent).toContain("ausdrücklich freigibst");
     expect(root.querySelector("#startMeinSub").textContent).toContain("Bernd");     // Partner namentlich
-    expect(root.querySelector("#startTeilSub").textContent).toContain("euch beide");
+    expect(root.querySelector("#startTeilSub").textContent).toContain("gemeinsame Zeit");
     expect(root.querySelector("#meinIntro").textContent).toContain("nur für dich");
     expect(root.querySelector("#sharedIntro").textContent).toContain("freigegeben");
   });

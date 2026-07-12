@@ -60,6 +60,14 @@ export function momentDef(backend, hooks = {}) {
     canAct: c => c.status === "running",
     blocks: [
       {
+        // S35: Das Modell erfindet die verbindenden Angebote selbst (aus dem
+        // MOMENT-CONTEXT); die App zeigt sie plus die Ohne-Übung-Option.
+        // Der Marker [[CHOICE-CONNECT]] bleibt als Alt-Pfad für pausierte
+        // Sessions bestehen und öffnet das Menü mit den Korpus-Optionen.
+        ...BLOECKE.choice,
+        handle: (data, engine) => { if (hooks.onChoice) hooks.onChoice(data.id || "connect", engine, data); },
+      },
+      {
         ...BLOECKE.moment,
         handle: async (data, engine) => {
           const mp = (await backend.bstate.get("momentLog")) || { entries: [] };

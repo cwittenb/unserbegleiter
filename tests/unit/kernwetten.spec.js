@@ -201,6 +201,11 @@ describe("UI · Gemeinsame Klärung (Startwerte + CLARIFICATION)", () => {
       "CLARIFICATION-BLOCK\n" + befund + "\nEND CLARIFICATION-BLOCK",
     ]);
     const backend = memoryBackend(mock);
+    // S35-Gating: Die Auflösung öffnet nur mit BEIDEN Handover-Blocks
+    // (Selbstangaben + Vermutungen) — der Test rüstet sie wie im echten
+    // Ablauf über den Übergabe-Pfad an.
+    await freigebeUebergabe(backend.repo, "A", { module: "kernwetten", name: "Anna", items: [{ id: "S1", text: "Verlässlichkeit trägt mich", tag: "FirstTake" }] });
+    await freigebeUebergabe(backend.repo, "B", { module: "kernwetten", name: "Bernd", items: [{ id: "S1", text: "Ich wünsche mir mehr Leichtigkeit", tag: "FirstTake" }] });
     const app = createApp({ doc: document, backend, root });
     await app.boot();
     await klick(root.querySelector("#btnSharedRoom"));

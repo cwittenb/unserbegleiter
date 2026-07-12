@@ -63,7 +63,13 @@ describe("Paarsprache-Karte · drei Zustände", () => {
   it("kein Wunsch: zeigt aktuelle Sprache und Vorschlagen-Knopf; Klick → Wartet-Ansicht", async () => {
     const backend = memoryBackend(new MockLLM([]));
     await booten(backend);
+    // S35: Die Karte liegt hinter einem kleinen Link (versteckt per Default)
+    const zeile = document.getElementById("psZeile");
+    expect(zeile.classList.contains("pb-hidden")).toBe(false);
+    expect(zeile.textContent).toContain("Deutsch");
     const box = document.getElementById("boxPaarsprache");
+    expect(box.classList.contains("pb-hidden")).toBe(true);
+    await klick(zeile.querySelector("#psLink"));
     expect(box.classList.contains("pb-hidden")).toBe(false);
     expect(box.textContent).toContain("Deutsch");
     const antrag = box.querySelector("#psAntrag");
@@ -77,6 +83,9 @@ describe("Paarsprache-Karte · drei Zustände", () => {
   it("eigener Wunsch offen: Zurückziehen räumt auf und zeigt wieder Vorschlagen", async () => {
     const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "A", at: 1 } });
     await booten(backend);
+    // eigener offener Wunsch klappt die Karte NICHT von selbst auf — der Link zeigt ihn an
+    expect(document.getElementById("psZeile").textContent).toContain("Vorschlag");
+    await klick(document.getElementById("psZeile").querySelector("#psLink"));
     const box = document.getElementById("boxPaarsprache");
     await klick(box.querySelector("#psZurueck"));
     expect(backend.meta.languageRequest).toBeUndefined();
@@ -111,6 +120,7 @@ describe("Paarsprache-Karte · drei Zustände", () => {
     delete backend.language;
     await booten(backend);
     expect(document.getElementById("boxPaarsprache").classList.contains("pb-hidden")).toBe(true);
+    expect(document.getElementById("psZeile").classList.contains("pb-hidden")).toBe(true);
   });
 });
 
