@@ -56,7 +56,7 @@ beforeAll(async () => {
     kvNamespaces: ["PAARE"],
     compatibilityDate: "2026-06-01",
     // kleine Grenzen für schnelle, deterministische Tests:
-    bindings: { ADMIN_TOKEN: ADMIN, QUOTA_LIMIT: "5", QUOTA_FENSTER_TAGE: "3", QUOTA_KARENZ: "2", RATE_PRO_MINUTE: "50", DUPLIKAT_SCHWELLE: "3" },
+    bindings: { ADMIN_TOKEN: ADMIN, QUOTA_LIMIT: "5", QUOTA_FENSTER_TAGE: "3", QUOTA_KARENZ: "2", RATE_PRO_MINUTE: "50", DUPLIKAT_SCHWELLE: "3", LLM_PROVIDER: "anthropic", LLM_MODEL: "test-modell", LLM_API_KEY: "test-key" },
     serviceBindings: {
       async UPSTREAM() {
         upstreamCalls++;
@@ -158,7 +158,7 @@ describe("Raten-Limit je Minute", () => {
     const mf2 = new Miniflare({
       modules: true, script: bundled.outputFiles[0].text, kvNamespaces: ["PAARE"],
       compatibilityDate: "2026-06-01",
-      bindings: { ADMIN_TOKEN: ADMIN, RATE_PRO_MINUTE: "2", QUOTA_LIMIT: "50" },
+      bindings: { ADMIN_TOKEN: ADMIN, RATE_PRO_MINUTE: "2", QUOTA_LIMIT: "50", LLM_PROVIDER: "anthropic", LLM_MODEL: "test-modell", LLM_API_KEY: "test-key" },
       serviceBindings: { async UPSTREAM() { return new Response(JSON.stringify({ content: [{ type: "text", text: "ok" }], usage: {} }), { headers: { "content-type": "application/json" } }); } },
     });
     const alt = mf; mf = mf2;

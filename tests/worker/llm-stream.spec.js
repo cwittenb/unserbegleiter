@@ -60,7 +60,7 @@ beforeAll(async () => {
     script: bundled.outputFiles[0].text,
     kvNamespaces: ["PAARE"],
     compatibilityDate: "2026-06-01",
-    bindings: { ADMIN_TOKEN: ADMIN },
+    bindings: { ADMIN_TOKEN: ADMIN, LLM_PROVIDER: "anthropic", LLM_MODEL: "test-modell", LLM_API_KEY: "test-key" },
     serviceBindings: {
       async UPSTREAM(request) {
         if (upstreamModus === "kaputt")

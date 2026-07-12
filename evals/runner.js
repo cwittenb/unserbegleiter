@@ -1,10 +1,11 @@
 // Eval-Runner CLI (Ebene 2) — echte Modell-Läufe, key-gated.
 //
-//   npm run eval -- [--familie GATE] [--szenario AUF-01] [--sprache de|en] [--n 3]
+//   npm run eval -- --pipeline-modell <modell> --judge-modell <modell>
+//                   [--familie GATE] [--szenario AUF-01] [--sprache de|en] [--n 3]
 //                   [--provider anthropic|mistral]
-//                   [--pipeline-modell claude-sonnet-4-6]
-//                   [--judge-modell claude-opus-4-8]
 //                   [--erlaube-gleiches-modell]
+//
+// Modell-Flags sind PFLICHT (S35d): kein Modell-Default im Code.
 //
 // Key aus der Umgebung: ANTHROPIC_API_KEY (bzw. MISTRAL_API_KEY).
 // Judge ≠ Pipeline ist erzwungen (GATE-B-Learning) — gleiches Modell nur
@@ -39,8 +40,13 @@ async function main() {
     process.exit(2);
   }
 
-  const pipelineModell = arg("pipeline-modell", provider === "mistral" ? "mistral-large-latest" : "claude-sonnet-4-6");
-  const judgeModell = arg("judge-modell", provider === "mistral" ? "mistral-large-latest" : "claude-opus-4-8");
+  const pipelineModell = arg("pipeline-modell");
+  const judgeModell = arg("judge-modell");
+  if (!pipelineModell || !judgeModell) {
+    console.error("Modell-Konfiguration ist Pflicht (S35d): --pipeline-modell UND --judge-modell angeben.");
+    console.error("Beispiel:  npm run eval -- --pipeline-modell <modell> --judge-modell <modell> --familie GATE");
+    process.exit(2);
+  }
   if (pipelineModell === judgeModell && !flag("erlaube-gleiches-modell")) {
     console.error("Judge-Modell und Pipeline-Modell sind identisch (" + pipelineModell + ").");
     console.error("Das verletzt die Judge-Trennung (Self-Preference-Bias). Wenn du das wirklich");

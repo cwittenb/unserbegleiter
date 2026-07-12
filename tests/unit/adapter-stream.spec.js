@@ -9,6 +9,8 @@
 import { describe, it, expect } from "vitest";
 import { makeAdapter, sseDaten, istEventStream } from "../../core/llm/adapter.js";
 
+// Konfigurationspflicht (S35d): explizite Test-Konfiguration statt Kern-Defaults.
+const KEYLESS = { provider: "anthropic", mode: "keyless", models: { anthropic: "test-modell" } };
 /** Response-Attrappe mit SSE-Body (ReadableStream aus Einzel-Chunks). */
 function sseResponse(zeilen, { chunkweise = true } = {}) {
   const enc = new TextEncoder();
@@ -53,7 +55,7 @@ const ANTHROPIC_SSE = [
 describe("Adapter · Streaming Anthropic (keyless)", () => {
   it("stream:true im Body; Deltas in Reihenfolge; Fassaden-Endresultat inkl. Cache-Usage", async () => {
     const f = fangFetch(() => sseResponse(ANTHROPIC_SSE));
-    const call = makeAdapter({ mode: "keyless" }, f);
+    const call = makeAdapter({ ...KEYLESS }, f);
     const deltas = [];
     const r = await call("SYS", [{ role: "user", content: "u" }], d => deltas.push(d));
     expect(f.calls[0].body.stream).toBe(true);
@@ -67,14 +69,14 @@ describe("Adapter · Streaming Anthropic (keyless)", () => {
 
   it("OHNE onDelta bleibt der Body streamfrei (Abwärtskompatibilität)", async () => {
     const f = fangFetch(() => jsonResponse({ content: [{ type: "text", text: "ok" }], stop_reason: "end_turn", usage: {} }));
-    const call = makeAdapter({ mode: "keyless" }, f);
+    const call = makeAdapter({ ...KEYLESS }, f);
     await call("SYS", []);
     expect("stream" in f.calls[0].body).toBe(false);
   });
 
   it("JSON-Antwort trotz Stream-Wunsch → Fallback auf Nicht-Stream-Parser (Sandbox-Puffer)", async () => {
     const f = fangFetch(() => jsonResponse({ content: [{ type: "text", text: "gepuffert" }], stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 } }));
-    const call = makeAdapter({ mode: "keyless" }, f);
+    const call = makeAdapter({ ...KEYLESS }, f);
     const deltas = [];
     const r = await call("SYS", [], d => deltas.push(d));
     expect(r.text).toBe("gepuffert");
@@ -83,7 +85,7 @@ describe("Adapter · Streaming Anthropic (keyless)", () => {
 
   it("error-Event im Strom wird zum Wurf", async () => {
     const f = fangFetch(() => sseResponse(['data: {"type":"error","error":{"message":"overloaded"}}\n\n']));
-    const call = makeAdapter({ mode: "keyless" }, f);
+    const call = makeAdapter({ ...KEYLESS }, f);
     await expect(call("S", [], () => {})).rejects.toThrow("overloaded");
   });
 
@@ -106,7 +108,7 @@ describe("Adapter · Streaming OpenAI-kompatibel", () => {
 
   it("Mistral: Deltas + usage aus dem Schlusshäppchen; KEIN stream_options", async () => {
     const f = fangFetch(() => sseResponse(MISTRAL_SSE));
-    const call = makeAdapter({ provider: "mistral", mode: "direct", apiKey: "mk" }, f);
+    const call = makeAdapter({ provider: "mistral", mode: "direct", apiKey: "mk", models: { mistral: "test-modell" } }, f);
     const deltas = [];
     const r = await call("SYS", [{ role: "user", content: "u" }], d => deltas.push(d));
     expect(f.calls[0].body.stream).toBe(true);
@@ -117,7 +119,7 @@ describe("Adapter · Streaming OpenAI-kompatibel", () => {
 
   it("OpenAI: stream_options.include_usage wird gesetzt", async () => {
     const f = fangFetch(() => sseResponse(MISTRAL_SSE));
-    const call = makeAdapter({ provider: "openai", mode: "direct", apiKey: "ok" }, f);
+    const call = makeAdapter({ provider: "openai", mode: "direct", apiKey: "ok", models: { openai: "test-modell" } }, f);
     await call("SYS", [], () => {});
     expect(f.calls[0].body.stream_options).toEqual({ include_usage: true });
   });

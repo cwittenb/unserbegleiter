@@ -23,19 +23,17 @@
 //
 // fetchFn ist injizierbar (Tests prüfen die Request-Körper gegen Mock-fetch).
 
+// Technische Defaults — bewusst OHNE provider, mode oder Modellnamen (S35d):
+// Provider, Modus und Modell sind Konfigurationspflicht des Aufrufers; fehlt
+// etwas, wirft makeAdapter statt still zurückzufallen. Einzige sanktionierte
+// Stelle mit Provider-/Modellwissen im Code ist die Artefakt-Plattform
+// (platforms/artifact/llm-config.js) — bewacht vom Grep-Wächter-Test.
 export const LLM_DEFAULTS = {
-  provider: "anthropic",        // "anthropic" | "mistral" | "openai"
-  mode: "keyless",              // "keyless" | "direct" | "proxy"
   apiKey: "",
   proxyUrl: "/api/llm",
   maxTokens: 1024,
   cache: true,                  // Prompt-Caching (nur Anthropic wirksam)
   stream: true,                 // SSE nutzen, WENN der Aufrufer onDelta übergibt
-  models: {
-    anthropic: "claude-sonnet-4-6",
-    mistral: "mistral-large-latest",
-    openai: "gpt-5.4",
-  },
 };
 
 /* ---- SSE-Werkzeug (transportneutral) ---- */
@@ -200,7 +198,9 @@ export const LLM_PROVIDERS = {
  * @param {function} fetchFn — injizierbar; default globalThis.fetch
  */
 export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
-  const cfg = { ...LLM_DEFAULTS, ...cfgIn, models: { ...LLM_DEFAULTS.models, ...(cfgIn.models || {}) } };
+  const cfg = { ...LLM_DEFAULTS, ...cfgIn, models: { ...(cfgIn.models || {}) } };
+  if (cfg.mode !== "keyless" && cfg.mode !== "direct" && cfg.mode !== "proxy")
+    throw new Error('LLM-Konfiguration unvollständig: "mode" fehlt oder ist unbekannt (keyless | direct | proxy) — kein Fallback (S35d).');
 
   if (cfg.mode === "proxy") {
     // Der Worker übersetzt selbst (dort läuft derselbe Adapter im direct-Modus) —
@@ -243,8 +243,12 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     return callClaude;
   }
 
+  if (!cfg.provider)
+    throw new Error('LLM-Konfiguration unvollständig: "provider" fehlt (anthropic | mistral | openai) — kein Fallback (S35d).');
   const P = LLM_PROVIDERS[cfg.provider];
   if (!P) throw new Error("Unbekannter Provider: " + cfg.provider);
+  if (!cfg.models[cfg.provider])
+    throw new Error('LLM-Konfiguration unvollständig: kein Modell für Provider "' + cfg.provider + '" (models.' + cfg.provider + ') — kein Fallback (S35d).');
   if (cfg.provider !== "anthropic" && cfg.mode !== "direct")
     throw new Error(cfg.provider + " geht nur im direct-Modus (braucht API-Key).");
   if (cfg.mode === "direct" && !cfg.apiKey)

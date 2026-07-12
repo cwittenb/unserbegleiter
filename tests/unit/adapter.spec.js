@@ -3,6 +3,11 @@
 import { describe, it, expect } from "vitest";
 import { makeAdapter } from "../../core/llm/adapter.js";
 
+// Konfigurationspflicht (S35d): Tests deklarieren Provider + Modell explizit —
+// wie jeder Aufrufer; es gibt keine Kern-Defaults mehr.
+const KEYLESS = { provider: "anthropic", mode: "keyless", models: { anthropic: "test-modell" } };
+const DIRECT_A = { provider: "anthropic", mode: "direct", models: { anthropic: "test-modell" } };
+
 function mockFetch(antwort) {
   const calls = [];
   const fn = async (url, init) => {
@@ -29,7 +34,7 @@ const OPENAI_OK = {
 describe("Adapter · Anthropic keyless (Artefakt)", () => {
   it("Body: cache_control auf System-Prompt UND letztem Turn; keine Auth-Header", async () => {
     const f = mockFetch(ANTHROPIC_OK);
-    const call = makeAdapter({ provider: "anthropic", mode: "keyless" }, f);
+    const call = makeAdapter({ ...KEYLESS }, f);
     const r = await call("SYS", [{ role: "user", content: "u1" }, { role: "assistant", content: "a1" }, { role: "user", content: "u2" }]);
     const { url, init, body } = f.calls[0];
     expect(url).toBe("https://api.anthropic.com/v1/messages");
@@ -46,7 +51,7 @@ describe("Adapter · Anthropic keyless (Artefakt)", () => {
 
   it("cache:false → schlichter System-String, keine content-Blöcke", async () => {
     const f = mockFetch(ANTHROPIC_OK);
-    const call = makeAdapter({ mode: "keyless", cache: false }, f);
+    const call = makeAdapter({ ...KEYLESS, cache: false }, f);
     await call("SYS", [{ role: "user", content: "u" }]);
     expect(f.calls[0].body.system).toBe("SYS");
     expect(f.calls[0].body.messages[0].content).toBe("u");
@@ -54,7 +59,7 @@ describe("Adapter · Anthropic keyless (Artefakt)", () => {
 
   it("versteckte Nachrichten gehen ANS MODELL mit (hidden ist reine Anzeige-Semantik)", async () => {
     const f = mockFetch(ANTHROPIC_OK);
-    const call = makeAdapter({ mode: "keyless" }, f);
+    const call = makeAdapter({ ...KEYLESS }, f);
     await call("SYS", [{ role: "user", content: "[SYSTEM-REVISION: …]", hidden: true }]);
     expect(f.calls[0].body.messages[0].content[0].text).toContain("SYSTEM-REVISION");
     expect(f.calls[0].body.messages[0].hidden).toBeUndefined();   // Meta-Felder bleiben draußen
@@ -64,7 +69,7 @@ describe("Adapter · Anthropic keyless (Artefakt)", () => {
 describe("Adapter · Anthropic direct (Eval-Runner/Worker)", () => {
   it("setzt Key-Header und Version", async () => {
     const f = mockFetch(ANTHROPIC_OK);
-    const call = makeAdapter({ mode: "direct", apiKey: "sk-test" }, f);
+    const call = makeAdapter({ ...DIRECT_A, apiKey: "sk-test" }, f);
     await call("SYS", []);
     const h = f.calls[0].init.headers;
     expect(h["x-api-key"]).toBe("sk-test");
@@ -72,14 +77,14 @@ describe("Adapter · Anthropic direct (Eval-Runner/Worker)", () => {
   });
 
   it("direct ohne Key wird bei Konstruktion abgewiesen", () => {
-    expect(() => makeAdapter({ mode: "direct" }, mockFetch({}))).toThrow(/API-Key/);
+    expect(() => makeAdapter({ ...DIRECT_A }, mockFetch({}))).toThrow(/API-Key/);
   });
 });
 
 describe("Adapter · OpenAI-kompatibel (Mistral)", () => {
   it('Body: role:"system" + Bearer; usage-Parsing ohne Cache-Felder', async () => {
     const f = mockFetch(OPENAI_OK);
-    const call = makeAdapter({ provider: "mistral", mode: "direct", apiKey: "mk" }, f);
+    const call = makeAdapter({ provider: "mistral", mode: "direct", apiKey: "mk", models: { mistral: "test-modell" } }, f);
     const r = await call("SYS", [{ role: "user", content: "u" }]);
     const { url, init, body } = f.calls[0];
     expect(url).toContain("api.mistral.ai");
@@ -90,7 +95,7 @@ describe("Adapter · OpenAI-kompatibel (Mistral)", () => {
   });
 
   it("Nicht-Anthropic ohne direct-Modus wird abgewiesen", () => {
-    expect(() => makeAdapter({ provider: "mistral", mode: "keyless" }, mockFetch({}))).toThrow(/direct/);
+    expect(() => makeAdapter({ provider: "mistral", mode: "keyless", models: { mistral: "test-modell" } }, mockFetch({}))).toThrow(/direct/);
   });
 });
 
@@ -116,7 +121,31 @@ describe("Adapter · Proxy (Cloudflare-Client)", () => {
 describe("Adapter · Fehler aus der API", () => {
   it("Anthropic error-Objekt wird zum Wurf", async () => {
     const f = mockFetch({ error: { message: "overloaded" } });
-    const call = makeAdapter({ mode: "keyless" }, f);
+    const call = makeAdapter({ ...KEYLESS }, f);
     await expect(call("S", [])).rejects.toThrow("overloaded");
+  });
+});
+
+describe("Adapter · Konfigurationspflicht (S35d)", () => {
+  it("fehlender/unbekannter mode wird abgewiesen — kein Fallback", () => {
+    expect(() => makeAdapter({}, mockFetch({}))).toThrow(/mode/);
+    expect(() => makeAdapter({ mode: "irgendwas" }, mockFetch({}))).toThrow(/mode/);
+  });
+
+  it("fehlender provider wird abgewiesen — kein Fallback auf anthropic", () => {
+    expect(() => makeAdapter({ mode: "keyless" }, mockFetch({}))).toThrow(/provider/);
+  });
+
+  it("fehlendes Modell des gewählten Providers wird abgewiesen", () => {
+    expect(() => makeAdapter({ provider: "anthropic", mode: "keyless" }, mockFetch({}))).toThrow(/Modell/);
+    expect(() => makeAdapter({ provider: "mistral", mode: "direct", apiKey: "mk", models: { anthropic: "falscher-schluessel" } }, mockFetch({}))).toThrow(/Modell/);
+  });
+
+  it("proxy ist der EINE Fall ohne Provider/Modell-Pflicht (der Worker entscheidet)", async () => {
+    const f = mockFetch({ text: "ok", stop: "end_turn", usage: null });
+    const call = makeAdapter({ mode: "proxy" }, f);
+    const r = await call("S", []);
+    expect(r.text).toBe("ok");
+    expect(JSON.stringify(f.calls[0].body)).not.toContain("provider");
   });
 });

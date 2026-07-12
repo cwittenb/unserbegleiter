@@ -9,6 +9,7 @@ import { Bstate, Pstate } from "../../core/store/bundles.js";
 import { freigebeUebergabe } from "../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../core/contracts/uebergabe.js";
 import { makeAdapter } from "../../core/llm/adapter.js";
+import { ARTEFAKT_LLM } from "./llm-config.js";
 import { createApp } from "../../core/ui/app.js";
 import { applyDesign } from "../../core/ui/design.js";
 import { t, setLocale, getLocale } from "../../core/i18n/index.js";
@@ -26,7 +27,7 @@ function localBackend({ store, meta, role }) {
   const repo = new Repo({ store, ns: "PBDEV", code: meta.code, activeModuleId: "betrieb" });
   const bstate = new Bstate(repo);
   const pstate = new Pstate(repo);
-  const llm = makeAdapter({ mode: "keyless" });
+  const llm = makeAdapter({ ...ARTEFAKT_LLM });   // Artefakt-Ausnahme (S35d): einzige Stelle mit Modellwissen
   return {
     async info() {
       return {

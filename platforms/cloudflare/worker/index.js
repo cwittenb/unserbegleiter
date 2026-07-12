@@ -228,8 +228,14 @@ async function route(request, env) {
     const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
     if (!q.ok) return fehler(q.meldung, q.status);
     const fetchFn = env.UPSTREAM ? env.UPSTREAM.fetch.bind(env.UPSTREAM) : globalThis.fetch;
+    // Konfigurationspflicht (S35d): kein Provider-, Key- oder Modell-Fallback im
+    // Code — fehlt etwas im Environment, ist das ein Deploy-Fehler und wird als
+    // solcher gemeldet. Modell wird dem KONFIGURIERTEN Provider zugeordnet
+    // (Bugfix: vorher landete es immer unter models.anthropic).
+    if (!env.LLM_PROVIDER || !env.LLM_MODEL || !env.LLM_API_KEY)
+      return fehler("LLM nicht konfiguriert: LLM_PROVIDER, LLM_MODEL und LLM_API_KEY müssen im Worker-Environment gesetzt sein.", 500);
     const call = makeAdapter(
-      { provider: env.LLM_PROVIDER || "anthropic", mode: "direct", apiKey: env.LLM_API_KEY || "test", models: env.LLM_MODEL ? { anthropic: env.LLM_MODEL } : {} },
+      { provider: env.LLM_PROVIDER, mode: "direct", apiKey: env.LLM_API_KEY, models: { [env.LLM_PROVIDER]: env.LLM_MODEL } },
       fetchFn
     );
     if (stream === true) {
