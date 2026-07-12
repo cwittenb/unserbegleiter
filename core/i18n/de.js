@@ -29,6 +29,9 @@ export const de = {
   "mein.einzel": "Auftragsklärung beginnen",
   "mein.zeitleiste": "Meine Zeitleiste",
   "mein.mess": "Prozessreflexion",
+  "mein.soloSub": "Dein privater Raum zum Sortieren — frei erzählen, in Ruhe hinschauen.",
+  "mein.einzelSub": "Wo wünschst du dir Entwicklung — und wohin darf ich euch begleiten?",
+  "mein.gruppeRegale": "Regale",
 
   // Gemeinsamer Raum
   "teil.intro": "Euer Vorraum: Hier verschafft ihr euch Überblick — in den Regalen liegt nur, was freigegeben wurde. Die Räume dahinter betretet ihr bewusst, für alles, was ihr zu zweit macht.",
@@ -121,7 +124,11 @@ export const de = {
   "weg.messOffen": "Eine Prozessreflexions-Runde wartet auf deinen verdeckten Beitrag.",
   "weg.momentOffen": "Eure Gemeinsame Session ist offen — ihr könnt genau dort weitermachen.",
   "weg.soloErster": "Ein guter erster Schritt: ein Reflexionsgespräch — dein privater Raum zum Sortieren.",
-  "weg.startFrei": "Nimm dir, was gerade passt: dein Raum für dich, der gemeinsame für euch beide.",
+  "weg.optAuftragDich": "Du kannst auch direkt mit deiner Auftragsklärung starten — wir schauen, wo du dir Entwicklung wünschst und wie ich dich begleiten kann.",
+  "weg.optAuftragEuch": "Du kannst auch direkt mit deiner Auftragsklärung starten — wir schauen, wo du dir Entwicklung wünschst und wie ich euch begleiten kann.",
+  "weg.optQz": "Oder ihr beginnt gemeinsam mit einer Qualitätszeit im gemeinsamen Raum.",
+  "weg.optRueckblickSpaeter": "Nach einiger Zeit kannst du auch in die vergangenen Gespräche schauen und die Zwischenzeit reflektieren.",
+  "weg.optRueckblick": "Oder schaue in die vergangenen Gespräche und beantworte die Prozessreflexion.",
   /* Paarsprache — beidseitig bestätigter Wechsel (S30·C3) */
   "paarspr.titel": "Begleitungssprache (Paar)",
   "paarspr.link": "Begleitungssprache: {sprache} · ändern",

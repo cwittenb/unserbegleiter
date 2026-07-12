@@ -78,6 +78,13 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-gruppe>.pb-sub{display:block;margin-bottom:2px}
       .pb-weg .pb-item{border-bottom:0;padding:5px 0;font-size:14px;color:var(--ink-soft)}
       .pb-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+      .pb-mitte{margin:26px 0}
+      .pb-mitte .pb-card{align-items:center;text-align:center;padding:32px 26px}
+      .pb-mitte .pb-btn{margin:6px 0 0}
+      .pb-reihe{text-align:center;padding:26px}
+      .pb-reihe .pb-btn{margin:6px 6px 0}
+      .pb-ikon{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px}
+      .pb-ikon svg{width:20px;height:20px;display:block}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">

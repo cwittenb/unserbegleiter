@@ -31,6 +31,9 @@ export const en = {
   "mein.einzel": "Start Clarifying Your Focus",
   "mein.zeitleiste": "My Timeline",
   "mein.mess": "Process Reflection",
+  "mein.soloSub": "Your private space for sorting things out — speak freely, look closely, at your pace.",
+  "mein.einzelSub": "Where do you wish for growth — and where may I accompany the two of you?",
+  "mein.gruppeRegale": "Shelves",
 
   // Our Shared Space
   "teil.intro": "Your anteroom: this is where you get an overview — the shelves hold only what has been shared. The rooms beyond you enter deliberately, for everything you do together.",
@@ -123,7 +126,11 @@ export const en = {
   "weg.messOffen": "A process-reflection round is waiting for your concealed contribution.",
   "weg.momentOffen": "Your Shared Session is open — you can continue exactly there.",
   "weg.soloErster": "A good first step: a reflection session — your private space for sorting.",
-  "weg.startFrei": "Take whatever fits right now: your own space for you, the shared one for both of you.",
+  "weg.optAuftragDich": "You can also start right away with your mandate clarification — we\u2019ll look at where you want to grow and how I can accompany you.",
+  "weg.optAuftragEuch": "You can also start right away with your mandate clarification — we\u2019ll look at where you want to grow and how I can accompany the two of you.",
+  "weg.optQz": "Or the two of you begin together with some quality time in the shared space.",
+  "weg.optRueckblickSpaeter": "After a while you can also look back on past conversations and reflect on the time in between.",
+  "weg.optRueckblick": "Or look into your past conversations and answer the process reflection.",
   /* Couple language — bilaterally confirmed switch (S30·C3) */
   "paarspr.titel": "Companion language (couple)",
   "paarspr.link": "Companion language: {sprache} · change",

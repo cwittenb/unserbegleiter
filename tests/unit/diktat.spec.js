@@ -61,7 +61,7 @@ describe("Diktat · direkte Erkennung (Cloudflare-Fall)", () => {
     const rec = SR.instanzen[0];
     expect(rec.started).toBe(true);
     expect(rec.lang).toBe("de-DE");
-    expect(mic.textContent).toBe("⏹");
+    expect(mic.getAttribute("data-icon")).toBe("stop");
     expect(root.querySelector("#pbHint").textContent).toContain("Diktat läuft");
 
     // Zwischenergebnis (nicht final) verändert nichts; finales wird angehängt
@@ -74,7 +74,7 @@ describe("Diktat · direkte Erkennung (Cloudflare-Fall)", () => {
 
     mic.click();                                   // ⏹
     expect(rec.stopped).toBe(true);
-    expect(mic.textContent).toBe("🎤");
+    expect(mic.getAttribute("data-icon")).toBe("mic");
   });
 
   it("blockiertes Mikrofon (not-allowed, z. B. Sandbox) → OS-Tipp statt Fehlerton", async () => {
@@ -83,7 +83,7 @@ describe("Diktat · direkte Erkennung (Cloudflare-Fall)", () => {
     root.querySelector("#btnMic").click();
     SR.instanzen[0].onerror({ error: "not-allowed" });
     expect(root.querySelector("#pbHint").textContent).toContain("Fn-Taste");
-    expect(root.querySelector("#btnMic").textContent).toBe("🎤");   // sauber zurückgesetzt
+    expect(root.querySelector("#btnMic").getAttribute("data-icon")).toBe("mic");   // sauber zurückgesetzt
   });
 });
 

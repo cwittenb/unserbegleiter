@@ -40,13 +40,26 @@ function umhuelleBackend(roh, tick) {
   return aus;
 }
 
+/* Flache Icons (S36): einfarbig über currentColor, keine Emoji, keine
+   Schattierung. Auf primary-Knöpfen erscheinen sie weiß (--on-accent). */
+const IKON = {
+  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>',
+  stop: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>',
+};
+
 export function createApp({ doc, backend, root, diktat }) {
   const rohBackend = backend;   // Relaunch umhüllt selbst neu (kein Doppel-Zählen)
   let laufend = 0;
+  /* S36: Der globale Ladezustand (oben) tritt zurück, sobald der In-Place-
+     Ladezustand (Tipp-Blase im Chat) aktiv ist — nie beide zugleich. */
+  const aktualisiereBusy = () => {
+    const b = wurzel && wurzel.querySelector("#pbBusy");
+    if (b) b.classList.toggle("pb-hidden", laufend <= 0 || !!state.warten);
+  };
   backend = umhuelleBackend(rohBackend, d => {
     laufend = Math.max(0, laufend + d);
-    const b = wurzel && wurzel.querySelector("#pbBusy");
-    if (b) b.classList.toggle("pb-hidden", laufend <= 0);
+    aktualisiereBusy();
   });
   // Diktat: echte Browser-Spracherkennung, wo verfügbar; sonst OS-Tipp.
   // Injizierbar für Tests: diktat = { SR: Konstruktor|null, ua: string }
@@ -69,7 +82,6 @@ export function createApp({ doc, backend, root, diktat }) {
     <div class="pb-top">
       <h1 class="pb-h1" id="pbHallo"></h1>
       <span class="pb-sub" id="pbKern"></span>
-      <span class="pb-sub" id="pbSpr" style="float:right;margin-left:auto;user-select:none;letter-spacing:1px"><span data-spr="de" style="cursor:pointer">DE</span> · <span data-spr="en" style="cursor:pointer">EN</span></span>
     </div>
     <div id="pbErr" class="pb-err pb-hidden"></div>
     <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
@@ -77,35 +89,46 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-card" style="padding:18px 26px">
         <div id="startHallo" style="font-size:17px;font-weight:650;margin-bottom:4px"></div>
         <p class="pb-sub" id="startIntro" style="margin:0"></p>
+        <div class="pb-weg pb-hidden" id="wegStart" style="margin-top:12px"></div>
       </div>
-      <div class="pb-zwei">
+      <div class="pb-zwei pb-mitte">
         <div class="pb-card">
-          <button class="pb-btn primary" id="btnMyRoom" style="align-self:flex-start">${t("start.meinRaum")}</button>
+          <button class="pb-btn primary" id="btnMyRoom">${t("start.meinRaum")}</button>
           <p class="pb-sub" id="startMeinSub" style="margin:0"></p>
         </div>
         <div class="pb-card">
-          <button class="pb-btn primary" id="btnSharedRoom" style="align-self:flex-start">${t("start.teilRaum")}</button>
+          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")}</button>
           <p class="pb-sub" id="startTeilSub" style="margin:0"></p>
         </div>
       </div>
-      <div class="pb-card pb-weg pb-hidden" id="wegStart"></div>
       <p class="pb-sub pb-hidden" id="psZeile" style="margin:10px 4px 0"></p>
       <div class="pb-card pb-hidden" id="boxPaarsprache"></div>
     </div>
     <div id="scrMyRoom" class="pb-hidden">
-      <div class="pb-card">
+      <div class="pb-card" style="padding:18px 26px">
         <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("start.meinRaum")}</div>
-        <p class="pb-sub" id="meinIntro" style="margin:0 0 12px"></p>
-        <button class="pb-btn primary" id="btnSolo">${t("mein.solo")}</button>
-        <button class="pb-btn primary" id="btnEinzel">${t("mein.einzel")}</button>
+        <p class="pb-sub" id="meinIntro" style="margin:0"></p>
+        <div class="pb-weg pb-hidden" id="wegMein" style="margin-top:12px"></div>
+      </div>
+      <div class="pb-zwei pb-mitte">
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnSolo">${t("mein.solo")}</button>
+          <p class="pb-sub" style="margin:0">${t("mein.soloSub")}</p>
+        </div>
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnEinzel">${t("mein.einzel")}</button>
+          <p class="pb-sub" style="margin:0">${t("mein.einzelSub")}</p>
+        </div>
+      </div>
+      <div class="pb-card pb-reihe">
+        <div class="pb-sub">${t("mein.gruppeRegale")}</div>
         <button class="pb-btn" id="btnZeitleiste">${t("mein.zeitleiste")}</button>
         <button class="pb-btn" id="btnMess">${t("mein.mess")}</button>
-        <button class="pb-btn" id="btnZurueck1">${t("allg.zurueck")}</button>
       </div>
-      <div class="pb-card pb-weg pb-hidden" id="wegMein"></div>
       <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
       <div class="pb-card pb-hidden" id="boxMess"></div>
       <div class="pb-card pb-hidden" id="boxRecovery"></div>
+      <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck1">${t("allg.zurueck")}</button></div>
     </div>
     <div id="scrShared" class="pb-hidden">
       <div class="pb-card">
@@ -142,8 +165,8 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <div class="pb-composer" id="pbComposer">
           <textarea id="pbInput" placeholder="${t("chat.platzhalter")}"></textarea>
-          <button class="pb-btn" id="btnMic" title="${t("chat.diktieren")}">🎤</button>
-          <button class="pb-btn primary" id="btnSend">${t("chat.senden")}</button>
+          <button class="pb-btn pb-ikon" id="btnMic" data-icon="mic" title="${t("chat.diktieren")}" aria-label="${t("chat.diktieren")}">${IKON.mic}</button>
+          <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
         </div>
         <button class="pb-btn" id="btnChatZurueck">${t("chat.raumVerlassen")}</button>
       </div>
@@ -224,12 +247,10 @@ export function createApp({ doc, backend, root, diktat }) {
       if (lage.momentOffen) h.push(t("weg.momentOffen"));
       if (lage.regalNeu) h.push(t("weg.regalNeu", { n: lage.regalNeu }));
       if (lage.messOffen) h.push(t("weg.messOffen"));
-      if (!h.length) h.push(lage.zeitleisteLeer && !lage.einzelKapitel ? t("weg.soloErster") : t("weg.startFrei"));
     }
     if (screenId === "scrMyRoom") {
       if (lage.einzelKapitel) h.push(t("weg.einzelPause", { n: lage.einzelKapitel }));
       if (lage.messOffen) h.push(t("weg.messOffen"));
-      if (lage.zeitleisteLeer) h.push(t("weg.soloErster"));
     }
     if (screenId === "scrShared") {
       if (lage.momentOffen) h.push(t("weg.momentOffen"));
@@ -242,19 +263,33 @@ export function createApp({ doc, backend, root, diktat }) {
     return h.slice(0, 3);
   }
 
+  /* S36 · Feste Wegweiser-Zeilen: sie halten alle Optionen offen, statt
+     einen Pfad zu drängen. Die dritte Zeile in "Mein Raum" richtet sich
+     danach, ob schon Inhalte da sind (Rückblick vs. Ausblick). */
+  function wegOptionen(lage, screenId) {
+    if (screenId === "scrStart")
+      return [t("weg.soloErster"), t("weg.optAuftragDich"), t("weg.optQz")];
+    if (screenId === "scrMyRoom")
+      return [t("weg.soloErster"), t("weg.optAuftragEuch"),
+              lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick")];
+    return [];
+  }
+
   /** Wegweiser zeichnen + Gating anwenden (Gemeinsame Auflösung nur mit
-      beiden Freigaben). Läuft still im Hintergrund bei jedem Vorraum-Betreten. */
+      beiden Freigaben). Läuft still im Hintergrund bei jedem Vorraum-Betreten.
+      S36: Auf Start und in "Mein Raum" lebt der Wegweiser IM Intro-Panel
+      (oben, nicht als letzte Karte); Lage-Hinweise stehen vor den Optionen. */
   async function aktualisiereWegweiser(screenId) {
     const boxId = { scrStart: "wegStart", scrMyRoom: "wegMein", scrShared: "wegTeil" }[screenId];
     if (!boxId) return;
     try {
       const lage = await ladeLage();
       if (screenId === "scrShared") $("btnGemeinsam").disabled = !lage.handBeide;
-      const hin = wegHinweise(lage, screenId);
+      const zeilen = [...wegHinweise(lage, screenId), ...wegOptionen(lage, screenId)];
       const box = $(boxId);
-      if (!hin.length) { box.classList.add("pb-hidden"); return; }
-      box.innerHTML = `<div class="pb-sub">${t("weg.titel")}</div>` +
-        hin.map(x => `<div class="pb-item">‣ ${esc(x)}</div>`).join("");
+      if (!zeilen.length) { box.classList.add("pb-hidden"); return; }
+      box.innerHTML = (screenId === "scrShared" ? `<div class="pb-sub">${t("weg.titel")}</div>` : "") +
+        zeilen.map(x => `<div class="pb-item">‣ ${esc(x)}</div>`).join("");
       box.classList.remove("pb-hidden");
     } catch { /* Wegweiser ist Komfort, kein Muss */ }
   }
@@ -357,22 +392,34 @@ export function createApp({ doc, backend, root, diktat }) {
     aktualisiereSkala();
   }
 
+  function setzeWarten(v) { state.warten = v; aktualisiereBusy(); }
+
+  /* S36 · EIN Wartepfad für alle ausstehenden Modell-Antworten: Tipp-Blase
+     an, Senden gesperrt, dann Antwort. Panels (Regler, Skala, Gate, Kapitel,
+     Freigabe …) laufen hierüber — fehlender Ladezustand nach Panel-Submits
+     war ein globales Problem, das hier zentral gelöst ist. */
+  async function warteAntwort(lauf) {
+    setzeWarten(true);
+    const bs = $("btnSend");
+    if (bs) bs.disabled = true;
+    renderMsgs();
+    try { await (typeof lauf === "function" ? lauf() : lauf); }
+    catch (e) { err(e.message); }
+    finally {
+      setzeWarten(false);
+      if (bs) bs.disabled = false;
+      renderMsgs();
+    }
+  }
+
   /** Zentraler Sendeweg: User-Text SOFORT zeigen, Ladezustand, dann Antwort. */
   async function sende(text) {
     if (!text || !state.engine || state.warten) return;
-    state.warten = true;
-    $("btnSend").disabled = true;
     const laeuft = state.engine.sendUser(text);   // pusht die Nachricht synchron …
-    renderMsgs();                                 // … darum ist sie hier schon sichtbar
-    try {
+    await warteAntwort(async () => {              // … die Blase zeigt sie sofort
       await laeuft;
       hint(backend.llm && backend.llm.kontingent ? backend.llm.kontingent.hinweis : null);
-    } catch (e) { err(e.message); }
-    finally {
-      state.warten = false;
-      $("btnSend").disabled = false;
-      renderMsgs();
-    }
+    });
   }
 
   function gatePanel(data, engine) {
@@ -389,18 +436,14 @@ export function createApp({ doc, backend, root, diktat }) {
     p.querySelector("#btnGateOk").addEventListener("click", async () => {
       const wege = [...p.querySelectorAll("input:checked")].map(x => x.getAttribute("data-weg"));
       p.classList.add("pb-hidden");
-      try {
-        await quereGate(backend, data, wege);
-        await engine.submitToolResult(
-          wege.length ? fuelle(K().steuerTexte.freigabeGequert, { paths: wege.join(", ") }) : K().steuerTexte.freigabeNichts
-        );
-        renderMsgs();
-      } catch (e) { err(e.message); }
+      try { await quereGate(backend, data, wege); } catch (e) { err(e.message); return; }
+      await warteAntwort(() => engine.submitToolResult(
+        wege.length ? fuelle(K().steuerTexte.freigabeGequert, { paths: wege.join(", ") }) : K().steuerTexte.freigabeNichts
+      ));
     });
     p.querySelector("#btnGateNein").addEventListener("click", async () => {
       p.classList.add("pb-hidden");
-      await engine.submitToolResult(K().steuerTexte.freigabeWeiterarbeiten);
-      renderMsgs();
+      await warteAntwort(() => engine.submitToolResult(K().steuerTexte.freigabeWeiterarbeiten));
     });
   }
 
@@ -451,8 +494,7 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     p.querySelector("#kapNext").addEventListener("click", async () => {
       kwZu();
-      await engine.submitToolResult(fuelle(K().steuerTexte.weiterMitKapitel, { n: n + 1 }), { hidden: true });
-      renderMsgs();
+      await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.weiterMitKapitel, { n: n + 1 }), { hidden: true }));
     });
     p.querySelector("#kapPause").addEventListener("click", () => {
       kwZu();
@@ -494,8 +536,7 @@ export function createApp({ doc, backend, root, diktat }) {
       zu.className = "pb-btn"; zu.textContent = t("aufdeck.tafelZu");
       zu.addEventListener("click", kwZu);
       p.appendChild(zu);
-      await engine.submitToolResult(K().steuerTexte.aufdeckungAngezeigt, { hidden: true });
-      renderMsgs();
+      await warteAntwort(() => engine.submitToolResult(K().steuerTexte.aufdeckungAngezeigt, { hidden: true }));
     });
     const z = p.querySelector("#adZu");
     if (z) z.addEventListener("click", kwZu);
@@ -611,12 +652,7 @@ export function createApp({ doc, backend, root, diktat }) {
       // Die Eröffnungs-Nachricht ist Steuerung fürs Modell, keine Äußerung der Person —
       // sie bleibt unsichtbar (hidden), und die Begleitung beginnt von sich aus.
       const startText = K().steuerTexte.start[art];   // Korpus: Sprachfassung liefert prompts.<locale>.js
-      state.warten = true;
-      $("btnSend").disabled = true;
-      renderMsgs();
-      try { await state.engine.submitToolResult(startText, { hidden: true }); }
-      catch (e) { err(e.message); }
-      finally { state.warten = false; $("btnSend").disabled = false; renderMsgs(); }
+      await warteAntwort(() => state.engine.submitToolResult(startText, { hidden: true }));
     }
   }
 
@@ -900,7 +936,7 @@ export function createApp({ doc, backend, root, diktat }) {
         ? fuelle(K().steuerTexte.scaleClosingErgebnis, { nameA: state.info.nameA, nameB: state.info.nameB, a, b: p.querySelector("#scB").value })
         : fuelle(K().steuerTexte.scaleErgebnis, { id: art, wert: a });
       kwZu();
-      await engine.submitToolResult(text, { hidden: true });   // Wire, nicht Chat (S35)
+      await warteAntwort(() => engine.submitToolResult(text, { hidden: true }));   // Wire, nicht Chat (S35)
     });
   }
 
@@ -927,7 +963,7 @@ export function createApp({ doc, backend, root, diktat }) {
         const wahl = b.getAttribute("data-ch") === "ohne" ? opt("ohne") : karten[Number(b.getAttribute("data-ch"))];
         kwZu();
         // hidden: das Steuer-Token ist Wire, keine Äußerung der Person (S35)
-        await engine.submitToolResult(fuelle(K().steuerTexte.choiceErgebnis, { id: art, wahl }), { hidden: true });
+        await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.choiceErgebnis, { id: art, wahl }), { hidden: true }));
       });
     }
   }
@@ -962,8 +998,7 @@ export function createApp({ doc, backend, root, diktat }) {
         if (!(vals[i].tw && vals[i].tz)) return;
         if (i < K().DOMAINS.length - 1) { i++; zeichne(); return; }
         kwZu();
-        await engine.submitToolResult(reglerErgebnis(vals, state.info.name), { slider: true });
-        renderMsgs();
+        await warteAntwort(() => engine.submitToolResult(reglerErgebnis(vals, state.info.name), { slider: true }));
       });
     }
     zeichne();
@@ -1010,8 +1045,7 @@ export function createApp({ doc, backend, root, diktat }) {
             }
           } catch { /* Nachzug ist Komfort, kein Muss */ }
         }
-        await engine.submitToolResult(rankingErgebnis(mode, order, ctx), { ranking: mode });
-        renderMsgs();
+        await warteAntwort(() => engine.submitToolResult(rankingErgebnis(mode, order, ctx), { ranking: mode }));
       });
     }
     zeichne();
@@ -1036,8 +1070,7 @@ export function createApp({ doc, backend, root, diktat }) {
         werte.push(+inp.value);
         if (werte.length < 2) { frage(1); return; }
         kwZu();
-        await engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { baseline: true });
-        renderMsgs();
+        await warteAntwort(() => engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { baseline: true }));
       });
     }
     frage(0);
@@ -1070,14 +1103,12 @@ export function createApp({ doc, backend, root, diktat }) {
           engine.chat.minigate = "ja";
         }
         engine.chat.status = "released";
-        await engine.submitToolResult(fuelle(K().steuerTexte.freigabeAnzahl, { n: items.length, gesamt: data.items.length }));
-        renderMsgs();
-      } catch (e) { err(e.message); }
+      } catch (e) { err(e.message); return; }
+      await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.freigabeAnzahl, { n: items.length, gesamt: data.items.length })));
     });
     p.querySelector("#kwFgNein").addEventListener("click", async () => {
       kwZu();
-      await engine.submitToolResult(K().steuerTexte.freigabeAnpassen);
-      renderMsgs();
+      await warteAntwort(() => engine.submitToolResult(K().steuerTexte.freigabeAnpassen));
     });
   }
 
@@ -1096,7 +1127,8 @@ export function createApp({ doc, backend, root, diktat }) {
   let rec = null;
   function diktatStopp() {
     if (rec) { try { rec.stop(); } catch { /* egal */ } rec = null; }
-    $("btnMic").textContent = "🎤";
+    $("btnMic").innerHTML = IKON.mic;
+    $("btnMic").setAttribute("data-icon", "mic");
     $("btnMic").classList.remove("primary");
   }
   function diktatStart() {
@@ -1122,7 +1154,8 @@ export function createApp({ doc, backend, root, diktat }) {
     };
     rec.onend = () => { if (rec) diktatStopp(); };       // Browser beendet still (Timeout)
     rec.start();
-    $("btnMic").textContent = "⏹";
+    $("btnMic").innerHTML = IKON.stop;
+    $("btnMic").setAttribute("data-icon", "stop");
     $("btnMic").classList.add("primary");
     hint(t("diktat.laeuft"));
   }
@@ -1136,18 +1169,9 @@ export function createApp({ doc, backend, root, diktat }) {
     const neu = createApp({ doc, backend, root: wurzel, diktat });
     return neu.boot();
   }
-  function zeichneSprachwahl() {
-    for (const el2 of wurzel.querySelectorAll("#pbSpr [data-spr]"))
-      el2.style.fontWeight = el2.getAttribute("data-spr") === getLocale() ? "700" : "400";
-  }
-  for (const el2 of wurzel.querySelectorAll("#pbSpr [data-spr]"))
-    el2.addEventListener("click", async () => {
-      const l = el2.getAttribute("data-spr");
-      if (l === getLocale()) return;
-      setLocale(l);
-      try { await backend.pstate.set("language", l); } catch { /* Umgebungen ohne pstate */ }
-      relaunch();
-    });
+  /* S36: Der sichtbare EN·DE-Schalter oben rechts ist entfernt. Die
+     UI-Sprache bleibt persönlicher Zustand (pstate "language") und wird
+     beim Boot weiterhin angewendet — nur der Kopfzeilen-Schalter entfällt. */
 
   async function boot() {
     applyDesign(doc);   // Design dokumentweit (idempotent)
@@ -1157,7 +1181,6 @@ export function createApp({ doc, backend, root, diktat }) {
       if (sp && sp !== getLocale()) { setLocale(sp); return relaunch(); }
     } catch { /* Umgebungen ohne pstate */ }
     doc.documentElement.lang = getLocale();
-    zeichneSprachwahl();
     $("pbHallo").textContent = t("allg.hallo", { name: state.info.name });
     $("pbKern").textContent = t("allg.marke");
     $("startHallo").textContent = t("start.hallo", { name: state.info.name });

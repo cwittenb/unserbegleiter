@@ -172,9 +172,13 @@ describe("S35 · Globale Ladeanzeige", () => {
     expect(root.querySelector("#pbBusy").classList.contains("pb-hidden")).toBe(true);
     const start = app.startChat("solo");
     await ruhe();
-    expect(root.querySelector("#pbBusy").classList.contains("pb-hidden")).toBe(false);   // Anfrage läuft
+    // S36: Im Chat zeigt die Tipp-Blase den Ladezustand IN PLACE — die
+    // globale Pille tritt zurück (nie beide zugleich).
+    expect(root.querySelector("#pbStream")).toBeTruthy();
+    expect(root.querySelector("#pbBusy").classList.contains("pb-hidden")).toBe(true);
     offen.shift()({ text: "Willkommen.", stop: "end_turn" });
     await start; await ruhe();
+    expect(root.querySelector("#pbStream")).toBeFalsy();
     expect(root.querySelector("#pbBusy").classList.contains("pb-hidden")).toBe(true);
   });
 });
