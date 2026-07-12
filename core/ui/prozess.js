@@ -12,6 +12,52 @@ import { BLOECKE } from "../contracts/registry.js";
 
 /* ================= Prozessreflexion ================= */
 
+export const MESS_INTERVALL_TAGE = 7;   // Default: einmal die Woche
+
+/** Vereinbarter Rhythmus (geteilter Vertrag): {days, vorschlag|null}. */
+export async function holeMessIntervall(backend) {
+  const iv = (await backend.bstate.get("messIntervall")) || {};
+  return { days: iv.days || MESS_INTERVALL_TAGE, vorschlag: iv.vorschlag || null };
+}
+
+/** Rhythmus vorschlagen — wirksam erst nach Bestätigung der ANDEREN Person. */
+export async function schlageMessIntervallVor(backend, role, days) {
+  const d = Math.max(1, Math.round(+days || 0));
+  const iv = (await backend.bstate.get("messIntervall")) || {};
+  iv.vorschlag = { days: d, by: role, at: new Date().toISOString() };
+  await backend.bstate.set("messIntervall", iv);
+  return { days: iv.days || MESS_INTERVALL_TAGE, vorschlag: iv.vorschlag };
+}
+
+/** Auf einen Vorschlag antworten: eigene Rolle → zurückziehen; andere Rolle →
+ *  ok=true übernimmt (beidseitig bestätigt), ok=false verwirft. */
+export async function antworteMessIntervall(backend, role, ok) {
+  const iv = (await backend.bstate.get("messIntervall")) || {};
+  const v = iv.vorschlag;
+  if (v) {
+    if (v.by !== role && ok) { iv.days = v.days; iv.confirmedAt = new Date().toISOString(); }
+    iv.vorschlag = null;   // zurückgezogen, abgelehnt oder übernommen — in jedem Fall geschlossen
+    await backend.bstate.set("messIntervall", iv);
+  }
+  return { days: iv.days || MESS_INTERVALL_TAGE, vorschlag: iv.vorschlag || null };
+}
+
+/** Ausfüll-Fenster: Eine NEUE Runde öffnet erst, wenn der eigene letzte
+ *  Beitrag mindestens das Intervall zurückliegt. Eine bereits offene Runde
+ *  des Partners bleibt immer beantwortbar (Runden werden zu zweit fertig). */
+export function messFenster(mr, role, days, now = Date.now) {
+  let letzte = 0;
+  for (const r of ((mr && mr.items) || [])) {
+    const eigener = r.values && r.values[role];
+    if (!eigener) continue;
+    const t = Date.parse(eigener.at || r.startAt || "") || 0;
+    if (t > letzte) letzte = t;
+  }
+  if (!letzte) return { offen: true, naechsteAb: null };
+  const ab = letzte + days * 86400000;
+  return { offen: now() >= ab, naechsteAb: new Date(ab).toISOString() };
+}
+
 /** Eigenen Beitrag ablegen: offene Runde ergänzen oder neue beginnen.
  *  Beide Beiträge da ⇒ Runde „bereit" (aufzudecken im gemeinsamen Moment). */
 export async function trageMessbeitragEin(backend, role, beitrag /* {naehe, zweit, fit:{AGx:n}} */) {
@@ -21,7 +67,7 @@ export async function trageMessbeitragEin(backend, role, beitrag /* {naehe, zwei
     runde = { id: "MR" + (mr.items.length + 1), startAt: new Date().toISOString(), status: "open", values: { A: null, B: null } };
     mr.items.push(runde);
   }
-  runde.values[role] = beitrag;
+  runde.values[role] = { ...beitrag, at: new Date().toISOString() };
   if (runde.values.A && runde.values.B) runde.status = "ready";
   await backend.bstate.set("measurements", mr);
   return runde;

@@ -4,10 +4,11 @@
 import { Engine } from "../engine/engine.js";
 import { cleanDisplay } from "../contracts/block.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
-import { soloDef, momentDef, quereGate, baueMomentKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
+import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
 import { einzelDef, gemeinsamDef, aufdeckDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
-import { trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
+import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
+  trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt, qzStufe, baueQzMaterial, qzDef, waehleEinladung, keineEinladung, vereinbarePause } from "./prozess.js";
 import { applyDesign } from "./design.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
@@ -148,6 +149,8 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <button class="pb-btn" id="btnZurueck2" style="margin-top:12px">${t("allg.zurueck")}</button>
       </div>
+      <p class="pb-sub pb-hidden" id="miZeile" style="margin:10px 4px 0"></p>
+      <div class="pb-card pb-hidden" id="boxMessIv"></div>
       <div class="pb-card pb-weg pb-hidden" id="wegTeil"></div>
       <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">${t("regal.titel")}</div><p class="pb-sub" style="margin:6px 0 4px">${t("regal.intro")}</p><div id="regalItems"></div></div>
       <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
@@ -295,7 +298,62 @@ export function createApp({ doc, backend, root, diktat }) {
       box.classList.remove("pb-hidden");
     } catch { /* Wegweiser ist Komfort, kein Muss */ }
   }
-  function betrete(screenId) { show(screenId); aktualisiereWegweiser(screenId); }
+  function betrete(screenId) {
+    show(screenId);
+    aktualisiereWegweiser(screenId);
+    if (screenId === "scrShared") zeigeMessIntervall().catch(() => {});
+  }
+
+  /* S39 · Prozessreflexions-Rhythmus: geteilter Vertrag im gemeinsamen Raum.
+     Frei wählbar (Tage), Default wöchentlich; Änderungen schlägt eine Person
+     vor, die andere bestätigt — Muster wie die Begleitsprache, App-Ebene. */
+  async function zeigeMessIntervall(meldung) {
+    const zeile = $("miZeile"), box = $("boxMessIv");
+    if (!zeile || !box) return;
+    const iv = await holeMessIntervall(backend);
+    const w = iv.vorschlag;
+    if (w && w.by !== state.info.role) state.miOffen = true;
+    zeile.innerHTML = `<span class="pb-link" id="miLink">${w
+      ? t("messiv.linkOffen", { rhythmus: rhythmusText(iv.days) })
+      : t("messiv.link", { rhythmus: rhythmusText(iv.days) })}</span>`;
+    zeile.classList.remove("pb-hidden");
+    zeile.querySelector("#miLink").addEventListener("click", () => {
+      state.miOffen = !state.miOffen;
+      zeigeMessIntervall();
+    });
+    box.classList.toggle("pb-hidden", !state.miOffen);
+    if (!state.miOffen) return;
+    const meins = w && w.by === state.info.role;
+    let mitte, knoepfe;
+    if (!w) {
+      mitte = t("messiv.aktuell", { rhythmus: rhythmusText(iv.days) });
+      knoepfe = `<label style="font-size:13px">${t("messiv.eingabe")} <input id="miTage" type="number" min="1" max="90" value="${iv.days}" style="width:64px;padding:6px;border:1px solid var(--field-bd);border-radius:8px;background:var(--field);color:var(--ink);font:inherit"></label> ` +
+                `<button class="pb-btn" id="miVorschlag">${t("messiv.vorschlagen")}</button>`;
+    } else if (meins) {
+      mitte = t("messiv.wartet", { rhythmus: rhythmusText(w.days), partner: esc(state.info.partner) });
+      knoepfe = `<button class="pb-btn" id="miZurueck">${t("messiv.zurueckziehen")}</button>`;
+    } else {
+      mitte = t("messiv.vorschlag", { partner: esc(state.info.partner), rhythmus: rhythmusText(w.days) });
+      knoepfe = `<button class="pb-btn primary" id="miJa">${t("messiv.bestaetigen")}</button> ` +
+                `<button class="pb-btn" id="miNein">${t("messiv.ablehnen")}</button>`;
+    }
+    box.innerHTML =
+      `<div class="pb-sub">${t("messiv.titel")}</div>` +
+      `<p style="font-size:13px;margin:6px 0">${mitte}</p>` + knoepfe +
+      (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650">${meldung}</p>` : "") +
+      `<p class="pb-sub" style="margin:8px 0 0">${t("messiv.hinweis")}</p>`;
+    const knopf = (id, fn) => {
+      const b = box.querySelector(id);
+      if (b) b.addEventListener("click", () => fn().then(r => {
+        state.miOffen = true;
+        zeigeMessIntervall(r && r.days && !r.vorschlag && id === "#miJa" ? t("messiv.gewechselt", { rhythmus: rhythmusText(r.days) }) : "");
+      }).catch(e => err(fehlerText(e))));
+    };
+    knopf("#miVorschlag", () => schlageMessIntervallVor(backend, state.info.role, box.querySelector("#miTage").value));
+    knopf("#miJa", () => antworteMessIntervall(backend, state.info.role, true));
+    knopf("#miNein", () => antworteMessIntervall(backend, state.info.role, false));
+    knopf("#miZurueck", () => antworteMessIntervall(backend, state.info.role, false));
+  }
   function hint(msg) {
     const b = $("pbHint");
     if (!msg) { b.classList.add("pb-hidden"); return; }
@@ -635,6 +693,20 @@ export function createApp({ doc, backend, root, diktat }) {
         const alle = (await backend.bstate.get("reveal")) || {};
         chat.messages.push({ role: "user", hidden: true, content: baueAufdeckKontext(alle.A, alle.B) });
       }
+      // S39 · Reflexionsgespräch kennt den Stand: COMPANION-CONTEXT aus
+      // Aufträgen, freigegebenem Material beider, EIGENER Zeitleiste und den
+      // letzten gemeinsamen Sessions. Ist nichts da → kalter Start (kein Kontext).
+      if (art === "solo") {
+        const [goals, freiA, freiB, timeline, momentLog] = await Promise.all([
+          backend.bstate.get("goals").catch(() => null),
+          Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
+          Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
+          backend.pstate.get("timeline").catch(() => null),
+          backend.bstate.get("momentLog").catch(() => null),
+        ]);
+        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog });
+        if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
+      }
       if (art === "moment") {
         const [goals, agenda, momentLog, measurements, freiA, freiB] = await Promise.all([
           backend.bstate.get("goals"), backend.bstate.get("agenda"),
@@ -833,21 +905,46 @@ export function createApp({ doc, backend, root, diktat }) {
   $("pbSkalaSend").addEventListener("click", () => sende($("pbSkalaRange").value));
 
   /* ---- Prozessreflexion (Mess-Runde, verdeckt — Aufdeckung im Moment) ---- */
+  /* S39 · Sprach-Helfer für den vereinbarten Rhythmus. */
+  function zeitraumText(days) {
+    if (days === 7) return t("mess.zrWoche");
+    if (days % 7 === 0) return t("mess.zrWochen", { w: days / 7 });
+    return t("mess.zrTage", { n: days });
+  }
+  function rhythmusText(days) {
+    if (days === 7) return t("messiv.rhWoche");
+    if (days % 7 === 0) return t("messiv.rhWochen", { w: days / 7 });
+    return t("messiv.rhTage", { n: days });
+  }
+
   async function zeigeMess() {
     const box = $("boxMess");
     zeigeNur("boxMess");
     box.classList.remove("pb-hidden");
-    const [mr, goals] = await Promise.all([backend.bstate.get("measurements"), backend.bstate.get("goals")]);
+    const [mr, goals, iv] = await Promise.all([
+      backend.bstate.get("measurements"), backend.bstate.get("goals"), holeMessIntervall(backend),
+    ]);
     const offen = ((mr && mr.items) || []).find(r => r.status === "open");
     if (offen && offen.values[state.info.role]) {
       box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.abgegeben")}</p>`;
       return;
     }
+    // S39 · Rhythmus-Fenster: eine NEUE Runde öffnet erst nach dem vereinbarten
+    // Abstand; eine offene Runde des Partners bleibt immer beantwortbar.
+    if (!offen) {
+      const fenster = messFenster(mr, state.info.role, iv.days);
+      if (!fenster.offen) {
+        box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div>` +
+          `<p style="font-size:14px">${t("mess.gesperrt", { rhythmus: rhythmusText(iv.days), datum: esc((fenster.naechsteAb || "").slice(0, 10)) })}</p>`;
+        return;
+      }
+    }
+    const zeitraum = zeitraumText(iv.days);
     const aktive = (((goals && goals.items) || [])).filter(a => a.status === "active" && a.art === "shared");
     box.innerHTML =
       `<div class="pb-sub">${t("mess.verdeckt", { partner: esc(state.info.partner) })}</div>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.closeness", { partner: esc(state.info.partner) })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.guess", { partner: esc(state.info.partner) })}<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.closeness", { partner: esc(state.info.partner), zeitraum })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.guess", { partner: esc(state.info.partner), zeitraum })}<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
       aktive.map(a =>
         `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.fit", { text: esc(a.text), id: esc(a.id) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
       ).join("") +

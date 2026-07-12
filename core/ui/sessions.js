@@ -151,6 +151,35 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
  * Session). momentPrompt erwartet ihn und bringt ihn dramaturgisch ein; das Paar
  * sieht die Rohform nie (hidden = reine Anzeige-Semantik, geht ans Modell mit).
  */
+/* S39 · COMPANION-CONTEXT fürs Reflexionsgespräch: aktive Aufträge,
+ * freigegebenes Material BEIDER (gemeinsame Schicht), die EIGENE Zeitleiste
+ * und die letzten gemeinsamen Sessions. Gibt null zurück, wenn nichts da ist
+ * (kalter Start — die Begleitung eröffnet dann bei null). */
+export function baueSoloKontext({ goals, sharings, timeline, momentLog }) {
+  const KT = key => K().korpusTexte[key];
+  const teile = [];
+
+  const aktive = ((goals && goals.items) || []).filter(a => a.status !== "closed");
+  if (aktive.length)
+    teile.push("GOALS:\n" + aktive.map(a => "- " + a.id + " (" + a.art + (a.owner ? ", " + a.owner : "") + ", " + a.status + "): " + a.text).join("\n"));
+
+  const frei = (sharings || []).filter(Boolean);
+  if (frei.length)
+    teile.push(KT("sk.materialKopf") + "\n" + frei.map(f => fuelle(KT("mk.materialVon"), { name: f.name }) + f.items.map(i => i.text).join(" · ")).join("\n"));
+
+  const eintraege = ((timeline && timeline.entries) || []).slice(-5);
+  if (eintraege.length)
+    teile.push(KT("sk.zeitleisteKopf") + "\n" + eintraege.map(e =>
+      "- " + (e.at || "").slice(0, 10) + " [" + ((e.topics || []).join(" · ")) + "]: " + (e.summary || "")).join("\n"));
+
+  const fruehere = ((momentLog && momentLog.entries) || []).slice(-3);
+  if (fruehere.length)
+    teile.push(KT("sk.sessionsKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.summary).join("\n"));
+
+  if (!teile.length) return null;
+  return KT("sk.kopf") + "\n" + teile.join("\n\n");
+}
+
 export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings }, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];

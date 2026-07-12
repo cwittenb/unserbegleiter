@@ -80,7 +80,7 @@ describe("UI · Prozessreflexion-Widget (verdeckt)", () => {
     expect(box.querySelector("#msNaehe")).toBeNull();
 
     const mr = await backendA.bstate.get("measurements");
-    expect(mr.items[0].values.A).toEqual({ closeness: 4, guess: 7, fit: { AG1: 6 } });
+    expect(mr.items[0].values.A).toMatchObject({ closeness: 4, guess: 7, fit: { AG1: 6 } });   // S39: Beitrag trägt zusätzlich einen Zeitstempel (at)
   });
 });
 
