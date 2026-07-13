@@ -131,6 +131,16 @@ export function befundSchema(d) {
   return e;
 }
 
+/* ---- NOTE-BLOCK (Merkposten: privat vorgemerktes bedeutsames Thema, S44) ---- */
+export function noteSchema(d) {
+  const e = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (typeof d.note !== "string" || !d.note.trim()) e.push('"note" is missing');
+  if (d.origin !== undefined && d.origin !== null && typeof d.origin !== "string")
+    e.push('"origin" must be text or null');
+  return e;
+}
+
 /* ---- QZ-Einladungen (Qualitätszeit-Menü) ---- */
 export function qzSchema(d) {
   const e = [];

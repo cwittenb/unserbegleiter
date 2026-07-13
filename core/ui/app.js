@@ -13,6 +13,16 @@ import { applyDesign } from "./design.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Kürzel für die zwei Notifikations-Badges: beide Partner schauen ggf.
+// gemeinsam auf den Screen, deshalb je eine Badge. Das Präfix wächst nur so
+// weit, wie nötig, um die Namen unterscheidbar zu machen (Anna/Andreas → AN/AND).
+function badgeLabels(a, b) {
+  a = String(a ?? "").trim(); b = String(b ?? "").trim();
+  const up = (s, k) => s.slice(0, k).toLocaleUpperCase();
+  let n = 1;
+  while (n < Math.max(a.length, b.length) && up(a, n) === up(b, n)) n++;
+  return [up(a, n) || up(a, 1), up(b, n) || up(b, 1)];
+}
 
 /* S35 · Ladeanzeige: dünner Zähl-Proxy um die Backend-Fassade. Jede laufende
    asynchrone Anfrage (Backend ODER LLM) hebt einen Zähler; solange er >0 ist,
@@ -107,11 +117,11 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-zwei pb-mitte">
         <div class="pb-card">
           <button class="pb-btn primary" id="btnMyRoom">${t("start.meinRaum")}</button>
-          <p class="pb-sub" id="startMeinSub" style="margin:0"></p>
+          <p class="pb-sub" id="startMeinSub" style="margin:8px 0 0"></p>
         </div>
         <div class="pb-card">
-          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")} <span class="pb-badge pb-hidden" id="badgeTeil"></span></button>
-          <p class="pb-sub" id="startTeilSub" style="margin:0"></p>
+          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")} <span class="pb-hidden" id="badgeTeil"></span></button>
+          <p class="pb-sub" id="startTeilSub" style="margin:8px 0 0"></p>
         </div>
       </div>
       <p class="pb-sub pb-hidden" id="psZeile" style="margin:10px 4px 0"></p>
@@ -126,17 +136,18 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-zwei pb-mitte">
         <div class="pb-card">
           <button class="pb-btn primary" id="btnSolo">${t("mein.solo")}</button>
-          <p class="pb-sub" style="margin:0">${t("mein.soloSub")}</p>
+          <p class="pb-sub" style="margin:8px 0 0">${t("mein.soloSub")}</p>
         </div>
         <div class="pb-card">
           <button class="pb-btn primary" id="btnEinzel">${t("mein.einzel")}</button>
-          <p class="pb-sub" style="margin:0">${t("mein.einzelSub")}</p>
+          <p class="pb-sub" id="einzelSubP" style="margin:8px 0 0">${t("mein.einzelSub")}</p>
+          <button class="pb-btn primary pb-hidden" id="btnMess">${t("mein.mess")}</button>
+          <p class="pb-sub pb-hidden" id="messSubP" style="margin:8px 0 0">${t("mein.messSub")}</p>
         </div>
       </div>
       <div class="pb-card pb-reihe">
         <div class="pb-sub">${t("mein.gruppeRegale")}</div>
         <button class="pb-btn" id="btnZeitleiste">${t("mein.zeitleiste")}</button>
-        <button class="pb-btn" id="btnMess">${t("mein.mess")}</button>
       </div>
       <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
       <div class="pb-card pb-hidden" id="boxMess"></div>
@@ -152,24 +163,22 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-drei pb-mitte">
         <div class="pb-card">
           <button class="pb-btn primary" id="btnMoment">${t("teil.moment")}</button>
-          <p class="pb-sub" style="margin:0">${t("teil.momentSub")}</p>
+          <p class="pb-sub" style="margin:8px 0 0">${t("teil.momentSub")}</p>
         </div>
         <div class="pb-card">
           <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
-          <p class="pb-sub pb-hidden" id="gemeinsamHinweis" style="margin:0"></p>
+          <p class="pb-sub pb-hidden" id="gemeinsamHinweis" style="margin:8px 0 0"></p>
         </div>
       </div>
       <div class="pb-card pb-reihe">
         <div class="pb-sub">${t("teil.gruppeRegale")}</div>
-        <button class="pb-btn" id="btnRegal">${t("teil.regal")} <span class="pb-badge pb-hidden" id="badgeRegal"></span></button>
+        <button class="pb-btn" id="btnRegal">${t("teil.regal")} <span class="pb-hidden" id="badgeRegal"></span></button>
         <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
         <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
       </div>
-      <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub">${t("regal.titel")}</div><p class="pb-sub" style="margin:6px 0 4px">${t("regal.intro")}</p><div id="regalItems"></div></div>
+      <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub" id="regalTitel"></div><p class="pb-sub" id="regalIntro" style="margin:6px 0 4px"></p><div id="regalItems"></div></div>
       <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
       <div class="pb-card pb-hidden" id="boxQz"></div>
-      <p class="pb-sub pb-hidden" id="miZeile" style="margin:10px 4px 0"></p>
-      <div class="pb-card pb-hidden" id="boxMessIv"></div>
       <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck2">${t("allg.zurueck")}</button></div>
     </div>
     <div id="scrChat" class="pb-hidden">
@@ -247,10 +256,17 @@ export function createApp({ doc, backend, root, diktat }) {
       handPartner: !!(rolle === "A" ? hB : hA),
       handBeide: !!(hA && hB),
       regalNeu: (((shelf && shelf.items) || [])).filter(i => i.by !== state.info.name && !i.read).length,
+      // Je Partner ungelesen (Empfänger = die jeweils ANDERE Person): für zwei Badges.
+      regalNeuA: (((shelf && shelf.items) || [])).filter(i => i.by !== state.info.nameA && !i.read).length,
+      regalNeuB: (((shelf && shelf.items) || [])).filter(i => i.by !== state.info.nameB && !i.read).length,
       agendaOffen: (((agenda && agenda.items) || [])).filter(i => i.state === "open").length,
       messBereit: (((measurements && measurements.items) || [])).some(r => r.status === "ready"),
       messOffen: !!(offeneRunde && !offeneRunde.values[rolle]),
-      einzelKapitel: (einzelChat && einzelChat.status === "running" && einzelChat.kapitel) || 0,
+      // "pausiert bei Kapitel N" nur solange die Auftragsklärung wirklich läuft
+      // und NICHT freigegeben ist (S44: nach Abschluss kein Pause-Hinweis mehr).
+      einzelKapitel: (einzelChat && einzelChat.status === "running" && !einzelChat.freigegeben && einzelChat.kapitel) || 0,
+      einzelBegonnen: !!(einzelChat && ((einzelChat.messages || []).length || einzelChat.freigegeben)),
+      einzelFertig: !!(einzelChat && einzelChat.freigegeben),
       momentOffen: !!(momentChat && momentChat.status === "running" && (momentChat.messages || []).length),
       zeitleisteLeer: !((timeline && timeline.entries) || []).length,
     };
@@ -290,15 +306,30 @@ export function createApp({ doc, backend, root, diktat }) {
      Ausgrauen gesperrter Sessions MIT stets sichtbarem Hinweis unter dem
      Knopf (Touch-tauglich, kein Hover, kein Fehler-Popup). */
   function wendeLageAn(lage, screenId) {
-    const badge = (id, n) => {
+    // Zwei Badges möglich: beide Partner schauen ggf. gemeinsam auf den Screen,
+    // jede Badge zeigt das (unterscheidbare) Kürzel der Person, DIE LESEN SOLL,
+    // plus Zähler. Eine Badge mit Zähler 0 wird weggelassen.
+    const [kA, kB] = badgeLabels(state.info.nameA, state.info.nameB);
+    const badges = (id) => {
       const b = wurzel.querySelector("#" + id);
       if (!b) return;
-      b.textContent = String(n || "");
-      b.classList.toggle("pb-hidden", !n);
+      const pillen = [{ k: kA, n: lage.regalNeuA }, { k: kB, n: lage.regalNeuB }].filter(p => p.n > 0);
+      b.innerHTML = pillen.map(p => `<span class="pb-badge">${esc(p.k)} ${p.n}</span>`).join("");
+      b.classList.toggle("pb-hidden", !pillen.length);
     };
-    if (screenId === "scrStart") badge("badgeTeil", lage.regalNeu);
+    if (screenId === "scrMyRoom") {
+      // S44 · Prozessreflexion erscheint erst, wenn die Gemeinsame Auflösung
+      // gelaufen ist (Auftragsklärung abgeschlossen + aufgedeckt); dann tritt
+      // sie an die STELLE der Auftragsklärung (nicht in die Regal-Reihe).
+      const auf = !!lage.aufloesungGelaufen;
+      const tog = (id, hide) => { const e = $(id); if (e) e.classList.toggle("pb-hidden", hide); };
+      tog("btnEinzel", auf); tog("einzelSubP", auf);
+      tog("btnMess", !auf); tog("messSubP", !auf);
+      return;
+    }
+    if (screenId === "scrStart") badges("badgeTeil");
     if (screenId !== "scrShared") return;
-    badge("badgeRegal", lage.regalNeu);
+    badges("badgeRegal");
     const sperre = (btnId, hinweisId, zu, text) => {
       const b = $(btnId), h = $(hinweisId);
       if (!b) return;
@@ -315,10 +346,10 @@ export function createApp({ doc, backend, root, diktat }) {
      danach, ob schon Inhalte da sind (Rückblick vs. Ausblick). */
   function wegOptionen(lage, screenId) {
     if (screenId === "scrStart")
-      return [t("weg.startAuftrag"), t("weg.startSolo"), t("weg.optQz")];
+      return [!lage.einzelBegonnen && t("weg.startAuftrag"), t("weg.startSolo"), t("weg.optQz")].filter(Boolean);
     if (screenId === "scrMyRoom")
-      return [t("weg.soloErster"), t("weg.optAuftragEuch"),
-              lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick")];
+      return [t("weg.soloErster"), !lage.einzelBegonnen && t("weg.optAuftragEuch"),
+              lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick")].filter(Boolean);
     if (screenId === "scrShared") {
       const zeilen = [t("weg.optQzTeil")];
       if (lage.handBeide && !lage.aufloesungGelaufen)
@@ -350,28 +381,16 @@ export function createApp({ doc, backend, root, diktat }) {
   function betrete(screenId) {
     show(screenId);
     aktualisiereWegweiser(screenId);
-    if (screenId === "scrShared") zeigeMessIntervall().catch(() => {});
   }
 
-  /* S39 · Prozessreflexions-Rhythmus: geteilter Vertrag im gemeinsamen Raum.
-     Frei wählbar (Tage), Default wöchentlich; Änderungen schlägt eine Person
-     vor, die andere bestätigt — Muster wie die Begleitsprache, App-Ebene. */
-  async function zeigeMessIntervall(meldung) {
-    const zeile = $("miZeile"), box = $("boxMessIv");
-    if (!zeile || !box) return;
+  /* S39/S44 · Prozessreflexions-Rhythmus: geteilter Vertrag, jetzt als Sektion
+     "Weitere Absprachen" IN der Agenda (statt lose im gemeinsamen Raum). Frei
+     wählbar (Tage), Default wöchentlich; eine Person schlägt vor, die andere
+     bestätigt — Muster wie die Begleitsprache, App-Ebene. Immer offen gerendert. */
+  async function rhythmusSektion(box, meldung) {
+    if (!box) return;
     const iv = await holeMessIntervall(backend);
     const w = iv.vorschlag;
-    if (w && w.by !== state.info.role) state.miOffen = true;
-    zeile.innerHTML = `<span class="pb-link" id="miLink">${w
-      ? t("messiv.linkOffen", { rhythmus: rhythmusText(iv.days) })
-      : t("messiv.link", { rhythmus: rhythmusText(iv.days) })}</span>`;
-    zeile.classList.remove("pb-hidden");
-    zeile.querySelector("#miLink").addEventListener("click", () => {
-      state.miOffen = !state.miOffen;
-      zeigeMessIntervall();
-    });
-    box.classList.toggle("pb-hidden", !state.miOffen);
-    if (!state.miOffen) return;
     const meins = w && w.by === state.info.role;
     let mitte, knoepfe;
     if (!w) {
@@ -387,16 +406,15 @@ export function createApp({ doc, backend, root, diktat }) {
                 `<button class="pb-btn" id="miNein">${t("messiv.ablehnen")}</button>`;
     }
     box.innerHTML =
-      `<div class="pb-sub">${t("messiv.titel")}</div>` +
-      `<p style="font-size:13px;margin:6px 0">${mitte}</p>` + knoepfe +
+      `<div class="pb-sub" style="margin-top:12px">${t("agenda.gruppeAbsprachen")}</div>` +
+      `<p style="font-size:13px;margin:4px 0 6px"><strong>${t("messiv.titel")}</strong> — ${mitte}</p>` + knoepfe +
       (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650">${meldung}</p>` : "") +
       `<p class="pb-sub" style="margin:8px 0 0">${t("messiv.hinweis")}</p>`;
     const knopf = (id, fn) => {
       const b = box.querySelector(id);
-      if (b) b.addEventListener("click", () => fn().then(r => {
-        state.miOffen = true;
-        zeigeMessIntervall(r && r.days && !r.vorschlag && id === "#miJa" ? t("messiv.gewechselt", { rhythmus: rhythmusText(r.days) }) : "");
-      }).catch(e => err(fehlerText(e))));
+      if (b) b.addEventListener("click", () => fn().then(r =>
+        rhythmusSektion(box, r && r.days && !r.vorschlag && id === "#miJa" ? t("messiv.gewechselt", { rhythmus: rhythmusText(r.days) }) : "")
+      ).catch(e => err(fehlerText(e))));
     };
     knopf("#miVorschlag", () => schlageMessIntervallVor(backend, state.info.role, box.querySelector("#miTage").value));
     knopf("#miJa", () => antworteMessIntervall(backend, state.info.role, true));
@@ -483,6 +501,15 @@ export function createApp({ doc, backend, root, diktat }) {
     box.innerHTML = "";
     if (state.engine) {
       for (const m of state.engine.chat.messages) {
+        // S44 · Panel-Echo: geschlossene Regler/Slider hinterlassen eine
+        // kompakte Zusammenfassungszeile im Verlauf (statt spurlos zu verschwinden).
+        if (m.echo) {
+          const e2 = el("div", "pb-echo");
+          e2.textContent = m.echo;
+          e2.setAttribute("style", "align-self:flex-end;font-size:12px;color:var(--ink-faint);background:var(--card);border:1px solid var(--card-bd);border-radius:999px;padding:3px 12px;max-width:82%");
+          box.appendChild(e2);
+          continue;
+        }
         if (m.hidden || istWireNachricht(m)) continue;   // S41: Wächter auch für Alt-Sessions
         const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
         const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
@@ -737,14 +764,15 @@ export function createApp({ doc, backend, root, diktat }) {
       // Aufträgen, freigegebenem Material beider, EIGENER Zeitleiste und den
       // letzten gemeinsamen Sessions. Ist nichts da → kalter Start (kein Kontext).
       if (art === "solo") {
-        const [goals, freiA, freiB, timeline, momentLog] = await Promise.all([
+        const [goals, freiA, freiB, timeline, momentLog, merkposten] = await Promise.all([
           backend.bstate.get("goals").catch(() => null),
           Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
           Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
           backend.pstate.get("timeline").catch(() => null),
           backend.bstate.get("momentLog").catch(() => null),
+          backend.pstate.get("merkposten").catch(() => null),
         ]);
-        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog });
+        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten });
         if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
       }
       if (art === "moment") {
@@ -778,15 +806,34 @@ export function createApp({ doc, backend, root, diktat }) {
     const zl = (await backend.pstate.get("timeline")) || { entries: [] };
     zeigeNur("boxZeitleiste");
     $("boxZeitleiste").classList.remove("pb-hidden");
-    $("zlItems").innerHTML = zl.entries.length
-      ? zl.entries.map(e2 => `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}</div>`).join("")
+    const items = $("zlItems");
+    items.innerHTML = zl.entries.length
+      ? zl.entries.map((e2, i) => {
+          const det = e2.details || [];
+          return `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}` +
+            (det.length
+              ? `<br><span class="pb-link" data-zl="${i}">${t("zeitleiste.detailsAuf")}</span>` +
+                `<div class="pb-hidden" id="zlDet${i}" style="margin-top:6px">` +
+                det.map(dd => `<div style="font-size:14px;color:var(--ink-soft)"><strong>${esc(dd.id)}</strong> ${esc(dd.text)}</div>`).join("") +
+                `</div>`
+              : "") + `</div>`;
+        }).join("")
       : `<div class="pb-item">${t("zeitleiste.leer")}</div>`;
+    for (const b of items.querySelectorAll("[data-zl]"))
+      b.addEventListener("click", () => {
+        const det = items.querySelector("#zlDet" + b.getAttribute("data-zl"));
+        if (!det) return;
+        const zu = det.classList.toggle("pb-hidden");   // true = jetzt verborgen
+        b.textContent = zu ? t("zeitleiste.detailsAuf") : t("zeitleiste.detailsZu");
+      });
   }
 
   async function zeigeRegal() {
     const regal = (await backend.bstate.get("shelf")) || { items: [] };
     zeigeNur("boxRegal");
     $("boxRegal").classList.remove("pb-hidden");
+    $("regalTitel").textContent = t("regal.titel");
+    $("regalIntro").textContent = t("regal.intro", { nameA: state.info.nameA, nameB: state.info.nameB });
     $("regalItems").innerHTML = regal.items.length
       ? regal.items.map(i => {
           const fremd = i.by !== state.info.name;
@@ -837,9 +884,12 @@ export function createApp({ doc, backend, root, diktat }) {
         ? `<div class="pb-sub" style="margin-top:10px">${t("agenda.gruppeBacklog")}</div>` +
           `<p class="pb-sub" style="margin:2px 0 4px">${t("agenda.backlogHinweis")}</p>` +
           ruht.map(auftragZeile).join("")
-        : "");
+        : "") +
+      `<div id="agendaAbsprachen"></div>`;
     for (const b of $("agendaItems").querySelectorAll("[data-abr]"))
       b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selfResolved"); zeigeAgenda(); });
+    // S44 · "Weitere Absprachen": Prozessreflexions-Rhythmus lebt jetzt hier.
+    await rhythmusSektion($("agendaAbsprachen"));
   }
 
   /* ---- Paarsprache: beidseitig bestätigter Wechsel (S30·C3).
@@ -1068,10 +1118,12 @@ export function createApp({ doc, backend, root, diktat }) {
 
   /* S38 · Persönliche Zeitleiste fortschreiben (Auftragsklärung, Prozess-
      reflexion). Fehlertolerant — die Zeitleiste ist Chronik, kein Muss. */
-  async function zeitleistenEintrag(topic, summary) {
+  async function zeitleistenEintrag(topic, summary, details) {
     try {
       const zl = (await backend.pstate.get("timeline")) || { entries: [] };
-      zl.entries.push({ topics: [topic], summary, at: new Date().toISOString() });
+      const eintrag = { topics: [topic], summary, at: new Date().toISOString() };
+      if (details && details.length) eintrag.details = details;   // S44: aufklappbare Punkte
+      zl.entries.push(eintrag);
       await backend.pstate.set("timeline", zl);
     } catch { /* Chronik ist Komfort, kein Muss */ }
   }
@@ -1105,11 +1157,15 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     p.querySelector("#scOk").addEventListener("click", async () => {
       const a = p.querySelector("#scA").value;
+      const b = doppel ? p.querySelector("#scB").value : null;
       const text = doppel
-        ? fuelle(K().steuerTexte.scaleClosingErgebnis, { nameA: state.info.nameA, nameB: state.info.nameB, a, b: p.querySelector("#scB").value })
+        ? fuelle(K().steuerTexte.scaleClosingErgebnis, { nameA: state.info.nameA, nameB: state.info.nameB, a, b })
         : fuelle(K().steuerTexte.scaleErgebnis, { id: art, wert: a });
+      const echo = doppel
+        ? t("echo.closing", { nameA: state.info.nameA, a, nameB: state.info.nameB, b })
+        : (art === "safety" ? t("echo.safety", { n: a }) : "");
       kwZu();
-      await warteAntwort(() => engine.submitToolResult(text, { hidden: true }));   // Wire, nicht Chat (S35)
+      await warteAntwort(() => engine.submitToolResult(text, { hidden: true, echo }));   // Wire, nicht Chat (S35)
     });
   }
 
@@ -1148,9 +1204,16 @@ export function createApp({ doc, backend, root, diktat }) {
     p.classList.remove("pb-hidden");
     function zeichne() {
       const d = K().DOMAINS[i];
-      const [lw, lz] = d.poles
-        ? [t("kw.poleW", { p0: d.poles[0], p1: d.poles[1] }), t("kw.poleZ")]
-        : [t("kw.wichtig"), t("kw.zufrieden")];
+      let lw, lz;
+      if (d.poles) {
+        // Rotierende Formulierungs-Pools, damit die Reglerfragen nicht zur Formel
+        // werden; der Pol-Rang (0,1,2,…) wählt die Variante deterministisch.
+        const rang = K().DOMAINS.slice(0, i + 1).filter(x => x.poles).length - 1;
+        lw = t("kw.istPool" + (rang % 3), {}) + " " + t("kw.poleLegende", { p0: d.poles[0], p1: d.poles[1] });
+        lz = t("kw.idealPool" + (rang % 4), {});
+      } else {
+        [lw, lz] = [t("kw.wichtig"), t("kw.zufrieden")];
+      }
       p.innerHTML =
         `<div class="pb-sub">${t("kw.bereich", { i: i + 1, n: K().DOMAINS.length })}</div>` +
         `<p style="font-size:14px;margin:6px 0"><strong>${esc(d.t)}</strong><br><span class="pb-sub">${esc(d.d)}</span></p>` +
@@ -1171,7 +1234,8 @@ export function createApp({ doc, backend, root, diktat }) {
         if (!(vals[i].tw && vals[i].tz)) return;
         if (i < K().DOMAINS.length - 1) { i++; zeichne(); return; }
         kwZu();
-        await warteAntwort(() => engine.submitToolResult(reglerErgebnis(vals, state.info.name), { slider: true, hidden: true }));
+        // Echo NUR als Anzahl — die Person hat keine Zahlen gesehen (Reglerpositionen).
+        await warteAntwort(() => engine.submitToolResult(reglerErgebnis(vals, state.info.name), { slider: true, hidden: true, echo: t("echo.regler", { n: K().DOMAINS.length }) }));
       });
     }
     zeichne();
@@ -1267,7 +1331,7 @@ export function createApp({ doc, backend, root, diktat }) {
             }
           } catch { /* Nachzug ist Komfort, kein Muss */ }
         }
-        await warteAntwort(() => engine.submitToolResult(rankingErgebnis(mode, order, ctx), { ranking: mode, hidden: true }));
+        await warteAntwort(() => engine.submitToolResult(rankingErgebnis(mode, order, ctx), { ranking: mode, hidden: true, echo: mode === "self" ? t("echo.rankingSelf") : t("echo.rankingGuess") }));
       });
     }
     zeichne();
@@ -1292,7 +1356,7 @@ export function createApp({ doc, backend, root, diktat }) {
         werte.push(+inp.value);
         if (werte.length < 2) { frage(1); return; }
         kwZu();
-        await warteAntwort(() => engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { baseline: true, hidden: true }));
+        await warteAntwort(() => engine.submitToolResult(startwerteErgebnis(namen[0], werte[0], namen[1], werte[1]), { baseline: true, hidden: true, echo: t("echo.baseline") }));
       });
     }
     frage(0);
@@ -1325,8 +1389,12 @@ export function createApp({ doc, backend, root, diktat }) {
           engine.chat.minigate = "ja";
         }
         engine.chat.freigegeben = true;   // S38: Abschluss-Bewusstsein über den Session-Zustand
-        engine.chat.status = "released";
-        await zeitleistenEintrag(t("zeitleiste.tpAuftrag"), t("zeitleiste.eintragAuftrag", { n: items.length, gesamt: data.items.length }));
+        // S44 · D4b: nach der Freigabe bleibt die Session offen (NACHKLANG) —
+        // der Composer lebt weiter für Korrekturen/Spezifizierungen/Nachfragen.
+        // Der Abschluss-Status steckt in "freigegeben" (nicht mehr in status="released").
+        engine.chat.status = "running";
+        engine.chat.nachklang = true;
+        await zeitleistenEintrag(t("zeitleiste.tpAuftrag"), t("zeitleiste.eintragAuftrag", { n: items.length, gesamt: data.items.length }), items);
       } catch (e) { err(e.message); return; }
       await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.freigabeAnzahl, { n: items.length, gesamt: data.items.length })));
     });

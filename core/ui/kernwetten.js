@@ -6,6 +6,7 @@
 import { BLOECKE } from "../contracts/registry.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
+import { merkeMerkposten } from "./sessions.js";
 
 /* Gegensatzpaare erscheinen als GETRENNTE Pole (v0.29-Prinzip).
    rankItems() liest die Domänen zur LAUFZEIT aus dem aktiven Korpus (S30·C2);
@@ -91,6 +92,12 @@ export function einzelDef(backend, hooks = {}) {
         // die gewählten Items gehen über den EINZIGEN Pfad (handover) in die
         // geteilte Schicht — Vertrag 3.
         handle: (data, engine) => { if (hooks.onFreigabe) hooks.onFreigabe(data, engine); },
+      },
+      {
+        // S44 · Merkposten: bedeutsames Thema privat vormerken (unsichtbar) —
+        // wird im Reflexionsgespräch wieder aufgegriffen, am Ende Teilen angeboten.
+        ...BLOECKE.note,
+        handle: (data, engine) => merkeMerkposten(backend, data),
       },
     ],
   };

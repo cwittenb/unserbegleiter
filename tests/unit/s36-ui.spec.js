@@ -106,7 +106,8 @@ describe("S36 · Mein Raum (4 Zeilen)", () => {
     expect(zwei.querySelector("#btnEinzel")).toBeTruthy();
     const regale = raum.querySelector(".pb-reihe");
     expect(regale.querySelector("#btnZeitleiste")).toBeTruthy();
-    expect(regale.querySelector("#btnMess")).toBeTruthy();
+    expect(regale.querySelector("#btnMess")).toBeFalsy();     // S44: nicht mehr in der Regal-Reihe
+    expect(zwei.querySelector("#btnMess")).toBeTruthy();      // S44: (verdeckt) im Auftragsklärungs-Slot
     // Inhaltspanel unter der Regal-Reihe, Zurück als letzte Zeile
     const kinder = [...raum.children];
     const box = raum.querySelector("#boxZeitleiste");

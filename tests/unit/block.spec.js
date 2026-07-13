@@ -67,7 +67,7 @@ describe("Block · Registry", () => {
   it("jeder Block trägt Schema, Platzhalter und dataset", () => {
     for (const b of ALLE_BLOECKE) {
       expect(typeof b.schema).toBe("function");
-      expect(b.placeholder).toBeTruthy();
+      expect(typeof b.placeholder).toBe("string");   // "" erlaubt: unsichtbarer NOTE-BLOCK (S44)
       expect(b.dataset).toBeTruthy();
     }
   });

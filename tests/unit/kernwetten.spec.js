@@ -150,7 +150,7 @@ describe("UI · Freigabe-Drehbuch (CLOSURE → handover)", () => {
     ],
   });
 
-  it("Abwählen wirkt: nur angekreuzte Items queren; Fremdfelder (tag) queren NIE; Session released", async () => {
+  it("Abwählen wirkt: nur angekreuzte Items queren; Fremdfelder (tag) queren NIE; Session bleibt im Nachklang offen", async () => {
     const mock = new MockLLM([
       "Hier deine Übersicht.\nCLOSURE-BLOCK\n" + CLOSURE + "\nEND CLOSURE-BLOCK",
       "Danke fürs Teilen – ich freue mich auf euer Gespräch.",
@@ -168,7 +168,8 @@ describe("UI · Freigabe-Drehbuch (CLOSURE → handover)", () => {
     expect(u.items.map(x => x.id)).toEqual(["S1", "G1"]);
     expect(JSON.stringify(u)).not.toContain("FirstTake");    // tag quert nicht (Vertrag 3)
     expect(JSON.stringify(u)).not.toContain("Verlässlichkeit");  // abgewähltes Item fehlt
-    expect(app._state.engine.chat.status).toBe("released");
+    expect(app._state.engine.chat.freigegeben).toBe(true);       // S44: Abschluss-Marker
+    expect(app._state.engine.chat.status).toBe("running");       // S44: NACHKLANG offen — Composer lebt weiter
     const userMsgs = mock.calls[1].messages.filter(m => m.role === "user");
     expect(userMsgs[userMsgs.length - 1].content).toContain("2 von 3 Punkten freigegeben");
   });

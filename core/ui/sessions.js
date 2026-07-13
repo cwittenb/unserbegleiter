@@ -44,8 +44,24 @@ export function soloDef(backend, hooks = {}) {
           if (hooks.onGate) hooks.onGate({ selbstmitteilung: data.wording, wish: data.wish, paths: data.paths }, engine);
         },
       },
+      {
+        // S44 · Merkposten: bedeutsames Thema privat vormerken (unsichtbar).
+        ...BLOECKE.note,
+        handle: (data, engine) => merkeMerkposten(backend, data),
+      },
     ],
   };
+}
+
+/** S44 · Merkposten anlegen — rein privat (pstate), Dedupe nach Text. */
+export async function merkeMerkposten(backend, data) {
+  const text = String((data && data.note) || "").trim();
+  if (!text) return;
+  const mp = (await backend.pstate.get("merkposten")) || { items: [], seq: 0 };
+  if (mp.items.some(x => x.text === text)) return;   // schon vorgemerkt
+  mp.seq = (mp.seq || 0) + 1;
+  mp.items.push({ id: "MP" + mp.seq, text, origin: (data && data.origin) || null, at: new Date().toISOString(), status: "open" });
+  await backend.pstate.set("merkposten", mp);
 }
 
 /** Gemeinsame Session (geteilter Raum, Drei-Akt-Struktur lebt im Prompt). */
@@ -159,9 +175,15 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
  * freigegebenes Material BEIDER (gemeinsame Schicht), die EIGENE Zeitleiste
  * und die letzten gemeinsamen Sessions. Gibt null zurück, wenn nichts da ist
  * (kalter Start — die Begleitung eröffnet dann bei null). */
-export function baueSoloKontext({ goals, sharings, timeline, momentLog }) {
+export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkposten }) {
   const KT = key => K().korpusTexte[key];
   const teile = [];
+
+  // S44 · Offene Merkposten aus früheren privaten Sitzungen — aktiv wieder
+  // aufgreifen und am Ende Teilen anbieten (nie automatisch queren).
+  const offeneMerk = ((merkposten && merkposten.items) || []).filter(m => m.status === "open");
+  if (offeneMerk.length)
+    teile.push(KT("sk.merkpostenKopf") + "\n" + offeneMerk.map(m => "- " + m.text).join("\n"));
 
   const aktive = ((goals && goals.items) || []).filter(a => a.status !== "closed");
   if (aktive.length)

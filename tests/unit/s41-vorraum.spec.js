@@ -102,24 +102,26 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
   });
 });
 
-describe("S41 · Badges für ungelesene Freigaben", () => {
-  it("Startscreen-Button und Regal-Knopf tragen denselben Zähler; ohne Neues keine Badge", async () => {
+describe("S41/S44 · Badges für ungelesene Freigaben (je Partner)", () => {
+  it("zwei Badges: je Partner das Kürzel + Zähler der für sie bestimmten offenen Freigaben", async () => {
     const backend = memoryBackend(null);
     await backend.bstate.set("shelf", {
       items: [
-        { id: "sh1", by: "Bernd", text: "…", read: false },
-        { id: "sh2", by: "Bernd", text: "…", read: false },
-        { id: "sh3", by: "Anna", text: "…", read: false },   // eigene zählt nicht
+        { id: "sh1", by: "Bernd", text: "…", read: false },   // für Anna
+        { id: "sh2", by: "Bernd", text: "…", read: false },   // für Anna
+        { id: "sh3", by: "Anna", text: "…", read: false },    // für Bernd
+        { id: "sh4", by: "Bernd", text: "…", read: true },    // gelesen → zählt nicht
       ],
     });
     await bootApp(backend);
     const b1 = root.querySelector("#badgeTeil");
     expect(b1.classList.contains("pb-hidden")).toBe(false);
-    expect(b1.textContent).toBe("2");
+    const pillen1 = [...b1.querySelectorAll(".pb-badge")].map(p => p.textContent);
+    expect(pillen1).toEqual(["A 2", "B 1"]);                  // Anna: 2 offen, Bernd: 1 offen
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
-    const b2 = root.querySelector("#badgeRegal");
-    expect(b2.textContent).toBe("2");
+    const pillen2 = [...root.querySelector("#badgeRegal").querySelectorAll(".pb-badge")].map(p => p.textContent);
+    expect(pillen2).toEqual(["A 2", "B 1"]);
   });
 
   it("verschwindet bei null", async () => {

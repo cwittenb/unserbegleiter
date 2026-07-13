@@ -144,8 +144,11 @@ describe("S39 · Prozessreflexions-Rhythmus (geteilter Vertrag)", () => {
 
   it("Fragetext bezieht den Abstand ein; frische Abgabe zeigt die Sperre mit Datum", async () => {
     const backend = memoryBackend(null);
+    await backend.bstate.set("findings", { at: new Date().toISOString() });   // S44: erst nach Auflösung sichtbar
     await bootApp(backend);
     await klick(root.querySelector("#btnMyRoom"));
+    await ruhe();
+    expect(root.querySelector("#btnMess").classList.contains("pb-hidden")).toBe(false);
     await klick(root.querySelector("#btnMess"));
     await ruhe();
     expect(root.querySelector("#boxMess").textContent).toContain("in der letzten Woche");
@@ -158,18 +161,19 @@ describe("S39 · Prozessreflexions-Rhythmus (geteilter Vertrag)", () => {
     expect(root.querySelector("#boxMess").textContent).toContain("abgegeben");
   });
 
-  it("Rhythmus-Panel im gemeinsamen Raum: Vorschlags-/Bestätigungs-Drehbuch", async () => {
+  it("Rhythmus in der Agenda (Weitere Absprachen): Vorschlags-/Bestätigungs-Drehbuch", async () => {
     const backend = memoryBackend(null);
     await bootApp(backend);
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
-    await klick(root.querySelector("#miLink"));
-    const box = root.querySelector("#boxMessIv");
-    expect(box.classList.contains("pb-hidden")).toBe(false);
+    await klick(root.querySelector("#btnAgenda"));
+    await ruhe();
+    const box = root.querySelector("#agendaAbsprachen");
+    expect(box.textContent).toContain("Weitere Absprachen");
     box.querySelector("#miTage").value = "14";
     await klick(box.querySelector("#miVorschlag"));
     await ruhe();
-    expect(root.querySelector("#boxMessIv").textContent).toContain("wartet auf Bernd");
+    expect(root.querySelector("#agendaAbsprachen").textContent).toContain("wartet auf Bernd");
     expect((await holeMessIntervall(backend)).days).toBe(7);            // App zeigt Vertrag, nicht Wunsch
   });
 });

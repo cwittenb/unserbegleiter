@@ -4,7 +4,7 @@
 
 import { blockDef } from "./block.js";
 import {
-  gateSchema, befundSchema, zeitSchema, gateArtSchema, momentSchema, auftragBlockSchema, qzSchema, aufdeckSchema, choiceSchema,
+  gateSchema, befundSchema, zeitSchema, gateArtSchema, momentSchema, auftragBlockSchema, qzSchema, aufdeckSchema, choiceSchema, noteSchema,
 } from "./schemas.js";
 
 export const BLOECKE = {
@@ -52,6 +52,15 @@ export const BLOECKE = {
     start: "REVEAL-BLOCK", end: "END REVEAL-BLOCK",
     placeholder: "Kurzprotokoll der Aufdeck-Runde gespeichert.",
     dataset: "aufdeck", schema: aufdeckSchema,
+  }),
+  // Merkposten (S44): ein bedeutsames Thema, das die Begleitung für den
+  // privaten Raum vormerkt (aktiv wieder aufgreifen, am Ende Teilen anbieten).
+  // Rein privat (pstate) — quert NIE automatisch. Unsichtbar (leerer Platzhalter),
+  // damit die Würdigung im selben Text ungestört bleibt.
+  note: blockDef({
+    start: "NOTE-BLOCK", end: "END NOTE-BLOCK",
+    placeholder: "",
+    dataset: "note", schema: noteSchema,
   }),
 };
 
