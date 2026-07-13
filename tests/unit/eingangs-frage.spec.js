@@ -2,8 +2,10 @@
 // Eingangsfrage vor den Artefakten — funktionales Gate (echtes SHA-256 via
 // WebCrypto) + Build-Beweise: Frage drin, Antwort NICHT im Klartext.
 
-import { describe, it, expect, beforeEach } from "vitest";
-import { readFile } from "node:fs/promises";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
+import { readFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { mitEingangsfrage, EINGANGS_FRAGE } from "../../scripts/eingangs-frage.js";
 import { buildArtifact } from "../../scripts/build-artifact.js";
 import { buildEvalArtifact } from "../../scripts/build-eval-artifact.js";
@@ -61,15 +63,19 @@ describe("Eingangsfrage · Verhalten", () => {
 });
 
 describe("Eingangsfrage · in beiden Artefakten", () => {
+  let outDir;
+  beforeAll(async () => { outDir = await mkdtemp(path.join(tmpdir(), "ub-eingangsfrage-")); });
+  afterAll(async () => { await rm(outDir, { recursive: true, force: true }); });
+
   it("Dev-Artefakt: Frage vorgeschaltet, Antwort nirgends im Klartext", async () => {
-    const { out } = await buildArtifact();
+    const { out } = await buildArtifact({ outDir });
     const html = await readFile(out, "utf8");
     expect(html).toContain(EINGANGS_FRAGE);
     expect(html.toLowerCase()).not.toContain("cars10");
   }, 30000);
 
   it("Eval-Artefakt: Frage vorgeschaltet, Antwort nirgends im Klartext", async () => {
-    const { out } = await buildEvalArtifact();
+    const { out } = await buildEvalArtifact({ outDir });
     const html = await readFile(out, "utf8");
     expect(html).toContain(EINGANGS_FRAGE);
     expect(html.toLowerCase()).not.toContain("cars10");

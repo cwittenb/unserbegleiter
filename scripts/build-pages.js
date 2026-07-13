@@ -19,9 +19,8 @@ function ermittleKvId() {
   return null;
 }
 
-export async function buildPages() {
+export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") } = {}) {
   const hash = await coreHash();
-  const outDir = path.join(ROOT, "dist/cloudflare");
   await mkdir(path.join(outDir, "public"), { recursive: true });
 
   await build({

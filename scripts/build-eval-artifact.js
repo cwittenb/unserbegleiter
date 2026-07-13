@@ -9,7 +9,7 @@ import { buildStamp } from "./build-stamp.js";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
-export async function buildEvalArtifact() {
+export async function buildEvalArtifact({ outDir = path.join(ROOT, "dist") } = {}) {
   const hash = await coreHash();
   const result = await build({
     entryPoints: [path.join(ROOT, "platforms/artifact/eval-main.js")],
@@ -27,7 +27,7 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,sy
 #app{max-width:760px;margin:0 auto;padding:24px 18px}</style></head>
 <body><div id="app" data-core-hash="${hash}"></div>
 <script>${bundle}</script></body></html>\n`;
-  const out = path.join(ROOT, "dist/paarbegleitung-eval_" + stamp + "_" + hash.slice(0, 8) + ".html");
+  const out = path.join(outDir, "paarbegleitung-eval_" + stamp + "_" + hash.slice(0, 8) + ".html");
   await mkdir(path.dirname(out), { recursive: true });
   for (const f of await readdir(path.dirname(out)))
     if (f.startsWith("paarbegleitung-eval_") && f.endsWith(".html") && path.join(path.dirname(out), f) !== out)

@@ -2,8 +2,9 @@
 // Eval-Runner im Artefakt — Drehbücher mit Fake-Adaptern (echter Eval-Kern,
 // echte Judge-Parserei) + Ein-Datei-Build-Beweis.
 
-import { describe, it, expect, beforeEach } from "vitest";
-import { readFile } from "node:fs/promises";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
+import { readFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createEvalApp } from "../../platforms/artifact/eval-app.js";
@@ -135,8 +136,12 @@ describe("Eval-Artefakt · Läufe (echter Eval-Kern)", () => {
 });
 
 describe("Eval-Artefakt · Build", () => {
+  let outDir;
+  beforeAll(async () => { outDir = await mkdtemp(path.join(tmpdir(), "ub-eval-artefakt-")); });
+  afterAll(async () => { await rm(outDir, { recursive: true, force: true }); });
+
   it("Ein-Datei-Artefakt: Katalog + Judge-Version inliniert, keine externen Skripte, Hash gestempelt", async () => {
-    const { out, hash } = await buildEvalArtifact();
+    const { out, hash } = await buildEvalArtifact({ outDir });
     const html = await readFile(out, "utf8");
     expect(html.startsWith("<!doctype html>")).toBe(true);
     expect(html).not.toMatch(/<script[^>]*src=/i);

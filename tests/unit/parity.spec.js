@@ -1,22 +1,29 @@
 // Paritäts-Wächter — "ein Kern, zwei Häuser" als Testfall:
 // beide Build-Ziele tragen denselben Kern-Hash; driftet eines, wird es rot.
+// Beide Builds schreiben in temporäre Verzeichnisse (afterAll räumt auf).
 
-import { describe, it, expect, beforeAll } from "vitest";
-import { readFile } from "node:fs/promises";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { readFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { buildArtifact } from "../../scripts/build-artifact.js";
 import { buildPages } from "../../scripts/build-pages.js";
 import { coreHash } from "../../scripts/core-hash.js";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-let artefakt, pages, hash;
+let artefakt, pages, hash, tmpArt, tmpCf;
 
 beforeAll(async () => {
   hash = await coreHash();
-  artefakt = await buildArtifact();
-  pages = await buildPages();
+  tmpArt = await mkdtemp(path.join(tmpdir(), "ub-parity-art-"));
+  tmpCf = await mkdtemp(path.join(tmpdir(), "ub-parity-cf-"));
+  artefakt = await buildArtifact({ outDir: tmpArt });
+  pages = await buildPages({ outDir: tmpCf });
 }, 60000);
+
+afterAll(async () => {
+  await rm(tmpArt, { recursive: true, force: true });
+  await rm(tmpCf, { recursive: true, force: true });
+});
 
 describe("Paritäts-Wächter", () => {
   it("beide Builds tragen denselben Kern-Hash", async () => {

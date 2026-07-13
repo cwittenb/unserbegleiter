@@ -9,7 +9,7 @@ import { buildStamp } from "./build-stamp.js";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
-export async function buildArtifact() {
+export async function buildArtifact({ outDir = path.join(ROOT, "dist") } = {}) {
   const hash = await coreHash();
   const result = await build({
     entryPoints: [path.join(ROOT, "platforms/artifact/main.js")],
@@ -25,7 +25,7 @@ export async function buildArtifact() {
   const html = shell
     .replace("<div id=\"app\"></div>", `<div id="app" data-core-hash="${hash}"></div>`)
     .replace("/*__BUNDLE__*/", () => bundle);
-  const out = path.join(ROOT, "dist/paarbegleitung-dev_" + stamp + "_" + hash.slice(0, 8) + ".html");
+  const out = path.join(outDir, "paarbegleitung-dev_" + stamp + "_" + hash.slice(0, 8) + ".html");
   await mkdir(path.dirname(out), { recursive: true });
   for (const f of await readdir(path.dirname(out)))            // alte Stände desselben Artefakts aufräumen
     if (f.startsWith("paarbegleitung-dev_") && f.endsWith(".html") && path.join(path.dirname(out), f) !== out)
