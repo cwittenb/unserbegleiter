@@ -4,19 +4,18 @@ import { writeFile, mkdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { coreHash } from "./core-hash.js";
+import { PAARE_KV_ID as KV_ID_KONFIG } from "../platforms/cloudflare/deploy.config.js";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
-/** KV-Namespace-ID dauerhaft bestimmen: bevorzugt aus der Umgebungsvariable
- *  PAARE_KV_ID, sonst aus einer bereits ent-kommentierten wrangler.toml des
- *  vorigen Builds. So übersteht die Bindung jeden `npm run build`. */
-async function ermittleKvId(outDir) {
+/** KV-Namespace-ID dauerhaft bestimmen: die Umgebungsvariable PAARE_KV_ID hat
+ *  Vorrang (CI / abweichender Account), sonst gilt die committete
+ *  deploy.config.js als Quelle der Wahrheit. Bewusst OHNE Rücklesen aus einer
+ *  vorhandenen wrangler.toml — dieser Fallback konnte Test-Fixtures in die
+ *  echte Deploy-Config schleppen. */
+function ermittleKvId() {
   if (process.env.PAARE_KV_ID) return process.env.PAARE_KV_ID.trim();
-  try {
-    const alt = await readFile(path.join(outDir, "wrangler.toml"), "utf8");
-    const m = alt.match(/^\s*id\s*=\s*"([^"]+)"/m);   // nur ent-kommentierte Zeile
-    if (m && m[1] && m[1] !== "…") return m[1];
-  } catch { /* noch keine vorhandene Datei */ }
+  if (KV_ID_KONFIG && KV_ID_KONFIG !== "…") return KV_ID_KONFIG.trim();
   return null;
 }
 
@@ -54,11 +53,11 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,sy
     await readFile(path.join(ROOT, "platforms/cloudflare/pages/admin.html"), "utf8")
   );
 
-  const kvId = await ermittleKvId(outDir);
+  const kvId = ermittleKvId();
   const kvLines = kvId
     ? ["[[kv_namespaces]]", 'binding = "PAARE"', `id = "${kvId}"`]
-    : ["# Nach `wrangler kv namespace create PAARE` die ID eintragen — oder",
-       "# PAARE_KV_ID als Umgebungsvariable setzen; dann schreibt der Build den Block automatisch:",
+    : ["# Keine KV-ID gefunden. Trag sie in platforms/cloudflare/deploy.config.js ein",
+       "# (oder setze PAARE_KV_ID als Umgebungsvariable); dann schreibt der Build den Block automatisch:",
        "# [[kv_namespaces]]", '# binding = "PAARE"', '# id = "…"'];
   await writeFile(path.join(outDir, "wrangler.toml"), [
     'name = "paarbegleitung"',

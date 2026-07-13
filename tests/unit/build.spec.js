@@ -56,19 +56,16 @@ describe("Build · Cloudflare", () => {
     }
   });
 
-  it("ohne Umgebungsvariable: übernimmt eine bereits eingetragene ID aus der vorhandenen wrangler.toml", async () => {
+  it("ohne Umgebungsvariable: nimmt die ID aus der committeten deploy.config.js", async () => {
     const alt = process.env.PAARE_KV_ID;
     delete process.env.PAARE_KV_ID;
     try {
-      // 1. Lauf mit ID (simuliert den einmal eingerichteten Zustand)
-      process.env.PAARE_KV_ID = "bereits-gesetzt-xyz";
       const { outDir } = await buildPages();
-      // 2. Lauf OHNE Variable — die ID muss aus der vorigen Datei erhalten bleiben
-      delete process.env.PAARE_KV_ID;
-      await buildPages();
       const toml = await readFile(path.join(outDir, "wrangler.toml"), "utf8");
-      expect(toml).toContain('id = "bereits-gesetzt-xyz"');
-      expect(toml).toMatch(/^\[\[kv_namespaces\]\]/m);
+      const { PAARE_KV_ID } = await import("../../platforms/cloudflare/deploy.config.js");
+      expect(PAARE_KV_ID).toMatch(/^[0-9a-f]{32}$/);        // echte KV-ID-Form, kein Platzhalter
+      expect(toml).toContain(`id = "${PAARE_KV_ID}"`);
+      expect(toml).toMatch(/^\[\[kv_namespaces\]\]/m);      // nicht auskommentiert
     } finally {
       if (alt === undefined) delete process.env.PAARE_KV_ID; else process.env.PAARE_KV_ID = alt;
     }
