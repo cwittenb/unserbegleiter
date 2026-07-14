@@ -1,6 +1,10 @@
 // Wiedereinstieg per E-Mail — gegen den echten Worker. Der Versand läuft über
 // ein Fake-MAIL_UPSTREAM-Service-Binding (die reale SMTP-Übertragung ist
 // deploy-verifiziert, hier nicht nötig). Enthält den Mehrgeräte-Beweis.
+//
+// S45: Adressen zählen erst nach PIN-Bestätigung (zweistufig). Der Lookup für
+// /api/recover entsteht strukturell erst bei der Bestätigung — unbestätigte
+// Adressen können daher nie einen Link erhalten (D4).
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { Miniflare } from "miniflare";
@@ -47,6 +51,21 @@ function linkAus(text) {
   const m = /#t=([A-Za-z0-9]+)/.exec(text || "");
   return m ? m[1] : null;
 }
+function pinAus(text) {
+  const m = /\b(\d{6})\b/.exec(text || "");
+  return m ? m[1] : null;
+}
+function falschePin(pin) { return pin === "000000" ? "000001" : "000000"; }
+
+/** Vollständige, bestätigte Registrierung einer Adresse (Schritt 1 + 2). */
+async function registriere(person, email) {
+  const r1 = await person.call("POST", "/api/email", { email });
+  expect(r1.status).toBe(200);
+  const pin = pinAus(mails[mails.length - 1].text);
+  expect(pin).toBeTruthy();
+  const r2 = await person.call("POST", "/api/email/confirm", { pin });
+  expect(r2.status).toBe(200);
+}
 
 beforeAll(async () => {
   const bundled = await build({
@@ -56,7 +75,7 @@ beforeAll(async () => {
   script = bundled.outputFiles[0].text;
   mf = new Miniflare({
     modules: true, script, kvNamespaces: ["PAARE"], compatibilityDate: "2026-06-01",
-    bindings: { ADMIN_TOKEN: ADMIN, RECOVER_RATE: "100" },
+    bindings: { ADMIN_TOKEN: ADMIN, RECOVER_RATE: "100", VERIFY_RATE: "100" },
     serviceBindings: {
       async MAIL_UPSTREAM(request) { mails.push(await request.json()); return new Response("ok"); },
     },
@@ -65,34 +84,62 @@ beforeAll(async () => {
 afterAll(async () => { if (mf) await mf.dispose(); });
 beforeEach(() => { mails = []; });
 
-describe("Wiedereinstieg · Adresse hinterlegen", () => {
-  it("Adresse setzen spiegelt sich in /api/me; Rohadresse wird nicht ausgegeben", async () => {
+describe("Wiedereinstieg · Adresse hinterlegen (zweistufig)", () => {
+  it("Schritt 1 verschickt einen 6-stelligen Code an genau die genannte Adresse; erst Schritt 2 zählt", async () => {
     const { anna } = await frischesPaar();
     expect((await anna.call("GET", "/api/me")).data.recoveryEmail).toBe(false);
     expect((await anna.call("POST", "/api/email", { email: "Anna@Beispiel.de" })).status).toBe(200);
+    expect(mails).toHaveLength(1);
+    expect(mails[0].to).toBe("anna@beispiel.de");             // normalisiert
+    const pin = pinAus(mails[0].text);
+    expect(pin).toBeTruthy();
+    // Noch unbestätigt: zählt nicht als hinterlegt
+    expect((await anna.call("GET", "/api/me")).data.recoveryEmail).toBe(false);
+    expect((await anna.call("POST", "/api/email/confirm", { pin })).status).toBe(200);
     const me = (await anna.call("GET", "/api/me")).data;
     expect(me.recoveryEmail).toBe(true);
-    expect(JSON.stringify(me)).not.toContain("beispiel.de");     // nur Status, nie die Adresse
+    expect(JSON.stringify(me)).not.toContain("beispiel.de");   // nur Status, nie die Adresse
   });
 
-  it("ungültige Adresse → 400", async () => {
+  it("ungültige Adresse → 400, keine Mail", async () => {
     const { anna } = await frischesPaar();
     expect((await anna.call("POST", "/api/email", { email: "kein-at-zeichen" })).status).toBe(400);
+    expect(mails).toHaveLength(0);
   });
 
-  it("Kollision: dieselbe Adresse für das andere Konto → 409", async () => {
+  it("Kollision: dieselbe Adresse für das andere Konto → 409 schon in Schritt 1", async () => {
     const { anna, bernd } = await frischesPaar();
-    await anna.call("POST", "/api/email", { email: "geteilt@example.com" });
+    await registriere(anna, "geteilt@example.com");
     expect((await bernd.call("POST", "/api/email", { email: "geteilt@example.com" })).status).toBe(409);
-    // dieselbe Person darf ihre eigene Adresse erneut setzen (idempotent)
-    expect((await anna.call("POST", "/api/email", { email: "geteilt@example.com" })).status).toBe(200);
+    // dieselbe Person darf ihre eigene Adresse erneut bestätigen (idempotent)
+    await registriere(anna, "geteilt@example.com");
+  });
+
+  it("falscher Code → 400 pin_wrong; nach 5 Fehlversuchen → 429 pin_tries; danach pin_none", async () => {
+    const { anna } = await frischesPaar();
+    await anna.call("POST", "/api/email", { email: "anna@example.com" });
+    const pin = pinAus(mails[0].text);
+    for (let i = 0; i < 4; i++) {
+      const r = await anna.call("POST", "/api/email/confirm", { pin: falschePin(pin) });
+      expect(r.status).toBe(400);
+      expect(r.data.code).toBe("pin_wrong");
+    }
+    const gesperrt = await anna.call("POST", "/api/email/confirm", { pin: falschePin(pin) });
+    expect(gesperrt.status).toBe(429);
+    expect(gesperrt.data.code).toBe("pin_tries");
+    // Auch der RICHTIGE Code hilft jetzt nicht mehr — neue Anforderung nötig
+    const danach = await anna.call("POST", "/api/email/confirm", { pin });
+    expect(danach.status).toBe(400);
+    expect(danach.data.code).toBe("pin_none");
+    expect((await anna.call("GET", "/api/me")).data.recoveryEmail).toBe(false);
   });
 });
 
 describe("Wiedereinstieg · Link anfordern", () => {
-  it("registrierte Adresse → Mail mit frischem Einmal-Link; Antwort verrät nichts über Existenz", async () => {
+  it("BESTÄTIGTE Adresse → Mail mit frischem Einmal-Link; Antwort verrät nichts über Existenz", async () => {
     const { anna } = await frischesPaar();
-    await anna.call("POST", "/api/email", { email: "anna@example.com" });
+    await registriere(anna, "anna@example.com");
+    mails = [];
     const r = await client().call("POST", "/api/recover", { email: "anna@example.com" });
     expect(r.status).toBe(200);
     expect(r.data).toEqual({ ok: true });
@@ -109,10 +156,20 @@ describe("Wiedereinstieg · Link anfordern", () => {
     expect(mails).toHaveLength(0);
   });
 
+  it("UNBESTÄTIGTE Adresse (nur Schritt 1) → keine Mail (D4: nur verifizierte Adressen)", async () => {
+    const { anna } = await frischesPaar();
+    await anna.call("POST", "/api/email", { email: "offen@example.com" });
+    mails = [];
+    const r = await client().call("POST", "/api/recover", { email: "offen@example.com" });
+    expect(r.status).toBe(200);
+    expect(mails).toHaveLength(0);
+  });
+
   it("Adresse ersetzen: alte Adresse führt zu keiner Mail mehr, neue schon", async () => {
     const { anna } = await frischesPaar();
-    await anna.call("POST", "/api/email", { email: "alt@example.com" });
-    await anna.call("POST", "/api/email", { email: "neu@example.com" });
+    await registriere(anna, "alt@example.com");
+    await registriere(anna, "neu@example.com");
+    mails = [];
     await client().call("POST", "/api/recover", { email: "alt@example.com" });
     expect(mails).toHaveLength(0);                                // alter Hash entfernt
     await client().call("POST", "/api/recover", { email: "neu@example.com" });
@@ -121,9 +178,12 @@ describe("Wiedereinstieg · Link anfordern", () => {
   });
 
   it("MEHRGERÄTE: der Wiedereinstiegs-Link meldet ein ZWEITES Gerät an, ohne das erste auszuloggen", async () => {
+    // Eindeutige Adresse je Test: der KV lebt über die Suite, eine Adresse
+    // gehört zu genau EINEM Konto (409 sonst schon in Schritt 1 — gewollt).
     const { anna } = await frischesPaar();
-    await anna.call("POST", "/api/email", { email: "anna@example.com" });
-    await client().call("POST", "/api/recover", { email: "anna@example.com" });
+    await registriere(anna, "anna.zweitgeraet@example.com");
+    mails = [];
+    await client().call("POST", "/api/recover", { email: "anna.zweitgeraet@example.com" });
     const token = linkAus(mails[0].text);
 
     const zweitgeraet = client();
@@ -139,14 +199,10 @@ describe("Wiedereinstieg · Link anfordern", () => {
   });
 });
 
-describe("Wiedereinstieg · Raten-Limit", () => {
-  it("oberhalb RECOVER_RATE ⇒ 429 (unabhängig von Existenz der Adresse)", async () => {
-    const bundled = await build({
-      entryPoints: [path.join(ROOT, "platforms/cloudflare/worker/index.js")],
-      bundle: true, format: "esm", external: ["cloudflare:sockets"], write: false, target: "es2022",
-    });
+describe("Wiedereinstieg · Raten-Limits", () => {
+  it("/api/recover oberhalb RECOVER_RATE ⇒ 429 (unabhängig von Existenz der Adresse)", async () => {
     const mf2 = new Miniflare({
-      modules: true, script: bundled.outputFiles[0].text, kvNamespaces: ["PAARE"],
+      modules: true, script, kvNamespaces: ["PAARE"],
       compatibilityDate: "2026-06-01",
       bindings: { ADMIN_TOKEN: ADMIN, RECOVER_RATE: "2" },
       serviceBindings: { async MAIL_UPSTREAM() { return new Response("ok"); } },
@@ -157,5 +213,59 @@ describe("Wiedereinstieg · Raten-Limit", () => {
       expect((await client().call("POST", "/api/recover", { email: "x@example.com" })).status).toBe(200);
       expect((await client().call("POST", "/api/recover", { email: "x@example.com" })).status).toBe(429);
     } finally { mf = alt; await mf2.dispose(); }
+  });
+
+  it("/api/email oberhalb VERIFY_RATE ⇒ 429 (keine Mail-Kanone gegen fremde Postfächer)", async () => {
+    const mf2 = new Miniflare({
+      modules: true, script, kvNamespaces: ["PAARE"],
+      compatibilityDate: "2026-06-01",
+      bindings: { ADMIN_TOKEN: ADMIN, VERIFY_RATE: "2" },
+      serviceBindings: { async MAIL_UPSTREAM(request) { mails.push(await request.json()); return new Response("ok"); } },
+    });
+    const alt = mf; mf = mf2;
+    try {
+      const { anna } = await frischesPaar();
+      expect((await anna.call("POST", "/api/email", { email: "a@example.com" })).status).toBe(200);
+      expect((await anna.call("POST", "/api/email", { email: "a@example.com" })).status).toBe(200);
+      const r = await anna.call("POST", "/api/email", { email: "a@example.com" });
+      expect(r.status).toBe(429);
+      expect(r.data.code).toBe("verify_rate");
+    } finally { mf = alt; await mf2.dispose(); }
+  });
+});
+
+describe("Wiedereinstieg · Versandfehler", () => {
+  it("scheitert der Code-Versand, erfährt es die Person (mail_failed) — kein stiller Fehlschlag", async () => {
+    const mf2 = new Miniflare({
+      modules: true, script, kvNamespaces: ["PAARE"],
+      compatibilityDate: "2026-06-01",
+      bindings: { ADMIN_TOKEN: ADMIN },
+      serviceBindings: { async MAIL_UPSTREAM() { return new Response("kaputt", { status: 500 }); } },
+    });
+    const alt = mf; mf = mf2;
+    try {
+      const { anna } = await frischesPaar();
+      const r = await anna.call("POST", "/api/email", { email: "anna@example.com" });
+      expect(r.status).toBe(502);
+      expect(r.data.code).toBe("mail_failed");
+    } finally { mf = alt; await mf2.dispose(); }
+  });
+});
+
+describe("E-Mail-Pflicht · Feature-Flag (D2b)", () => {
+  it("EMAIL_PFLICHT gesetzt ⇒ /api/me meldet emailRequired: true; ohne Flag false", async () => {
+    const mf2 = new Miniflare({
+      modules: true, script, kvNamespaces: ["PAARE"],
+      compatibilityDate: "2026-06-01",
+      bindings: { ADMIN_TOKEN: ADMIN, EMAIL_PFLICHT: "1" },
+      serviceBindings: { async MAIL_UPSTREAM() { return new Response("ok"); } },
+    });
+    const alt = mf; mf = mf2;
+    try {
+      const { anna } = await frischesPaar();
+      expect((await anna.call("GET", "/api/me")).data.emailRequired).toBe(true);
+    } finally { mf = alt; await mf2.dispose(); }
+    const { anna } = await frischesPaar();
+    expect((await anna.call("GET", "/api/me")).data.emailRequired).toBe(false);
   });
 });

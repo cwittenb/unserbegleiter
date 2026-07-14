@@ -55,30 +55,89 @@ export async function createCouple(kv, { nameA, nameB, locale }, now = Date.now)
 
 /* ---- Wiedereinstieg per E-Mail (nur E-Mail, kein Passwort — bewusste Entscheidung).
  *  Modell: sys/email/<sha256(mail)> → {code, role}   (Lookup, eine Adresse ⇒ ein Konto)
- *          sys/emailfor/<code>/<role> → {hash, at}    (Status + Ersetzen/Aufräumen)
+ *          sys/emailfor/<code>/<role> → {hash, at, verified}  (Status + Ersetzen/Aufräumen)
+ *          sys/verify/<code>/<role>  → {hash, pinHash, expiresAt, versuche}  (offene Bestätigung)
  *  Es wird NUR der Hash gespeichert, nie die Klartext-Adresse. Beim Wiedereinstieg
- *  tippt die Person ihre Adresse selbst; passt der Hash, geht der Link an genau diese. */
+ *  tippt die Person ihre Adresse selbst; passt der Hash, geht der Link an genau diese.
+ *
+ *  Verifikation (S45): Adresse zählt erst nach PIN-Bestätigung. Die 6-stellige
+ *  PIN wird per Mail an die genannte Adresse geschickt (Klartext nur transient
+ *  im Request), gespeichert wird ausschließlich ihr Hash. Der Lookup-Eintrag
+ *  sys/email/<hash> entsteht ERST bei erfolgreicher Bestätigung — damit gehen
+ *  Wiedereinstiegs-Links strukturell nur an verifizierte Adressen (D4). Ein
+ *  Tippfehler in der Adresse fällt sofort auf (kein Code kommt an), statt das
+ *  Sicherheitsnetz still zu zerstören. */
+export const VERIFY_MS = 15 * 60 * 1000;
+export const VERIFY_MAX_VERSUCHE = 5;
+
 const emailKey = h => "sys/email/" + h;
 const emailForKey = (code, role) => "sys/emailfor/" + code + "/" + role;
+const verifyKey = (code, role) => "sys/verify/" + code + "/" + role;
 const normMail = e => String(e || "").trim().toLowerCase();
 const istMail = e => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
 
-export async function setRecoveryEmail(kv, { code, role }, email, now = Date.now) {
+function pinErzeugen() {
+  // 6 Ziffern, kryptografisch zufällig. Uint32 % 10^6 hat eine minimale, hier
+  // irrelevante Verzerrung (2^32 ist kein Vielfaches von 10^6) — der Schutz
+  // liegt im Versuchszähler, nicht in perfekter Gleichverteilung.
+  const a = new Uint32Array(1);
+  crypto.getRandomValues(a);
+  return String(a[0] % 1000000).padStart(6, "0");
+}
+
+const pinDigest = (code, role, pin) => sha256Hex("pin:" + code + ":" + role + ":" + String(pin || "").trim());
+
+/** Schritt 1: Adresse prüfen, PIN erzeugen, offene Bestätigung speichern.
+ *  Gibt die PIN an den Aufrufer zurück (der Worker verschickt sie) — sie wird
+ *  selbst nie gespeichert, nur ihr Hash. */
+export async function beginRecoveryEmail(kv, { code, role }, email, now = Date.now) {
   const clean = normMail(email);
   if (!istMail(clean)) throw Object.assign(new Error("Bitte eine gültige E-Mail-Adresse angeben."), { status: 400, code: "email_invalid" });
   const hash = await sha256Hex(clean);
   const belegt = await J(kv, emailKey(hash));
   if (belegt && (belegt.code !== code || belegt.role !== role))
     throw Object.assign(new Error("Diese Adresse ist bereits hinterlegt."), { status: 409, code: "email_taken" });
+  const pin = pinErzeugen();
+  await W(kv, verifyKey(code, role), {
+    hash,
+    pinHash: await pinDigest(code, role, pin),
+    expiresAt: now() + VERIFY_MS,
+    versuche: 0,
+  });
+  return { pin, email: clean };
+}
+
+/** Schritt 2: PIN prüfen. Erfolg verankert die Adresse als verifiziert und
+ *  räumt eine ggf. vorher verifizierte Adresse auf. Fehlversuche zählen;
+ *  nach VERIFY_MAX_VERSUCHE oder Ablauf muss ein neuer Code angefordert werden. */
+export async function confirmRecoveryEmail(kv, { code, role }, pin, now = Date.now) {
+  const v = await J(kv, verifyKey(code, role));
+  if (!v) throw Object.assign(new Error("Es liegt keine offene Bestätigung vor."), { status: 400, code: "pin_none" });
+  if (now() > v.expiresAt) {
+    await kv.delete(verifyKey(code, role));
+    throw Object.assign(new Error("Der Code ist abgelaufen."), { status: 410, code: "pin_expired" });
+  }
+  if (v.pinHash !== (await pinDigest(code, role, pin))) {
+    v.versuche = (v.versuche || 0) + 1;
+    if (v.versuche >= VERIFY_MAX_VERSUCHE) {
+      await kv.delete(verifyKey(code, role));
+      throw Object.assign(new Error("Zu viele Fehlversuche."), { status: 429, code: "pin_tries" });
+    }
+    await W(kv, verifyKey(code, role), v);
+    throw Object.assign(new Error("Der Code stimmt nicht."), { status: 400, code: "pin_wrong" });
+  }
   const vorher = await J(kv, emailForKey(code, role));
-  if (vorher && vorher.hash && vorher.hash !== hash) await kv.delete(emailKey(vorher.hash));
-  await W(kv, emailKey(hash), { code, role });
-  await W(kv, emailForKey(code, role), { hash, at: now() });
+  if (vorher && vorher.hash && vorher.hash !== v.hash) await kv.delete(emailKey(vorher.hash));
+  await W(kv, emailKey(v.hash), { code, role });
+  await W(kv, emailForKey(code, role), { hash: v.hash, at: now(), verified: true });
+  await kv.delete(verifyKey(code, role));
   return { ok: true };
 }
 
+/** Nur eine BESTÄTIGTE Adresse zählt als hinterlegt (S45). */
 export async function hasRecoveryEmail(kv, code, role) {
-  return !!(await J(kv, emailForKey(code, role)));
+  const e = await J(kv, emailForKey(code, role));
+  return !!(e && e.verified);
 }
 
 /** Adresse → {code, role} | null. Kein Fund heißt: still verwerfen (keine Enumeration). */

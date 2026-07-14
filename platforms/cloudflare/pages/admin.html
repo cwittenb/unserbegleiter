@@ -107,6 +107,34 @@
 
     <div class="card">
       <div class="field" style="margin-bottom:10px">
+        <label>Paare (Übersicht)</label>
+        <p class="hint">Lädt alle angelegten Paare mit Code, Namen und Adress-Status (✓ = bestätigte Wiedereinstiegs-Adresse). Klick auf eine Zeile übernimmt den Code in Export und Wiederherstellung.</p>
+      </div>
+      <button id="lstGo" class="primary">Paare laden</button>
+      <div id="lstMsg"></div>
+      <div id="lstOut" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label for="relCode">Zugang wiederherstellen (Notfall)</label>
+        <p class="hint">Erzeugt einen frischen Einmal-Link (15 Minuten gültig) für eine bestehende Person — nur nutzen, wenn der Selbstbedienungsweg (E-Mail) nicht möglich ist, und nur nach eindeutiger Identifikation der Person. Jede Ausgabe wird protokolliert. Der Link erscheint direkt hier und wird nirgends gespeichert.</p>
+        <input id="relCode" type="text" autocomplete="off" placeholder="Paar-Code, z. B. a1b2c3">
+      </div>
+      <div class="field">
+        <label for="relRole">Person</label>
+        <select id="relRole" style="display:block;width:100%;padding:10px 11px;font:inherit;color:var(--ink);border:1px solid var(--field);border-radius:9px;background:#fff">
+          <option value="A">Person A</option>
+          <option value="B">Person B</option>
+        </select>
+      </div>
+      <button id="relGo" class="primary">Direktlink erzeugen</button>
+      <div id="relMsg"></div>
+      <div id="relOut" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
         <label for="expCode">Paar exportieren (Auswertung)</label>
         <p class="hint">Lädt alle gespeicherten Daten des Paars als JSON herunter — Chats, geteilte und private Zustände. Nutzt dasselbe Admin-Token wie oben.</p>
         <input id="expCode" type="text" autocomplete="off" placeholder="Paar-Code, z. B. a1b2c3">
@@ -178,6 +206,88 @@
     out.appendChild(linkKarte("A", $("a").value.trim(), links.A));
     out.appendChild(linkKarte("B", $("b").value.trim(), links.B));
   }
+
+  /* ---- Paar-Liste (S45): Code ist der Unique Key, Namen sind Anzeige-Labels. ---- */
+  var paare = [];
+  var lstGo = $("lstGo"), lstMsg = $("lstMsg"), lstOut = $("lstOut");
+  function lstFehler(text){ lstMsg.innerHTML = '<div class="msg err">' + text + '</div>'; }
+  function rolleBeschriften(){
+    var code = $("relCode").value.trim();
+    var row = null;
+    for (var i = 0; i < paare.length; i++) if (paare[i].code === code) row = paare[i];
+    var sel = $("relRole");
+    sel.options[0].textContent = "Person A" + (row && row.nameA ? " · " + row.nameA : "");
+    sel.options[1].textContent = "Person B" + (row && row.nameB ? " · " + row.nameB : "");
+  }
+  $("relCode").addEventListener("input", rolleBeschriften);
+  lstGo.addEventListener("click", function(){
+    var tok = $("tok").value;
+    if(!tok){ lstFehler("Bitte oben das Admin-Token eingeben."); return; }
+    lstGo.disabled = true; lstGo.textContent = "Lade …"; lstMsg.innerHTML = "";
+    fetch(basis() + "/api/paare", { headers: { "x-admin-token": tok } })
+      .then(function(res){
+        if(res.status === 401){ lstFehler("Admin-Token fehlt oder ist falsch."); return null; }
+        return res.json();
+      })
+      .then(function(data){
+        if(!data) return;
+        paare = data.paare || [];
+        lstOut.innerHTML = "";
+        if(!paare.length){ lstOut.innerHTML = '<p class="hint">Noch keine Paare angelegt.</p>'; return; }
+        var tbl = document.createElement("table");
+        tbl.style.cssText = "width:100%;border-collapse:collapse;font-size:13px";
+        tbl.innerHTML = "<thead><tr>" +
+          '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">Code</th>' +
+          '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">A</th>' +
+          '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">B</th>' +
+          '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">Angelegt</th>' +
+          "</tr></thead>";
+        var tb = document.createElement("tbody");
+        paare.forEach(function(r){
+          var tr = document.createElement("tr");
+          tr.style.cursor = "pointer";
+          function td(text){ var d = document.createElement("td"); d.style.cssText = "padding:6px 8px;border-bottom:1px solid var(--line)"; d.textContent = text; return d; }
+          tr.appendChild(td(r.code));
+          tr.appendChild(td((r.nameA || "") + (r.emailA ? " ✓" : "")));
+          tr.appendChild(td((r.nameB || "") + (r.emailB ? " ✓" : "")));
+          tr.appendChild(td(r.createdAt ? new Date(r.createdAt).toLocaleDateString("de-DE") : ""));
+          tr.addEventListener("click", function(){
+            $("expCode").value = r.code;
+            $("relCode").value = r.code;
+            rolleBeschriften();
+          });
+          tb.appendChild(tr);
+        });
+        tbl.appendChild(tb);
+        lstOut.appendChild(tbl);
+      })
+      .catch(function(){ lstFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ lstGo.disabled = false; lstGo.textContent = "Paare laden"; });
+  });
+
+  /* ---- Notfall-Direktlink (S45, Stufe 2): einmalig, 15 Minuten, protokolliert. ---- */
+  var relGo = $("relGo"), relMsg = $("relMsg"), relOut = $("relOut");
+  function relFehler(text){ relMsg.innerHTML = '<div class="msg err">' + text + '</div>'; }
+  relGo.addEventListener("click", function(){
+    var tok = $("tok").value, code = $("relCode").value.trim(), role = $("relRole").value;
+    if(!tok){ relFehler("Bitte oben das Admin-Token eingeben."); return; }
+    if(!code){ relFehler("Bitte den Paar-Code eingeben."); return; }
+    relGo.disabled = true; relGo.textContent = "Erzeuge …"; relMsg.innerHTML = ""; relOut.innerHTML = "";
+    fetch(basis() + "/api/relink", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-token": tok },
+      body: JSON.stringify({ code: code, role: role }),
+    }).then(function(res){
+      if(res.status === 401){ relFehler("Admin-Token fehlt oder ist falsch."); return null; }
+      if(res.status === 404){ relFehler("Unbekannter Paar-Code."); return null; }
+      return res.json();
+    }).then(function(data){
+      if(!data || !data.token) return;
+      relOut.appendChild(linkKarte(role, data.name || "", data.token));
+      relMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">Einmalig und ca. 15 Minuten gültig — jetzt kopieren und persönlich übergeben. Diese Ausgabe wurde protokolliert.</div>';
+    }).catch(function(){ relFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ relGo.disabled = false; relGo.textContent = "Direktlink erzeugen"; });
+  });
 
   var expGo = $("expGo"), expMsg = $("expMsg");
   function expFehler(text){ expMsg.innerHTML = '<div class="msg err">' + text + '</div>'; }

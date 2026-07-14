@@ -72,7 +72,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,sy
     "#          wrangler secret put ADMIN_TOKEN   (schützt /api/paar; ohne dieses Secret",
     "#                                             ist das Anlegen gesperrt — fail-closed)",
     "# Optional: LLM_PROVIDER (anthropic|mistral), LLM_MODEL, NS",
-    "# Verwaltung: <deine-domain>/admin.html  (Einladungslinks erzeugen)",
+    "# Mailversand (Wiedereinstieg + Adress-Bestätigung):",
+    "#          wrangler secret put SMTP_HOST / SMTP_USER / SMTP_PASS",
+    "#          optional SMTP_PORT (587|465, nie 25) und SMTP_FROM",
+    "# E-Mail-Pflicht (S45, D2b): [vars] EMAIL_PFLICHT = \"1\" erst setzen, wenn",
+    "#          der SMTP-Versand produktiv verifiziert ist — sonst blockiert das",
+    "#          Pflicht-Modal die App bei Mail-Ausfall.",
+    "# Verwaltung: <deine-domain>/admin.html  (Einladungslinks, Paar-Liste,",
+    "#          Export, Zugang wiederherstellen)",
     "",
   ].join("\n"));
   return { outDir, hash };

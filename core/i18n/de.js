@@ -235,12 +235,19 @@ export const de = {
 
   // Zugang wiederfinden (App-intern)
   "rec.titel": "Zugang wiederfinden",
-  "rec.hinterlegt": "Eine E-Mail-Adresse ist hinterlegt. Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.",
+  "rec.hinterlegt": "Eine bestätigte E-Mail-Adresse ist hinterlegt. Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.",
   "rec.neu": "Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Nimm ein Postfach, auf das nur du Zugriff hast.",
   "rec.platzhalter": "dein@postfach.de",
   "rec.aendern": "Adresse ändern",
   "rec.hinterlegen": "Adresse hinterlegen",
   "rec.bitte": "Bitte eine Adresse eingeben.",
+  "rec.codeSenden": "Bestätigungscode senden",
+  "rec.codeLabel": "6-stelliger Code",
+  "rec.codeUnterwegs": "Ein 6-stelliger Code ist unterwegs an {email}. Schau auch im Spam-Ordner nach.",
+  "rec.bestaetigen": "Adresse bestätigen",
+  "rec.neuAnfordern": "Neuen Code anfordern",
+  "rec.pflicht.titel": "Sichere zuerst deinen Zugang",
+  "rec.pflicht.text": "Damit du deinen Zugang nicht verlieren kannst, hinterlege jetzt eine E-Mail-Adresse und bestätige sie mit dem Code, den wir dir schicken. Nimm ein Postfach, auf das nur du Zugriff hast — darüber bekommst du bei Bedarf einen neuen Zugangslink.",
 
   // Diktat
   "diktat.mobil": "Diktat: Tippe auf das Mikrofon deiner Bildschirmtastatur — der Text landet direkt im Eingabefeld.",
@@ -264,7 +271,7 @@ export const de = {
 
   // Produktiv-Client (Wiedereinstieg)
   "wieder.titel": "Kein Zugang auf diesem Gerät",
-  "wieder.intro": "Öffne deinen persönlichen Zugangslink — oder lass dir einen neuen an deine hinterlegte E-Mail-Adresse schicken.",
+  "wieder.intro": "Diese Begleitung ist nur auf Einladung zugänglich. Wenn du bereits teilnimmst, kannst du dir hier einen neuen Zugangslink an deine hinterlegte E-Mail-Adresse schicken lassen.",
   "wieder.email": "E-Mail-Adresse",
   "wieder.anfordern": "Neuen Link anfordern",
   "wieder.bitte": "Bitte deine Adresse eingeben.",
@@ -281,6 +288,12 @@ export const de = {
   "fehler.code.link_used": "Dieser Zugangslink wurde bereits verwendet.",
   "fehler.code.link_expired": "Dieser Zugangslink ist abgelaufen.",
   "fehler.code.no_session": "Kein gültiger Zugang.",
+  "fehler.code.pin_none": "Es liegt keine offene Bestätigung vor. Bitte fordere einen neuen Code an.",
+  "fehler.code.pin_wrong": "Der Code stimmt nicht. Bitte prüfe die Eingabe.",
+  "fehler.code.pin_expired": "Der Code ist abgelaufen. Bitte fordere einen neuen an.",
+  "fehler.code.pin_tries": "Zu viele Fehlversuche. Bitte fordere einen neuen Code an.",
+  "fehler.code.mail_failed": "Der Versand ist gerade nicht möglich. Bitte versuche es später erneut.",
+  "fehler.code.verify_rate": "Zu viele Anfragen. Bitte etwas später erneut.",
 
   // Theme-Umschalter
   "theme.hell": "Hell",

@@ -958,7 +958,60 @@ export function createApp({ doc, backend, root, diktat }) {
     knopf("#psNein", () => backend.language.withdraw());
   }
 
-  /* ---- Wiedereinstieg per E-Mail (nur wenn das Backend es unterstützt) ---- */
+  /* ---- Wiedereinstieg per E-Mail — zweistufig mit Bestätigungscode (S45).
+   *  Ein Bauelement für beide Orte (Karte im Raum, Pflicht-Modal): Adresse →
+   *  Code anfordern → 6-stelligen Code eingeben → bestätigt. DOM per
+   *  createElement, damit es keine ID-Kollisionen zwischen Karte und Modal
+   *  gibt; Tests greifen über data-rec-Attribute zu. ---- */
+  function baueVerifikation(wirt, { onFertig }) {
+    wirt.innerHTML = "";
+    const el = (tag, attrs, stil) => {
+      const x = doc.createElement(tag);
+      for (const [k, v] of Object.entries(attrs || {})) x.setAttribute(k, v);
+      if (stil) x.style.cssText = stil;
+      return x;
+    };
+    const mail = el("input", { type: "email", placeholder: t("rec.platzhalter"), "data-rec": "mail", autocomplete: "email" },
+      "display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit");
+    const senden = el("button", { class: "pb-btn primary", "data-rec": "senden" }, "margin-top:8px");
+    senden.textContent = t("rec.codeSenden");
+    const pin = el("input", { type: "text", inputmode: "numeric", placeholder: t("rec.codeLabel"), "data-rec": "pin", autocomplete: "one-time-code" },
+      "display:none;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit;margin-top:8px;letter-spacing:.2em");
+    const ok = el("button", { class: "pb-btn primary", "data-rec": "ok" }, "display:none;margin-top:8px");
+    ok.textContent = t("rec.bestaetigen");
+    const note = el("span", { class: "pb-sub", "data-rec": "note" }, "display:block;margin-top:8px");
+    for (const x of [mail, senden, pin, ok, note]) wirt.appendChild(x);
+
+    const schritt2 = email => {
+      note.textContent = t("rec.codeUnterwegs", { email });
+      pin.style.display = "block";
+      ok.style.display = "inline-block";
+      senden.textContent = t("rec.neuAnfordern");
+    };
+    senden.addEventListener("click", async () => {
+      const email = mail.value.trim();
+      if (!email) { note.textContent = t("rec.bitte"); return; }
+      senden.disabled = true;
+      try { await backend.recovery.beginVerify(email); schritt2(email); }
+      catch (e) { note.textContent = fehlerText(e); }
+      finally { senden.disabled = false; }
+    });
+    ok.addEventListener("click", async () => {
+      ok.disabled = true;
+      try {
+        await backend.recovery.confirm(pin.value.trim());
+        onFertig();
+      } catch (e) {
+        note.textContent = fehlerText(e);
+        // Abgelaufen/zu viele Versuche: zurück auf Schritt 1 — neuer Code nötig.
+        if (e && (e.code === "pin_expired" || e.code === "pin_tries" || e.code === "pin_none")) {
+          pin.value = ""; pin.style.display = "none"; ok.style.display = "none";
+          senden.textContent = t("rec.codeSenden");
+        }
+      } finally { ok.disabled = false; }
+    });
+  }
+
   function zeigeRecovery() {
     const box = $("boxRecovery");
     if (!backend.recovery) { box.classList.add("pb-hidden"); return; }
@@ -968,19 +1021,50 @@ export function createApp({ doc, backend, root, diktat }) {
       `<div class="pb-sub">${t("rec.titel")}</div>` +
       `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:6px 0">` +
       (hinterlegt ? t("rec.hinterlegt") : t("rec.neu")) +
-      `</p>` +
-      `<input id="recInput" type="email" placeholder="${t("rec.platzhalter")}" style="display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit">` +
-      `<button class="pb-btn primary" id="recSave" style="margin-top:8px">${hinterlegt ? t("rec.aendern") : t("rec.hinterlegen")}</button>` +
-      `<span id="recNote" class="pb-sub" style="margin-left:8px"></span>`;
-    box.querySelector("#recSave").addEventListener("click", async () => {
-      const email = box.querySelector("#recInput").value.trim();
-      const note = box.querySelector("#recNote");
-      if (!email) { note.textContent = t("rec.bitte"); return; }
-      try {
-        await backend.recovery.setEmail(email);
+      `</p>`;
+    if (hinterlegt) {
+      const aendern = doc.createElement("button");
+      aendern.className = "pb-btn";
+      aendern.setAttribute("data-rec", "aendern");
+      aendern.textContent = t("rec.aendern");
+      box.appendChild(aendern);
+      aendern.addEventListener("click", () => {
+        aendern.remove();
+        const wirt = doc.createElement("div");
+        box.appendChild(wirt);
+        baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
+      });
+    } else {
+      const wirt = doc.createElement("div");
+      box.appendChild(wirt);
+      baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
+    }
+  }
+
+  /* ---- Pflicht-Modal (S45, Flag EMAIL_PFLICHT): Ohne bestätigte Adresse geht
+   *  es nicht weiter — Zugangsverlust wäre kritischer als die kleine Hürde.
+   *  Bewusst nicht wegklickbar: kein Schließen-Knopf, kein Klick-außerhalb,
+   *  kein Escape. Verschwindet ausschließlich durch erfolgreiche Bestätigung. ---- */
+  function zeigeEmailPflicht() {
+    const overlay = doc.createElement("div");
+    overlay.id = "pbEmailPflicht";
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(20,26,34,.55);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:48px 18px;overflow:auto";
+    const karte = doc.createElement("div");
+    karte.className = "pb-card";
+    karte.style.cssText = "max-width:440px;width:100%;background:var(--card,#fff);border-radius:14px;padding:20px";
+    karte.innerHTML =
+      `<div style="font-size:16px;font-weight:650;margin-bottom:6px">${t("rec.pflicht.titel")}</div>` +
+      `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:0 0 10px">${t("rec.pflicht.text")}</p>`;
+    const wirt = doc.createElement("div");
+    karte.appendChild(wirt);
+    overlay.appendChild(karte);
+    (doc.body || wurzel).appendChild(overlay);
+    baueVerifikation(wirt, {
+      onFertig: () => {
         state.info.recoveryEmail = true;
+        overlay.remove();
         zeigeRecovery();
-      } catch (e) { note.textContent = fehlerText(e); }
+      },
     });
   }
 
@@ -1484,6 +1568,7 @@ export function createApp({ doc, backend, root, diktat }) {
     zeigeRecovery();
     zeigePaarsprache();
     betrete("scrStart");
+    if (backend.recovery && state.info.emailRequired && !state.info.recoveryEmail) zeigeEmailPflicht();
   }
 
   return { boot, show, startChat, _state: state, _err: err };

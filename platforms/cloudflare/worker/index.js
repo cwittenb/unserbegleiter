@@ -14,7 +14,9 @@ import { makeAdapter } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { pruefeUndZaehle, quotaCfg } from "./quota.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
-         mintMagic, RECOVER_MS, setRecoveryEmail, hasRecoveryEmail, lookupRecovery } from "./auth.js";
+         mintMagic, RECOVER_MS, beginRecoveryEmail, confirmRecoveryEmail,
+         hasRecoveryEmail, lookupRecovery } from "./auth.js";
+import { randomToken } from "./util.js";
 import { makeMailer } from "./mailer.js";
 
 const json = (data, status = 200, headers = {}) =>
@@ -64,6 +66,47 @@ async function route(request, env) {
     const sid = await loginWithCred(kv, parseCookies(request).pb_cred, now);
     return json({ ok: true }, 200, { "Set-Cookie": cookieHeader("pb_sid", sid) });
   }
+  /* ---- Betreiber-Liste: alle Paare mit Adress-Status (admin-gated, S45).
+   *  Zweck: Der Paar-Code ist der Unique Key (Namen sind reine Anzeige-Labels);
+   *  ohne diese Liste wäre ein verlorener Code unauffindbar — und damit auch
+   *  Export und Notfall-Wiederherstellung. ---- */
+  if (p === "/api/paare" && request.method === "GET") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    const paare = [];
+    let cursor;
+    do {
+      const r = await kv.list({ prefix: "sys/couple/", cursor });
+      for (const k of r.keys) {
+        const c = JSON.parse(await kv.get(k.name));
+        paare.push({
+          code: c.code, nameA: c.nameA, nameB: c.nameB, createdAt: c.createdAt,
+          emailA: await hasRecoveryEmail(kv, c.code, "A"),
+          emailB: await hasRecoveryEmail(kv, c.code, "B"),
+        });
+      }
+      cursor = r.list_complete ? undefined : r.cursor;
+    } while (cursor);
+    paare.sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0));
+    return json({ paare });
+  }
+
+  /* ---- Betreiber-Wiederherstellung (Stufe 2, S45): frischer Einmal-Link für
+   *  eine bestehende Rolle. Kurzlebig (RECOVER_MS) und einmalig wie der
+   *  Selbstbedienungs-Link; jede Ausgabe landet im Audit-Log. Die Identitäts-
+   *  prüfung der anfragenden Person ist bewusst PROZESS, nicht Code (Designnotiz
+   *  im Sprint-Protokoll) — der Endpunkt selbst ist nur admin-gated. ---- */
+  if (p === "/api/relink" && request.method === "POST") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    const { code, role } = await request.json().catch(() => ({}));
+    if (role !== "A" && role !== "B") return fehler("Unbekannte Rolle.", 400, "role_invalid");
+    const couple = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+    if (!couple) return fehler("Unbekannter Paar-Code.", 404);
+    const token = await mintMagic(kv, code, role, now, RECOVER_MS);
+    await kv.put("sys/audit/" + now() + "-" + randomToken(4),
+      JSON.stringify({ typ: "relink", code, role, at: now() }));
+    return json({ token, name: role === "A" ? couple.nameA : couple.nameB });
+  }
+
   /* ---- Betreiber-Export: alle Daten EINES Paars (Auswertung, admin-gated) ---- */
   const mExp = /^\/api\/export\/([A-Za-z0-9]+)$/.exec(p);
   if (mExp && request.method === "GET") {
@@ -102,7 +145,12 @@ async function route(request, env) {
                 "\n\nEr ist etwa 15 Minuten gültig und nur einmal verwendbar. " +
                 "Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
         });
-      } catch (e) { /* Versandfehler nicht nach außen offenlegen */ }
+      } catch (e) {
+        // Versandfehler nie nach außen offenlegen — aber fürs Betreiber-Log
+        // sichtbar machen (wrangler tail), sonst ist z. B. fehlende
+        // SMTP-Konfiguration von „Adresse nicht hinterlegt“ ununterscheidbar.
+        console.error("recover-mail:", e && e.message);
+      }
     }
     return json({ ok: true });   // niemals verraten, ob die Adresse hinterlegt ist
   }
@@ -125,6 +173,10 @@ async function route(request, env) {
       locale: couple.locale || "de",
       languageRequest: couple.languageRequest || null,
       recoveryEmail: await hasRecoveryEmail(kv, session.code, session.role),
+      // Feature-Flag EMAIL_PFLICHT (D2b): Modal-Pflicht erst scharf schalten,
+      // wenn der Mailversand produktiv verifiziert ist — sonst sperrt ein
+      // SMTP-Ausfall die gesamte App.
+      emailRequired: env.EMAIL_PFLICHT === "1" || env.EMAIL_PFLICHT === "true" || env.EMAIL_PFLICHT === true,
     });
   }
 
@@ -161,10 +213,38 @@ async function route(request, env) {
     return json({ locale: aktuell, languageRequest: paar.languageRequest, status: "waiting" });
   }
 
-  /* ---- Wiedereinstiegs-Adresse hinterlegen (nur eigene Rolle, aus Session) ---- */
+  /* ---- Wiedereinstiegs-Adresse hinterlegen — zweistufig mit PIN (S45).
+   *  Schritt 1 (/api/email): Adresse prüfen, 6-stelligen Code an genau diese
+   *  Adresse mailen. Scheitert der Versand, erfährt es die Person (mail_failed) —
+   *  hier gibt es kein Enumerations-Risiko, sie nennt ihre eigene Adresse.
+   *  Schritt 2 (/api/email/confirm): Code prüfen; erst dann zählt die Adresse. ---- */
   if (p === "/api/email" && request.method === "POST") {
+    // Raten-Limit je Konto: verhindert, dass eine Session als Mail-Kanone
+    // gegen fremde Postfächer dient.
+    const vlKey = "sys/veriflimit/" + session.code + "/" + session.role;
+    const cnt = Number((await kv.get(vlKey)) || 0);
+    if (cnt >= (Number(env.VERIFY_RATE) || 5)) return fehler("Zu viele Anfragen. Bitte etwas später erneut.", 429, "verify_rate");
+    await kv.put(vlKey, String(cnt + 1), { expirationTtl: 3600 });
+
     const { email } = await request.json().catch(() => ({}));
-    try { await setRecoveryEmail(kv, session, email, now); return json({ ok: true }); }
+    try {
+      const { pin, email: clean } = await beginRecoveryEmail(kv, session, email, now);
+      await makeMailer(env).sendMail({
+        to: clean,
+        subject: "Dein Bestätigungscode",
+        text: "Dein Bestätigungscode für die Paarbegleitung lautet:\n\n" + pin +
+              "\n\nEr ist etwa 15 Minuten gültig. Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
+      });
+      return json({ ok: true });
+    } catch (e) {
+      if (e.code) return fehler(e.message, e.status || 400, e.code);
+      console.error("verify-mail:", e && e.message);
+      return fehler("Der Versand ist gerade nicht möglich.", 502, "mail_failed");
+    }
+  }
+  if (p === "/api/email/confirm" && request.method === "POST") {
+    const { pin } = await request.json().catch(() => ({}));
+    try { await confirmRecoveryEmail(kv, session, pin, now); return json({ ok: true }); }
     catch (e) { return fehler(e.message, e.status || 400, e.code); }
   }
 

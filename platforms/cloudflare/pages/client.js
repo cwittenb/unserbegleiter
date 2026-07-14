@@ -50,7 +50,8 @@ function remoteBackend() {
       get: r => api("GET", "/api/handover/" + r).then(x => x.value),
     },
     recovery: {
-      setEmail: email => api("POST", "/api/email", { email }),
+      beginVerify: email => api("POST", "/api/email", { email }),
+      confirm: pin => api("POST", "/api/email/confirm", { pin }),
     },
     llm: makeAdapter({ mode: "proxy" }),
   };
@@ -72,7 +73,14 @@ async function boot() {
       await api("POST", "/api/enroll", { token });
       history.replaceState(null, "", location.pathname);   // Token aus der Adresszeile
     } catch (e) {
-      app.innerHTML = `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px)">${fehlerText(e)}</div>`;
+      // Verbrauchter/abgelaufener Link ist KEINE Sackgasse: direkt darunter
+      // steht der Wiedereinstieg per hinterlegter Adresse (S45). Nur unbekannte
+      // Token bleiben reine Fehlermeldung — dort gibt es kein Konto dahinter.
+      if (e.code === "link_used" || e.code === "link_expired") {
+        zeigeWiedereinstieg(e);
+      } else {
+        app.innerHTML = fehlerBox(fehlerText(e));
+      }
       return;
     }
   } else {
@@ -90,12 +98,18 @@ async function boot() {
   await ui.boot();
 }
 
+function fehlerBox(text) {
+  return `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px);margin-bottom:14px">${text}</div>`;
+}
+
 /** Sackgassen-Ersatz: Wer keinen gültigen Zugang (Cookie) hat, kann sich einen
  *  frischen Link an seine hinterlegte Adresse schicken lassen. Keine Enumeration:
- *  die Antwort ist immer dieselbe. */
-function zeigeWiedereinstieg() {
+ *  die Antwort ist immer dieselbe. Optional mit vorangestellter Fehlermeldung
+ *  (verbrauchter/abgelaufener Link). */
+function zeigeWiedereinstieg(enrollFehler) {
   app.innerHTML =
     '<div style="max-width:440px;margin:0 auto;font-family:inherit">' +
+    (enrollFehler ? fehlerBox(fehlerText(enrollFehler)) : "") +
     '<div style="text-align:right;font-size:13px;letter-spacing:1px;user-select:none">' +
     '<span data-wspr="de" style="cursor:pointer;font-weight:' + (getLocale() === "de" ? 700 : 400) + '">DE</span> · ' +
     '<span data-wspr="en" style="cursor:pointer;font-weight:' + (getLocale() === "en" ? 700 : 400) + '">EN</span></div>' +
@@ -116,7 +130,7 @@ function zeigeWiedereinstieg() {
       setLocale(l);
       try { localStorage.setItem("pb.sprache", l); } catch { /* privat-Modus */ }
       doc.documentElement.lang = l;
-      zeigeWiedereinstieg();   // Screen in der neuen Sprache neu aufbauen
+      zeigeWiedereinstieg(enrollFehler);   // Screen in der neuen Sprache neu aufbauen
     });
   const go = doc.getElementById("recGo"), msg = doc.getElementById("recMsg");
   go.addEventListener("click", async () => {
