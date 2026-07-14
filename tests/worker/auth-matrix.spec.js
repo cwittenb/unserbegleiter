@@ -57,7 +57,7 @@ beforeAll(async () => {
     script: bundled.outputFiles[0].text,
     kvNamespaces: ["PAARE"],
     compatibilityDate: "2026-06-01",
-    bindings: { ADMIN_TOKEN: ADMIN, LLM_PROVIDER: "anthropic", LLM_MODEL: "test-modell", LLM_API_KEY: "test-key" },
+    bindings: { ADMIN_TOKEN: ADMIN, LLM_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key", ANTHROPIC_MODEL: "test-modell" },
     serviceBindings: {
       // Mock-Upstream für den LLM-Proxy (Anthropic-Antwortformat)
       async UPSTREAM(request) {

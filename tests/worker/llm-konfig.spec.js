@@ -1,6 +1,8 @@
-// Worker · Konfigurationspflicht (S35d): fehlt LLM_PROVIDER, LLM_MODEL oder
-// LLM_API_KEY im Environment, ist das ein Deploy-Fehler — /api/llm antwortet
-// mit 500 und klarer Meldung. KEIN stiller Fallback auf Provider oder Modell.
+// Worker · Konfigurationspflicht (S35d) + Provider-Schalter (S47): ist gar kein
+// LLM_PROVIDER gesetzt, ist das ein Deploy-Fehler — /api/llm antwortet mit 500
+// und klarer Meldung. KEIN stiller Fallback auf Provider oder Modell. Die
+// providergenauen Fälle (LLM_PROVIDER gesetzt, aber <PROVIDER>_API_KEY oder
+// <PROVIDER>_MODEL fehlt) prüft tests/worker/llm-schalter.spec.js.
 // Der Missbrauchsschutz bleibt davor: ohne Session weiterhin 401, der
 // Konfigurationszustand wird Unangemeldeten nicht verraten.
 

@@ -10,7 +10,7 @@ import { Repo } from "../../../core/store/repo.js";
 import { Bstate, Pstate } from "../../../core/store/bundles.js";
 import { freigebeUebergabe } from "../../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
-import { makeAdapter } from "../../../core/llm/adapter.js";
+import { makeAdapter, LLM_PROVIDERS } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { pruefeUndZaehle, quotaCfg } from "./quota.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
@@ -421,14 +421,26 @@ async function route(request, env) {
     const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
     if (!q.ok) return fehler(q.meldung, q.status);
     const fetchFn = env.UPSTREAM ? env.UPSTREAM.fetch.bind(env.UPSTREAM) : globalThis.fetch;
-    // Konfigurationspflicht (S35d): kein Provider-, Key- oder Modell-Fallback im
-    // Code — fehlt etwas im Environment, ist das ein Deploy-Fehler und wird als
-    // solcher gemeldet. Modell wird dem KONFIGURIERTEN Provider zugeordnet
-    // (Bugfix: vorher landete es immer unter models.anthropic).
-    if (!env.LLM_PROVIDER || !env.LLM_MODEL || !env.LLM_API_KEY)
-      return fehler("LLM nicht konfiguriert: LLM_PROVIDER, LLM_MODEL und LLM_API_KEY müssen im Worker-Environment gesetzt sein.", 500);
+    // Provider-Schalter (S47) unter Konfigurationspflicht (S35d): EIN Wert wählt
+    // den Provider — LLM_PROVIDER. Key und Modell liegen pro Provider getrennt
+    // vor (<PROVIDER>_API_KEY / <PROVIDER>_MODEL), sodass ein Wechsel nur
+    // LLM_PROVIDER umlegt und die vorprovisionierten Paare stehen bleiben.
+    // Kein stiller Fallback: fehlt zum gewählten Provider Schalter, Key oder
+    // Modell, ist das ein Deploy-Fehler und wird variablen-genau gemeldet.
+    const erlaubteProvider = Object.keys(LLM_PROVIDERS).join(" | ");
+    if (!env.LLM_PROVIDER)
+      return fehler("LLM nicht konfiguriert: LLM_PROVIDER (der Provider-Schalter) muss gesetzt sein — erlaubt: " + erlaubteProvider + ".", 500);
+    if (!LLM_PROVIDERS[env.LLM_PROVIDER])
+      return fehler("LLM nicht konfiguriert: unbekannter LLM_PROVIDER=\"" + env.LLM_PROVIDER + "\" — erlaubt: " + erlaubteProvider + ".", 500);
+    const pOben = env.LLM_PROVIDER.toUpperCase();
+    const apiKey = env[pOben + "_API_KEY"];
+    const modell = env[pOben + "_MODEL"];
+    if (!apiKey)
+      return fehler("LLM nicht konfiguriert: LLM_PROVIDER=\"" + env.LLM_PROVIDER + "\", aber " + pOben + "_API_KEY fehlt im Worker-Environment.", 500);
+    if (!modell)
+      return fehler("LLM nicht konfiguriert: LLM_PROVIDER=\"" + env.LLM_PROVIDER + "\", aber " + pOben + "_MODEL fehlt im Worker-Environment.", 500);
     const call = makeAdapter(
-      { provider: env.LLM_PROVIDER, mode: "direct", apiKey: env.LLM_API_KEY, models: { [env.LLM_PROVIDER]: env.LLM_MODEL } },
+      { provider: env.LLM_PROVIDER, mode: "direct", apiKey, models: { [env.LLM_PROVIDER]: modell } },
       fetchFn
     );
     if (stream === true) {
