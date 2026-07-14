@@ -1,8 +1,9 @@
 // Eval-Runner CLI (Ebene 2) — echte Modell-Läufe, key-gated.
 //
-// Konfiguration kommt aus Flags ODER Umgebung (Flag hat Vorrang vor Env).
-// Bequem: provider + beide Modelle EINMAL in die Umgebung legen, danach nur
-// noch die Lauf-Selektoren angeben:
+// Konfiguration kommt aus Flags ODER Umgebung (Flag hat Vorrang vor Env). Am
+// bequemsten: eine .env im Repo-Wurzelverzeichnis (Vorlage: .env.example) — sie
+// wird automatisch gelesen und schlägt keine echte Umgebung. Danach reicht
+// `npm run eval -- --familie GATE`. Die Variablen (in .env ohne `export`):
 //
 //   export EVAL_PROVIDER=anthropic          # anthropic | mistral
 //   export EVAL_PIPELINE_MODEL=<modell>
@@ -25,6 +26,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeAdapter } from "../core/llm/adapter.js";
 import { leseEvalKonfig, EvalKonfigFehler } from "./eval-konfig.js";
+import { liesEnvDatei, mischeMitEnv } from "./env-datei.js";
 import { laufeAlle } from "./runner-kern.js";
 import { SZENARIEN } from "./szenarien/start-katalog.js";
 import { SZENARIEN_EN } from "./szenarien/start-katalog.en.js";
@@ -39,11 +41,14 @@ function arg(name, fallback) {
     ? process.argv[i + 1] : fallback;
 }
 async function main() {
-  // Provider + Modelle aus Flags ODER Env (Flag hat Vorrang). Kein Modell-Default
-  // im Code (S35d): fehlt etwas, wirft leseEvalKonfig — hier zu klarer CLI-Meldung.
+  // Provider + Modelle aus Flags ODER Umgebung (Flag hat Vorrang). Eine .env im
+  // Repo-Wurzelverzeichnis füllt Lücken (process.env schlägt sie); fehlt sie, ist
+  // das kein Fehler. Kein Modell-Default im Code (S35d): fehlt etwas, wirft
+  // leseEvalKonfig — hier zu klarer CLI-Meldung.
+  const env = mischeMitEnv(process.env, liesEnvDatei(path.join(ROOT, ".env")));
   let konfig;
   try {
-    konfig = leseEvalKonfig(process.argv, process.env);
+    konfig = leseEvalKonfig(process.argv, env);
   } catch (e) {
     if (e instanceof EvalKonfigFehler) { console.error(e.message); process.exit(2); }
     throw e;

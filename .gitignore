@@ -7,6 +7,10 @@ dist/
 # Dependencies
 node_modules/
 
+# Eval-Konfiguration mit Keys — die Vorlage .env.example bleibt versioniert
+.env
+.env.local
+
 # Lock file
 package-lock.json
 
