@@ -2,8 +2,9 @@
 // Vorgabe. So kannst du provider + beide Modelle EINMAL in die Umgebung legen
 // und danach nur noch die Lauf-Selektoren (--familie/--szenario/…) angeben.
 //
-//   Env:  EVAL_PROVIDER (anthropic | mistral)
-//         EVAL_PIPELINE_MODEL · EVAL_JUDGE_MODEL
+//   Env:  EVAL_PROVIDER (anthropic | mistral) — wählt zugleich das Modellpaar
+//         EVAL_ANTHROPIC_PIPELINE_MODEL · EVAL_ANTHROPIC_JUDGE_MODEL
+//         EVAL_MISTRAL_PIPELINE_MODEL   · EVAL_MISTRAL_JUDGE_MODEL
 //         ANTHROPIC_API_KEY bzw. MISTRAL_API_KEY (Key zum gewählten Provider)
 //
 // Modelle haben KEINEN Code-Default (S35d): fehlt Pipeline- oder Judge-Modell in
@@ -35,13 +36,17 @@ export function leseEvalKonfig(argv, env) {
     throw new EvalKonfigFehler("Kein Schlüssel gefunden: bitte " + keyVar + " setzen.\n" +
       "Beispiel:  " + keyVar + "=sk-… npm run eval -- --familie GATE");
 
-  const pipelineModell = arg("pipeline-modell", env.EVAL_PIPELINE_MODEL);
-  const judgeModell = arg("judge-modell", env.EVAL_JUDGE_MODEL);
+  // Modelle liegen pro Provider getrennt vor (EVAL_<PROVIDER>_PIPELINE_MODEL /
+  // EVAL_<PROVIDER>_JUDGE_MODEL) — so wählt EVAL_PROVIDER zugleich das Modellpaar;
+  // beide Paare dürfen gleichzeitig in Umgebung/.env stehen.
+  const pOben = provider.toUpperCase();
+  const pipelineModell = arg("pipeline-modell", env["EVAL_" + pOben + "_PIPELINE_MODEL"]);
+  const judgeModell = arg("judge-modell", env["EVAL_" + pOben + "_JUDGE_MODEL"]);
   if (!pipelineModell || !judgeModell)
     throw new EvalKonfigFehler(
-      "Modell-Konfiguration ist Pflicht (S35d): Pipeline- UND Judge-Modell angeben —\n" +
+      'Modell-Konfiguration ist Pflicht (S35d) für Provider "' + provider + '": Pipeline- UND Judge-Modell angeben —\n' +
       "  per Flag:  --pipeline-modell <m> --judge-modell <m>\n" +
-      "  oder Env:  EVAL_PIPELINE_MODEL=<m>  EVAL_JUDGE_MODEL=<m>\n" +
+      "  oder Env:  EVAL_" + pOben + "_PIPELINE_MODEL=<m>  EVAL_" + pOben + "_JUDGE_MODEL=<m>\n" +
       "(Flag hat Vorrang vor Env; kein Modell-Default im Code.)");
 
   if (pipelineModell === judgeModell && !flag("erlaube-gleiches-modell"))

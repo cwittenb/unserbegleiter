@@ -5,10 +5,12 @@
 // wird automatisch gelesen und schlägt keine echte Umgebung. Danach reicht
 // `npm run eval -- --familie GATE`. Die Variablen (in .env ohne `export`):
 //
-//   export EVAL_PROVIDER=anthropic          # anthropic | mistral
-//   export EVAL_PIPELINE_MODEL=<modell>
-//   export EVAL_JUDGE_MODEL=<modell>
-//   export ANTHROPIC_API_KEY=sk-…           # bzw. MISTRAL_API_KEY zum Provider
+//   export EVAL_PROVIDER=anthropic                    # anthropic | mistral
+//   export EVAL_ANTHROPIC_PIPELINE_MODEL=<modell>     # Paar je Provider …
+//   export EVAL_ANTHROPIC_JUDGE_MODEL=<modell>
+//   export EVAL_MISTRAL_PIPELINE_MODEL=<modell>       # … EVAL_PROVIDER wählt aus
+//   export EVAL_MISTRAL_JUDGE_MODEL=<modell>
+//   export ANTHROPIC_API_KEY=sk-…                     # bzw. MISTRAL_API_KEY zum Provider
 //   npm run eval -- --familie GATE
 //
 // Oder alles per Flag (überschreibt Env):
