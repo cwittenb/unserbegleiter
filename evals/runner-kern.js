@@ -72,25 +72,63 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
   };
 }
 
-/** Alle Szenarien laufen lassen und den Stand-Bericht bauen. */
-export async function laufeAlle(szenarien, deps) {
-  const ergebnisse = [];
-  for (const sz of szenarien) ergebnisse.push(await laufeSzenario(sz, deps));
+/** Fehler-Szenario: Pipeline/Judge sind nach Retries hart gescheitert.
+ *  Zählt NIE als bestanden (wie „unbewertet"), trägt aber den Grund. */
+function fehlerSzenario(sz, e) {
+  return {
+    id: sz.id, familie: sz.familie, version: sz.version,
+    sprache: szenarioSprache(sz), n: 0,
+    verletzteSamples: 0, unbewerteteSamples: 0, roteLinie: false,
+    status: "fehler", fehler: (e && e.message) ? e.message : String(e),
+    samples: [],
+  };
+}
 
+/** Stand-Bericht aus den bisherigen Ergebnissen bauen (kein Gesamt-Score). */
+function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
   const familien = {};
   for (const r of ergebnisse) {
-    const f = (familien[r.familie] ||= { gesamt: 0, gruen: 0, rot: 0, verletzt: 0, unbewertet: 0 });
+    const f = (familien[r.familie] ||= { gesamt: 0, gruen: 0, rot: 0, verletzt: 0, unbewertet: 0, fehler: 0 });
     f.gesamt++;
     if (r.status === "gruen") f.gruen++;
     else if (r.roteLinie) f.rot++;
+    else if (r.status === "fehler") f.fehler++;
     else if (r.unbewerteteSamples) f.unbewertet++;
     else f.verletzt++;
   }
   return {
     formatVersion: SZENARIO_FORMAT_VERSION,
-    zeit: new Date().toISOString(),
-    stand: deps.stand || {},                    // coreHash, Modelle, Judge-Prompt-Version …
+    zeit,
+    stand: stand || {},                         // coreHash, Modelle, Judge-Prompt-Version …
+    vollstaendig,                               // false = Zwischenstand/abgebrochen, true = Lauf beendet
     quotenJeFamilie: familien,                  // bewusst KEIN Gesamt-Score
     szenarien: ergebnisse,
   };
+}
+
+/**
+ * Alle Szenarien laufen lassen und den Stand-Bericht bauen.
+ * Neu (S51): nach JEDEM Szenario wird optional `deps.persistiere(teilbericht)`
+ * gerufen (absturzsichere, inkrementelle Persistenz — der Kern bleibt fs-frei).
+ * Ein Szenario, dessen Calls hart scheitern, wird als status:"fehler" geführt;
+ * ohne `deps.weiterBeiFehler` bricht der Lauf danach ab (der Teilstand inkl.
+ * Fehler-Szenario ist bereits persistiert), mit ihm läuft er weiter.
+ */
+export async function laufeAlle(szenarien, deps) {
+  const { persistiere, weiterBeiFehler } = deps;
+  const zeit = deps.zeit || new Date().toISOString();
+  const ergebnisse = [];
+  for (const sz of szenarien) {
+    let r, fehler = null;
+    try {
+      r = await laufeSzenario(sz, deps);
+    } catch (e) {
+      fehler = e;
+      r = fehlerSzenario(sz, e);
+    }
+    ergebnisse.push(r);
+    if (typeof persistiere === "function") await persistiere(bauBericht(ergebnisse, deps.stand, zeit, false));
+    if (fehler && !weiterBeiFehler) throw fehler;   // Abbruch — Teilstand liegt persistiert vor
+  }
+  return bauBericht(ergebnisse, deps.stand, zeit, true);
 }

@@ -192,6 +192,83 @@ export const LLM_PROVIDERS = {
   openai: openaiCompat("https://api.openai.com/v1/chat/completions", "openai"),
 };
 
+/* ---- Robustheit: HTTP-Fehler, Retry-After, Backoff, RPM-Drossel (S51) ---- */
+
+/** Getippter Transportfehler — trägt Status und (falls vorhanden) Retry-After (Sekunden). */
+export class LlmHttpError extends Error {
+  constructor(status, retryAfterS, koerper) {
+    super("LLM HTTP " + status + (koerper ? " — " + String(koerper).slice(0, 200) : ""));
+    this.name = "LlmHttpError";
+    this.status = status;
+    this.retryAfterS = (typeof retryAfterS === "number" && retryAfterS >= 0) ? retryAfterS : null;
+    this.koerper = koerper || "";
+  }
+}
+
+/** Liest den Retry-After-Header (Sekunden ODER HTTP-Date) → Sekunden oder null. */
+export function parseRetryAfter(resp) {
+  const roh = resp && resp.headers && typeof resp.headers.get === "function"
+    ? resp.headers.get("retry-after") : null;
+  if (!roh) return null;
+  const sek = Number(roh);
+  if (Number.isFinite(sek)) return Math.max(0, sek);
+  const ms = Date.parse(roh);
+  return Number.isFinite(ms) ? Math.max(0, (ms - Date.now()) / 1000) : null;
+}
+
+/** Fehlerkörper defensiv lesen (text bevorzugt, sonst json) — nur für die Fehlermeldung. */
+async function leseFehlerkoerper(resp) {
+  try { if (typeof resp.text === "function") return await resp.text(); } catch { /* egal */ }
+  try { if (typeof resp.json === "function") return JSON.stringify(await resp.json()); } catch { /* egal */ }
+  return "";
+}
+
+/**
+ * RPM-Drossel als Slot-Scheduler. EINE Instanz wird von Pipeline UND Judge
+ * geteilt (Mistrals Limit gilt pro Organisation/Workspace, nicht pro Key).
+ * rpm ≤ 0 oder nicht endlich ⇒ „unlimited" (No-Op). Uhr injizierbar (Testbarkeit).
+ */
+export function baueDrossel({ rpm, uhr } = {}) {
+  if (!Number.isFinite(rpm) || rpm <= 0) {
+    const frei = async () => {};
+    frei.rpm = 0;
+    return frei;
+  }
+  const jetzt = (uhr && typeof uhr.jetzt === "function") ? uhr.jetzt : () => Date.now();
+  const schlaf = (uhr && typeof uhr.schlaf === "function") ? uhr.schlaf : (ms => new Promise(r => setTimeout(r, ms)));
+  const abstandMs = 60000 / rpm;
+  let naechster = 0;
+  const drossel = async () => {
+    const t = jetzt();
+    const start = Math.max(t, naechster);
+    naechster = start + abstandMs;
+    const warten = start - t;
+    if (warten > 0) await schlaf(warten);
+  };
+  drossel.rpm = rpm;
+  drossel.abstandMs = abstandMs;
+  return drossel;
+}
+
+/** Wiederholt fn bei HTTP 429/5xx (mit Retry-After bzw. gedeckeltem Exponential-Backoff). */
+async function mitWiederholung(fn, { versuche, backoffMs, maxBackoffMs, schlaf }) {
+  let letzter;
+  for (let v = 0; v < versuche; v++) {
+    try {
+      return await fn();
+    } catch (e) {
+      letzter = e;
+      const wiederholbar = e instanceof LlmHttpError && (e.status === 429 || (e.status >= 500 && e.status <= 599));
+      if (!wiederholbar || v === versuche - 1) throw e;
+      const wartenMs = e.retryAfterS != null
+        ? e.retryAfterS * 1000
+        : Math.min(maxBackoffMs, backoffMs * (2 ** v));
+      await schlaf(Math.max(0, wartenMs));
+    }
+  }
+  throw letzter;
+}
+
 /**
  * Baut die callClaude-Fassade.
  * @param {object} cfgIn — überschreibt LLM_DEFAULTS
@@ -254,16 +331,34 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
   if (cfg.mode === "direct" && !cfg.apiKey)
     throw new Error("direct-Modus benötigt einen API-Key.");
 
-  return async function callClaude(systemPrompt, messages, onDelta) {
+  // Robustheit (S51): geteilte Drossel vor jedem Request; Retry bei 429/5xx.
+  // Ohne cfg.drossel bleibt es ein No-Op; ohne Retry-Fehler ändert sich nichts.
+  const drossel = typeof cfg.drossel === "function" ? cfg.drossel : async () => {};
+  const retry = {
+    versuche: Number.isFinite(cfg.versuche) ? cfg.versuche : 4,
+    backoffMs: Number.isFinite(cfg.backoffMs) ? cfg.backoffMs : 2000,
+    maxBackoffMs: Number.isFinite(cfg.maxBackoffMs) ? cfg.maxBackoffMs : 30000,
+    schlaf: typeof cfg.schlaf === "function" ? cfg.schlaf : (ms => new Promise(r => setTimeout(r, ms))),
+  };
+
+  return function callClaude(systemPrompt, messages, onDelta) {
     const streamen = typeof onDelta === "function" && cfg.stream !== false;
     const body = streamen ? P.streamBody(cfg, systemPrompt, messages) : P.body(cfg, systemPrompt, messages);
-    const resp = await fetchFn(P.url(cfg), {
-      method: "POST",
-      headers: P.headers(cfg),
-      body: JSON.stringify(body),
-    });
-    if (streamen && istEventStream(resp)) return P.streamParse(resp, onDelta);
-    const data = await resp.json();
-    return P.parse(data);
+    return mitWiederholung(async () => {
+      await drossel();                                     // geteilte RPM-Drossel (pro Workspace), falls gesetzt
+      const resp = await fetchFn(P.url(cfg), {
+        method: "POST",
+        headers: P.headers(cfg),
+        body: JSON.stringify(body),                        // Body byte-identisch zum bisherigen Stand (ohne onDelta)
+      });
+      // HTTP-Status prüfen, BEVOR geparst wird — sonst liefert ein 429 ohne
+      // .error-Feld (Mistral) still text:"" statt eines Fehlers.
+      if (typeof resp.status === "number" && resp.status >= 400) {
+        throw new LlmHttpError(resp.status, parseRetryAfter(resp), await leseFehlerkoerper(resp));
+      }
+      if (streamen && istEventStream(resp)) return P.streamParse(resp, onDelta);
+      const data = await resp.json();
+      return P.parse(data);
+    }, retry);
   };
 }
