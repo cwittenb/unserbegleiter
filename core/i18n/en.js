@@ -238,7 +238,7 @@ export const en = {
   // Regain access (in-app)
   "rec.titel": "Regain Access",
   "rec.hinterlegt": "A confirmed email address is on file. If you sign in on a new device or lose your access, you can have a fresh link sent there.",
-  "rec.neu": "Add an email address so you can request a new access link when needed — including for a second device. Use a mailbox only you can access.",
+  "rec.neu": "Add an email address so you can request a new access link when needed — including for a second device. This address also receives important service notices (e.g. planned maintenance or security alerts) — never advertising. Use a mailbox only you can access.",
   "rec.platzhalter": "you@mailbox.com",
   "rec.aendern": "Change address",
   "rec.hinterlegen": "Add address",
@@ -249,7 +249,7 @@ export const en = {
   "rec.bestaetigen": "Confirm address",
   "rec.neuAnfordern": "Request a new code",
   "rec.pflicht.titel": "Secure Your Access First",
-  "rec.pflicht.text": "So you can never lose your access, add an email address now and confirm it with the code we send you. Use a mailbox only you can access — it is how you get a new access link when needed.",
+  "rec.pflicht.text": "So you can never lose your access, add an email address now and confirm it with the code we send you. This address is how you get a new access link when needed and where important service notices arrive (e.g. planned maintenance or security alerts) — never advertising. Use a mailbox only you can access.",
 
   // Dictation
   "diktat.mobil": "Dictation: tap the microphone on your on-screen keyboard — the text lands right in the input field.",
@@ -296,6 +296,7 @@ export const en = {
   "fehler.code.pin_tries": "Too many failed attempts. Please request a new code.",
   "fehler.code.mail_failed": "Sending is not possible right now. Please try again later.",
   "fehler.code.verify_rate": "Too many requests. Please try again a little later.",
+  "fehler.code.email_mismatch": "The address does not match the pending confirmation. Please request a new code.",
 
   // Theme toggle
   "theme.hell": "Light",

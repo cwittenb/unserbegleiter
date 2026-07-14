@@ -63,7 +63,8 @@ async function registriere(person, email) {
   expect(r1.status).toBe(200);
   const pin = pinAus(mails[mails.length - 1].text);
   expect(pin).toBeTruthy();
-  const r2 = await person.call("POST", "/api/email/confirm", { pin });
+  // D6.1a: die Adresse reist bei der Bestätigung mit (Hash-Abgleich serverseitig)
+  const r2 = await person.call("POST", "/api/email/confirm", { pin, email });
   expect(r2.status).toBe(200);
 }
 
@@ -75,7 +76,7 @@ beforeAll(async () => {
   script = bundled.outputFiles[0].text;
   mf = new Miniflare({
     modules: true, script, kvNamespaces: ["PAARE"], compatibilityDate: "2026-06-01",
-    bindings: { ADMIN_TOKEN: ADMIN, RECOVER_RATE: "100", VERIFY_RATE: "100" },
+    bindings: { ADMIN_TOKEN: ADMIN, RECOVER_RATE: "100", VERIFY_RATE: "100", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
     serviceBindings: {
       async MAIL_UPSTREAM(request) { mails.push(await request.json()); return new Response("ok"); },
     },
@@ -95,7 +96,7 @@ describe("Wiedereinstieg · Adresse hinterlegen (zweistufig)", () => {
     expect(pin).toBeTruthy();
     // Noch unbestätigt: zählt nicht als hinterlegt
     expect((await anna.call("GET", "/api/me")).data.recoveryEmail).toBe(false);
-    expect((await anna.call("POST", "/api/email/confirm", { pin })).status).toBe(200);
+    expect((await anna.call("POST", "/api/email/confirm", { pin, email: "Anna@Beispiel.de" })).status).toBe(200);
     const me = (await anna.call("GET", "/api/me")).data;
     expect(me.recoveryEmail).toBe(true);
     expect(JSON.stringify(me)).not.toContain("beispiel.de");   // nur Status, nie die Adresse
@@ -120,18 +121,41 @@ describe("Wiedereinstieg · Adresse hinterlegen (zweistufig)", () => {
     await anna.call("POST", "/api/email", { email: "anna@example.com" });
     const pin = pinAus(mails[0].text);
     for (let i = 0; i < 4; i++) {
-      const r = await anna.call("POST", "/api/email/confirm", { pin: falschePin(pin) });
+      const r = await anna.call("POST", "/api/email/confirm", { pin: falschePin(pin), email: "anna@example.com" });
       expect(r.status).toBe(400);
       expect(r.data.code).toBe("pin_wrong");
     }
-    const gesperrt = await anna.call("POST", "/api/email/confirm", { pin: falschePin(pin) });
+    const gesperrt = await anna.call("POST", "/api/email/confirm", { pin: falschePin(pin), email: "anna@example.com" });
     expect(gesperrt.status).toBe(429);
     expect(gesperrt.data.code).toBe("pin_tries");
     // Auch der RICHTIGE Code hilft jetzt nicht mehr — neue Anforderung nötig
-    const danach = await anna.call("POST", "/api/email/confirm", { pin });
+    const danach = await anna.call("POST", "/api/email/confirm", { pin, email: "anna@example.com" });
     expect(danach.status).toBe(400);
     expect(danach.data.code).toBe("pin_none");
     expect((await anna.call("GET", "/api/me")).data.recoveryEmail).toBe(false);
+  });
+});
+
+describe("Wiedereinstieg · Klartext-Schutz (S46)", () => {
+  it("Bestätigung mit ANDERER Adresse als der aus Schritt 1 → 400 email_mismatch", async () => {
+    const { anna } = await frischesPaar();
+    await anna.call("POST", "/api/email", { email: "richtig.s46@example.com" });
+    const pin = pinAus(mails[0].text);
+    const r = await anna.call("POST", "/api/email/confirm", { pin, email: "andere.s46@example.com" });
+    expect(r.status).toBe(400);
+    expect(r.data.code).toBe("email_mismatch");
+  });
+
+  it("nach vollständiger Verifikation liegt die Adresse in KEINEM KV-Wert im Klartext", async () => {
+    const { anna } = await frischesPaar();
+    await registriere(anna, "geheim.s46@example.com");
+    const kv = await mf.getKVNamespace("PAARE");
+    const liste = await kv.list();
+    for (const k of liste.keys) {
+      const wert = (await kv.get(k.name)) || "";
+      expect(wert).not.toContain("geheim.s46@example.com");
+      expect(wert.toLowerCase()).not.toContain("geheim.s46");
+    }
   });
 });
 
@@ -204,7 +228,7 @@ describe("Wiedereinstieg · Raten-Limits", () => {
     const mf2 = new Miniflare({
       modules: true, script, kvNamespaces: ["PAARE"],
       compatibilityDate: "2026-06-01",
-      bindings: { ADMIN_TOKEN: ADMIN, RECOVER_RATE: "2" },
+      bindings: { ADMIN_TOKEN: ADMIN, RECOVER_RATE: "2", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
       serviceBindings: { async MAIL_UPSTREAM() { return new Response("ok"); } },
     });
     const alt = mf; mf = mf2;
@@ -219,7 +243,7 @@ describe("Wiedereinstieg · Raten-Limits", () => {
     const mf2 = new Miniflare({
       modules: true, script, kvNamespaces: ["PAARE"],
       compatibilityDate: "2026-06-01",
-      bindings: { ADMIN_TOKEN: ADMIN, VERIFY_RATE: "2" },
+      bindings: { ADMIN_TOKEN: ADMIN, VERIFY_RATE: "2", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
       serviceBindings: { async MAIL_UPSTREAM(request) { mails.push(await request.json()); return new Response("ok"); } },
     });
     const alt = mf; mf = mf2;
@@ -239,7 +263,7 @@ describe("Wiedereinstieg · Versandfehler", () => {
     const mf2 = new Miniflare({
       modules: true, script, kvNamespaces: ["PAARE"],
       compatibilityDate: "2026-06-01",
-      bindings: { ADMIN_TOKEN: ADMIN },
+      bindings: { ADMIN_TOKEN: ADMIN, EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
       serviceBindings: { async MAIL_UPSTREAM() { return new Response("kaputt", { status: 500 }); } },
     });
     const alt = mf; mf = mf2;
@@ -257,7 +281,7 @@ describe("E-Mail-Pflicht · Feature-Flag (D2b)", () => {
     const mf2 = new Miniflare({
       modules: true, script, kvNamespaces: ["PAARE"],
       compatibilityDate: "2026-06-01",
-      bindings: { ADMIN_TOKEN: ADMIN, EMAIL_PFLICHT: "1" },
+      bindings: { ADMIN_TOKEN: ADMIN, EMAIL_PFLICHT: "1", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
       serviceBindings: { async MAIL_UPSTREAM() { return new Response("ok"); } },
     });
     const alt = mf; mf = mf2;

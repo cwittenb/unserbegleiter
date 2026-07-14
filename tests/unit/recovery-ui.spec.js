@@ -21,10 +21,10 @@ function baseBackend(extra) {
   };
 }
 function recoveryStub() {
-  const st = { begonnen: null, bestaetigt: null };
+  const st = { begonnen: null, bestaetigt: null, bestaetigtAdresse: null };
   st.impl = {
     beginVerify: async e => { st.begonnen = e; },
-    confirm: async p => { st.bestaetigt = p; },
+    confirm: async (p, email) => { st.bestaetigt = p; st.bestaetigtAdresse = email; },
   };
   return st;
 }
@@ -60,6 +60,7 @@ describe("Recovery-Karte (zweistufig)", () => {
     q(box, "pin").value = "123456";
     await klick(q(box, "ok"));
     expect(st.bestaetigt).toBe("123456");
+    expect(st.bestaetigtAdresse).toBe("anna@example.com");   // D6.1a: Adresse reist mit
     // Neu gezeichnet: jetzt als hinterlegt, mit Ändern-Einstieg
     const neu = root.querySelector("#boxRecovery");
     expect(neu.textContent).toContain("bestätigte E-Mail-Adresse ist hinterlegt");

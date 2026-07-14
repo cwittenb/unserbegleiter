@@ -13,6 +13,7 @@
 //   · Nur Hashes von Credentials im Speicher; Session-IDs sind zufällig (128 bit).
 
 import { randomToken, sha256Hex } from "./util.js";
+import { verschluessele, emailAad } from "./krypto.js";
 
 export const SESSION_MS = 15 * 60 * 1000;
 export const MAGIC_MS = 14 * 24 * 60 * 60 * 1000;
@@ -70,7 +71,7 @@ export async function createCouple(kv, { nameA, nameB, locale }, now = Date.now)
 export const VERIFY_MS = 15 * 60 * 1000;
 export const VERIFY_MAX_VERSUCHE = 5;
 
-const emailKey = h => "sys/email/" + h;
+const emailLookupKey = h => "sys/email/" + h;
 const emailForKey = (code, role) => "sys/emailfor/" + code + "/" + role;
 const verifyKey = (code, role) => "sys/verify/" + code + "/" + role;
 const normMail = e => String(e || "").trim().toLowerCase();
@@ -94,7 +95,7 @@ export async function beginRecoveryEmail(kv, { code, role }, email, now = Date.n
   const clean = normMail(email);
   if (!istMail(clean)) throw Object.assign(new Error("Bitte eine gültige E-Mail-Adresse angeben."), { status: 400, code: "email_invalid" });
   const hash = await sha256Hex(clean);
-  const belegt = await J(kv, emailKey(hash));
+  const belegt = await J(kv, emailLookupKey(hash));
   if (belegt && (belegt.code !== code || belegt.role !== role))
     throw Object.assign(new Error("Diese Adresse ist bereits hinterlegt."), { status: 409, code: "email_taken" });
   const pin = pinErzeugen();
@@ -109,14 +110,24 @@ export async function beginRecoveryEmail(kv, { code, role }, email, now = Date.n
 
 /** Schritt 2: PIN prüfen. Erfolg verankert die Adresse als verifiziert und
  *  räumt eine ggf. vorher verifizierte Adresse auf. Fehlversuche zählen;
- *  nach VERIFY_MAX_VERSUCHE oder Ablauf muss ein neuer Code angefordert werden. */
-export async function confirmRecoveryEmail(kv, { code, role }, pin, now = Date.now) {
+ *  nach VERIFY_MAX_VERSUCHE oder Ablauf muss ein neuer Code angefordert werden.
+ *
+ *  S46 (D6.1a): Der Client reicht die Adresse im Klartext mit; ihr Hash muss
+ *  exakt zur offenen Bestätigung passen (verhindert Unterschieben einer anderen
+ *  Adresse als der, an die der Code ging). Bei Erfolg wird der Klartext
+ *  kontogebunden verschlüsselt (AES-GCM, AAD code:role) im emailfor-Eintrag
+ *  abgelegt — der einzige Moment, in dem er serverseitig legitim vorliegt.
+ *  `emailKey` ist der importierte EMAIL_KEY (Konfigurationspflicht im Worker). */
+export async function confirmRecoveryEmail(kv, { code, role }, { pin, email, emailKey }, now = Date.now) {
   const v = await J(kv, verifyKey(code, role));
   if (!v) throw Object.assign(new Error("Es liegt keine offene Bestätigung vor."), { status: 400, code: "pin_none" });
   if (now() > v.expiresAt) {
     await kv.delete(verifyKey(code, role));
     throw Object.assign(new Error("Der Code ist abgelaufen."), { status: 410, code: "pin_expired" });
   }
+  const clean = normMail(email);
+  if ((await sha256Hex(clean)) !== v.hash)
+    throw Object.assign(new Error("Die Adresse passt nicht zur offenen Bestätigung."), { status: 400, code: "email_mismatch" });
   if (v.pinHash !== (await pinDigest(code, role, pin))) {
     v.versuche = (v.versuche || 0) + 1;
     if (v.versuche >= VERIFY_MAX_VERSUCHE) {
@@ -126,10 +137,11 @@ export async function confirmRecoveryEmail(kv, { code, role }, pin, now = Date.n
     await W(kv, verifyKey(code, role), v);
     throw Object.assign(new Error("Der Code stimmt nicht."), { status: 400, code: "pin_wrong" });
   }
+  const enc = await verschluessele(emailKey, clean, emailAad(code, role));
   const vorher = await J(kv, emailForKey(code, role));
-  if (vorher && vorher.hash && vorher.hash !== v.hash) await kv.delete(emailKey(vorher.hash));
-  await W(kv, emailKey(v.hash), { code, role });
-  await W(kv, emailForKey(code, role), { hash: v.hash, at: now(), verified: true });
+  if (vorher && vorher.hash && vorher.hash !== v.hash) await kv.delete(emailLookupKey(vorher.hash));
+  await W(kv, emailLookupKey(v.hash), { code, role });
+  await W(kv, emailForKey(code, role), { hash: v.hash, at: now(), verified: true, enc });
   await kv.delete(verifyKey(code, role));
   return { ok: true };
 }
@@ -144,7 +156,7 @@ export async function hasRecoveryEmail(kv, code, role) {
 export async function lookupRecovery(kv, email) {
   const clean = normMail(email);
   if (!clean) return null;
-  return J(kv, emailKey(await sha256Hex(clean)));
+  return J(kv, emailLookupKey(await sha256Hex(clean)));
 }
 
 export async function enroll(kv, token, now = Date.now) {

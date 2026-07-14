@@ -982,7 +982,9 @@ export function createApp({ doc, backend, root, diktat }) {
     const note = el("span", { class: "pb-sub", "data-rec": "note" }, "display:block;margin-top:8px");
     for (const x of [mail, senden, pin, ok, note]) wirt.appendChild(x);
 
+    let gesendetAn = null;   // Adresse aus Schritt 1 — reist bei der Bestätigung mit (D6.1a)
     const schritt2 = email => {
+      gesendetAn = email;
       note.textContent = t("rec.codeUnterwegs", { email });
       pin.style.display = "block";
       ok.style.display = "inline-block";
@@ -999,7 +1001,7 @@ export function createApp({ doc, backend, root, diktat }) {
     ok.addEventListener("click", async () => {
       ok.disabled = true;
       try {
-        await backend.recovery.confirm(pin.value.trim());
+        await backend.recovery.confirm(pin.value.trim(), gesendetAn);
         onFertig();
       } catch (e) {
         note.textContent = fehlerText(e);

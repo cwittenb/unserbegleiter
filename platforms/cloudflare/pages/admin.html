@@ -128,9 +128,25 @@
           <option value="B">Person B</option>
         </select>
       </div>
-      <button id="relGo" class="primary">Direktlink erzeugen</button>
+      <button id="resGo" class="primary">Link an hinterlegte Adresse senden</button>
+      <p class="hint" style="margin:10px 0 6px">Erst wenn das nicht möglich ist (keine versandfähige Adresse, Postfach nicht erreichbar): Direktlink erzeugen und persönlich übergeben. Die Person wird über die Ausgabe per E-Mail informiert, sofern eine versandfähige Adresse hinterlegt ist.</p>
+      <button id="relGo" class="primary" style="background:#fff;color:var(--accent)">Direktlink erzeugen</button>
       <div id="relMsg"></div>
       <div id="relOut" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label for="bcSubj">Mitteilung an alle (Betrieb/Sicherheit)</label>
+        <p class="hint">Geht an alle bestätigten, versandfähigen Adressen. Zweckgebunden: Betriebsmitteilungen wie geplante Wartung oder Sicherheitshinweise — keine Werbung. Senden erfordert eine vorherige Empfänger-Prüfung; jede Aussendung wird protokolliert.</p>
+        <input id="bcSubj" type="text" autocomplete="off" placeholder="Betreff">
+      </div>
+      <div class="field">
+        <textarea id="bcText" rows="5" placeholder="Text der Mitteilung" style="display:block;width:100%;padding:10px 11px;font:inherit;color:var(--ink);border:1px solid var(--field);border-radius:9px;background:#fff;resize:vertical"></textarea>
+      </div>
+      <button id="bcPruef" class="primary">Empfänger prüfen</button>
+      <button id="bcSend" class="primary" disabled style="margin-top:8px">Senden</button>
+      <div id="bcMsg"></div>
     </div>
 
     <div class="card">
@@ -265,6 +281,30 @@
       .finally(function(){ lstGo.disabled = false; lstGo.textContent = "Paare laden"; });
   });
 
+  /* ---- Resend (S46, Stufe 1): Link an die hinterlegte Adresse. ---- */
+  var resGo = $("resGo");
+  resGo.addEventListener("click", function(){
+    var tok = $("tok").value, code = $("relCode").value.trim(), role = $("relRole").value;
+    if(!tok){ relFehler("Bitte oben das Admin-Token eingeben."); return; }
+    if(!code){ relFehler("Bitte den Paar-Code eingeben."); return; }
+    resGo.disabled = true; resGo.textContent = "Sende …"; relMsg.innerHTML = ""; relOut.innerHTML = "";
+    fetch(basis() + "/api/resend", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-token": tok },
+      body: JSON.stringify({ code: code, role: role }),
+    }).then(function(res){
+      return res.json().then(function(data){ return { status: res.status, data: data }; });
+    }).then(function(r){
+      if(r.status === 401){ relFehler("Admin-Token fehlt oder ist falsch."); return; }
+      if(r.status === 404){ relFehler("Unbekannter Paar-Code."); return; }
+      if(r.status === 409){ relFehler("Kein versandfähiger Adress-Eintrag für dieses Konto — Selbstbedienung oder Direktlink nutzen."); return; }
+      if(r.status === 429){ relFehler("Tageslimit für dieses Konto erreicht."); return; }
+      if(r.status === 200){ relMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">Frischer Einmal-Link wurde an die hinterlegte Adresse von ' + (r.data.name || ("Person " + role)) + ' geschickt (ca. 15 Minuten gültig).</div>'; return; }
+      relFehler((r.data && r.data.error) ? r.data.error : ("Unerwartete Antwort (" + r.status + ").") );
+    }).catch(function(){ relFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ resGo.disabled = false; resGo.textContent = "Link an hinterlegte Adresse senden"; });
+  });
+
   /* ---- Notfall-Direktlink (S45, Stufe 2): einmalig, 15 Minuten, protokolliert. ---- */
   var relGo = $("relGo"), relMsg = $("relMsg"), relOut = $("relOut");
   function relFehler(text){ relMsg.innerHTML = '<div class="msg err">' + text + '</div>'; }
@@ -284,9 +324,54 @@
     }).then(function(data){
       if(!data || !data.token) return;
       relOut.appendChild(linkKarte(role, data.name || "", data.token));
-      relMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">Einmalig und ca. 15 Minuten gültig — jetzt kopieren und persönlich übergeben. Diese Ausgabe wurde protokolliert.</div>';
+      relMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">Einmalig und ca. 15 Minuten gültig — jetzt kopieren und persönlich übergeben. Diese Ausgabe wurde protokolliert.' + (data.benachrichtigt ? " Die Person wurde per E-Mail informiert." : " Keine Benachrichtigung möglich (kein versandfähiger Adress-Eintrag).") + '</div>';
     }).catch(function(){ relFehler("Verbindung fehlgeschlagen."); })
       .finally(function(){ relGo.disabled = false; relGo.textContent = "Direktlink erzeugen"; });
+  });
+
+  /* ---- Mitteilung an alle (S46): Senden nur mit Nonce aus der Vorschau (D6.3b). ---- */
+  var bcPruef = $("bcPruef"), bcSend = $("bcSend"), bcMsg = $("bcMsg");
+  var bcNonce = null;
+  function bcFehler(text){ bcMsg.innerHTML = '<div class="msg err">' + text + '</div>'; }
+  function bcEntwerten(){ bcNonce = null; bcSend.disabled = true; bcSend.textContent = "Senden"; }
+  $("bcSubj").addEventListener("input", bcEntwerten);
+  $("bcText").addEventListener("input", bcEntwerten);
+  bcPruef.addEventListener("click", function(){
+    var tok = $("tok").value, subject = $("bcSubj").value.trim(), text = $("bcText").value.trim();
+    if(!tok){ bcFehler("Bitte oben das Admin-Token eingeben."); return; }
+    if(!subject || !text){ bcFehler("Bitte Betreff und Text eingeben."); return; }
+    bcPruef.disabled = true; bcPruef.textContent = "Prüfe …"; bcMsg.innerHTML = "";
+    fetch(basis() + "/api/broadcast", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-token": tok },
+      body: JSON.stringify({ subject: subject, text: text, dryRun: true }),
+    }).then(function(res){
+      if(res.status === 401){ bcFehler("Admin-Token fehlt oder ist falsch."); return null; }
+      return res.json();
+    }).then(function(data){
+      if(!data) return;
+      bcNonce = data.nonce;
+      bcSend.disabled = data.empfaenger === 0;
+      bcSend.textContent = "An " + data.empfaenger + " Adressen senden";
+      bcMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">' + data.empfaenger + ' Empfänger (bestätigt und versandfähig). Vorschau ca. 10 Minuten gültig — Änderungen am Text erfordern eine neue Prüfung.</div>';
+    }).catch(function(){ bcFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ bcPruef.disabled = false; bcPruef.textContent = "Empfänger prüfen"; });
+  });
+  bcSend.addEventListener("click", function(){
+    var tok = $("tok").value, subject = $("bcSubj").value.trim(), text = $("bcText").value.trim();
+    if(!bcNonce){ bcFehler("Bitte zuerst die Empfänger prüfen."); return; }
+    bcSend.disabled = true; bcSend.textContent = "Sende …"; bcMsg.innerHTML = "";
+    fetch(basis() + "/api/broadcast", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-token": tok },
+      body: JSON.stringify({ subject: subject, text: text, nonce: bcNonce }),
+    }).then(function(res){
+      return res.json().then(function(data){ return { status: res.status, data: data }; });
+    }).then(function(r){
+      bcEntwerten();
+      if(r.status === 200){ bcMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">Gesendet: ' + r.data.gesendet + ' von ' + r.data.empfaenger + (r.data.fehlgeschlagen ? ' (' + r.data.fehlgeschlagen + ' fehlgeschlagen — siehe wrangler tail)' : '') + '. Aussendung protokolliert.</div>'; return; }
+      bcFehler((r.data && r.data.error) ? r.data.error : ("Unerwartete Antwort (" + r.status + ").") );
+    }).catch(function(){ bcEntwerten(); bcFehler("Verbindung fehlgeschlagen."); });
   });
 
   var expGo = $("expGo"), expMsg = $("expMsg");

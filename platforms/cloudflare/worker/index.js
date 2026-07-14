@@ -16,7 +16,8 @@ import { pruefeUndZaehle, quotaCfg } from "./quota.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
          mintMagic, RECOVER_MS, beginRecoveryEmail, confirmRecoveryEmail,
          hasRecoveryEmail, lookupRecovery } from "./auth.js";
-import { randomToken } from "./util.js";
+import { randomToken, sha256Hex } from "./util.js";
+import { importEmailKey, entschluessele, emailAad } from "./krypto.js";
 import { makeMailer } from "./mailer.js";
 
 const json = (data, status = 200, headers = {}) =>
@@ -25,6 +26,9 @@ const json = (data, status = 200, headers = {}) =>
     headers: { "content-type": "application/json; charset=utf-8", ...headers },
   });
 const fehler = (msg, status, code) => json(code ? { error: msg, code } : { error: msg }, status);
+
+const leseEmailFor = (kv, code, role) =>
+  kv.get("sys/emailfor/" + code + "/" + role).then(v => (v ? JSON.parse(v) : null));
 
 const BSTATE_FELDER = new Set(Bstate.FIELDS);
 const PSTATE_FELDER = new Set(["timeline", "selfDisclosures"]);
@@ -102,9 +106,112 @@ async function route(request, env) {
     const couple = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
     if (!couple) return fehler("Unbekannter Paar-Code.", 404);
     const token = await mintMagic(kv, code, role, now, RECOVER_MS);
+    // Missbrauchs-Transparenz (D6): Die betroffene Person erfährt per Mail,
+    // dass ein Zugang zu IHREM Konto erzeugt wurde. Scheitert der Versand
+    // (oder gibt es keinen versandfähigen Eintrag), wird der Link trotzdem
+    // ausgegeben — der Notfallweg darf nicht am Mailversand hängen.
+    let benachrichtigt = false;
+    try {
+      const adresse = await entschluessele(await importEmailKey(env),
+        (await leseEmailFor(kv, code, role))?.enc, emailAad(code, role));
+      await makeMailer(env).sendMail({
+        to: adresse,
+        subject: "Neuer Zugangslink für dein Konto erzeugt",
+        text: "Für deinen Zugang zur Paarbegleitung wurde soeben vom Betreiber ein neuer Zugangslink erzeugt.\n\n" +
+              "Warst du das nicht bzw. hast du das nicht angefragt, melde dich bitte umgehend beim Betreiber.",
+      });
+      benachrichtigt = true;
+    } catch (e) { console.error("relink-mail:", code, role, e && e.message); }
     await kv.put("sys/audit/" + now() + "-" + randomToken(4),
-      JSON.stringify({ typ: "relink", code, role, at: now() }));
-    return json({ token, name: role === "A" ? couple.nameA : couple.nameB });
+      JSON.stringify({ typ: "relink", code, role, benachrichtigt, at: now() }));
+    return json({ token, name: role === "A" ? couple.nameA : couple.nameB, benachrichtigt });
+  }
+
+  /* ---- Betreiber-Resend (Stufe 1, S46/D6): Einmal-Link an die HINTERLEGTE
+   *  Adresse — der Server entschlüsselt transient, mailt und vergisst. Der
+   *  bequeme Notfallweg vor dem Direktlink; ohne versandfähigen Eintrag → 409
+   *  (dann Selbstbedienung oder Direktlink). Deckel je Konto (D6.4a) gegen
+   *  Betreiber-Fehlbedienung. ---- */
+  if (p === "/api/resend" && request.method === "POST") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    const { code, role } = await request.json().catch(() => ({}));
+    if (role !== "A" && role !== "B") return fehler("Unbekannte Rolle.", 400, "role_invalid");
+    const couple = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+    if (!couple) return fehler("Unbekannter Paar-Code.", 404);
+    const rlKey = "sys/resendlimit/" + code + "/" + role;
+    const cnt = Number((await kv.get(rlKey)) || 0);
+    if (cnt >= (Number(env.RESEND_RATE) || 3)) return fehler("Tageslimit für dieses Konto erreicht.", 429, "resend_rate");
+    let adresse;
+    try {
+      adresse = await entschluessele(await importEmailKey(env),
+        (await leseEmailFor(kv, code, role))?.enc, emailAad(code, role));
+    } catch (e) {
+      if (e.code === "no_email_enc") return fehler("Kein versandfähiger Adress-Eintrag für dieses Konto.", 409, "no_email_enc");
+      throw e;
+    }
+    await kv.put(rlKey, String(cnt + 1), { expirationTtl: 86400 });
+    const token = await mintMagic(kv, code, role, now, RECOVER_MS);
+    const url = new URL(request.url);
+    await makeMailer(env).sendMail({
+      to: adresse,
+      subject: "Dein neuer Zugangslink",
+      text: "Hier ist dein neuer Zugangslink zur Paarbegleitung:\n\n" +
+            url.origin + "/#t=" + token + "\n\n" +
+            "Der Link ist etwa 15 Minuten gültig und nur einmal verwendbar.",
+    });
+    await kv.put("sys/audit/" + now() + "-" + randomToken(4),
+      JSON.stringify({ typ: "resend", code, role, at: now() }));
+    return json({ ok: true, name: role === "A" ? couple.nameA : couple.nameB });
+  }
+
+  /* ---- Betriebsmitteilung an alle (S46/D6): der mächtigste Endpunkt im
+   *  System — darum Nonce-Pflicht (D6.3b): Senden geht NUR nach vorherigem
+   *  dryRun, dessen Nonce Inhalt (Hash) und Zeitfenster bindet, einmalig.
+   *  Direkte POSTs ohne Vorschau sind damit technisch unmöglich; Retries
+   *  nach Timeout können nicht doppelt senden. ---- */
+  if (p === "/api/broadcast" && request.method === "POST") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    const { subject, text, dryRun, nonce } = await request.json().catch(() => ({}));
+    if (!subject || !text) return fehler("subject und text sind Pflicht.", 400, "broadcast_leer");
+    const inhaltHash = await sha256Hex(subject + "\n" + text);
+    const empfaenger = [];
+    let cursor;
+    do {
+      const r = await kv.list({ prefix: "sys/emailfor/", cursor });
+      for (const k of r.keys) {
+        const teile = k.name.split("/");                     // sys emailfor code role
+        const e = JSON.parse(await kv.get(k.name));
+        if (e && e.verified && e.enc) empfaenger.push({ code: teile[2], role: teile[3], enc: e.enc });
+      }
+      cursor = r.list_complete ? undefined : r.cursor;
+    } while (cursor);
+    if (dryRun === true) {
+      const frisch = randomToken(16);
+      await kv.put("sys/broadcastnonce/" + frisch,
+        JSON.stringify({ inhaltHash, at: now() }), { expirationTtl: 600 });
+      return json({ empfaenger: empfaenger.length, nonce: frisch });
+    }
+    const nKey = "sys/broadcastnonce/" + String(nonce || "");
+    const nEintrag = nonce ? await kv.get(nKey).then(v => (v ? JSON.parse(v) : null)) : null;
+    if (!nEintrag) return fehler("Senden erfordert eine gültige Vorschau (dryRun) — Nonce fehlt, ist abgelaufen oder verbraucht.", 400, "nonce_invalid");
+    if (nEintrag.inhaltHash !== inhaltHash) return fehler("Der Inhalt wurde seit der Vorschau geändert — bitte erneut prüfen.", 409, "nonce_mismatch");
+    await kv.delete(nKey);                                   // VOR dem Versand verbrauchen: kein Doppel-Versand bei Retry
+    const emailKey = await importEmailKey(env);
+    const mailer = makeMailer(env);
+    let gesendet = 0, fehlgeschlagen = 0;
+    for (const e of empfaenger) {
+      try {
+        const adresse = await entschluessele(emailKey, e.enc, emailAad(e.code, e.role));
+        await mailer.sendMail({ to: adresse, subject, text });
+        gesendet++;
+      } catch (err) {
+        fehlgeschlagen++;
+        console.error("broadcast-mail:", e.code, e.role, err && err.message);   // nie die Adresse
+      }
+    }
+    await kv.put("sys/audit/" + now() + "-" + randomToken(4),
+      JSON.stringify({ typ: "broadcast", subject, empfaenger: empfaenger.length, gesendet, fehlgeschlagen, at: now() }));
+    return json({ empfaenger: empfaenger.length, gesendet, fehlgeschlagen });
   }
 
   /* ---- Betreiber-Export: alle Daten EINES Paars (Auswertung, admin-gated) ---- */
@@ -243,8 +350,14 @@ async function route(request, env) {
     }
   }
   if (p === "/api/email/confirm" && request.method === "POST") {
-    const { pin } = await request.json().catch(() => ({}));
-    try { await confirmRecoveryEmail(kv, session, pin, now); return json({ ok: true }); }
+    const { pin, email } = await request.json().catch(() => ({}));
+    try {
+      // Konfigurationspflicht (S46): ohne EMAIL_KEY keine Bestätigung — klare
+      // Deploy-Fehlermeldung statt still fehlendem enc-Feld.
+      const emailKey = await importEmailKey(env);
+      await confirmRecoveryEmail(kv, session, { pin, email, emailKey }, now);
+      return json({ ok: true });
+    }
     catch (e) { return fehler(e.message, e.status || 400, e.code); }
   }
 

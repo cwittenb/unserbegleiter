@@ -236,7 +236,7 @@ export const de = {
   // Zugang wiederfinden (App-intern)
   "rec.titel": "Zugang wiederfinden",
   "rec.hinterlegt": "Eine bestätigte E-Mail-Adresse ist hinterlegt. Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.",
-  "rec.neu": "Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Nimm ein Postfach, auf das nur du Zugriff hast.",
+  "rec.neu": "Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Über diese Adresse erhältst du außerdem wichtige Betriebsmitteilungen (z. B. geplante Wartung oder Sicherheitshinweise) — keine Werbung. Nimm ein Postfach, auf das nur du Zugriff hast.",
   "rec.platzhalter": "dein@postfach.de",
   "rec.aendern": "Adresse ändern",
   "rec.hinterlegen": "Adresse hinterlegen",
@@ -247,7 +247,7 @@ export const de = {
   "rec.bestaetigen": "Adresse bestätigen",
   "rec.neuAnfordern": "Neuen Code anfordern",
   "rec.pflicht.titel": "Sichere zuerst deinen Zugang",
-  "rec.pflicht.text": "Damit du deinen Zugang nicht verlieren kannst, hinterlege jetzt eine E-Mail-Adresse und bestätige sie mit dem Code, den wir dir schicken. Nimm ein Postfach, auf das nur du Zugriff hast — darüber bekommst du bei Bedarf einen neuen Zugangslink.",
+  "rec.pflicht.text": "Damit du deinen Zugang nicht verlieren kannst, hinterlege jetzt eine E-Mail-Adresse und bestätige sie mit dem Code, den wir dir schicken. Über diese Adresse bekommst du bei Bedarf einen neuen Zugangslink und wichtige Betriebsmitteilungen (z. B. geplante Wartung oder Sicherheitshinweise) — keine Werbung. Nimm ein Postfach, auf das nur du Zugriff hast.",
 
   // Diktat
   "diktat.mobil": "Diktat: Tippe auf das Mikrofon deiner Bildschirmtastatur — der Text landet direkt im Eingabefeld.",
@@ -294,6 +294,7 @@ export const de = {
   "fehler.code.pin_tries": "Zu viele Fehlversuche. Bitte fordere einen neuen Code an.",
   "fehler.code.mail_failed": "Der Versand ist gerade nicht möglich. Bitte versuche es später erneut.",
   "fehler.code.verify_rate": "Zu viele Anfragen. Bitte etwas später erneut.",
+  "fehler.code.email_mismatch": "Die Adresse passt nicht zur offenen Bestätigung. Bitte fordere einen neuen Code an.",
 
   // Theme-Umschalter
   "theme.hell": "Hell",

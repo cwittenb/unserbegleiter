@@ -3,7 +3,7 @@
 // kurzlebig-einmalig, meldet die RICHTIGE Rolle an und hinterlässt einen
 // Audit-Eintrag. Die Liste macht den Paar-Code (Unique Key) wiederauffindbar.
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { Miniflare } from "miniflare";
 import { build } from "esbuild";
 import path from "node:path";
@@ -48,13 +48,14 @@ beforeAll(async () => {
   mf = new Miniflare({
     modules: true, script: bundled.outputFiles[0].text, kvNamespaces: ["PAARE"],
     compatibilityDate: "2026-06-01",
-    bindings: { ADMIN_TOKEN: ADMIN, VERIFY_RATE: "100" },
+    bindings: { ADMIN_TOKEN: ADMIN, VERIFY_RATE: "100", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
     serviceBindings: {
       async MAIL_UPSTREAM(request) { mails.push(await request.json()); return new Response("ok"); },
     },
   });
 });
 afterAll(async () => { if (mf) await mf.dispose(); });
+beforeEach(() => { mails = []; });
 
 describe("Betreiber · Paar-Liste", () => {
   it("ist admin-gated (401 ohne Token)", async () => {
@@ -67,7 +68,7 @@ describe("Betreiber · Paar-Liste", () => {
     const clara = client();
     await clara.call("POST", "/api/enroll", { token: data.links.A });
     await clara.call("POST", "/api/email", { email: "clara@example.com" });
-    await clara.call("POST", "/api/email/confirm", { pin: pinAus(mails[mails.length - 1].text) });
+    await clara.call("POST", "/api/email/confirm", { pin: pinAus(mails[mails.length - 1].text), email: "clara@example.com" });
 
     const r = await client().call("GET", "/api/paare", undefined, { "x-admin-token": ADMIN });
     expect(r.status).toBe(200);
@@ -96,6 +97,7 @@ describe("Betreiber · Notfall-Direktlink (Stufe 2)", () => {
     expect(r.status).toBe(200);
     expect(r.data.token).toBeTruthy();
     expect(r.data.name).toBe("Finn");                 // Namens-Echo gegen Rollen-Verwechslung
+    expect(r.data.benachrichtigt).toBe(false);        // Finn hat keinen versandfähigen Eintrag
 
     // Der Token meldet Person B an — und nur einmal
     const geraet = client();
@@ -110,6 +112,24 @@ describe("Betreiber · Notfall-Direktlink (Stufe 2)", () => {
     const audit = await kv.list({ prefix: "sys/audit/" });
     const eintraege = [];
     for (const k of audit.keys) eintraege.push(JSON.parse(await kv.get(k.name)));
-    expect(eintraege.some(a => a.typ === "relink" && a.code === data.code && a.role === "B")).toBe(true);
+    expect(eintraege.some(a => a.typ === "relink" && a.code === data.code && a.role === "B" && a.benachrichtigt === false)).toBe(true);
+  });
+
+  it("mit versandfähiger Adresse: Direktlink-Ausgabe informiert die betroffene Person per Mail (D6)", async () => {
+    const init = client();
+    const { data } = await init.call("POST", "/api/paar", { nameA: "Greta", nameB: "Hans" }, { "x-admin-token": ADMIN });
+    const greta = client();
+    await greta.call("POST", "/api/enroll", { token: data.links.A });
+    await greta.call("POST", "/api/email", { email: "greta@example.com" });
+    await greta.call("POST", "/api/email/confirm", { pin: pinAus(mails[mails.length - 1].text), email: "greta@example.com" });
+
+    mails = [];
+    const r = await client().call("POST", "/api/relink", { code: data.code, role: "A" }, { "x-admin-token": ADMIN });
+    expect(r.status).toBe(200);
+    expect(r.data.benachrichtigt).toBe(true);
+    expect(mails).toHaveLength(1);
+    expect(mails[0].to).toBe("greta@example.com");
+    expect(mails[0].text).toContain("Betreiber");                  // Missbrauchs-Transparenz
+    expect(mails[0].text).not.toContain(r.data.token);             // Info-Mail enthält NIE den Link selbst
   });
 });

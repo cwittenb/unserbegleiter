@@ -51,7 +51,7 @@ function remoteBackend() {
     },
     recovery: {
       beginVerify: email => api("POST", "/api/email", { email }),
-      confirm: pin => api("POST", "/api/email/confirm", { pin }),
+      confirm: (pin, email) => api("POST", "/api/email/confirm", { pin, email }),
     },
     llm: makeAdapter({ mode: "proxy" }),
   };
