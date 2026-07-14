@@ -1,20 +1,30 @@
 // Eval-Runner CLI (Ebene 2) — echte Modell-Läufe, key-gated.
 //
-//   npm run eval -- --pipeline-modell <modell> --judge-modell <modell>
+// Konfiguration kommt aus Flags ODER Umgebung (Flag hat Vorrang vor Env).
+// Bequem: provider + beide Modelle EINMAL in die Umgebung legen, danach nur
+// noch die Lauf-Selektoren angeben:
+//
+//   export EVAL_PROVIDER=anthropic          # anthropic | mistral
+//   export EVAL_PIPELINE_MODEL=<modell>
+//   export EVAL_JUDGE_MODEL=<modell>
+//   export ANTHROPIC_API_KEY=sk-…           # bzw. MISTRAL_API_KEY zum Provider
+//   npm run eval -- --familie GATE
+//
+// Oder alles per Flag (überschreibt Env):
+//   npm run eval -- --provider mistral --pipeline-modell <m> --judge-modell <m> \
 //                   [--familie GATE] [--szenario AUF-01] [--sprache de|en] [--n 3]
-//                   [--provider anthropic|mistral]
 //                   [--erlaube-gleiches-modell]
 //
-// Modell-Flags sind PFLICHT (S35d): kein Modell-Default im Code.
-//
-// Key aus der Umgebung: ANTHROPIC_API_KEY (bzw. MISTRAL_API_KEY).
-// Judge ≠ Pipeline ist erzwungen (GATE-B-Learning) — gleiches Modell nur
-// mit ausdrücklichem Flag.
+// Modell-Konfiguration ist PFLICHT (S35d): kein Modell-Default im Code — fehlt
+// Pipeline- oder Judge-Modell in BEIDEN Quellen, bricht der Lauf lautstark ab.
+// Judge ≠ Pipeline ist erzwungen (GATE-B-Learning) — gleiches Modell nur mit
+// --erlaube-gleiches-modell.
 
 import { writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeAdapter } from "../core/llm/adapter.js";
+import { leseEvalKonfig, EvalKonfigFehler } from "./eval-konfig.js";
 import { laufeAlle } from "./runner-kern.js";
 import { SZENARIEN } from "./szenarien/start-katalog.js";
 import { SZENARIEN_EN } from "./szenarien/start-katalog.en.js";
@@ -28,31 +38,17 @@ function arg(name, fallback) {
   return i >= 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith("--")
     ? process.argv[i + 1] : fallback;
 }
-const flag = name => process.argv.includes("--" + name);
-
 async function main() {
-  const provider = arg("provider", "anthropic");
-  const keyVar = provider === "mistral" ? "MISTRAL_API_KEY" : "ANTHROPIC_API_KEY";
-  const apiKey = process.env[keyVar];
-  if (!apiKey) {
-    console.error("Kein Schlüssel gefunden: bitte " + keyVar + " setzen.");
-    console.error("Beispiel:  " + keyVar + "=sk-… npm run eval -- --familie GATE");
-    process.exit(2);
+  // Provider + Modelle aus Flags ODER Env (Flag hat Vorrang). Kein Modell-Default
+  // im Code (S35d): fehlt etwas, wirft leseEvalKonfig — hier zu klarer CLI-Meldung.
+  let konfig;
+  try {
+    konfig = leseEvalKonfig(process.argv, process.env);
+  } catch (e) {
+    if (e instanceof EvalKonfigFehler) { console.error(e.message); process.exit(2); }
+    throw e;
   }
-
-  const pipelineModell = arg("pipeline-modell");
-  const judgeModell = arg("judge-modell");
-  if (!pipelineModell || !judgeModell) {
-    console.error("Modell-Konfiguration ist Pflicht (S35d): --pipeline-modell UND --judge-modell angeben.");
-    console.error("Beispiel:  npm run eval -- --pipeline-modell <modell> --judge-modell <modell> --familie GATE");
-    process.exit(2);
-  }
-  if (pipelineModell === judgeModell && !flag("erlaube-gleiches-modell")) {
-    console.error("Judge-Modell und Pipeline-Modell sind identisch (" + pipelineModell + ").");
-    console.error("Das verletzt die Judge-Trennung (Self-Preference-Bias). Wenn du das wirklich");
-    console.error("willst: --erlaube-gleiches-modell setzen.");
-    process.exit(2);
-  }
+  const { provider, apiKey, pipelineModell, judgeModell } = konfig;
 
   let szenarien = [...SZENARIEN, ...SZENARIEN_EN];
   const sprache = arg("language", null);
