@@ -81,8 +81,8 @@ export const en = {
   // Agenda
   "agenda.titel": "Shared Agenda",
   "weg.optQzTeil": "Quality time — shape your time together; I accompany you, whether you have something to talk through or simply want to spend time with each other.",
-  "weg.optAufloesung": "Start your shared resolution to find your shared goals.",
-  "weg.optAufloesungMitAufdeck": "Start your shared resolution — it opens by revealing your guessing round from the mandate clarification and leads to your shared goals.",
+  "weg.aufloesungStart": "Your releases are in place: start your Shared Resolution to find your shared goals.",
+  "weg.aufloesungStartMitAufdeck": "Your releases are in place: start your Shared Resolution — it opens by revealing your guessing round from the mandate clarification and leads to your shared goals.",
   "weg.optRegalTeil": "The shelves hold shared glimpses from the individual sessions, keepsakes of your joint sessions, and your agreements.",
   "agenda.gruppeAuftraege": "Active goals",
   "agenda.auftraegeLeer": "No goals yet — they emerge in your shared resolution.",
@@ -142,7 +142,6 @@ export const en = {
   // Signpost (guidance, S35) — next steps computed from state
   "weg.titel": "Signpost",
   "weg.einzelPause": "Your goal clarification is paused at chapter {n} — you can continue exactly there.",
-  "weg.aufloesungBereit": "Your releases are in place — the Shared Resolution can start.",
   "weg.aufloesungFehltDu": "The Shared Resolution still needs your release from the goal clarification.",
   "weg.aufloesungFehltPartner": "The Shared Resolution still needs the release from {partner}.",
   "weg.aufloesungFehltBeide": "The Shared Resolution opens once you have both released your goal clarifications.",

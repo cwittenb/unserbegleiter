@@ -133,7 +133,10 @@ describe("S35 · Wegweiser", () => {
     await klick(root.querySelector("#btnZurueck2"));
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
-    expect(root.querySelector("#wegTeil").textContent).toContain("Auflösung kann starten");
+    // S54: "Freigaben bereit" + Auflösungs-Einladung sind EINE Aktionszeile.
+    const weg = root.querySelector("#wegTeil").textContent;
+    expect(weg).toContain("Freigaben liegen bereit");
+    expect(weg).toContain("Startet eure Gemeinsame Auflösung");
   });
 
   it("Aufdeck-Bereitschaft (beide Freigaben, kein Protokoll) erscheint auf Start und im Gemeinsamen Raum", async () => {

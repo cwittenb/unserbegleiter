@@ -79,8 +79,8 @@ export const de = {
   // Agenda
   "agenda.titel": "Gemeinsame Agenda",
   "weg.optQzTeil": "Qualitätszeit — gestaltet eure gemeinsame Zeit; ich begleite euch, ob ihr etwas zu besprechen habt oder einfach Zeit miteinander verbringen wollt.",
-  "weg.optAufloesung": "Startet eure Gemeinsame Auflösung, um eure gemeinsamen Ziele zu finden.",
-  "weg.optAufloesungMitAufdeck": "Startet eure Gemeinsame Auflösung — sie beginnt mit der Auflösung eurer Rate-Runde aus der Auftragsklärung und führt zu euren gemeinsamen Zielen.",
+  "weg.aufloesungStart": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung, um eure gemeinsamen Ziele zu finden.",
+  "weg.aufloesungStartMitAufdeck": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung — sie beginnt mit der Auflösung eurer Rate-Runde aus der Auftragsklärung und führt zu euren gemeinsamen Zielen.",
   "weg.optRegalTeil": "In den Regalen findet ihr geteilte Erlebnisse aus den Einzelsessions, Erinnerungen an gemeinsame Sessions und eure Vereinbarungen.",
   "agenda.gruppeAuftraege": "Laufende Aufträge",
   "agenda.auftraegeLeer": "Noch keine Aufträge — sie entstehen in eurer Gemeinsamen Auflösung.",
@@ -140,7 +140,6 @@ export const de = {
   // Wegweiser (Nutzerführung, S35) — aus dem Zustand berechnete nächste Schritte
   "weg.titel": "Wegweiser",
   "weg.einzelPause": "Deine Auftragsklärung ist bei Kapitel {n} pausiert — du kannst genau dort weitermachen.",
-  "weg.aufloesungBereit": "Eure Freigaben liegen bereit — die Gemeinsame Auflösung kann starten.",
   "weg.aufloesungFehltDu": "Für die Gemeinsame Auflösung fehlt noch deine Freigabe aus der Auftragsklärung.",
   "weg.aufloesungFehltPartner": "Für die Gemeinsame Auflösung fehlt noch die Freigabe von {partner}.",
   "weg.aufloesungFehltBeide": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung freigegeben habt.",

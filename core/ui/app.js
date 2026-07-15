@@ -273,34 +273,75 @@ export function createApp({ doc, backend, root, diktat }) {
     };
   }
 
-  /** Hinweise je Screen, wichtigste zuerst; die UI zeigt maximal drei. */
-  function wegHinweise(lage, screenId) {
-    const h = [];
+  /* S54 · EINE Rangliste pro Vorraum statt zweier Kategorien (Hinweise vs.
+     Optionen): Kandidaten mit Stufe und Bereich, dann Deckel DREI über alles.
+       Stufe 1 · Begonnenes fortsetzen (offene/pausierte Sessions)
+       Stufe 2 · Roter Faden Klärung → Auflösung (nächster Kernschritt)
+       Stufe 3 · Neues/Offenes (eingetroffenes Material, wartende Runde)
+       Stufe 4 · Freie Sessions & Stöbern (stehende Einladungen)
+     Invariante: Stufe 4 füllt nur auf — sie verdrängt nie Stufe 1–3.
+     Einzige Ausnahme ist die Start-Balance (s. waehleWegzeilen). Doppelungen
+     sind zu Aktionszeilen verschmolzen: Freigaben-bereit + Auflösungs-
+     Einladung = weg.aufloesungStart(MitAufdeck); die Regal-Einladung weicht,
+     sobald der Regal-Zähler als Zeile dasteht. */
+  const WEG_MAX = 3;
+  function wegKandidaten(lage, screenId) {
     const partner = state.info.partner;
-    const aufloesung = () =>
-      lage.handBeide ? h.push(t("weg.aufloesungBereit"))
-      : !lage.handMeins && !lage.handPartner ? h.push(t("weg.aufloesungFehltBeide"))
-      : !lage.handMeins ? h.push(t("weg.aufloesungFehltDu"))
-      : h.push(t("weg.aufloesungFehltPartner", { partner }));
+    const k = [];
+    const zeile = (stufe, bereich, text) => { if (text) k.push({ stufe, bereich, text }); };
+    const aufloesungAktion = () =>
+      lage.aufdeckBereit ? t("weg.aufloesungStartMitAufdeck") : t("weg.aufloesungStart");
     if (screenId === "scrStart") {
-      if (lage.einzelKapitel) h.push(t("weg.einzelPause", { n: lage.einzelKapitel }));
-      if (lage.handBeide && !lage.aufloesungGelaufen) h.push(t("weg.aufloesungBereit"));
-      if (lage.momentOffen) h.push(t("weg.momentOffen"));
-      if (lage.regalNeu) h.push(t("weg.regalNeu", { n: lage.regalNeu }));
-      if (lage.messOffen) h.push(t("weg.messOffen"));
+      zeile(1, "mein", lage.einzelKapitel && t("weg.einzelPause", { n: lage.einzelKapitel }));
+      zeile(1, "gemeinsam", lage.momentOffen && t("weg.momentOffen"));
+      zeile(2, "mein", !lage.einzelBegonnen && t("weg.startAuftrag"));
+      zeile(2, "gemeinsam", lage.handBeide && !lage.aufloesungGelaufen && aufloesungAktion());
+      zeile(3, "gemeinsam", lage.regalNeu > 0 && t("weg.regalNeu", { n: lage.regalNeu }));
+      zeile(3, "mein", lage.messOffen && t("weg.messOffen"));
+      zeile(4, "mein", t("weg.startSolo"));
+      zeile(4, "gemeinsam", t("weg.optQz"));
     }
     if (screenId === "scrMyRoom") {
-      if (lage.einzelKapitel) h.push(t("weg.einzelPause", { n: lage.einzelKapitel }));
-      if (lage.messOffen) h.push(t("weg.messOffen"));
+      zeile(1, "mein", lage.einzelKapitel && t("weg.einzelPause", { n: lage.einzelKapitel }));
+      zeile(2, "mein", !lage.einzelBegonnen && t("weg.optAuftragEuch"));
+      zeile(3, "mein", lage.messOffen && t("weg.messOffen"));
+      zeile(4, "mein", t("weg.soloErster"));
+      zeile(4, "mein", lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick"));
     }
     if (screenId === "scrShared") {
-      if (lage.momentOffen) h.push(t("weg.momentOffen"));
-      if (!lage.aufloesungGelaufen) aufloesung();
-      if (lage.regalNeu) h.push(t("weg.regalNeu", { n: lage.regalNeu }));
-      if (lage.agendaOffen) h.push(t("weg.agendaOffen", { n: lage.agendaOffen }));
-      if (lage.messBereit) h.push(t("weg.messBereit"));
+      zeile(1, "gemeinsam", lage.momentOffen && t("weg.momentOffen"));
+      if (!lage.aufloesungGelaufen) {
+        const text = lage.handBeide ? aufloesungAktion()
+          : !lage.handMeins && !lage.handPartner ? t("weg.aufloesungFehltBeide")
+          : !lage.handMeins ? t("weg.aufloesungFehltDu")
+          : t("weg.aufloesungFehltPartner", { partner });
+        zeile(2, "gemeinsam", text);
+      }
+      zeile(2, "gemeinsam", lage.messBereit && t("weg.messBereit"));
+      zeile(3, "gemeinsam", lage.regalNeu > 0 && t("weg.regalNeu", { n: lage.regalNeu }));
+      zeile(3, "gemeinsam", lage.agendaOffen > 0 && t("weg.agendaOffen", { n: lage.agendaOffen }));
+      zeile(4, "gemeinsam", t("weg.optQzTeil"));
+      zeile(4, "gemeinsam", !lage.regalNeu && t("weg.optRegalTeil"));
     }
-    return h.slice(0, 3);
+    return k;
+  }
+
+  /** Stabile Stufen-Sortierung, dann Deckel DREI. Start-Balance: mindestens
+      eine Zeile je Bereich (mein/gemeinsam) — fehlt ein Bereich, weicht die
+      niedrigst priorisierte der drei Zeilen seiner besten Zeile (bewusste
+      Ausnahme von der Stufen-Invariante, nur auf dem Startscreen). */
+  function waehleWegzeilen(kandidaten, screenId) {
+    const sortiert = kandidaten.map((kd, i) => ({ ...kd, i }))
+      .sort((a, b) => a.stufe - b.stufe || a.i - b.i);
+    const wahl = sortiert.slice(0, WEG_MAX);
+    if (screenId === "scrStart" && wahl.length === WEG_MAX) {
+      for (const bereich of ["mein", "gemeinsam"]) {
+        if (wahl.some(kd => kd.bereich === bereich)) continue;
+        const bester = sortiert.find(kd => kd.bereich === bereich);
+        if (bester) wahl[WEG_MAX - 1] = bester;
+      }
+    }
+    return wahl.map(kd => kd.text);
   }
 
   /* S41 · Lage sichtbar machen: Badges für ungelesene Freigaben und
@@ -346,24 +387,8 @@ export function createApp({ doc, backend, root, diktat }) {
     sperre("btnGemeinsam", "gemeinsamHinweis", !lage.handBeide, t("teil.gateAufloesung"));
   }
 
-  /* S36 · Feste Wegweiser-Zeilen: sie halten alle Optionen offen, statt
-     einen Pfad zu drängen. Die dritte Zeile in "Mein Raum" richtet sich
-     danach, ob schon Inhalte da sind (Rückblick vs. Ausblick). */
-  function wegOptionen(lage, screenId) {
-    if (screenId === "scrStart")
-      return [!lage.einzelBegonnen && t("weg.startAuftrag"), t("weg.startSolo"), t("weg.optQz")].filter(Boolean);
-    if (screenId === "scrMyRoom")
-      return [t("weg.soloErster"), !lage.einzelBegonnen && t("weg.optAuftragEuch"),
-              lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick")].filter(Boolean);
-    if (screenId === "scrShared") {
-      const zeilen = [t("weg.optQzTeil")];
-      if (lage.handBeide && !lage.aufloesungGelaufen)
-        zeilen.push(lage.aufdeckBereit ? t("weg.optAufloesungMitAufdeck") : t("weg.optAufloesung"));
-      zeilen.push(t("weg.optRegalTeil"));
-      return zeilen;
-    }
-    return [];
-  }
+  /* S36-Kommentar historisch: die festen Einladungen leben jetzt als
+     Stufe-4-Kandidaten in wegKandidaten (S54). */
 
   /** Wegweiser zeichnen + Gating anwenden (Gemeinsame Auflösung nur mit
       beiden Freigaben). Läuft still im Hintergrund bei jedem Vorraum-Betreten.
@@ -375,7 +400,7 @@ export function createApp({ doc, backend, root, diktat }) {
     try {
       const lage = await ladeLage();
       wendeLageAn(lage, screenId);
-      const zeilen = [...wegHinweise(lage, screenId), ...wegOptionen(lage, screenId)];
+      const zeilen = waehleWegzeilen(wegKandidaten(lage, screenId), screenId);
       const box = $(boxId);
       if (!zeilen.length) { box.classList.add("pb-hidden"); return; }
       box.innerHTML = (screenId === "scrShared" ? `<div class="pb-sub">${t("weg.titel")}</div>` : "") +
