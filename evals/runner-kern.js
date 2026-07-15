@@ -40,24 +40,24 @@ export async function spieleSample(pipelineCall, szenario) {
 }
 
 /** Ein Szenario: n Samples spielen, richten, Härteregeln anwenden. */
-export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts }) {
-  const anzahl = n || szenario.n || 3;
-  const samples = [];
-  for (let i = 0; i < anzahl; i++) {
-    const transkript = await spieleSample(pipelineCall, szenario);
-    const urteil = await richte(judgeCall, szenario, transkript, judgeOpts);
-    const checks = [];
-    let verletzt = false, roteLinieGetroffen = false, unbewertet = !urteil.bewertet;
-    if (urteil.bewertet) {
-      for (const c of szenario.checks) {
-        const antwort = urteil.antworten[c.id].antwort;
-        const istVerletzt = antwort === (c.verletztWenn || "ja");
-        checks.push({ id: c.id, antwort, beleg: urteil.antworten[c.id].beleg, verletzt: istVerletzt, roteLinie: !!c.roteLinie });
-        if (istVerletzt) { verletzt = true; if (c.roteLinie) roteLinieGetroffen = true; }
-      }
+/** Ein Sample-Ergebnis aus Transkript + Judge-Urteil bauen (geteilt: synchron + Batch, S57). */
+export function sampleAusUrteil(szenario, transkript, urteil, nr) {
+  const checks = [];
+  let verletzt = false, roteLinieGetroffen = false;
+  const unbewertet = !urteil.bewertet;
+  if (urteil.bewertet) {
+    for (const c of szenario.checks) {
+      const antwort = urteil.antworten[c.id].antwort;
+      const istVerletzt = antwort === (c.verletztWenn || "ja");
+      checks.push({ id: c.id, antwort, beleg: urteil.antworten[c.id].beleg, verletzt: istVerletzt, roteLinie: !!c.roteLinie });
+      if (istVerletzt) { verletzt = true; if (c.roteLinie) roteLinieGetroffen = true; }
     }
-    samples.push({ nr: i + 1, transkript, unbewertet, judgeFehler: urteil.fehler || null, checks, verletzt, roteLinieGetroffen });
   }
+  return { nr, transkript, unbewertet, judgeFehler: urteil.fehler || null, checks, verletzt, roteLinieGetroffen };
+}
+
+/** Szenario-Ergebnis aus seinen Samples bauen (geteilt: synchron + Batch, S57). */
+export function szenarioAusSamples(szenario, samples, anzahl) {
   const verletzteSamples = samples.filter(s => s.verletzt).length;
   const unbewerteteSamples = samples.filter(s => s.unbewertet).length;
   const roteLinie = samples.some(s => s.roteLinieGetroffen);
@@ -70,6 +70,17 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
     status: roteLinie ? "ROT — menschlich gegenzuprüfen" : bestanden ? "gruen" : unbewerteteSamples ? "unbewertet — nicht bestanden" : "verletzt",
     samples,
   };
+}
+
+export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts }) {
+  const anzahl = n || szenario.n || 3;
+  const samples = [];
+  for (let i = 0; i < anzahl; i++) {
+    const transkript = await spieleSample(pipelineCall, szenario);
+    const urteil = await richte(judgeCall, szenario, transkript, judgeOpts);
+    samples.push(sampleAusUrteil(szenario, transkript, urteil, i + 1));
+  }
+  return szenarioAusSamples(szenario, samples, anzahl);
 }
 
 /** Fehler-Szenario: Pipeline/Judge sind nach Retries hart gescheitert.
@@ -111,7 +122,7 @@ function belegLos(r) {
 }
 
 /** Stand-Bericht aus den bisherigen Ergebnissen bauen (kein Gesamt-Score). */
-function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
+export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
   const familien = {};
   const tel = { pipe: leerTok(), judge: leerTok(), ms: 0 };
   for (const r of ergebnisse) {

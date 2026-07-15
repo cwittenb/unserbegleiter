@@ -20,6 +20,8 @@
 //                   [--weiter-bei-fehler]      Fehler-Szenario markieren statt Lauf abzubrechen
 //                   [--judge-provider anthropic|mistral]  Judge auf ANDEREM Provider (echte Isolation)
 //                   [--judge-key <key>]        Key für den Judge-Provider (sonst dessen Env-Key)
+//                   [--batch]                  kompletter Lauf über die Anthropic Batches API (−50%; nur Anthropic)
+//                   [--batch-intervall 20] [--batch-max-min 60]   Polling-Intervall / Zeit-Cap
 //                   [--erlaube-gleiches-modell]
 //
 // Modell-Konfiguration ist PFLICHT (S35d): kein Modell-Default im Code — fehlt
@@ -34,6 +36,7 @@ import { makeAdapter, baueDrossel } from "../core/llm/adapter.js";
 import { leseEvalKonfig, EvalKonfigFehler } from "./eval-konfig.js";
 import { liesEnvDatei, mischeMitEnv } from "./env-datei.js";
 import { laufeAlle } from "./runner-kern.js";
+import { laufeAlleBatch } from "./runner-batch.js";
 import { kostenFuer, cacheQuote } from "./preise.js";
 import { SZENARIEN } from "./szenarien/start-katalog.js";
 import { SZENARIEN_EN } from "./szenarien/start-katalog.en.js";
@@ -116,10 +119,21 @@ async function main() {
   const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true)), tPipe);
   const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false)), tJudge);
   const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
-  const laufKosten = (pipeTok, judgeTok) => {
+  const laufKosten = (pipeTok, judgeTok, faktor = 1) => {
     const kp = kostenFuer(pipelineModell, pipeTok), kj = kostenFuer(judgeModell, judgeTok);
-    return (kp == null || kj == null) ? null : { pipeline: kp, judge: kj, gesamt: kp + kj };
+    return (kp == null || kj == null) ? null : { pipeline: kp * faktor, judge: kj * faktor, gesamt: (kp + kj) * faktor };
   };
+
+  // Batch-Modus (S57): kompletter Lauf über die Anthropic Message Batches API (−50 %).
+  // Opt-in; ohne bleibt alles synchron. Nur Anthropic (Pipeline UND Judge) — D1.
+  const batchModus = process.argv.includes("--batch");
+  if (batchModus && (provider !== "anthropic" || judgeProvider !== "anthropic")) {
+    console.error("--batch unterstützt nur Anthropic (Pipeline UND Judge). Aktuell: Pipeline " +
+      provider + ", Judge " + judgeProvider + ".");
+    process.exit(2);
+  }
+  const batchIntervallMs = (parseInt(arg("batch-intervall", "20"), 10) || 20) * 1000;
+  const batchMaxMs = (parseInt(arg("batch-max-min", "60"), 10) || 60) * 60000;
 
   const hash = await coreHash();
   console.log("Eval-Lauf · Kern " + hash +
@@ -130,9 +144,11 @@ async function main() {
     " · Judge-Cache aus" +
     (weiterBeiFehler ? " · weiter-bei-fehler" : ""));
   console.log("Szenarien: " + szenarien.map(s => s.id).join(", ") + (n ? " · n=" + n : ""));
+  if (batchModus) console.log("Modus: BATCH (Anthropic, -50%) · Poll " + (batchIntervallMs / 1000) + "s · Cap " + (batchMaxMs / 60000) + "min");
 
-  // Live-Fortschritt je Szenario (S52/S55): "[ i/N] ID … status (Dauer · Kosten)".
+  // Live-Fortschritt (S52/S55). Im Batch-Modus (S57) statt je Szenario je Batch-Phase.
   const melde = ev => {
+    if (ev.phase === "batch") { console.log("[Batch] " + ev.label + " — " + ev.gesamt + " Anfragen …"); return; }
     if (ev.phase === "start")
       process.stdout.write("[" + String(ev.i).padStart(2) + "/" + ev.gesamt + "] " + ev.id.padEnd(9) + " … ");
     else {
@@ -151,16 +167,25 @@ async function main() {
   const datei = path.join(ordner, zeit.replace(/[:.]/g, "-") + ".json");   // append-only: neue Datei je Lauf
   const persistiere = async b => { await writeFile(datei, JSON.stringify(b, null, 2)); };
 
-  const bericht = await laufeAlle(szenarien, {
-    pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen,
-    stand: {
-      coreHash: hash, provider, judgeProvider,
-      pipelineModell, judgeModell,
-      judgePromptVersion: JUDGE_PROMPT_VERSION,
-    },
-  });
+  const stand = {
+    coreHash: hash, provider, judgeProvider,
+    pipelineModell, judgeModell,
+    judgePromptVersion: JUDGE_PROMPT_VERSION,
+    batch: batchModus,
+  };
+  const bericht = batchModus
+    ? await laufeAlleBatch(szenarien, {
+        pipelineModell, judgeModell, n, zeit, persistiere, melde, stand,
+        batch: {
+          apiKey, intervallMs: batchIntervallMs, maxMs: batchMaxMs,
+          fortschritt: ev => process.stdout.write("    läuft: " + ev.fertig + "/" + ev.gesamt + "\n"),
+        },
+      })
+    : await laufeAlle(szenarien, {
+        pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen, stand,
+      });
 
-  bericht.kosten = laufKosten(bericht.telemetrie.pipe, bericht.telemetrie.judge);   // echte Kosten aus usage (S55)
+  bericht.kosten = laufKosten(bericht.telemetrie.pipe, bericht.telemetrie.judge, batchModus ? 0.5 : 1);   // echte Kosten aus usage (S55); Batch −50 % (S57)
   await writeFile(datei, JSON.stringify(bericht, null, 2));   // Endstand (vollstaendig:true)
 
   console.log("\n──── Ergebnis (je Familie, kein Gesamt-Score) ────");
@@ -183,7 +208,7 @@ async function main() {
   };
   const fmt = x => x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? Math.round(x / 1e3) + "k" : String(x);
   const wall = Math.round(T.ms / 1000);
-  console.log("Telemetrie: " + (bericht.kosten ? "~$" + bericht.kosten.gesamt.toFixed(2) : "Kosten n/a (Modellpreis unbekannt)") +
+  console.log("Telemetrie: " + (bericht.kosten ? "~$" + bericht.kosten.gesamt.toFixed(2) + (batchModus ? " (Batch −50%)" : "") : "Kosten n/a (Modellpreis unbekannt)") +
     " · " + fmt(gesamtTok.in + gesamtTok.cacheRead + gesamtTok.cacheWrite) + " in / " + fmt(gesamtTok.out) + " out" +
     " · Cache-Treffer " + (cacheQuote(gesamtTok) * 100).toFixed(0) + "%" +
     " · " + (T.pipe.calls + T.judge.calls) + " Calls" +
