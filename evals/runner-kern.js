@@ -84,9 +84,36 @@ function fehlerSzenario(sz, e) {
   };
 }
 
+const leerTok = () => ({ in: 0, out: 0, cacheRead: 0, cacheWrite: 0, calls: 0 });
+
+/** Delta zweier Token-Schnappschüsse (Pipeline/Judge getrennt). */
+function tokenDelta(vor, nach) {
+  const d = (a, b) => ({
+    in: (b && b.in || 0) - (a && a.in || 0),
+    out: (b && b.out || 0) - (a && a.out || 0),
+    cacheRead: (b && b.cacheRead || 0) - (a && a.cacheRead || 0),
+    cacheWrite: (b && b.cacheWrite || 0) - (a && a.cacheWrite || 0),
+    calls: (b && b.calls || 0) - (a && a.calls || 0),
+  });
+  return { pipe: d(vor && vor.pipe, nach && nach.pipe), judge: d(vor && vor.judge, nach && nach.judge) };
+}
+
+function addiere(ziel, quelle) {
+  for (const k of ["in", "out", "cacheRead", "cacheWrite", "calls"]) ziel[k] += (quelle && quelle[k]) || 0;
+}
+
+/** Trägt ein verletzter / Rote-Linie-Check keinen echten Beleg? (Triage-Signal, S55) */
+function belegLos(r) {
+  for (const s of (r.samples || []))
+    for (const c of (s.checks || []))
+      if ((c.verletzt || c.roteLinie) && (!c.beleg || /kein beleg/i.test(c.beleg))) return true;
+  return false;
+}
+
 /** Stand-Bericht aus den bisherigen Ergebnissen bauen (kein Gesamt-Score). */
 function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
   const familien = {};
+  const tel = { pipe: leerTok(), judge: leerTok(), ms: 0 };
   for (const r of ergebnisse) {
     const f = (familien[r.familie] ||= { gesamt: 0, gruen: 0, rot: 0, verletzt: 0, unbewertet: 0, fehler: 0 });
     f.gesamt++;
@@ -95,6 +122,8 @@ function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
     else if (r.status === "fehler") f.fehler++;
     else if (r.unbewerteteSamples) f.unbewertet++;
     else f.verletzt++;
+    if (r.telemetrie) { addiere(tel.pipe, r.telemetrie.pipe); addiere(tel.judge, r.telemetrie.judge); tel.ms += r.telemetrie.ms || 0; }
+    r.belegloserVerstoss = belegLos(r);         // Triage-Signal (S55) — ändert die Wertung NICHT
   }
   return {
     formatVersion: SZENARIO_FORMAT_VERSION,
@@ -102,6 +131,7 @@ function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
     stand: stand || {},                         // coreHash, Modelle, Judge-Prompt-Version …
     vollstaendig,                               // false = Zwischenstand/abgebrochen, true = Lauf beendet
     quotenJeFamilie: familien,                  // bewusst KEIN Gesamt-Score
+    telemetrie: tel,                            // Token/Cache/Zeit über den Lauf (Pipeline/Judge getrennt), S55
     szenarien: ergebnisse,
   };
 }
@@ -115,7 +145,7 @@ function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
  * Fehler-Szenario ist bereits persistiert), mit ihm läuft er weiter.
  */
 export async function laufeAlle(szenarien, deps) {
-  const { persistiere, weiterBeiFehler, melde } = deps;
+  const { persistiere, weiterBeiFehler, melde, messen } = deps;
   const zeit = deps.zeit || new Date().toISOString();
   const gesamt = szenarien.length;
   const ergebnisse = [];
@@ -124,6 +154,7 @@ export async function laufeAlle(szenarien, deps) {
     i++;
     if (typeof melde === "function") melde({ phase: "start", i, gesamt, id: sz.id });
     const t0 = Date.now();
+    const vor = typeof messen === "function" ? messen() : null;   // Token-Schnappschuss vor dem Szenario
     let r, fehler = null;
     try {
       r = await laufeSzenario(sz, deps);
@@ -131,9 +162,11 @@ export async function laufeAlle(szenarien, deps) {
       fehler = e;
       r = fehlerSzenario(sz, e);
     }
+    const ms = Date.now() - t0;
+    if (typeof messen === "function") r.telemetrie = { ...tokenDelta(vor, messen()), ms };
     ergebnisse.push(r);
     if (typeof melde === "function")
-      melde({ phase: "fertig", i, gesamt, id: sz.id, status: r.status, roteLinie: r.roteLinie, ms: Date.now() - t0 });
+      melde({ phase: "fertig", i, gesamt, id: sz.id, status: r.status, roteLinie: r.roteLinie, ms, telemetrie: r.telemetrie });
     if (typeof persistiere === "function") await persistiere(bauBericht(ergebnisse, deps.stand, zeit, false));
     if (fehler && !weiterBeiFehler) throw fehler;   // Abbruch — Teilstand liegt persistiert vor
   }

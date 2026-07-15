@@ -1,0 +1,11 @@
+{
+  "stand": "2026-07",
+  "hinweis": "USD pro 1 Mio Token. Bei Preisänderungen NUR hier pflegen. cacheRead/cacheWrite nur bei Anthropic relevant. Sonnet 5: Intro-Preis bis 31.08.2026 (danach 3 / 15).",
+  "modelle": {
+    "claude-opus-4-8":       { "in": 5.00, "out": 25.00, "cacheRead": 0.50, "cacheWrite": 6.25 },
+    "claude-sonnet-5":       { "in": 2.00, "out": 10.00, "cacheRead": 0.20, "cacheWrite": 2.50 },
+    "claude-haiku-4-5":      { "in": 1.00, "out":  5.00, "cacheRead": 0.10, "cacheWrite": 1.25 },
+    "mistral-medium-latest": { "in": 0.40, "out":  2.00, "cacheRead": 0.40, "cacheWrite": 0.40 },
+    "mistral-large-latest":  { "in": 2.00, "out":  6.00, "cacheRead": 2.00, "cacheWrite": 2.00 }
+  }
+}

@@ -34,6 +34,7 @@ import { makeAdapter, baueDrossel } from "../core/llm/adapter.js";
 import { leseEvalKonfig, EvalKonfigFehler } from "./eval-konfig.js";
 import { liesEnvDatei, mischeMitEnv } from "./env-datei.js";
 import { laufeAlle } from "./runner-kern.js";
+import { kostenFuer, cacheQuote } from "./preise.js";
 import { SZENARIEN } from "./szenarien/start-katalog.js";
 import { SZENARIEN_EN } from "./szenarien/start-katalog.en.js";
 import { JUDGE_PROMPT_VERSION } from "./judge/judge.js";
@@ -94,8 +95,27 @@ async function main() {
   const cfgFuer = (prov, key, modell, dr) => prov === "mistral"
     ? { provider: "mistral", mode: "direct", apiKey: key, models: { mistral: modell }, drossel: dr }
     : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr };
-  const pipelineCall = makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline));
-  const judgeCall = makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge));
+
+  // Token-Erfassung (S55): zählender Wrapper um beide Adapter — je Aufruf die echten
+  // usage-Token (in/out/cacheRead/cacheWrite) aufsummieren und das Ergebnis unverändert
+  // durchreichen, damit richte/spieleSample unangetastet bleiben. Pipeline und Judge
+  // getrennt, weil unterschiedlich bepreist.
+  const tPipe = { in: 0, out: 0, cacheRead: 0, cacheWrite: 0, calls: 0 };
+  const tJudge = { in: 0, out: 0, cacheRead: 0, cacheWrite: 0, calls: 0 };
+  const zaehl = (fn, akk) => async (...a) => {
+    const r = await fn(...a);
+    const u = (r && r.usage) || {};
+    akk.in += u.in || 0; akk.out += u.out || 0;
+    akk.cacheRead += u.cacheRead || 0; akk.cacheWrite += u.cacheWrite || 0; akk.calls++;
+    return r;
+  };
+  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline)), tPipe);
+  const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge)), tJudge);
+  const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
+  const laufKosten = (pipeTok, judgeTok) => {
+    const kp = kostenFuer(pipelineModell, pipeTok), kj = kostenFuer(judgeModell, judgeTok);
+    return (kp == null || kj == null) ? null : { pipeline: kp, judge: kj, gesamt: kp + kj };
+  };
 
   const hash = await coreHash();
   console.log("Eval-Lauf · Kern " + hash +
@@ -106,13 +126,15 @@ async function main() {
     (weiterBeiFehler ? " · weiter-bei-fehler" : ""));
   console.log("Szenarien: " + szenarien.map(s => s.id).join(", ") + (n ? " · n=" + n : ""));
 
-  // Live-Fortschritt je Szenario (S52): "[ i/N] ID … status (Dauer)".
+  // Live-Fortschritt je Szenario (S52/S55): "[ i/N] ID … status (Dauer · Kosten)".
   const melde = ev => {
     if (ev.phase === "start")
       process.stdout.write("[" + String(ev.i).padStart(2) + "/" + ev.gesamt + "] " + ev.id.padEnd(9) + " … ");
-    else
+    else {
+      const k = ev.telemetrie ? laufKosten(ev.telemetrie.pipe, ev.telemetrie.judge) : null;
       process.stdout.write((ev.roteLinie ? "ROT (rote Linie)" : ev.status) +
-        (ev.ms != null ? " (" + (ev.ms / 1000).toFixed(1) + "s)" : "") + "\n");
+        (ev.ms != null ? " (" + (ev.ms / 1000).toFixed(1) + "s" + (k ? " · $" + k.gesamt.toFixed(3) : "") + ")" : "") + "\n");
+    }
   };
 
   // Dateipfad + inkrementelle, absturzsichere Persistenz VOR dem Lauf einrichten:
@@ -125,7 +147,7 @@ async function main() {
   const persistiere = async b => { await writeFile(datei, JSON.stringify(b, null, 2)); };
 
   const bericht = await laufeAlle(szenarien, {
-    pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde,
+    pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen,
     stand: {
       coreHash: hash, provider, judgeProvider,
       pipelineModell, judgeModell,
@@ -133,6 +155,7 @@ async function main() {
     },
   });
 
+  bericht.kosten = laufKosten(bericht.telemetrie.pipe, bericht.telemetrie.judge);   // echte Kosten aus usage (S55)
   await writeFile(datei, JSON.stringify(bericht, null, 2));   // Endstand (vollstaendig:true)
 
   console.log("\n──── Ergebnis (je Familie, kein Gesamt-Score) ────");
@@ -140,10 +163,26 @@ async function main() {
     console.log(fam.padEnd(6) + " grün " + q.gruen + "/" + q.gesamt +
       (q.rot ? "  ⚠ ROTE LINIE: " + q.rot : "") +
       (q.verletzt ? "  verletzt: " + q.verletzt : "") +
-      (q.unbewertet ? "  unbewertet: " + q.unbewertet : ""));
+      (q.unbewertet ? "  unbewertet: " + q.unbewertet : "") +
+      (q.fehler ? "  fehler: " + q.fehler : ""));
   }
   for (const s of bericht.szenarien)
-    if (s.status !== "gruen") console.log("  → " + s.id + ": " + s.status);
+    if (s.status !== "gruen")
+      console.log("  → " + s.id + ": " + s.status + (s.belegloserVerstoss ? "  ⚠ ohne Beleg — prüfen" : ""));
+
+  // Telemetrie-Zeile (S55): echte Token, Cache-Trefferquote, Kosten, Wall-Clock.
+  const T = bericht.telemetrie;
+  const gesamtTok = {
+    in: T.pipe.in + T.judge.in, out: T.pipe.out + T.judge.out,
+    cacheRead: T.pipe.cacheRead + T.judge.cacheRead, cacheWrite: T.pipe.cacheWrite + T.judge.cacheWrite,
+  };
+  const fmt = x => x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? Math.round(x / 1e3) + "k" : String(x);
+  const wall = Math.round(T.ms / 1000);
+  console.log("Telemetrie: " + (bericht.kosten ? "~$" + bericht.kosten.gesamt.toFixed(2) : "Kosten n/a (Modellpreis unbekannt)") +
+    " · " + fmt(gesamtTok.in + gesamtTok.cacheRead + gesamtTok.cacheWrite) + " in / " + fmt(gesamtTok.out) + " out" +
+    " · Cache-Treffer " + (cacheQuote(gesamtTok) * 100).toFixed(0) + "%" +
+    " · " + (T.pipe.calls + T.judge.calls) + " Calls" +
+    " · " + Math.floor(wall / 60) + ":" + String(wall % 60).padStart(2, "0") + " min");
   console.log("Gespeichert: " + path.relative(ROOT, datei));
 
   process.exit(bericht.szenarien.every(s => s.status === "gruen") ? 0 : 1);
