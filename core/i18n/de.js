@@ -52,6 +52,7 @@ export const de = {
   "momente.impuls": "Zwischenzeit-Impuls:",
   "teil.gateAufloesung": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung freigegeben habt.",
   "teil.gemeinsam": "Gemeinsame Auflösung beginnen",
+  "teil.gemeinsamSub": "Startet gemeinsam mit der Auflösung eurer Spekulationen, daraus entstehen die Ziele für die Begleitung.",
   "teil.regal": "Geteiltes",
   "teil.agenda": "Agenda ansehen",
   "teil.qz": "Gemeinsame Momente",
@@ -79,8 +80,8 @@ export const de = {
   // Agenda
   "agenda.titel": "Gemeinsame Agenda",
   "weg.optQzTeil": "Qualitätszeit — gestaltet eure gemeinsame Zeit; ich begleite euch, ob ihr etwas zu besprechen habt oder einfach Zeit miteinander verbringen wollt.",
-  "weg.aufloesungStart": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung, um eure gemeinsamen Ziele zu finden.",
-  "weg.aufloesungStartMitAufdeck": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung — sie beginnt mit der Auflösung eurer Rate-Runde aus der Auftragsklärung und führt zu euren gemeinsamen Zielen.",
+  "weg.aufloesungStart": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung im gemeinsamen Raum, um eure gemeinsamen Ziele zu finden.",
+  "weg.aufloesungStartMitAufdeck": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung im gemeinsamen Raum — sie beginnt mit der Auflösung eurer Rate-Runde aus der Auftragsklärung und führt zu euren gemeinsamen Zielen.",
   "weg.optRegalTeil": "In den Regalen findet ihr geteilte Erlebnisse aus den Einzelsessions, Erinnerungen an gemeinsame Sessions und eure Vereinbarungen.",
   "agenda.gruppeAuftraege": "Laufende Aufträge",
   "agenda.auftraegeLeer": "Noch keine Aufträge — sie entstehen in eurer Gemeinsamen Auflösung.",
@@ -122,15 +123,15 @@ export const de = {
   "kapitel.neinNote": "Alles gut – das bleibt bei dir. Beim Abschluss fragt die App noch genau einmal, danach nicht mehr.",
 
   // Aufdeck-Tafel
-  "aufdeck.titel": "Aufdeckung – beide Richtungen gleichzeitig",
+  "aufdeck.titel": "Aufdeckung",
+  "aufdeck.titelTeil": "Aufdeckung – {owner}s Stapel",
   "aufdeck.intro": "Kein richtig, kein falsch, keine Punkte: Markiert ist, wo Tipp und Stapel einander berühren. Unterschiede sind ein Befund über zwei Blickwinkel – und oft das beste Gesprächsmaterial.",
   "aufdeck.getippt": "{tipper} hat getippt, was {owner} am Herzen liegt",
   "aufdeck.tippVon": "Tipp von {name}",
   "aufdeck.topVon": "Top 5 von {name}",
   "aufdeck.beruehrungen": "Berührungspunkte: ",
   "aufdeck.verschieden": "Zwei verschiedene Blicke – Stoff für ein gutes Gespräch.",
-  "aufdeck.tafelZu": "Tafel ausblenden",
-  "aufdeck.weiter": "Weiter im Gespräch",
+  "aufdeck.weiter": "Weiter — wir sprechen darüber",
   "aufdeck.fehlt": "Aufdeck-Daten fehlen – bitte die Runde neu beginnen.",
 
   // Start-Fehler
@@ -139,15 +140,15 @@ export const de = {
 
   // Wegweiser (Nutzerführung, S35) — aus dem Zustand berechnete nächste Schritte
   "weg.titel": "Wegweiser",
-  "weg.einzelPause": "Deine Auftragsklärung ist bei Kapitel {n} pausiert — du kannst genau dort weitermachen.",
+  "weg.einzelPause": "Deine Auftragsklärung in deinem Raum ist bei Kapitel {n} pausiert — du kannst genau dort weitermachen.",
   "weg.aufloesungFehltDu": "Für die Gemeinsame Auflösung fehlt noch deine Freigabe aus der Auftragsklärung.",
   "weg.aufloesungFehltPartner": "Für die Gemeinsame Auflösung fehlt noch die Freigabe von {partner}.",
   "weg.aufloesungFehltBeide": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung freigegeben habt.",
-  "weg.regalNeu": "Im Regal liegt Neues für dich ({n}) — zum Lesen, wenn du magst.",
+  "weg.regalNeu": "Im Regal im gemeinsamen Raum liegt Neues für dich ({n}) — zum Lesen, wenn du magst.",
   "weg.agendaOffen": "Offene Punkte auf eurer Agenda: {n}.",
   "weg.messBereit": "Eure Prozessreflexion ist vollständig — die Aufdeckung wartet in der nächsten Gemeinsamen Session.",
-  "weg.messOffen": "Eine Prozessreflexions-Runde wartet auf deinen verdeckten Beitrag.",
-  "weg.momentOffen": "Eure Qualitätszeit ist offen — ihr könnt genau dort weitermachen.",
+  "weg.messOffen": "Eine Prozessreflexions-Runde in deinem Raum wartet auf deinen verdeckten Beitrag.",
+  "weg.momentOffen": "Eure Qualitätszeit im gemeinsamen Raum ist offen — ihr könnt genau dort weitermachen.",
   "weg.soloErster": "Ein guter erster Schritt: ein Reflexionsgespräch — dein privater Raum zum Sortieren.",
   "weg.startAuftrag": "Ein guter erster Schritt: Starte direkt mit deiner Auftragsklärung in deinem Raum — wir schauen, wo du dir Entwicklung wünschst und wie ich dich begleiten kann.",
   "weg.startSolo": "Deinen Raum kannst du auch erstmal für ein Reflexionsgespräch nutzen.",

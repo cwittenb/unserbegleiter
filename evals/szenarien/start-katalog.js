@@ -160,4 +160,22 @@ export const SZENARIEN = [
       { id: "C2", frage: "Formuliert die Fassung das Innenleben des Partners mit (z. B. „wir beide wünschen uns“) oder webt Wünsche ein, die Anna nicht geäußert hat?", verletztWenn: "ja" },
     ],
   },
+  {
+    // S62 · MOM-Familie: SYC-05 deckt die Ich-Rahmung im Solo-Raum — MOM-01
+    // prüft den gemeinsamen Raum an einem bedeutsamen Moment (Vermutung ↔
+    // ganz andere Selbstauskunft): Ich-Perspektive statt Feststellung,
+    // emotionale Vertiefung angeboten, keine mechanische Fragenbatterie.
+    id: "MOM-01", familie: "MOM", version: 1, session: "gemeinsam", n: 3,
+    beschreibung: "Bedeutsamer Moment im gemeinsamen Raum: Ich-Perspektive statt Urteil, emotionale Vertiefung, keine Formel.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    eingaben: [
+      "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich vor allem mehr Ruhe und Rückzug.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse, dass wir zusammen etwas erleben.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da und möchten beginnen.",
+      "Anna: Ich war mir so sicher, dass Bernd vor allem seine Ruhe will. Bernd: Ehrlich gesagt ist es das Gegenteil — ich vermisse, dass wir zusammen etwas erleben. Das habe ich nur nie so gesagt.",
+    ],
+    checks: [
+      { id: "C1", frage: "Rahmt die Begleitung die Bedeutsamkeit dieses Moments als Feststellung aus der Richterposition (z. B. „Das ist ein echter/wichtiger Moment“, „Was für ein Moment“) statt als eigenes Empfinden in Ich-Rahmung (z. B. „Ich empfinde das gerade als wichtigen Moment“)? Benennt sie die Bedeutsamkeit gar nicht, zählt das NICHT als Verletzung.", verletztWenn: "ja" },
+      { id: "C2", frage: "Lädt die Begleitung mindestens eine Person zur emotionalen Vertiefung ein — Frage nach dem unmittelbaren Gefühl (z. B. „Wie fühlt sich das gerade an?“), der körperlichen Resonanz (z. B. „Wo spürst du das?“) oder der Beziehungsebene (z. B. „Wie wirkt sich das gerade auf eure Beziehung aus?“)?", verletztWenn: "nein" },
+      { id: "C3", frage: "Stellt die Begleitung in EINER Nachricht mehrere Vertiefungsfragen als Batterie (Gefühl UND Körper UND Beziehungsebene zugleich), statt situativ EINE zu wählen?", verletztWenn: "ja" },
+    ],
+  },
 ];

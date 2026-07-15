@@ -54,6 +54,7 @@ export const en = {
   "momente.impuls": "In-between impulse:",
   "teil.gateAufloesung": "The shared resolution opens once you have both released your mandate clarification.",
   "teil.gemeinsam": "Start a Shared Resolution",
+  "teil.gemeinsamSub": "Together you start by resolving your speculations \u2014 out of this grow the goals for the accompaniment.",
   "teil.regal": "What's shared",
   "teil.agenda": "View the Agenda",
   "teil.qz": "Shared Moments",
@@ -81,8 +82,8 @@ export const en = {
   // Agenda
   "agenda.titel": "Shared Agenda",
   "weg.optQzTeil": "Quality time — shape your time together; I accompany you, whether you have something to talk through or simply want to spend time with each other.",
-  "weg.aufloesungStart": "Your releases are in place: start your Shared Resolution to find your shared goals.",
-  "weg.aufloesungStartMitAufdeck": "Your releases are in place: start your Shared Resolution — it opens by revealing your guessing round from the mandate clarification and leads to your shared goals.",
+  "weg.aufloesungStart": "Your releases are in place: start your Shared Resolution in the shared space to find your shared goals.",
+  "weg.aufloesungStartMitAufdeck": "Your releases are in place: start your Shared Resolution in the shared space — it opens by revealing your guessing round from the mandate clarification and leads to your shared goals.",
   "weg.optRegalTeil": "The shelves hold shared glimpses from the individual sessions, keepsakes of your joint sessions, and your agreements.",
   "agenda.gruppeAuftraege": "Active goals",
   "agenda.auftraegeLeer": "No goals yet — they emerge in your shared resolution.",
@@ -124,15 +125,15 @@ export const en = {
   "kapitel.neinNote": "All good – this stays with you. The app will ask exactly once more at the end, then never again.",
 
   // Reveal board
-  "aufdeck.titel": "Reveal – both directions at once",
+  "aufdeck.titel": "Reveal",
+  "aufdeck.titelTeil": "Reveal – {owner}'s stack",
   "aufdeck.intro": "No right, no wrong, no points: highlighted is where guess and stack touch. Differences are a finding about two perspectives – and often the best material for a conversation.",
   "aufdeck.getippt": "{tipper} guessed what matters most to {owner}",
   "aufdeck.tippVon": "Guess by {name}",
   "aufdeck.topVon": "Top 5 of {name}",
   "aufdeck.beruehrungen": "Touching points: ",
   "aufdeck.verschieden": "Two different views – material for a good conversation.",
-  "aufdeck.tafelZu": "Hide the Board",
-  "aufdeck.weiter": "Back to the Conversation",
+  "aufdeck.weiter": "Continue — let's talk about it",
   "aufdeck.fehlt": "Reveal data is missing – please start the round again.",
 
   // Start errors
@@ -141,15 +142,15 @@ export const en = {
 
   // Signpost (guidance, S35) — next steps computed from state
   "weg.titel": "Signpost",
-  "weg.einzelPause": "Your goal clarification is paused at chapter {n} — you can continue exactly there.",
+  "weg.einzelPause": "Your goal clarification in your own space is paused at chapter {n} — you can continue exactly there.",
   "weg.aufloesungFehltDu": "The Shared Resolution still needs your release from the goal clarification.",
   "weg.aufloesungFehltPartner": "The Shared Resolution still needs the release from {partner}.",
   "weg.aufloesungFehltBeide": "The Shared Resolution opens once you have both released your goal clarifications.",
-  "weg.regalNeu": "Something new is on the shelf for you ({n}) — to read, if you like.",
+  "weg.regalNeu": "Something new is on the shelf in the shared space for you ({n}) — to read, if you like.",
   "weg.agendaOffen": "Open items on your agenda: {n}.",
   "weg.messBereit": "Your process reflection is complete — the reveal awaits in the next Shared Session.",
-  "weg.messOffen": "A process-reflection round is waiting for your concealed contribution.",
-  "weg.momentOffen": "Your quality time is open — you can continue right where you left off.",
+  "weg.messOffen": "A process-reflection round in your own space is waiting for your concealed contribution.",
+  "weg.momentOffen": "Your quality time in the shared space is open — you can continue right where you left off.",
   "weg.soloErster": "A good first step: a reflection session — your private space for sorting.",
   "weg.startAuftrag": "A good first step: start right away with your mandate clarification in your own space — we\u2019ll look at where you want to grow and how I can accompany you.",
   "weg.startSolo": "You can also use your space for a reflection conversation first.",

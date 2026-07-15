@@ -110,9 +110,15 @@ export function gemeinsamDef(backend, hooks = {}) {
     shared: true,
     titel: "Gemeinsame Auflösung",
     sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
-    markerOrder: ["[[REVEAL]]", "[[BASELINE]]", "[[SCALE-CLOSING]]"],
+    // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
+    // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
+    // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)
+    // und zeigt beide Richtungen zugleich.
+    markerOrder: ["[[REVEAL-A]]", "[[REVEAL-B]]", "[[REVEAL]]", "[[BASELINE]]", "[[SCALE-CLOSING]]"],
     markers: {
-      "[[REVEAL]]": e => hooks.onAufdecken && hooks.onAufdecken(e),
+      "[[REVEAL-A]]": e => hooks.onAufdecken && hooks.onAufdecken(e, "A"),
+      "[[REVEAL-B]]": e => hooks.onAufdecken && hooks.onAufdecken(e, "B"),
+      "[[REVEAL]]": e => hooks.onAufdecken && hooks.onAufdecken(e, null),
       "[[BASELINE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),
       "[[SCALE-CLOSING]]": e => hooks.onScale && hooks.onScale("closing", e),
     },

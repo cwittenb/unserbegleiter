@@ -168,6 +168,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <div class="pb-card">
           <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
+          <p class="pb-sub" id="gemeinsamSub" style="margin:8px 0 0">${t("teil.gemeinsamSub")}</p>
           <p class="pb-sub pb-hidden" id="gemeinsamHinweis" style="margin:8px 0 0"></p>
         </div>
       </div>
@@ -396,6 +397,10 @@ export function createApp({ doc, backend, root, diktat }) {
     const bm = $("btnMoment");
     if (bm) bm.textContent = lage.momentOffen ? t("teil.momentWeiter") : t("teil.moment");
     sperre("btnGemeinsam", "gemeinsamHinweis", !lage.handBeide, t("teil.gateAufloesung"));
+    // S62 · Dauerhafter Subtext unter der Auflösungs-Karte; solange gesperrt,
+    // weicht er dem Gate-Hinweis (nie beide zugleich).
+    const gSub = $("gemeinsamSub");
+    if (gSub) gSub.classList.toggle("pb-hidden", !lage.handBeide);
   }
 
   /* S36-Kommentar historisch: die festen Einladungen leben jetzt als
@@ -527,32 +532,52 @@ export function createApp({ doc, backend, root, diktat }) {
     state.streamText = teil;
     const box = $("pbMsgs");
     if (!box) return;
+    const nah = nahAmEingabefeld();   // VOR der DOM-Änderung messen (S62)
     let d = box.querySelector("#pbStream");
     if (!d) { d = el("div", "pb-msg ai"); d.id = "pbStream"; box.appendChild(d); }
     const anzeige = streamAnzeige(teil);
     d.innerHTML = anzeige
       ? mdRender(anzeige)
       : '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
-    box.scrollTop = box.scrollHeight;
-    scrolleSeiteAnsEnde();
+    if (nah) { box.scrollTop = box.scrollHeight; scrolleZumEingabefeld(); }
   }
 
-  /* S53 · pb-msgs ist KEIN Scroll-Container — es scrollt die Seite. Beim
-     (Wieder-)Betreten eines Gesprächs und bei neuen Zügen springt die Sicht
-     ans Ende des Verlaufs, statt oben zu stehen. Guarded: happy-dom/ältere
-     Umgebungen ohne scrollTo bleiben still. */
-  function scrolleSeiteAnsEnde() {
+  /* S62 · Scroll-Disziplin (löst den harten S53-Sprung ans Seitenende ab):
+     Ziel ist das EINGABEFELD (Composer), nie document.scrollHeight — Footer
+     oder Dev-Panel unterhalb bleiben außerhalb der Sicht-Verankerung. Sticky
+     nur, wenn die Sicht bereits nahe am Eingabefeld ist: Scrollt die Person
+     hoch, stoppt das Mitlaufen von selbst (kein Listener nötig — die Nähe
+     wird VOR jeder DOM-Änderung live gemessen); Rückkehr ans Ende oder das
+     eigene Senden nimmt es wieder auf. Guarded: happy-dom/Umgebungen ohne
+     scrollTo bleiben still (Nullmaße melden dort immer "nah"). */
+  const SCROLL_NAEHE_PX = 80;
+  function composerUnterkante(win) {
+    const c = $("pbComposer");
+    if (!c || typeof c.getBoundingClientRect !== "function") return 0;
+    return c.getBoundingClientRect().bottom + (win.scrollY || 0);
+  }
+  function nahAmEingabefeld() {
     const win = doc.defaultView;
-    const html = doc.documentElement;
-    if (win && typeof win.scrollTo === "function") win.scrollTo(0, (html && html.scrollHeight) || 0);
+    if (!win) return true;
+    const sicht = (win.scrollY || 0) + (win.innerHeight || 0);
+    return composerUnterkante(win) - sicht <= SCROLL_NAEHE_PX;
+  }
+  function scrolleZumEingabefeld() {
+    const win = doc.defaultView;
+    if (!win || typeof win.scrollTo !== "function") return;
+    win.scrollTo(0, Math.max(0, composerUnterkante(win) - (win.innerHeight || 0)));
   }
 
-  function renderMsgs() {
+  function renderMsgs(scrollErzwingen = false) {
+    const nah = scrollErzwingen || nahAmEingabefeld();   // Nähe VOR der DOM-Änderung messen
     state.streamText = null;   // Voll-Rerender ersetzt jede laufende Stream-Blase
     const box = $("pbMsgs");
     box.innerHTML = "";
     if (state.engine) {
-      for (const m of state.engine.chat.messages) {
+      const msgs = state.engine.chat.messages;
+      const juengste = msgs[msgs.length - 1];
+      let ersteTafel = true;   // Intro-Text nur an der ersten Tafel des Verlaufs
+      for (const m of msgs) {
         // S44 · Panel-Echo: geschlossene Regler/Slider hinterlassen eine
         // kompakte Zusammenfassungszeile im Verlauf (statt spurlos zu verschwinden).
         if (m.echo) {
@@ -568,6 +593,12 @@ export function createApp({ doc, backend, root, diktat }) {
         if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, mkListe, ALLE_BLOECKE));
         else d.textContent = cleanDisplay(m.content, mkListe, ALLE_BLOECKE);
         box.appendChild(d);
+        // S62 · Aufdeck-Tafel als Karte im Verlauf, direkt unter der
+        // auslösenden Nachricht; der Weiter-Knopf nur an der jüngsten.
+        if (m.role === "assistant" && m.tafel) {
+          box.appendChild(baueTafelKarte(m.tafel, m === juengste && !state.warten, ersteTafel));
+          ersteTafel = false;
+        }
       }
     }
     if (state.warten) {
@@ -576,8 +607,7 @@ export function createApp({ doc, backend, root, diktat }) {
       d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
       box.appendChild(d);
     }
-    box.scrollTop = box.scrollHeight;
-    scrolleSeiteAnsEnde();
+    if (nah) { box.scrollTop = box.scrollHeight; scrolleZumEingabefeld(); }
     aktualisiereSkala();
   }
 
@@ -587,11 +617,11 @@ export function createApp({ doc, backend, root, diktat }) {
      an, Senden gesperrt, dann Antwort. Panels (Regler, Skala, Gate, Kapitel,
      Freigabe …) laufen hierüber — fehlender Ladezustand nach Panel-Submits
      war ein globales Problem, das hier zentral gelöst ist. */
-  async function warteAntwort(lauf) {
+  async function warteAntwort(lauf, scrollErzwingen = false) {
     setzeWarten(true);
     const bs = $("btnSend");
     if (bs) bs.disabled = true;
-    renderMsgs();
+    renderMsgs(scrollErzwingen);
     try { await (typeof lauf === "function" ? lauf() : lauf); }
     catch (e) { err(e.message); }
     finally {
@@ -608,7 +638,7 @@ export function createApp({ doc, backend, root, diktat }) {
     await warteAntwort(async () => {              // … die Blase zeigt sie sofort
       await laeuft;
       hint(backend.llm && backend.llm.kontingent ? backend.llm.kontingent.hinweis : null);
-    });
+    }, true);                                     // eigenes Senden nimmt das Mitlaufen wieder auf (S62)
   }
 
   function gatePanel(data, engine) {
@@ -686,43 +716,65 @@ export function createApp({ doc, backend, root, diktat }) {
     });
   }
   
-  /* ── Aufdeck-Tafel: beide Richtungen simultan, Berührungspunkte markiert,
-     strukturell keine Quote und kein Zählen. Bleibt während des Gesprächs
-     sichtbar. ── */
-  async function aufdeckPanel(engine) {
+  /* ── Aufdeck-Tafel (S62): Karte IM Gesprächsverlauf statt Panel darunter —
+     Folgeantworten des Modells erscheinen sichtbar unter der Tafel, sie
+     bleibt stehen (kein "Tafel ausblenden" mehr) und übersteht Reloads,
+     weil die Tafel-Daten als Meta der auslösenden Assistant-Nachricht
+     persistiert werden. Zwei-Schritt-Aufdeckung: richtung "A"/"B" zeigt
+     nur diese Richtung; null (Legacy-[[REVEAL]]) zeigt beide. Strukturell
+     weiterhin: keine Quote, kein Zählen. ── */
+  async function aufdeckTafel(engine, richtung) {
     const alle = (await backend.bstate.get("reveal")) || {};
     const gA = alle.A, gB = alle.B;
     if (!gA || !gB) { err(t("aufdeck.fehlt")); return; }
-    const p = kw();
-    p.classList.remove("pb-hidden");
+    const msgs = engine.chat.messages || [];
+    const letzte = msgs[msgs.length - 1];
+    if (!letzte || letzte.role !== "assistant") return;
+    if (!letzte.tafel) {   // idempotent: resume() dispatcht den Marker erneut
+      const nackt = g => ({ name: g.name, top5: g.top5, guess3: g.guess3 });
+      letzte.tafel = { richtung: richtung || "beide", gA: nackt(gA), gB: nackt(gB) };
+      await engine._save();
+    }
+    renderMsgs();
+  }
+
+  /** Tafel-Karte für den Verlauf bauen; der Weiter-Knopf hängt nur an der
+      JÜNGSTEN Tafel, solange das Modell noch kein REVEAL-SHOWN erhalten hat
+      (danach ist die Tafel-Nachricht nicht mehr die letzte). */
+  function baueTafelKarte(tafel, mitWeiter, ersteTafel) {
     const spalte = (titel, liste, marks) =>
       `<div style="flex:1;min-width:150px"><div class="pb-sub">${esc(titel)}</div>` +
-      liste.map((x, i) => `<div class="pb-item"${marks.includes(x) ? ' style="font-weight:700;border-left:3px solid var(--accent,#0f766e);padding-left:8px"' : ""}>${i + 1}. ${esc(x)}</div>`).join("") + `</div>`;
-    const richtung = (tipper, owner) => {
+      (liste || []).map((x, i) => `<div class="pb-item"${(marks || []).includes(x) ? ' style="font-weight:700;border-left:3px solid var(--accent,#0f766e);padding-left:8px"' : ""}>${i + 1}. ${esc(x)}</div>`).join("") + `</div>`;
+    const richtungHtml = (tipper, owner) => {
       const treff = beruehrungen(tipper.guess3, owner.top5);
       return `<div style="margin-top:12px"><div class="pb-sub">${t("aufdeck.getippt", { tipper: esc(tipper.name), owner: esc(owner.name) })}</div>` +
         `<div style="display:flex;gap:10px;flex-wrap:wrap">` + spalte(t("aufdeck.tippVon", { name: tipper.name }), tipper.guess3, treff) + spalte(t("aufdeck.topVon", { name: owner.name }), owner.top5, treff) + `</div>` +
         (treff.length ? `<p class="pb-sub">${t("aufdeck.beruehrungen")}${treff.map(esc).join(" · ")}</p>`
                       : `<p class="pb-sub">${t("aufdeck.verschieden")}</p>`) + `</div>`;
     };
-    p.innerHTML =
-      `<div class="pb-sub">${t("aufdeck.titel")}</div>` +
-      `<p style="font-size:13px">${t("aufdeck.intro")}</p>` +
-      richtung(gB, gA) + richtung(gA, gB) +
-      (engine.chat.adShown ? `<button class="pb-btn" id="adZu">${t("aufdeck.tafelZu")}</button>`
-                           : `<button class="pb-btn primary" id="adWeiter">${t("aufdeck.weiter")}</button>`);
-    const w = p.querySelector("#adWeiter");
-    if (w) w.addEventListener("click", async () => {
-      engine.chat.adShown = true;
-      w.remove();   // Tafel bleibt sichtbar
-      const zu = doc.createElement("button");
-      zu.className = "pb-btn"; zu.textContent = t("aufdeck.tafelZu");
-      zu.addEventListener("click", kwZu);
-      p.appendChild(zu);
-      await warteAntwort(() => engine.submitToolResult(K().steuerTexte.aufdeckungAngezeigt, { hidden: true }));
-    });
-    const z = p.querySelector("#adZu");
-    if (z) z.addEventListener("click", kwZu);
+    const einzel = tafel.richtung === "A" || tafel.richtung === "B";
+    const owner = tafel.richtung === "B" ? tafel.gB : tafel.gA;
+    const tipper = tafel.richtung === "B" ? tafel.gA : tafel.gB;
+    const karte = el("div", "pb-card pb-tafel",
+      `<div class="pb-sub">${einzel ? t("aufdeck.titelTeil", { owner: esc(owner.name) }) : t("aufdeck.titel")}</div>` +
+      (ersteTafel ? `<p style="font-size:13px">${t("aufdeck.intro")}</p>` : "") +
+      (einzel ? richtungHtml(tipper, owner) : richtungHtml(tafel.gB, tafel.gA) + richtungHtml(tafel.gA, tafel.gB)));
+    karte.setAttribute("style", "align-self:stretch;max-width:none");
+    if (mitWeiter) {
+      const w = el("button", "pb-btn primary");
+      w.id = "adWeiter"; w.textContent = t("aufdeck.weiter");
+      w.addEventListener("click", async () => {
+        const eng = state.engine;
+        if (!eng || state.warten) return;
+        const namen = einzel
+          ? { owner: owner.name, tipper: tipper.name }
+          // Legacy-Pfad (beide Richtungen zugleich): beide Namen in beiden Rollen.
+          : { owner: tafel.gA.name + " & " + tafel.gB.name, tipper: tafel.gA.name + " & " + tafel.gB.name };
+        await warteAntwort(() => eng.submitToolResult(fuelle(K().steuerTexte.aufdeckungAngezeigt, namen), { hidden: true }));
+      });
+      karte.appendChild(w);
+    }
+    return karte;
   }
   
   async function startChat(art) {
@@ -742,7 +794,7 @@ export function createApp({ doc, backend, root, diktat }) {
       onKapitel: (n, e2) => kapitelPanel(n, e2),
       onScale: (art, e2) => scalePanel(art, e2),
       onChoice: (art, e2, daten) => choicePanel(art, e2, daten),
-      onAufdecken: e2 => aufdeckPanel(e2),
+      onAufdecken: (e2, richtung) => aufdeckTafel(e2, richtung),
       onMomentEnde: () => { markiereAufgedeckt(backend).catch(() => {}); aktualisiereChatEnde(); },
     };
     const def =
@@ -811,7 +863,7 @@ export function createApp({ doc, backend, root, diktat }) {
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;
     aktualisiereChatEnde();
     show("scrChat");
-    renderMsgs();
+    renderMsgs(true);   // (Wieder-)Betreten springt einmalig ans Verlaufs-Ende (S53/S62)
     if (chat.messages.length) {
       await state.engine.resume();
       if (einzelRueckkehr && zugFrei)
@@ -1651,5 +1703,6 @@ export function createApp({ doc, backend, root, diktat }) {
     if (backend.recovery && state.info.emailRequired && !state.info.recoveryEmail) zeigeEmailPflicht();
   }
 
-  return { boot, show, startChat, _state: state, _err: err };
+  // S62: testHooks exponiert Render/Stream für die Scroll-Disziplin-Tests.
+  return { boot, show, startChat, _state: state, _err: err, testHooks: { renderMsgs, zeigeStream: t2 => Promise.resolve(zeigeStream(t2)) } };
 }

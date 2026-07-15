@@ -61,9 +61,19 @@ describe("Kanarien · Aufdeck-AUFTAKT im aufloesungsPrompt (S43: integriert)", (
     expect(p).toContain("kein richtig und kein falsch");
     expect(p).toContain("Berührungspunkt");
   });
-  it("Marker- und Block-Vertrag benannt", () => {
-    expect(p).toContain("[[REVEAL]] allein in der letzten Zeile");
+  it("Marker- und Block-Vertrag benannt (S62: Richtungs-Marker)", () => {
+    expect(p).toContain("[[REVEAL-A]]");
+    expect(p).toContain("[[REVEAL-B]]");
     expect(p).toContain("REVEAL-BLOCK");
+  });
+  it("S62 · Konsens-Regel: Bereitschaftsfrage und Marke nie in derselben Nachricht", () => {
+    expect(p).toContain("KONSENS-REGEL");
+    expect(p).toContain("NIE in derselben Nachricht");
+  });
+  it("S62 · getrennte Richtungen mit Frage-vor-Beobachtung", () => {
+    expect(p).toContain("wer anfangen möchte");
+    expect(p).toContain("FRAGE-VOR-BEOBACHTUNG");
+    expect(p).toContain("Jede Richtung wird genau EINMAL aufgedeckt");
   });
   it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("KEINE Themen-Vertiefung"));
   it("kollabierter Pfad bleibt unsichtbar; nahtloser Übergang statt Abschied", () => {

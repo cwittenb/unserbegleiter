@@ -50,7 +50,7 @@ export const BLOECKE = {
   }),
   aufdeck: blockDef({
     start: "REVEAL-BLOCK", end: "END REVEAL-BLOCK",
-    placeholder: "Kurzprotokoll der Aufdeck-Runde gespeichert.",
+    placeholder: "",   // S62: für Nutzer unsichtbar — das Kurzprotokoll erscheint unter "Gemeinsame Momente"
     dataset: "aufdeck", schema: aufdeckSchema,
   }),
   // Merkposten (S44): ein bedeutsames Thema, das die Begleitung für den

@@ -47,6 +47,8 @@ describe("Korpus-Invarianten (alle Sprachfassungen)", () => {
     expect(marker(ref.einzel)).toEqual(expect.arrayContaining(
       ["[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]", "[[RANKING]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]"]));
     expect(marker(ref.gemeinsam)).toContain("[[BASELINE]]");
-    expect(marker(ref.aufdeck)).toContain("[[REVEAL]]");
+    // S62: Zwei-Schritt-Aufdeckung — der Prompt kennt die Richtungs-Marker.
+    expect(marker(ref.aufdeck)).toContain("[[REVEAL-A]]");
+    expect(marker(ref.aufdeck)).toContain("[[REVEAL-B]]");
   });
 });
