@@ -2,7 +2,8 @@
 // document wird injiziert (happy-dom-testbar); kein Storage-, kein Key-Wissen.
 
 import { Engine } from "../engine/engine.js";
-import { cleanDisplay } from "../contracts/block.js";
+import { cleanDisplay, findeBlock } from "../contracts/block.js";
+import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
@@ -135,14 +136,14 @@ export function createApp({ doc, backend, root, diktat }) {
       </div>
       <div class="pb-zwei pb-mitte">
         <div class="pb-card">
-          <button class="pb-btn primary" id="btnSolo">${t("mein.solo")}</button>
-          <p class="pb-sub" style="margin:8px 0 0">${t("mein.soloSub")}</p>
-        </div>
-        <div class="pb-card">
           <button class="pb-btn primary" id="btnEinzel">${t("mein.einzel")}</button>
           <p class="pb-sub" id="einzelSubP" style="margin:8px 0 0">${t("mein.einzelSub")}</p>
           <button class="pb-btn primary pb-hidden" id="btnMess">${t("mein.mess")}</button>
           <p class="pb-sub pb-hidden" id="messSubP" style="margin:8px 0 0">${t("mein.messSub")}</p>
+        </div>
+        <div class="pb-card">
+          <button class="pb-btn primary" id="btnSolo">${t("mein.solo")}</button>
+          <p class="pb-sub" style="margin:8px 0 0">${t("mein.soloSub")}</p>
         </div>
       </div>
       <div class="pb-card pb-reihe">
@@ -323,6 +324,10 @@ export function createApp({ doc, backend, root, diktat }) {
       // sie an die STELLE der Auftragsklärung (nicht in die Regal-Reihe).
       const auf = !!lage.aufloesungGelaufen;
       const tog = (id, hide) => { const e = $(id); if (e) e.classList.toggle("pb-hidden", hide); };
+      // S53 · Eine begonnene Auftragsklärung heißt "fortsetzen" statt
+      // "beginnen" (Muster wie btnMoment/teil.momentWeiter).
+      const be = $("btnEinzel");
+      if (be) be.textContent = lage.einzelBegonnen ? t("mein.einzelWeiter") : t("mein.einzel");
       tog("btnEinzel", auf); tog("einzelSubP", auf);
       tog("btnMess", !auf); tog("messSubP", !auf);
       return;
@@ -493,6 +498,17 @@ export function createApp({ doc, backend, root, diktat }) {
       ? mdRender(anzeige)
       : '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
     box.scrollTop = box.scrollHeight;
+    scrolleSeiteAnsEnde();
+  }
+
+  /* S53 · pb-msgs ist KEIN Scroll-Container — es scrollt die Seite. Beim
+     (Wieder-)Betreten eines Gesprächs und bei neuen Zügen springt die Sicht
+     ans Ende des Verlaufs, statt oben zu stehen. Guarded: happy-dom/ältere
+     Umgebungen ohne scrollTo bleiben still. */
+  function scrolleSeiteAnsEnde() {
+    const win = doc.defaultView;
+    const html = doc.documentElement;
+    if (win && typeof win.scrollTo === "function") win.scrollTo(0, (html && html.scrollHeight) || 0);
   }
 
   function renderMsgs() {
@@ -525,6 +541,7 @@ export function createApp({ doc, backend, root, diktat }) {
       box.appendChild(d);
     }
     box.scrollTop = box.scrollHeight;
+    scrolleSeiteAnsEnde();
     aktualisiereSkala();
   }
 
@@ -721,6 +738,16 @@ export function createApp({ doc, backend, root, diktat }) {
     // Zusammenfassung) statt stumm abgeschlossen zu sein.
     const einzelRueckkehr = art === "einzel" && !!chat.freigegeben && chat.status === "released";
     if (einzelRueckkehr) chat.status = "running";
+    // S53 · Wiedereinstieg in eine LAUFENDE (pausierte) Auftragsklärung:
+    // begrüßen statt stummem Verlauf. Wächter (Vertrag 1): nur wenn der
+    // letzte Zug ein Assistant-Zug OHNE Marker und OHNE Block ist — ein
+    // wartendes Panel öffnet stattdessen wieder und bekommt GENAU EINE
+    // Panel-Antwort; ein offener User-Zug wird von resume() beantwortet.
+    const letzterZug = chat.messages[chat.messages.length - 1];
+    const einzelWiedereinstieg = art === "einzel" && !einzelRueckkehr && !chat.freigegeben &&
+      chat.status === "running" && !!letzterZug && letzterZug.role === "assistant" &&
+      !findeMarker(letzterZug.content || "", def.markerOrder || []) &&
+      !findeBlock(letzterZug.content || "", def.blocks || (def.block ? [def.block] : []));
     const korpusSprache = (gespeichert && gespeichert.language) || paarSprache;
     setKorpusSprache(korpusSprache);
     if (!gespeichert) chat.language = korpusSprache;
@@ -742,6 +769,8 @@ export function createApp({ doc, backend, root, diktat }) {
       await state.engine.resume();
       if (einzelRueckkehr)
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelRueckkehr, { hidden: true }));
+      else if (einzelWiedereinstieg)
+        await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelWeiter, { hidden: true }));
     } else {
       if (art === "gemeinsam") {
         const [freiA, freiB, protokoll, alleG] = await Promise.all([

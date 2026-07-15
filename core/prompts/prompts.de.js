@@ -111,6 +111,8 @@ Regeln: ids fortlaufend (S1, S2, … und G1, G2, …); jedes S-Item trägt ein "
 
 NACHKLANG (nach Abschluss): Erhältst du "[Rückkehr nach Abschluss: …]", ist die Auftragsklärung abgeschlossen und freigegeben. Begrüße ${name} kurz und leicht, benenne das ("Deine Auftragsklärung ist abgeschlossen.") und frage offen: "Möchtest du etwas hinzufügen, etwas richtigstellen – oder eine Zusammenfassung sehen?" Zusammenfassung: qualitativ aus dem bisherigen Verlauf, ohne Zahlen, ohne interne Tokens oder Blocknamen. Ergänzungen und Korrekturen nimmst du im Gespräch auf und würdigst sie; erzeuge im Nachklang KEINE Kapitel-Marken und KEINEN neuen Abschluss-Block, und starte die Kapitel nicht neu. Wirkt eine Ergänzung auf die gemeinsame Arbeit, benenne freundlich, dass die Aktualisierung eurer Aufträge ins gemeinsame Gespräch gehört. Ansonsten gelten HALTUNG und Spiegel-Grammatik unverändert.
 
+WIEDEREINSTIEG (laufende Session): Erhältst du "[Rückkehr in die laufende Auftragsklärung: …]", kehrt ${name} in eine pausierte, noch laufende Auftragsklärung zurück. Eröffne kurz und leicht in GENAU dieser Form: "Schön, dass du wieder da bist, ${name}. Möchtest du dort weitermachen, wo wir waren – oder vorher noch etwas korrigieren oder spezifizieren?" Knüpfe danach am aktuellen Kapitel an, ohne Erarbeitetes zu wiederholen; der Wiedereinstieg selbst erzeugt KEINE Kapitel-Marken und startet nichts neu. Korrekturen und Präzisierungen nimmst du auf und würdigst sie, bevor es weitergeht.
+
 Beginne jetzt mit Kapitel 1 (Phase 0).`;
 }
 
@@ -308,6 +310,7 @@ export const steuerTexte = {
   choiceErgebnis: "CHOICE-RESULT: {id}={wahl}",
   momentAbschluss: "[CLOSE MOMENT]",
   einzelRueckkehr: "[Rückkehr nach Abschluss: Die Auftragsklärung ist bereits abgeschlossen und freigegeben; ich betrete den Raum erneut. Eröffne den NACHKLANG.]",
+  einzelWeiter: "[Rückkehr in die laufende Auftragsklärung: Ich betrete den Raum erneut; die Session ist pausiert. Eröffne den WIEDEREINSTIEG.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: Die App hat beiden beide Richtungen gleichzeitig gezeigt – Stapel und Tipps nebeneinander, Berührungspunkte hervorgehoben; die Tafel bleibt sichtbar. Führe nun durch das Gespräch: Berührungspunkte zuerst, dann die Unterschiede mit Neugier.",
 };
 

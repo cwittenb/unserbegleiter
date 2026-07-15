@@ -66,7 +66,10 @@ describe("Sprach-Schnappschuss beim Session-Start", () => {
   });
 
   it("locale:'en', aber gespeicherte Session mit sprache:'de' → Resume bleibt deutsch", async () => {
-    const mock = new MockLLM([]);
+    // S53: Der Wiedereinstieg in eine laufende Auftragsklärung sendet GENAU
+    // EINEN versteckten Steuertext (Begrüßung) — in der Sprache der Session,
+    // nicht der Paarsprache: alles bleibt deutsch.
+    const mock = new MockLLM(["Schön, dass du wieder da bist, Anna."]);
     const backend = memoryBackend(mock, {
       locale: "en",
       chatLoad: (scope, art) => (scope === "mine" && art === "einzel"
@@ -80,6 +83,9 @@ describe("Sprach-Schnappschuss beim Session-Start", () => {
 
     expect(getKorpusSprache()).toBe("de");
     expect(document.getElementById("chatTitel").textContent).toBe("Auftragsklärung");
-    expect(mock.calls.length).toBe(0);   // Resume: kein neuer LLM-Aufruf nötig
+    expect(mock.calls.length).toBe(1);   // genau die Wiedereinstiegs-Begrüßung
+    expect(mock.calls[0].system).toContain("Du antwortest ausschließlich auf Deutsch");
+    const letzte = mock.calls[0].messages[mock.calls[0].messages.length - 1];
+    expect(letzte.content).toBe(getPrompts("de").steuerTexte.einzelWeiter);
   });
 });

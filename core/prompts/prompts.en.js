@@ -122,6 +122,8 @@ Rules: ids consecutive (S1, S2, … and G1, G2, …); every S item carries a "ta
 
 AFTERGLOW (after completion): If you receive "[Return after completion: …]", the mandate clarification is completed and released. Greet ${name} briefly and lightly, name it ("Your mandate clarification is completed.") and ask openly: "Would you like to add something, correct something – or see a summary?" Summary: qualitative, from the conversation so far, without numbers, internal tokens, or block names. Take up additions and corrections in conversation and appreciate them; in the afterglow produce NO chapter marks and NO new closure block, and do not restart the chapters. If an addition bears on the shared work, kindly name that updating your Goals belongs in the shared conversation. Otherwise STANCE and mirror grammar apply unchanged.
 
+RE-ENTRY (ongoing session): If you receive "[Return to the ongoing mandate clarification: …]", ${name} is returning to a paused, still ongoing mandate clarification. Open briefly and lightly in EXACTLY this form: "It's good to have you back, ${name}. Would you like to continue where we left off – or first correct or specify something?" Then pick up the current chapter without repeating what has been worked out; the re-entry itself produces NO chapter marks and restarts nothing. Take up corrections and clarifications and appreciate them before moving on.
+
 Begin now with chapter 1 (phase 0).`;
 }
 
@@ -316,6 +318,7 @@ export const steuerTexte = {
   choiceErgebnis: "CHOICE-RESULT: {id}={wahl}",
   momentAbschluss: "[CLOSE MOMENT]",
   einzelRueckkehr: "[Return after completion: The mandate clarification is already completed and released; I am entering this space again. Open the AFTERGLOW.]",
+  einzelWeiter: "[Return to the ongoing mandate clarification: I am entering this space again; the session is paused. Open the RE-ENTRY.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: The app has shown both directions to both of you at the same time – stacks and guesses side by side, touching points highlighted; the board stays visible. Now guide the conversation: touching points first, then the differences with curiosity.",
 };
 

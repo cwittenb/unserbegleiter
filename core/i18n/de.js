@@ -27,6 +27,7 @@ export const de = {
   "mein.intro": "Dieser Raum ist nur für dich — nichts von hier erreicht {partner}, außer du gibst es ausdrücklich frei. Wenn du magst, kannst du Erarbeitetes jederzeit teilen: Die Begleitung hilft dir dann bei einer Formulierung, und erst dein Häkchen gibt sie frei. Nimm dir die Zeit, die du brauchst.",
   "mein.solo": "Reflexionsgespräch beginnen",
   "mein.einzel": "Auftragsklärung beginnen",
+  "mein.einzelWeiter": "Auftragsklärung fortsetzen",
   "mein.zeitleiste": "Meine Zeitleiste",
   "mein.mess": "Prozessreflexion",
   "mein.soloSub": "Dein privater Raum zum Sortieren — frei erzählen, in Ruhe hinschauen.",

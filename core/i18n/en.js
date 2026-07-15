@@ -29,6 +29,7 @@ export const en = {
   "mein.intro": "This space is yours alone — nothing from here reaches {partner} unless you explicitly release it. Whenever you like, you can share what you've worked out: your companion helps you find a formulation, and only your checkmark releases it. Take the time you need.",
   "mein.solo": "Start a Supported Reflection Session",
   "mein.einzel": "Start Clarifying Your Focus",
+  "mein.einzelWeiter": "Continue Clarifying Your Focus",
   "mein.zeitleiste": "My Timeline",
   "mein.mess": "Process Reflection",
   "mein.soloSub": "Your private space for sorting things out — speak freely, look closely, at your pace.",
