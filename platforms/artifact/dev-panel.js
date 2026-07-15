@@ -106,8 +106,25 @@ export function baueMockdaten(meta = MOCK_META) {
   shared[key(meta, "handover:B", "kernwetten")] = uebergabe("B", meta.nameB, [
     { id: "S1", text: "Gemeinsame Ruhe ist mir wichtiger geworden, als ich lange dachte." },
   ]);
+  // S59 · D4: Zu jedem Handover gehört der freigegebene Einzel-Chat — die
+  // Testumgebung bildet den echten Zustandsraum ab, statt den unmöglichen
+  // Zustand "Handover ohne abgeschlossene Klärung" zu erzeugen.
+  Object.assign(privat, einzelFertigChats(meta));
 
   return { meta, shared, privat };
+}
+
+/** S59 · Freigegebene Einzel-Chats passend zu den Mock-Handovers (Zustand
+    seit S44: running + freigegeben + nachklang). */
+export function einzelFertigChats(meta) {
+  const fertig = abschluss => stempel({
+    status: "running", freigegeben: true, nachklang: true, language: "de", kapitel: 6,
+    messages: [{ role: "assistant", content: abschluss }],
+  });
+  return {
+    [key(meta, "chat:A:einzel")]: fertig("Deine Auswahl ist freigegeben — danke für dein Vertrauen. Du kannst jederzeit etwas hinzufügen, richtigstellen oder nachfragen."),
+    [key(meta, "chat:B:einzel")]: fertig("Deine Auswahl ist freigegeben — danke für dein Vertrauen. Du kannst jederzeit etwas hinzufügen, richtigstellen oder nachfragen."),
+  };
 }
 
 /* ================= Szenen (anspringbare Workflow-Abschnitte) ================= */
@@ -143,7 +160,8 @@ export const SZENEN = [
     beschreibung: "Einzelsessions abgeschlossen, beide Übergaben gequert — die gemeinsame Klärung steht an.",
     async wende(store) {
       const mock = baueMockdaten();
-      await setzeZustand(store, { shared: nur(mock, [], ["kernwetten"]), privat: {} });
+      // S59 · D4: Handover nie ohne die zugehörigen freigegebenen Einzel-Chats.
+      await setzeZustand(store, { shared: nur(mock, [], ["kernwetten"]), privat: einzelFertigChats(mock.meta) });
     },
   },
   {

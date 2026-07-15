@@ -39,7 +39,7 @@ describe("Dev-Panel · Zustand speichern & laden", () => {
     await szene("betrieb").wende(store);
     const vorher = await dumpZustand(store);
     expect(Object.keys(vorher.shared).length).toBeGreaterThan(2);   // meta + bstate + 2 übergaben
-    expect(Object.keys(vorher.privat)).toHaveLength(2);             // pstate:A + pstate:B
+    expect(Object.keys(vorher.privat)).toHaveLength(4);             // pstate:A/B + chat:A/B:einzel (S59)
 
     await wipeZustand(store);
     expect((await dumpZustand(store)).shared).toEqual({});

@@ -249,11 +249,21 @@ export function createApp({ doc, backend, root, diktat }) {
     ]);
     const rolle = state.info.role;
     const offeneRunde = (((measurements && measurements.items) || [])).find(r => r.status === "open");
+    // S59 · D1: Das eigene Handover im geteilten Speicher IST der Beleg der
+    // abgeschlossenen Auftragsklärung — es schlägt den lokalen Chat. Fehlt
+    // dem Chat das Flag (inkonsistente Seeds, zurückgesetzter Chat), wird es
+    // nachgetragen (Selbstheilung), damit alle Pfade dieselbe Wahrheit sehen.
+    const handMeins = !!(rolle === "A" ? hA : hB);
+    const einzelFrei = !!(einzelChat && einzelChat.freigegeben) || handMeins;
+    if (handMeins && einzelChat && !einzelChat.freigegeben) {
+      einzelChat.freigegeben = true; einzelChat.nachklang = true;
+      Promise.resolve().then(() => backend.chat.save("mine", "einzel", einzelChat)).catch(() => { /* heilt beim nächsten Mal */ });
+    }
     return {
       aufdeckBereit: !!(reveal && reveal.A && reveal.B && !revealLog),
       aufdeckGelaufen: !!revealLog,
       aufloesungGelaufen: !!findings,
-      handMeins: !!(rolle === "A" ? hA : hB),
+      handMeins,
       handPartner: !!(rolle === "A" ? hB : hA),
       handBeide: !!(hA && hB),
       regalNeu: (((shelf && shelf.items) || [])).filter(i => i.by !== state.info.name && !i.read).length,
@@ -264,10 +274,11 @@ export function createApp({ doc, backend, root, diktat }) {
       messBereit: (((measurements && measurements.items) || [])).some(r => r.status === "ready"),
       messOffen: !!(offeneRunde && !offeneRunde.values[rolle]),
       // "pausiert bei Kapitel N" nur solange die Auftragsklärung wirklich läuft
-      // und NICHT freigegeben ist (S44: nach Abschluss kein Pause-Hinweis mehr).
-      einzelKapitel: (einzelChat && einzelChat.status === "running" && !einzelChat.freigegeben && einzelChat.kapitel) || 0,
-      einzelBegonnen: !!(einzelChat && ((einzelChat.messages || []).length || einzelChat.freigegeben)),
-      einzelFertig: !!(einzelChat && einzelChat.freigegeben),
+      // und NICHT als frei gilt (S44/S59: nach Abschluss kein Pause-Hinweis mehr;
+      // Pause-Zeile und Auflösungs-Zeile schließen sich damit aus).
+      einzelKapitel: (einzelChat && einzelChat.status === "running" && !einzelFrei && einzelChat.kapitel) || 0,
+      einzelBegonnen: !!(einzelChat && (einzelChat.messages || []).length) || einzelFrei,
+      einzelFertig: einzelFrei,
       momentOffen: !!(momentChat && momentChat.status === "running" && (momentChat.messages || []).length),
       zeitleisteLeer: !((timeline && timeline.entries) || []).length,
     };
@@ -758,21 +769,32 @@ export function createApp({ doc, backend, root, diktat }) {
     // ihr Protokoll liegt in "Gemeinsame Momente"; der nächste Klick beginnt frisch.
     if (art === "moment" && gespeichert && gespeichert.status !== "running") gespeichert = null;
     const chat = gespeichert || { messages: [], status: "running" };
-    // S38 · Abschluss-Bewusstsein: Eine freigegebene Auftragsklärung öffnet
-    // beim Wiederbetreten den NACHKLANG (hinzufügen / richtigstellen /
-    // Zusammenfassung) statt stumm abgeschlossen zu sein.
-    const einzelRueckkehr = art === "einzel" && !!chat.freigegeben && chat.status === "released";
-    if (einzelRueckkehr) chat.status = "running";
+    // S59 · Linearer Pfad (Klärung → Auflösung → Prozessreflexion): nach der
+    // Freigabe existiert kein Neustart. Das eigene Handover schlägt den
+    // lokalen Chat (D1) — auch ein leerer oder zurückgesetzter Chat öffnet
+    // den NACHKLANG statt Kapitel 1.
+    if (art === "einzel" && !chat.freigegeben) {
+      const hand = await Promise.resolve().then(() => backend.handover.get(info.role)).catch(() => null);
+      if (hand) { chat.freigegeben = true; chat.nachklang = true; }
+    }
+    // S38/S59 · Abschluss-Bewusstsein: JEDE freigegebene Auftragsklärung
+    // öffnet beim Wiederbetreten den NACHKLANG (hinzufügen / richtigstellen /
+    // Zusammenfassung) — auch die seit S44 üblichen running-Sessions; der
+    // Legacy-Status "released" wird weiter auf "running" geheilt.
+    const einzelRueckkehr = art === "einzel" && !!chat.freigegeben;
+    if (einzelRueckkehr && chat.status !== "running") chat.status = "running";
     // S53 · Wiedereinstieg in eine LAUFENDE (pausierte) Auftragsklärung:
-    // begrüßen statt stummem Verlauf. Wächter (Vertrag 1): nur wenn der
-    // letzte Zug ein Assistant-Zug OHNE Marker und OHNE Block ist — ein
-    // wartendes Panel öffnet stattdessen wieder und bekommt GENAU EINE
-    // Panel-Antwort; ein offener User-Zug wird von resume() beantwortet.
+    // begrüßen statt stummem Verlauf. Wächter (Vertrag 1) für Nachklang UND
+    // Wiedereinstieg: nur wenn der letzte Zug ein Assistant-Zug OHNE Marker
+    // und OHNE Block ist — ein wartendes Panel öffnet stattdessen wieder und
+    // bekommt GENAU EINE Panel-Antwort; ein offener User-Zug wird von
+    // resume() beantwortet.
     const letzterZug = chat.messages[chat.messages.length - 1];
-    const einzelWiedereinstieg = art === "einzel" && !einzelRueckkehr && !chat.freigegeben &&
-      chat.status === "running" && !!letzterZug && letzterZug.role === "assistant" &&
+    const zugFrei = !!letzterZug && letzterZug.role === "assistant" &&
       !findeMarker(letzterZug.content || "", def.markerOrder || []) &&
       !findeBlock(letzterZug.content || "", def.blocks || (def.block ? [def.block] : []));
+    const einzelWiedereinstieg = art === "einzel" && !einzelRueckkehr &&
+      chat.status === "running" && zugFrei;
     const korpusSprache = (gespeichert && gespeichert.language) || paarSprache;
     setKorpusSprache(korpusSprache);
     if (!gespeichert) chat.language = korpusSprache;
@@ -792,7 +814,7 @@ export function createApp({ doc, backend, root, diktat }) {
     renderMsgs();
     if (chat.messages.length) {
       await state.engine.resume();
-      if (einzelRueckkehr)
+      if (einzelRueckkehr && zugFrei)
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelRueckkehr, { hidden: true }));
       else if (einzelWiedereinstieg)
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelWeiter, { hidden: true }));
@@ -851,7 +873,9 @@ export function createApp({ doc, backend, root, diktat }) {
       }
       // Die Eröffnungs-Nachricht ist Steuerung fürs Modell, keine Äußerung der Person —
       // sie bleibt unsichtbar (hidden), und die Begleitung beginnt von sich aus.
-      const startText = K().steuerTexte.start[art];   // Korpus: Sprachfassung liefert prompts.<locale>.js
+      // S59 · Fertig ohne Verlauf (geheilter Zustand): Eröffnung ist der
+      // NACHKLANG, nie der Kapitel-1-Start.
+      const startText = einzelRueckkehr ? K().steuerTexte.einzelRueckkehr : K().steuerTexte.start[art];   // Korpus: Sprachfassung liefert prompts.<locale>.js
       await warteAntwort(() => state.engine.submitToolResult(startText, { hidden: true }));
     }
   }
