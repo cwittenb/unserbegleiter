@@ -32,7 +32,7 @@ export async function laufeAlleBatch(szenarien, deps) {
   for (const sz of szenarien) {
     const anzahl = deps.n || sz.n || 3;
     for (let i = 0; i < anzahl; i++)
-      konvs.push({ konvId: sz.id + "#" + (i + 1), sz, nr: i + 1, system: sysPromptFuer(sz), messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, urteil: null });
+      konvs.push({ konvId: sz.id + "_" + (i + 1), sz, nr: i + 1, system: sysPromptFuer(sz), messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, urteil: null });
   }
   const maxTurns = konvs.reduce((m, k) => Math.max(m, k.sz.eingaben.length), 0);
 
@@ -45,7 +45,7 @@ export async function laufeAlleBatch(szenarien, deps) {
       const eingabe = k.sz.eingaben[d];
       if (eingabe === undefined) continue;
       k.messages.push({ role: "user", content: eingabe });
-      const cid = "p:" + k.konvId + ":" + d;
+      const cid = "p_" + k.konvId + "_t" + d;   // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
       idx.set(cid, k);
       requests.push({
         custom_id: cid,
@@ -76,7 +76,7 @@ export async function laufeAlleBatch(szenarien, deps) {
   const jidx = new Map();
   for (const k of konvs) {
     if (k.fehler) continue;
-    const cid = "j:" + k.konvId;
+    const cid = "j_" + k.konvId;   // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
     jidx.set(cid, k);
     jreq.push({
       custom_id: cid,

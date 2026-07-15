@@ -16,7 +16,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
       batches.push(requests);
       const map = new Map();
       for (const r of requests) {
-        if (r.custom_id.startsWith("j:"))
+        if (r.custom_id.startsWith("j_"))
           map.set(r.custom_id, { message: nachricht(JSON.stringify({ checks: [{ id: "C1", antwort: "nein", beleg: "ok" }] }), { input_tokens: 50, output_tokens: 10 }) });
         else
           map.set(r.custom_id, { message: nachricht("Antwort") });
@@ -38,7 +38,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
     expect(b.telemetrie.judge.in).toBe(100);         // 50 × 2
     // letzter Batch ist der Judge-Batch mit 2 Anfragen
     const letzter = batches[batches.length - 1];
-    expect(letzter.every(r => r.custom_id.startsWith("j:"))).toBe(true);
+    expect(letzter.every(r => r.custom_id.startsWith("j_"))).toBe(true);
     expect(letzter).toHaveLength(2);
   });
 
@@ -49,7 +49,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
       batches.push(requests.map(r => ({ cid: r.custom_id, msgs: r.params.messages })));
       const map = new Map();
       for (const r of requests) {
-        if (r.custom_id.startsWith("j:"))
+        if (r.custom_id.startsWith("j_"))
           map.set(r.custom_id, { message: nachricht(JSON.stringify({ checks: sz.checks.map(c => ({ id: c.id, antwort: "nein", beleg: "x" })) })) });
         else map.set(r.custom_id, { message: nachricht("REPLY") });
       }
@@ -71,7 +71,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
     const fuehreBatch = async requests => {
       const map = new Map();
       for (const r of requests) {
-        if (r.custom_id.startsWith("p:")) map.set(r.custom_id, { fehler: "errored: boom" });
+        if (r.custom_id.startsWith("p_")) map.set(r.custom_id, { fehler: "errored: boom" });
         else map.set(r.custom_id, { message: nachricht("{}") });
       }
       return map;
