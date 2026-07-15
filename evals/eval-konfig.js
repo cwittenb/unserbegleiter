@@ -41,19 +41,40 @@ export function leseEvalKonfig(argv, env) {
   // beide Paare dürfen gleichzeitig in Umgebung/.env stehen.
   const pOben = provider.toUpperCase();
   const pipelineModell = arg("pipeline-modell", env["EVAL_" + pOben + "_PIPELINE_MODEL"]);
-  const judgeModell = arg("judge-modell", env["EVAL_" + pOben + "_JUDGE_MODEL"]);
+
+  // Judge darf auf einem ANDEREN Provider/Key laufen (echte Judge-Isolation, S52).
+  // --judge-provider wählt den Judge-Provider (Default = Pipeline-Provider); das
+  // Judge-Modell kommt dann aus dessen Paar (EVAL_<JUDGE>_JUDGE_MODEL) bzw.
+  // --judge-modell, der Key aus --judge-key bzw. der Key-Variable des Judge-Providers.
+  const judgeProvider = arg("judge-provider", provider);
+  const jKeyVar = PROVIDER_KEY[judgeProvider];
+  if (!jKeyVar)
+    throw new EvalKonfigFehler('Unbekannter --judge-provider "' + judgeProvider + '" — erlaubt: ' +
+      Object.keys(PROVIDER_KEY).join(" | ") + ".");
+  const jOben = judgeProvider.toUpperCase();
+  const judgeModell = arg("judge-modell", env["EVAL_" + jOben + "_JUDGE_MODEL"]);
+  const judgeKey = arg("judge-key", env[jKeyVar]);
+
   if (!pipelineModell || !judgeModell)
     throw new EvalKonfigFehler(
-      'Modell-Konfiguration ist Pflicht (S35d) für Provider "' + provider + '": Pipeline- UND Judge-Modell angeben —\n' +
+      'Modell-Konfiguration ist Pflicht (S35d) für Provider "' + provider + '"' +
+      (judgeProvider !== provider ? ' (Judge-Provider "' + judgeProvider + '")' : '') +
+      ": Pipeline- UND Judge-Modell angeben —\n" +
       "  per Flag:  --pipeline-modell <m> --judge-modell <m>\n" +
-      "  oder Env:  EVAL_" + pOben + "_PIPELINE_MODEL=<m>  EVAL_" + pOben + "_JUDGE_MODEL=<m>\n" +
+      "  oder Env:  EVAL_" + pOben + "_PIPELINE_MODEL=<m>  EVAL_" + jOben + "_JUDGE_MODEL=<m>\n" +
       "(Flag hat Vorrang vor Env; kein Modell-Default im Code.)");
 
-  if (pipelineModell === judgeModell && !flag("erlaube-gleiches-modell"))
+  if (judgeProvider !== provider && !judgeKey)
+    throw new EvalKonfigFehler("Kein Judge-Schlüssel gefunden: bitte " + jKeyVar +
+      " setzen oder --judge-key <key> angeben (Judge-Provider: " + judgeProvider + ").");
+
+  // Self-Preference-Guard nur bei GLEICHEM Provider sinnvoll — verschiedene Provider
+  // können nicht dasselbe Modell sein.
+  if (judgeProvider === provider && pipelineModell === judgeModell && !flag("erlaube-gleiches-modell"))
     throw new EvalKonfigFehler(
       "Judge-Modell und Pipeline-Modell sind identisch (" + pipelineModell + ").\n" +
       "Das verletzt die Judge-Trennung (Self-Preference-Bias). Wenn du das wirklich\n" +
       "willst: --erlaube-gleiches-modell setzen.");
 
-  return { provider, keyVar, apiKey, pipelineModell, judgeModell };
+  return { provider, keyVar, apiKey, pipelineModell, judgeProvider, jKeyVar, judgeKey, judgeModell };
 }

@@ -18,6 +18,8 @@
 //                   [--familie GATE] [--szenario AUF-01] [--sprache de|en] [--n 3]
 //                   [--rpm 2|unlimited]        geteilte RPM-Drossel (Default 2, Free-Tier-sicher)
 //                   [--weiter-bei-fehler]      Fehler-Szenario markieren statt Lauf abzubrechen
+//                   [--judge-provider anthropic|mistral]  Judge auf ANDEREM Provider (echte Isolation)
+//                   [--judge-key <key>]        Key für den Judge-Provider (sonst dessen Env-Key)
 //                   [--erlaube-gleiches-modell]
 //
 // Modell-Konfiguration ist PFLICHT (S35d): kein Modell-Default im Code — fehlt
@@ -57,7 +59,7 @@ async function main() {
     if (e instanceof EvalKonfigFehler) { console.error(e.message); process.exit(2); }
     throw e;
   }
-  const { provider, apiKey, pipelineModell, judgeModell } = konfig;
+  const { provider, apiKey, pipelineModell, judgeProvider, judgeKey, judgeModell } = konfig;
 
   let szenarien = [...SZENARIEN, ...SZENARIEN_EN];
   const sprache = arg("language", null);
@@ -72,28 +74,46 @@ async function main() {
   }
   const n = arg("n") ? parseInt(arg("n"), 10) : undefined;
 
-  // RPM-Drossel (S51): fixer Standard 2 (Free-Tier-sicher = 1 Req/30s), geteilt über
-  // Pipeline UND Judge (Mistrals Limit gilt pro Workspace). --rpm unlimited|0 hebt sie auf.
+  // RPM-Drossel (S51): fixer Standard 2 (Free-Tier-sicher = 1 Req/30s). --rpm unlimited|0 hebt sie auf.
   const rpmArg = arg("rpm", "2");
   const rpm = /^(unlimited|0|kein|keine|aus)$/i.test(rpmArg) ? 0 : parseInt(rpmArg, 10);
   if (Number.isNaN(rpm) || rpm < 0) {
     console.error('Ungültiger --rpm-Wert: "' + rpmArg + '" (Zahl ≥ 0 oder "unlimited").');
     process.exit(2);
   }
-  const drossel = baueDrossel({ rpm });                 // EINE Instanz für beide Adapter
   const weiterBeiFehler = process.argv.includes("--weiter-bei-fehler");
 
-  const modellCfg = m => provider === "mistral"
-    ? { provider: "mistral", mode: "direct", apiKey, models: { mistral: m }, drossel }
-    : { provider: "anthropic", mode: "direct", apiKey, models: { anthropic: m }, drossel };
-  const pipelineCall = makeAdapter(modellCfg(pipelineModell));
-  const judgeCall = makeAdapter(modellCfg(judgeModell));
+  // Drossel gilt pro Provider-Workspace. Gleicher Provider für Pipeline+Judge → EINE
+  // geteilte Instanz (S51). Anderer Judge-Provider (S52) → eigenständiges Limit; die
+  // --rpm-Drossel bleibt an der Pipeline, der Judge-Provider läuft ungedrosselt
+  // (der Adapter-Retry fängt etwaige 429 ab).
+  const crossProvider = judgeProvider !== provider;
+  const drosselPipeline = baueDrossel({ rpm });
+  const drosselJudge = crossProvider ? baueDrossel({ rpm: 0 }) : drosselPipeline;
+
+  const cfgFuer = (prov, key, modell, dr) => prov === "mistral"
+    ? { provider: "mistral", mode: "direct", apiKey: key, models: { mistral: modell }, drossel: dr }
+    : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr };
+  const pipelineCall = makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline));
+  const judgeCall = makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge));
 
   const hash = await coreHash();
-  console.log("Eval-Lauf · Kern " + hash + " · Pipeline " + pipelineModell + " · Judge " + judgeModell);
-  console.log("Drossel: " + (rpm ? rpm + " RPM (geteilt)" : "unlimited") +
-    (weiterBeiFehler ? " · weiter-bei-fehler" : "") + " · Provider " + provider);
+  console.log("Eval-Lauf · Kern " + hash +
+    " · Pipeline " + provider + "/" + pipelineModell +
+    " · Judge " + judgeProvider + "/" + judgeModell);
+  console.log("Drossel: Pipeline " + (rpm ? rpm + " RPM" : "unlimited") +
+    (crossProvider ? " · Judge unlimited (Provider " + judgeProvider + ")" : " (mit Judge geteilt)") +
+    (weiterBeiFehler ? " · weiter-bei-fehler" : ""));
   console.log("Szenarien: " + szenarien.map(s => s.id).join(", ") + (n ? " · n=" + n : ""));
+
+  // Live-Fortschritt je Szenario (S52): "[ i/N] ID … status (Dauer)".
+  const melde = ev => {
+    if (ev.phase === "start")
+      process.stdout.write("[" + String(ev.i).padStart(2) + "/" + ev.gesamt + "] " + ev.id.padEnd(9) + " … ");
+    else
+      process.stdout.write((ev.roteLinie ? "ROT (rote Linie)" : ev.status) +
+        (ev.ms != null ? " (" + (ev.ms / 1000).toFixed(1) + "s)" : "") + "\n");
+  };
 
   // Dateipfad + inkrementelle, absturzsichere Persistenz VOR dem Lauf einrichten:
   // nach jedem Szenario wird dieselbe Datei überschrieben — bei Abbruch spiegelt
@@ -105,9 +125,9 @@ async function main() {
   const persistiere = async b => { await writeFile(datei, JSON.stringify(b, null, 2)); };
 
   const bericht = await laufeAlle(szenarien, {
-    pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler,
+    pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde,
     stand: {
-      coreHash: hash, provider,
+      coreHash: hash, provider, judgeProvider,
       pipelineModell, judgeModell,
       judgePromptVersion: JUDGE_PROMPT_VERSION,
     },

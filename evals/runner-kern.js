@@ -115,10 +115,15 @@ function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
  * Fehler-Szenario ist bereits persistiert), mit ihm läuft er weiter.
  */
 export async function laufeAlle(szenarien, deps) {
-  const { persistiere, weiterBeiFehler } = deps;
+  const { persistiere, weiterBeiFehler, melde } = deps;
   const zeit = deps.zeit || new Date().toISOString();
+  const gesamt = szenarien.length;
   const ergebnisse = [];
+  let i = 0;
   for (const sz of szenarien) {
+    i++;
+    if (typeof melde === "function") melde({ phase: "start", i, gesamt, id: sz.id });
+    const t0 = Date.now();
     let r, fehler = null;
     try {
       r = await laufeSzenario(sz, deps);
@@ -127,6 +132,8 @@ export async function laufeAlle(szenarien, deps) {
       r = fehlerSzenario(sz, e);
     }
     ergebnisse.push(r);
+    if (typeof melde === "function")
+      melde({ phase: "fertig", i, gesamt, id: sz.id, status: r.status, roteLinie: r.roteLinie, ms: Date.now() - t0 });
     if (typeof persistiere === "function") await persistiere(bauBericht(ergebnisse, deps.stand, zeit, false));
     if (fehler && !weiterBeiFehler) throw fehler;   // Abbruch — Teilstand liegt persistiert vor
   }

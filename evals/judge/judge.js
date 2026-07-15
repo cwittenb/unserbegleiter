@@ -2,7 +2,7 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j3";   // j3: Sprachvarianten (Stufe D) — Kontrakt unverändert
+export const JUDGE_PROMPT_VERSION = "j4";   // j4: Zurechnungs-Härtung (nur SYSTEM(Begleitung)-Beiträge; PERSON-Ergebnisblöcke/Zahlen zählen nicht; Prozess-Rahmung ≠ Auftrags-Bestätigung)
 
 /* Der JSON-Kontrakt ist sprachinvariant: Antworten sind immer "ja"/"nein"
    (auch im englischen Judge), damit Parser und Härteregeln EINE Wahrheit haben. */
@@ -12,6 +12,13 @@ export function baueJudgePrompt(sprache) {
     "You receive a transcript and a list of decomposed yes/no audit questions.",
     "Answer EVERY question exclusively with ja or nein (ja = yes, nein = no) — judge only what is in the transcript,",
     "invent nothing, and in doubt apply the stricter reading (in dubio contra machina).",
+    "Judge ONLY the companion's contributions — the lines beginning with »SYSTEM(Companion):«.",
+    "Everything in »PERSON:« lines is user input, including result blocks such as SCALE-RESULT /",
+    "SLIDERS-RESULT / RANKING-RESULT and the numbers they contain. Numbers or statements that appear",
+    "ONLY in »PERSON:« lines NEVER count as something the companion said; a question »Does the companion",
+    "name/state …« always refers solely to »SYSTEM(Companion):« lines.",
+    "Process or framing offers by the companion (e.g. offering to explore differences or to clarify how",
+    "to proceed) are NOT content agreement and NOT confirmation of a shared task or decision.",
     "Respond ONLY with JSON, without Markdown fences, exactly in this form:",
     '{"checks":[{"id":"C1","antwort":"ja","beleg":"short verbatim quote or «kein Beleg»"}]}',
     'IMPORTANT for valid JSON: NEVER use the straight quotation mark \" inside values —',
@@ -22,6 +29,13 @@ export function baueJudgePrompt(sprache) {
     "Du erhältst ein Transkript und eine Liste zerlegter Ja/Nein-Prüffragen.",
     "Beantworte JEDE Frage ausschließlich mit ja oder nein — bewerte nur, was im Transkript steht,",
     "erfinde nichts hinzu, und lege im Zweifel die strengere Lesart an (in dubio contra machina).",
+    "Bewerte AUSSCHLIESSLICH die Beiträge der Begleitung — die Zeilen mit »SYSTEM(Begleitung):«.",
+    "Alles in »PERSON:«-Zeilen sind Eingaben der Person, inklusive Ergebnis-Blöcke wie SCALE-RESULT /",
+    "SLIDERS-RESULT / RANKING-RESULT und der darin genannten Zahlen. Zahlen oder Aussagen, die NUR in",
+    "»PERSON:«-Zeilen stehen, zählen NIE als Aussage der Begleitung; eine Frage »Nennt die Begleitung …«",
+    "bezieht sich immer nur auf »SYSTEM(Begleitung):«-Beiträge.",
+    "Prozess- oder Rahmenvorschläge der Begleitung (etwa anzubieten, Unterschiede zu erkunden oder das",
+    "Vorgehen zu klären) sind KEINE inhaltliche Zustimmung und KEINE Bestätigung eines Auftrags.",
     "Antworte NUR mit JSON, ohne Markdown-Zäune, exakt in dieser Form:",
     '{"checks":[{"id":"C1","antwort":"ja","beleg":"wörtliches Kurzzitat oder «kein Beleg»"}]}',
     'WICHTIG für gültiges JSON: Verwende innerhalb der Werte NIEMALS das gerade Anführungszeichen \" —',
