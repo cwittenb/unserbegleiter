@@ -11,10 +11,14 @@
 // seit S42/S43 gehoben (reveal/revealLog/minigate); neue Szene "einseitig-frei";
 // Szenen-Quittung überlebt den reboot.
 
+import { ladeTokenStaende, wipeTokenStaende, formatTokens, TOKEN_PREFIX } from "./token-zaehler.js";
+
 export const DUMP_VERSION = 1;
 const NS = "PBDEV";
 const META_KEY = NS + ":meta";
 const REPO_PREFIX = "p:" + NS + ":";
+// Alle Dev-Namensräume: Dump und Wipe erfassen auch den Token-Zähler (S61).
+const PREFIXES = [META_KEY, REPO_PREFIX, TOKEN_PREFIX];
 
 /* ================= Zustand speichern / laden ================= */
 
@@ -23,7 +27,7 @@ export async function dumpZustand(store) {
   const dump = { version: DUMP_VERSION, zeit: new Date().toISOString(), shared: {}, privat: {} };
   for (const shared of [true, false]) {
     const ziel = shared ? dump.shared : dump.privat;
-    for (const prefix of [META_KEY, REPO_PREFIX]) {
+    for (const prefix of PREFIXES) {
       for (const k of await store.list(prefix, shared)) ziel[k] = await store.get(k, shared);
     }
   }
@@ -33,7 +37,7 @@ export async function dumpZustand(store) {
 /** Alles unter dem Dev-Namensraum entfernen (beide Welten, inkl. Meta). */
 export async function wipeZustand(store) {
   for (const shared of [true, false])
-    for (const prefix of [META_KEY, REPO_PREFIX])
+    for (const prefix of PREFIXES)
       for (const k of await store.list(prefix, shared)) await store.del(k, shared);
 }
 
@@ -287,6 +291,10 @@ export function createDevPanel({ doc, host, store, reboot }) {
            </div>`).join("")}
         </div>
 
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin:14px 0 6px">Token-Zähler (echte usage, pro Paar)</div>
+        <div id="devTokens" style="padding:2px 0 6px"></div>
+        <button id="devTokensReset" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px">Token-Zähler zurücksetzen</button>
+
         <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin:14px 0 6px">Zustand sichern &amp; laden</div>
         <button id="devSave" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px">Zustand speichern (JSON)</button>
         <button id="devLoad" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px">Zustand aus Textfeld laden</button>
@@ -298,6 +306,33 @@ export function createDevPanel({ doc, host, store, reboot }) {
 
   const $ = id => host.querySelector("#" + id);
   const msg = (t, rot) => { const m = $("devMsg"); m.textContent = t; m.style.color = rot ? "#b4232a" : "#0f766e"; };
+
+  /* ---- Token-Zähler (S61): Startwert aus dem Store (überlebt Reloads),
+     Live-Aktualisierung über das pb:tokens-Ereignis des Zähl-Wrappers. ---- */
+  let tokenStaende = {};
+  function zeigeTokens() {
+    const el = $("devTokens");
+    const codes = Object.keys(tokenStaende).sort();
+    if (!codes.length) { el.innerHTML = '<span style="color:var(--ink-soft)">Noch keine LLM-Aufrufe gezählt.</span>'; return; }
+    el.innerHTML = codes.map(code => {
+      const s = tokenStaende[code] || {};
+      return `<div data-token-code="${esc(code)}" style="padding:3px 0">
+        <b>${esc(code)}</b>
+        <span style="color:var(--ink-soft)"> · ${s.calls || 0} Aufrufe · in ${formatTokens(s.in)} · out ${formatTokens(s.out)} · Cache-Lesen ${formatTokens(s.cacheRead)} · Cache-Schreiben ${formatTokens(s.cacheWrite)}</span>
+      </div>`;
+    }).join("");
+  }
+  ladeTokenStaende(store).then(s => { tokenStaende = s; zeigeTokens(); });
+  doc.addEventListener("pb:tokens", ev => {
+    const d = (ev && ev.detail) || {};
+    if (!d.code) return;
+    tokenStaende[d.code] = d.stand;
+    zeigeTokens();
+  });
+  $("devTokensReset").addEventListener("click", async () => {
+    try { await wipeTokenStaende(store); tokenStaende = {}; zeigeTokens(); msg("Token-Zähler zurückgesetzt."); }
+    catch (e) { msg("Zurücksetzen fehlgeschlagen: " + e.message, true); }
+  });
 
   // Quittung des letzten Setzens anzeigen (überlebt den reboot) — einmalig.
   if (quittung.text) { msg(quittung.text); quittung.text = null; }

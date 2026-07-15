@@ -13,6 +13,7 @@ import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
 import { makeAdapter, LLM_PROVIDERS } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { pruefeUndZaehle, quotaCfg } from "./quota.js";
+import { erfasseUsage, leseTokenStand, leseTokenHistorie, leseTokenExport, monatsTag } from "./tokenstat.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
          mintMagic, RECOVER_MS, beginRecoveryEmail, confirmRecoveryEmail,
          hasRecoveryEmail, lookupRecovery } from "./auth.js";
@@ -86,6 +87,8 @@ async function route(request, env) {
           code: c.code, nameA: c.nameA, nameB: c.nameB, createdAt: c.createdAt,
           emailA: await hasRecoveryEmail(kv, c.code, "A"),
           emailB: await hasRecoveryEmail(kv, c.code, "B"),
+          // S61: echte usage-Token (Paar-Summe, bewusst kein Rollen-Split).
+          tokens: await leseTokenStand(kv, c.code, monatsTag(now())),
         });
       }
       cursor = r.list_complete ? undefined : r.cursor;
@@ -212,6 +215,20 @@ async function route(request, env) {
     await kv.put("sys/audit/" + now() + "-" + randomToken(4),
       JSON.stringify({ typ: "broadcast", subject, empfaenger: empfaenger.length, gesendet, fehlgeschlagen, at: now() }));
     return json({ empfaenger: empfaenger.length, gesendet, fehlgeschlagen });
+  }
+
+  /* ---- Token-Statistik (S61, admin-gated): /api/tokens = Voll-Export für das
+   *  Post-Eval-Kostenskript (alle Paare × alle Monats-Eimer, ein JSON);
+   *  /api/tokens/:code = Historie eines Paars (Monatsansicht der Admin-Liste).
+   *  Reihenfolge beachten: der exakte Pfad vor dem Code-Muster. ---- */
+  if (p === "/api/tokens" && request.method === "GET") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    return json({ stand: new Date(now()).toISOString(), paare: await leseTokenExport(kv) });
+  }
+  const mTok = /^\/api\/tokens\/([A-Za-z0-9]+)$/.exec(p);
+  if (mTok && request.method === "GET") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    return json({ code: mTok[1], ...(await leseTokenHistorie(kv, mTok[1])) });
   }
 
   /* ---- Betreiber-Export: alle Daten EINES Paars (Auswertung, admin-gated) ---- */
@@ -458,6 +475,9 @@ async function route(request, env) {
           const antwort = await call(system, messages, d => { sende({ delta: d }); });
           if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
           await sende({ done: antwort });
+          // S61: erst NACH dem done-Event zählen — die Statistik verzögert
+          // nie die Antwort und blockiert sie nie (Best-Effort im Modul).
+          await erfasseUsage(kv, session.code, antwort.usage, now);
         } catch (e) {
           await sende({ error: e.message || "LLM-Fehler" });
         } finally {
@@ -474,6 +494,7 @@ async function route(request, env) {
     }
     const antwort = await call(system, messages);
     if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
+    await erfasseUsage(kv, session.code, antwort.usage, now);   // S61, Best-Effort
     return json(antwort);
   }
 

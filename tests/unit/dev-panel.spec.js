@@ -155,3 +155,47 @@ describe("Dev-Panel · UI", () => {
     expect(await store.get("PBDEV:meta", true)).toMatchObject({ nameA: "Anna" });
   });
 });
+
+describe("Dev-Panel · Token-Zähler (S61)", () => {
+  const tick = () => new Promise(r => setTimeout(r, 0));
+  async function klick(el) { el.click(); for (let i = 0; i < 6; i++) await tick(); }
+  const stand = { calls: 2, in: 14, out: 4, cacheRead: 6, cacheWrite: 0, aktualisiert: 1 };
+
+  it("zeigt gespeicherte Stände beim Start und aktualisiert live über pb:tokens", async () => {
+    await store.set("PBDEV:tokens:dev-mock01", stand, true);
+    document.body.innerHTML = '<div id="host"></div>';
+    createDevPanel({ doc: document, host: document.getElementById("host"), store, reboot: async () => {} });
+    for (let i = 0; i < 6; i++) await tick();   // Startwert lädt asynchron
+
+    const el = document.querySelector("#devTokens");
+    expect(el.textContent).toContain("dev-mock01");
+    expect(el.textContent).toContain("2 Aufrufe");
+
+    document.dispatchEvent(new CustomEvent("pb:tokens", {
+      detail: { code: "dev-mock01", stand: { ...stand, calls: 3, in: 21 } },
+    }));
+    await tick();
+    expect(el.textContent).toContain("3 Aufrufe");
+  });
+
+  it("Reset leert Anzeige UND Store; Dump/Wipe erfassen den Token-Namensraum", async () => {
+    await store.set("PBDEV:tokens:dev-mock01", stand, true);
+    document.body.innerHTML = '<div id="host"></div>';
+    createDevPanel({ doc: document, host: document.getElementById("host"), store, reboot: async () => {} });
+    for (let i = 0; i < 6; i++) await tick();
+
+    // Dump enthält den Zähler …
+    const dump = await dumpZustand(store);
+    expect(dump.shared["PBDEV:tokens:dev-mock01"]).toMatchObject({ calls: 2 });
+
+    // … Reset entfernt ihn aus Anzeige und Store …
+    await klick(document.querySelector("#devTokensReset"));
+    expect(document.querySelector("#devTokens").textContent).toContain("Noch keine LLM-Aufrufe");
+    expect(await store.get("PBDEV:tokens:dev-mock01", true)).toBeNull();
+
+    // … und wipeZustand räumt einen frisch gesetzten Stand ebenfalls ab.
+    await store.set("PBDEV:tokens:dev-mock01", stand, true);
+    await wipeZustand(store);
+    expect(await store.get("PBDEV:tokens:dev-mock01", true)).toBeNull();
+  });
+});

@@ -15,6 +15,7 @@ import { applyDesign } from "../../core/ui/design.js";
 import { t, setLocale, getLocale } from "../../core/i18n/index.js";
 import { runSelftest } from "./selftest.js";
 import { createDevPanel } from "./dev-panel.js";
+import { mitTokenZaehler } from "./token-zaehler.js";
 
 const doc = document;
 const wurzel = doc.getElementById("app");
@@ -27,7 +28,13 @@ function localBackend({ store, meta, role }) {
   const repo = new Repo({ store, ns: "PBDEV", code: meta.code, activeModuleId: "betrieb" });
   const bstate = new Bstate(repo);
   const pstate = new Pstate(repo);
-  const llm = makeAdapter({ ...ARTEFAKT_LLM });   // Artefakt-Ausnahme (S35d): einzige Stelle mit Modellwissen
+  // Artefakt-Ausnahme (S35d): einzige Stelle mit Modellwissen. S61: der
+  // Zähl-Wrapper akkumuliert die echte usage pro Paar (geteilte Welt) und
+  // meldet den Stand als DOM-Ereignis ans Entwickler-Panel (Live-Zähler).
+  const llm = mitTokenZaehler(makeAdapter({ ...ARTEFAKT_LLM }), {
+    store, code: meta.code,
+    melde: (code, stand) => doc.dispatchEvent(new CustomEvent("pb:tokens", { detail: { code, stand } })),
+  });
   return {
     async info() {
       return {

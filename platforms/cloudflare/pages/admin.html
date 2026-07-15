@@ -111,6 +111,7 @@
         <p class="hint">Lädt alle angelegten Paare mit Code, Namen und Adress-Status (✓ = bestätigte Wiedereinstiegs-Adresse). Klick auf eine Zeile übernimmt den Code in Export und Wiederherstellung.</p>
       </div>
       <button id="lstGo" class="primary">Paare laden</button>
+      <button id="tokGo" class="primary" style="margin-left:8px">Token-Export (JSON)</button>
       <div id="lstMsg"></div>
       <div id="lstOut" style="margin-top:10px"></div>
     </div>
@@ -236,6 +237,75 @@
     sel.options[1].textContent = "Person B" + (row && row.nameB ? " · " + row.nameB : "");
   }
   $("relCode").addEventListener("input", rolleBeschriften);
+
+  /* ---- Token-Anzeige (S61): echte usage-Werte, kompakt formatiert. ---- */
+  function fmtTok(n){
+    if (n == null || !isFinite(n)) return "–";
+    if (n < 1000) return String(n);
+    if (n < 1e6) return (n / 1e3).toLocaleString("de-DE", { maximumFractionDigits: 1 }) + "k";
+    return (n / 1e6).toLocaleString("de-DE", { maximumFractionDigits: 2 }) + "M";
+  }
+  function tokSumme(s){ return s ? (s.in || 0) + (s.out || 0) + (s.cacheRead || 0) + (s.cacheWrite || 0) : null; }
+  function tokKurz(s){ return fmtTok(tokSumme(s)); }
+  function tokDetail(s){
+    if (!s) return "Noch keine LLM-Aufrufe erfasst";
+    return (s.calls || 0) + " Aufrufe · in " + fmtTok(s.in) + " · out " + fmtTok(s.out) +
+      " · Cache-Lesen " + fmtTok(s.cacheRead) + " · Cache-Schreiben " + fmtTok(s.cacheWrite);
+  }
+  function toggleHistorie(tr, code, zelle){
+    var offen = tr.nextSibling && tr.nextSibling.getAttribute && tr.nextSibling.getAttribute("data-historie") === code;
+    if (offen) { tr.parentNode.removeChild(tr.nextSibling); return; }
+    var tok = $("tok").value;
+    if (!tok) { lstFehler("Bitte oben das Admin-Token eingeben."); return; }
+    zelle.textContent = "Lade …";
+    fetch(basis() + "/api/tokens/" + encodeURIComponent(code), { headers: { "x-admin-token": tok } })
+      .then(function(res){ return res.status === 200 ? res.json() : null; })
+      .then(function(h){
+        zelle.textContent = tokKurz(h && h.monate && h.monate[new Date().toISOString().slice(0,7)]) + " / " + tokKurz(h && h.total);
+        if (!h) { lstFehler("Historie konnte nicht geladen werden."); return; }
+        var det = document.createElement("tr");
+        det.setAttribute("data-historie", code);
+        var zell = document.createElement("td");
+        zell.colSpan = 5;
+        zell.style.cssText = "padding:6px 8px 10px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.02)";
+        var monate = Object.keys(h.monate || {}).sort().reverse();
+        zell.innerHTML = monate.length
+          ? monate.map(function(m){
+              var s = h.monate[m];
+              return '<div style="padding:2px 0"><b>' + m + "</b> · " + tokDetail(s) + "</div>";
+            }).join("")
+          : '<span class="hint">Noch keine Monats-Einträge.</span>';
+        tr.parentNode.insertBefore(det, tr.nextSibling);
+      })
+      .catch(function(){ lstFehler("Verbindung fehlgeschlagen."); });
+  }
+
+  /* ---- Token-Export (S61): alle Paare × alle Monats-Eimer als ein JSON —
+     Grundlage fürs Post-Eval-Kostenskript (Bepreisung via evals/preise.js). ---- */
+  $("tokGo").addEventListener("click", function(){
+    var tok = $("tok").value;
+    if(!tok){ lstFehler("Bitte oben das Admin-Token eingeben."); return; }
+    var b = $("tokGo");
+    b.disabled = true; b.textContent = "Lade …"; lstMsg.innerHTML = "";
+    fetch(basis() + "/api/tokens", { headers: { "x-admin-token": tok } })
+      .then(function(res){
+        if(res.status === 401){ lstFehler("Admin-Token fehlt oder ist falsch."); return null; }
+        return res.json();
+      })
+      .then(function(data){
+        if(!data) return;
+        var text = JSON.stringify(data, null, 2);
+        var blob = new Blob([text], { type: "application/json" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "paarbegleitung-tokens-" + (data.stand || new Date().toISOString()).slice(0, 10) + ".json";
+        a.click();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 5000);
+      })
+      .catch(function(){ lstFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ b.disabled = false; b.textContent = "Token-Export (JSON)"; });
+  });
+
   lstGo.addEventListener("click", function(){
     var tok = $("tok").value;
     if(!tok){ lstFehler("Bitte oben das Admin-Token eingeben."); return; }
@@ -257,6 +327,7 @@
           '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">A</th>' +
           '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">B</th>' +
           '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">Angelegt</th>' +
+          '<th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">Tokens (Monat / gesamt)</th>' +
           "</tr></thead>";
         var tb = document.createElement("tbody");
         paare.forEach(function(r){
@@ -267,6 +338,12 @@
           tr.appendChild(td((r.nameA || "") + (r.emailA ? " ✓" : "")));
           tr.appendChild(td((r.nameB || "") + (r.emailB ? " ✓" : "")));
           tr.appendChild(td(r.createdAt ? new Date(r.createdAt).toLocaleDateString("de-DE") : ""));
+          /* Token-Zelle (S61): Klick öffnet die Monatshistorie, nicht die Zeilen-Auswahl. */
+          var tokTd = td(tokKurz(r.tokens && r.tokens.monat) + " / " + tokKurz(r.tokens && r.tokens.total));
+          tokTd.title = tokDetail(r.tokens && r.tokens.total) + " — klicken für Monatshistorie";
+          tokTd.style.textDecoration = "underline dotted";
+          tokTd.addEventListener("click", function(ev){ ev.stopPropagation(); toggleHistorie(tr, r.code, tokTd); });
+          tr.appendChild(tokTd);
           tr.addEventListener("click", function(){
             $("expCode").value = r.code;
             $("relCode").value = r.code;
