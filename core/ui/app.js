@@ -858,8 +858,11 @@ export function createApp({ doc, backend, root, diktat }) {
     const zugFrei = !!letzterZug && letzterZug.role === "assistant" &&
       !findeMarker(letzterZug.content || "", def.markerOrder || []) &&
       !findeBlock(letzterZug.content || "", def.blocks || (def.block ? [def.block] : []));
-    const einzelWiedereinstieg = art === "einzel" && !einzelRueckkehr &&
-      chat.status === "running" && zugFrei;
+    // S64 · Generischer Wiedereinstieg: jede SessionDef, die einen
+    // wiedereinstieg-Steuertext deklariert, meldet dem Modell das erneute
+    // Betreten ihrer laufenden Session — kein Sonderfall je Raum mehr.
+    const wiedereinstieg = def.wiedereinstieg && !einzelRueckkehr &&
+      chat.status === "running" && zugFrei ? def.wiedereinstieg : null;
     const korpusSprache = (gespeichert && gespeichert.language) || paarSprache;
     setKorpusSprache(korpusSprache);
     if (!gespeichert) chat.language = korpusSprache;
@@ -881,8 +884,8 @@ export function createApp({ doc, backend, root, diktat }) {
       await state.engine.resume();
       if (einzelRueckkehr && zugFrei)
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelRueckkehr, { hidden: true }));
-      else if (einzelWiedereinstieg)
-        await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelWeiter, { hidden: true }));
+      else if (wiedereinstieg)
+        await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte[wiedereinstieg], { hidden: true }));
     } else {
       if (art === "gemeinsam") {
         const [freiA, freiB, protokoll, alleG] = await Promise.all([

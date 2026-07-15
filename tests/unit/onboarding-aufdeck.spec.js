@@ -116,7 +116,9 @@ describe("Kernwetten · Kapitel-Marker & Aufdeck-Def", () => {
     expect(d.shared).toBe(true);
     expect(typeof d.markers["[[REVEAL]]"]).toBe("function");
     const engine = { chat: { status: "running" } };
-    await d.blocks[0].handle({ summary: "Warm.", touchingPoints: ["Nähe"], forClarification: [] }, engine);
+    // S64: Block per Marke statt Index finden (der Choice-Block steht nun davor).
+    const aufdeckBlock = d.blocks.find(b => b.start === "REVEAL-BLOCK");
+    await aufdeckBlock.handle({ summary: "Warm.", touchingPoints: ["Nähe"], forClarification: [] }, engine);
     expect(engine.chat.status).toBe("running");   // Auftakt beendet NICHT — die Klärung folgt
     expect(gesetzt[0][0]).toBe("revealLog");
     expect(gesetzt[0][1].summary).toBe("Warm.");

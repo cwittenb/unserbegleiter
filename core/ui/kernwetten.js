@@ -72,6 +72,7 @@ export function einzelDef(backend, hooks = {}) {
     id: "einzel",
     shared: false,
     titel: "Auftragsklärung",
+    wiedereinstieg: "einzelWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
     markerOrder: ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
@@ -109,6 +110,7 @@ export function gemeinsamDef(backend, hooks = {}) {
     id: "gemeinsam",
     shared: true,
     titel: "Gemeinsame Auflösung",
+    wiedereinstieg: "gemeinsamWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
@@ -124,6 +126,13 @@ export function gemeinsamDef(backend, hooks = {}) {
     },
     canAct: c => c.status !== "finished",
     blocks: [
+      {
+        // S64 · Ankommens-/Abschieds-Einladung: kleines ablehnbares Menü
+        // (id "arrive" beim Wiedereinstieg, "farewell" bei Vertagung) —
+        // dieselbe Choice-Mechanik wie in der Qualitätszeit.
+        ...BLOECKE.choice,
+        handle: (data, engine) => { if (hooks.onChoice) hooks.onChoice(data.id || "arrive", engine, data); },
+      },
       {
         // S43 · Aufdeck-AUFTAKT in der Auflösung: Das Kurzprotokoll der Tafel
         // wird persistiert, die Session läuft danach in die Klärung WEITER
