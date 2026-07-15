@@ -235,7 +235,7 @@ export function createApp({ doc, backend, root, diktat }) {
      erreichbar ist, zählt als "nicht vorhanden". */
   async function ladeLage() {
     const still = p => Promise.resolve().then(p).catch(() => null);
-    const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat, findings] = await Promise.all([
+    const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat, findings, gemeinsamChat] = await Promise.all([
       still(() => backend.bstate.get("reveal")),
       still(() => backend.bstate.get("revealLog")),
       still(() => backend.bstate.get("shelf")),
@@ -247,6 +247,7 @@ export function createApp({ doc, backend, root, diktat }) {
       still(() => backend.chat.load("mine", "einzel")),
       still(() => backend.chat.load("shared", "moment")),
       still(() => backend.bstate.get("findings")),
+      still(() => backend.chat.load("shared", "gemeinsam")),
     ]);
     const rolle = state.info.role;
     const offeneRunde = (((measurements && measurements.items) || [])).find(r => r.status === "open");
@@ -264,6 +265,9 @@ export function createApp({ doc, backend, root, diktat }) {
       aufdeckBereit: !!(reveal && reveal.A && reveal.B && !revealLog),
       aufdeckGelaufen: !!revealLog,
       aufloesungGelaufen: !!findings,
+      // S63 · Pausiert-Zustand der Gemeinsamen Auflösung: begonnen (Nachrichten
+      // liegen), läuft noch, kein Befund — der Vorraum sagt dann "fortsetzen".
+      aufloesungOffen: !!(gemeinsamChat && gemeinsamChat.status === "running" && (gemeinsamChat.messages || []).length && !findings),
       handMeins,
       handPartner: !!(rolle === "A" ? hB : hA),
       handBeide: !!(hA && hB),
@@ -305,9 +309,10 @@ export function createApp({ doc, backend, root, diktat }) {
       lage.aufdeckBereit ? t("weg.aufloesungStartMitAufdeck") : t("weg.aufloesungStart");
     if (screenId === "scrStart") {
       zeile(1, "mein", lage.einzelKapitel && t("weg.einzelPause", { n: lage.einzelKapitel }));
+      zeile(1, "gemeinsam", lage.aufloesungOffen && t("weg.aufloesungOffen"));   // S63: Begonnenes fortsetzen
       zeile(1, "gemeinsam", lage.momentOffen && t("weg.momentOffen"));
       zeile(2, "mein", !lage.einzelBegonnen && t("weg.startAuftrag"));
-      zeile(2, "gemeinsam", lage.handBeide && !lage.aufloesungGelaufen && aufloesungAktion());
+      zeile(2, "gemeinsam", lage.handBeide && !lage.aufloesungGelaufen && !lage.aufloesungOffen && aufloesungAktion());
       zeile(3, "gemeinsam", lage.regalNeu > 0 && t("weg.regalNeu", { n: lage.regalNeu }));
       zeile(3, "mein", lage.messOffen && t("weg.messOffen"));
       zeile(4, "mein", t("weg.startSolo"));
@@ -321,8 +326,9 @@ export function createApp({ doc, backend, root, diktat }) {
       zeile(4, "mein", lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick"));
     }
     if (screenId === "scrShared") {
+      zeile(1, "gemeinsam", lage.aufloesungOffen && t("weg.aufloesungOffen"));   // S63: Begonnenes fortsetzen
       zeile(1, "gemeinsam", lage.momentOffen && t("weg.momentOffen"));
-      if (!lage.aufloesungGelaufen) {
+      if (!lage.aufloesungGelaufen && !lage.aufloesungOffen) {
         const text = lage.handBeide ? aufloesungAktion()
           : !lage.handMeins && !lage.handPartner ? t("weg.aufloesungFehltBeide")
           : !lage.handMeins ? t("weg.aufloesungFehltDu")
@@ -397,10 +403,17 @@ export function createApp({ doc, backend, root, diktat }) {
     const bm = $("btnMoment");
     if (bm) bm.textContent = lage.momentOffen ? t("teil.momentWeiter") : t("teil.moment");
     sperre("btnGemeinsam", "gemeinsamHinweis", !lage.handBeide, t("teil.gateAufloesung"));
+    // S63 · Begonnene Auflösung heißt "fortsetzen" statt "beginnen" (Muster
+    // btnMoment/btnEinzel); der Subtext wechselt mit.
+    const bg = $("btnGemeinsam");
+    if (bg) bg.textContent = lage.aufloesungOffen ? t("teil.gemeinsamWeiter") : t("teil.gemeinsam");
     // S62 · Dauerhafter Subtext unter der Auflösungs-Karte; solange gesperrt,
     // weicht er dem Gate-Hinweis (nie beide zugleich).
     const gSub = $("gemeinsamSub");
-    if (gSub) gSub.classList.toggle("pb-hidden", !lage.handBeide);
+    if (gSub) {
+      gSub.textContent = lage.aufloesungOffen ? t("teil.gemeinsamWeiterSub") : t("teil.gemeinsamSub");
+      gSub.classList.toggle("pb-hidden", !lage.handBeide);
+    }
   }
 
   /* S36-Kommentar historisch: die festen Einladungen leben jetzt als
