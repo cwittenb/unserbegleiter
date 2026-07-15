@@ -945,7 +945,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const items = (agenda && agenda.items) || [];
     const auftraege = ((goals && goals.items) || []);
     const aktiv = auftraege.filter(a => a.status === "active");
-    const ruht = auftraege.filter(a => a.status === "rest");
+    const ruht = auftraege.filter(a => a.status === "resting");   // S60: Writer (sessions.js) setzt "resting" — "rest" ist nur der Block-OP
     const auftragZeile = a =>
       `<div class="pb-item">${esc(a.text)}<br><span class="pb-sub">${esc(a.id)} · ${t(a.art === "shared" ? "agenda.artGemeinsam" : "agenda.artIndividuell")}${a.owner ? " · " + esc(a.owner) : ""}</span></div>`;
     const punktZeile = i =>

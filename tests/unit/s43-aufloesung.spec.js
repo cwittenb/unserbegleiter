@@ -143,7 +143,7 @@ describe("S43 · Agenda-Regal v2", () => {
     const backend = memoryBackend(null);
     await backend.bstate.set("goals", { items: [
       { id: "AG1", art: "shared", status: "active", text: "Mehr echte Zeit zu zweit" },
-      { id: "AI2", art: "individual", owner: "Anna", status: "rest", text: "Eigene Abende pflegen" },
+      { id: "AI2", art: "individual", owner: "Anna", status: "resting", text: "Eigene Abende pflegen" },   // S60: gespeicherter Status heißt "resting" (Writer), "rest" ist der OP
     ], seq: 2 });
     await backend.bstate.set("agenda", { items: [
       { id: "AGD1", by: "Bernd", text: "Wochenend-Planung", state: "open" },

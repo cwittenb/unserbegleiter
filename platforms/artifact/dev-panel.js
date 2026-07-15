@@ -6,6 +6,10 @@
 // Nur die Artefakt-Hülle — Kern und Cloudflare-Form bleiben unberührt.
 // Alle Funktionen arbeiten gegen die Store-Schnittstelle und sind headless
 // beweisbar; die UI (createDevPanel) ist injizierbar wie createApp.
+//
+// S60: Mockdaten auf das englische Wire-Schema (S31a) und den Zustandsraum
+// seit S42/S43 gehoben (reveal/revealLog/minigate); neue Szene "einseitig-frei";
+// Szenen-Quittung überlebt den reboot.
 
 export const DUMP_VERSION = 1;
 const NS = "PBDEV";
@@ -51,59 +55,97 @@ const key = (meta, teil, modul) => REPO_PREFIX + meta.code + ":" + (modul || "be
 
 export const MOCK_META = { code: "dev-mock01", nameA: "Anna", nameB: "Bernd" };
 
-/** Voll ausgebauter Betriebszustand (die „Mockdaten"). */
+/** S60 · Aufdeck-Datenpakete (Mini-Gate "Ja") — Format wie baueAufdeckung:
+    { name, top5, guess3, releasedAt }. Labels sind echte Domänen-Pole. */
+export function baueReveal(meta = MOCK_META) {
+  return {
+    A: {
+      name: meta.nameA, releasedAt: vor(22),
+      top5: ["Nähe", "Verlässlichkeit & Verbindlichkeit", "Ehrlichkeit", "Wertschätzung", "Gemeinsamer Sinn / Vision"],
+      guess3: ["Autonomie", "Beständigkeit", "Zeit zu zweit"],
+    },
+    B: {
+      name: meta.nameB, releasedAt: vor(22),
+      top5: ["Beständigkeit", "Zeit zu zweit", "Verlässlichkeit & Verbindlichkeit", "Wertschätzung", "Nähe"],
+      guess3: ["Verlässlichkeit & Verbindlichkeit", "Nähe", "Ehrlichkeit"],
+    },
+  };
+}
+
+/** Voll ausgebauter Betriebszustand (die „Mockdaten") — Zustand NACH der
+    Gemeinsamen Auflösung: reveal + revealLog + findings liegen vor. */
 export function baueMockdaten(meta = MOCK_META) {
   const shared = {};
   const privat = {};
   shared[META_KEY] = meta;
 
   shared[key(meta, "bstate")] = stempel({
-    goals: { items: [
-      { id: "AG1", art: "gemeinsam", status: "aktiv", text: "Ein fester gemeinsamer Abend pro Woche, nur für uns.", startwerte: { A: 4, B: 6 }, vonBeidenBestaetigt: true, at: vor(21) },
-      { id: "AI2", art: "individuell", owner: "B", status: "aktiv", text: "Abends eine Stunde früher offline sein.", at: vor(21) },
+    goals: { seq: 2, items: [
+      { id: "AG1", art: "shared", owner: null, status: "active",
+        text: "Ein fester gemeinsamer Abend pro Woche, nur für uns.",
+        baseline: { [meta.nameA]: 4, [meta.nameB]: 6 }, createdAt: vor(21) },
+      { id: "AI2", art: "individual", owner: meta.nameB, status: "active",
+        text: "Abends eine Stunde früher offline sein.",
+        baseline: {}, createdAt: vor(21) },
     ]},
     shelf: { items: [
-      { id: "RG1", text: "Anna wünscht sich, dass Verabredungen verlässlicher gelten — Absagen in letzter Minute treffen sie stärker, als sie lange gezeigt hat.", wunsch: "Kurz Bescheid geben, sobald sich etwas abzeichnet.", by: "Anna", at: vor(5), read: false },
+      { id: "RG1", text: meta.nameA + " wünscht sich, dass Verabredungen verlässlicher gelten — Absagen in letzter Minute treffen sie stärker, als sie lange gezeigt hat.", wish: "Kurz Bescheid geben, sobald sich etwas abzeichnet.", by: meta.nameA, at: vor(5), read: false },
     ]},
     agenda: { items: [
-      { id: "AGD1", text: "Wie wir mit spontanen Planänderungen umgehen.", wunsch: null, by: "Anna", herkunft: "shelf", at: vor(4), state: "open" },
+      { id: "AGD1", text: "Wie wir mit spontanen Planänderungen umgehen.", wish: null, by: meta.nameA, herkunft: "shelf", at: vor(4), state: "open" },
     ]},
     measurements: { items: [
       { id: "MR1", startAt: vor(10), status: "revealed", revealedAt: vor(8),
         values: { A: { closeness: 5, guess: 6, fit: { AG1: 6 } }, B: { closeness: 6, guess: 5, fit: { AG1: 7 } } } },
     ]},
     momentLog: { entries: [
-      { at: vor(8), zusammenfassung: "Über den gemeinsamen Abend gesprochen; beide wollen ihn schützen.", themen: ["gemeinsame Zeit"], zwischenzeitImpuls: "Ein Spaziergang unter der Woche." },
+      { at: vor(8), summary: "Über den gemeinsamen Abend gesprochen; beide wollen ihn schützen.", topics: ["gemeinsame Zeit"], gentleInvitation: "Ein Spaziergang unter der Woche." },
     ]},
     qualitytime: { startAt: vor(45), resting: {}, choices: [{ at: vor(9), text: "Zusammen kochen am Sonntag.", domain: "Alltagsgestaltung" }] },
+    reveal: baueReveal(meta),
+    revealLog: {
+      at: vor(20),
+      summary: "Beide sahen einander bei Verlässlichkeit und Nähe ähnlicher als erwartet; " + meta.nameB + "s Wunsch nach gemeinsamer Ruhe kam für " + meta.nameA + " neu dazu.",
+      touchingPoints: ["Verlässlichkeit & Verbindlichkeit", "Nähe"],
+      forClarification: ["Gemeinsame Ruhe im Alltag"],
+    },
     findings: {
       at: vor(21),
-      funde: [{ typ: "treffer", text: "Beiden ist Verlässlichkeit zentral — sie lesen sich dort gut." }],
-      triangulation: { vorschlaege: 2, bestaetigt: 1, justiert: 1, abgelehnt: 0 },
-      gemeinsamerAuftrag: { text: "Ein fester gemeinsamer Abend pro Woche.", vonBeidenBestaetigt: true, startwerte: { A: 4, B: 6 } },
-      individuelleAuftraege: [{ owner: "B", text: "Abends früher offline." }],
-      konstitutiveDivergenz: { vorhanden: false },
-      nachbefragung: [{ person: "Anna", wert: 8 }, { person: "Bernd", wert: 7 }],
+      findings: [
+        { item: "Gemeinsame Ruhe ist " + meta.nameB + " wichtiger, als " + meta.nameA + " vermutet hatte.", owner: meta.nameB, source: "partner-guess", importance: 7, dealbreaker: false, ownReasoning: true },
+      ],
+      triangulation: { proposed: 2, confirmed: 1, adjusted: 1, declined: 0 },
+      sharedGoal: { text: "Ein fester gemeinsamer Abend pro Woche.", confirmedByBoth: true, baseline: { [meta.nameA]: 4, [meta.nameB]: 6 } },
+      individualGoals: [{ person: meta.nameB, text: "Abends eine Stunde früher offline sein.", wish: null }],
+      compatibility: "Beiden ist Verlässlichkeit zentral — sie lesen sich dort gut.",
+      misalignedAssumptions: { present: false, status: "" },
+      concerns: { raised: 1, confirmed: 0, dispelled: 1, adjusted: 0, leftUntouched: 0, goalAdditions: [], emergencyBrake: false },
+      closingCheck: [
+        { person: meta.nameA, value: 8, keySentence: "Der Abend ist gesetzt — das trägt." },
+        { person: meta.nameB, value: 7, keySentence: "Weniger Druck, mehr Ruhe zu zweit." },
+      ],
     },
   });
 
   privat[key(meta, "pstate:A")] = stempel({
-    timeline: { entries: [{ at: vor(6), text: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat." }] },
+    timeline: { entries: [{ at: vor(6), topics: ["Rückzug"], summary: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat." }] },
     selfDisclosures: { items: [{ at: vor(6), text: "„Mir ist unser Abend wichtig — wenn er kippt, sag es mir bitte früh.“" }] },
   });
   privat[key(meta, "pstate:B")] = stempel({
-    timeline: { entries: [{ at: vor(3), text: "Der Arbeitsdruck frisst die Abende — das will ich nicht so lassen." }] },
+    timeline: { entries: [{ at: vor(3), topics: ["Arbeitsdruck"], summary: "Der Arbeitsdruck frisst die Abende — das will ich nicht so lassen." }] },
     selfDisclosures: { items: [] },
   });
 
-  const uebergabe = (role, name, items) => stempel({
+  // S60: NICHT durch stempel() — der überschriebe module:"kernwetten" mit
+  // "betrieb". Struktur identisch zur baueUebergabe-Ausgabe (Vertrag 3).
+  const uebergabe = (name, items) => ({
     _schema: 1, module: "kernwetten", name, items, releasedAt: vor(22),
   });
-  shared[key(meta, "handover:A", "kernwetten")] = uebergabe("A", meta.nameA, [
+  shared[key(meta, "handover:A", "kernwetten")] = uebergabe(meta.nameA, [
     { id: "S1", text: "Nähe und Verlässlichkeit liegen mir am meisten am Herzen; bei Verlässlichkeit bin ich gerade unzufrieden." },
-    { id: "V1", text: "Ich vermute, Bernd wünscht sich vor allem weniger Druck im Alltag." },
+    { id: "V1", text: "Ich vermute, " + meta.nameB + " wünscht sich vor allem weniger Druck im Alltag." },
   ]);
-  shared[key(meta, "handover:B", "kernwetten")] = uebergabe("B", meta.nameB, [
+  shared[key(meta, "handover:B", "kernwetten")] = uebergabe(meta.nameB, [
     { id: "S1", text: "Gemeinsame Ruhe ist mir wichtiger geworden, als ich lange dachte." },
   ]);
   // S59 · D4: Zu jedem Handover gehört der freigegebene Einzel-Chat — die
@@ -115,10 +157,12 @@ export function baueMockdaten(meta = MOCK_META) {
 }
 
 /** S59 · Freigegebene Einzel-Chats passend zu den Mock-Handovers (Zustand
-    seit S44: running + freigegeben + nachklang). */
+    seit S44: running + freigegeben + nachklang). S60: minigate "ja" — ein
+    freigegebener Chat ohne Gate-Entscheidung ist im linearen Pfad unmöglich,
+    und "ja" passt zu den gesetzten reveal-Paketen. */
 export function einzelFertigChats(meta) {
   const fertig = abschluss => stempel({
-    status: "running", freigegeben: true, nachklang: true, language: "de", kapitel: 6,
+    status: "running", freigegeben: true, nachklang: true, minigate: "ja", language: "de", kapitel: 6,
     messages: [{ role: "assistant", content: abschluss }],
   });
   return {
@@ -156,12 +200,33 @@ export const SZENEN = [
     async wende(store) { await setzeZustand(store, { shared: { [META_KEY]: MOCK_META }, privat: {} }); },
   },
   {
+    id: "einseitig-frei", titel: "Auftragsklärung · nur eine Freigabe liegt vor",
+    beschreibung: "Annas Klärung ist freigegeben, Bernd hat noch nicht begonnen — als Anna: warten auf Bernds Freigabe; als Bernd: die eigene Klärung steht an.",
+    async wende(store) {
+      const mock = baueMockdaten();
+      // Nur die A-Seite quert: Handover A + reveal.A; für B bewusst NICHTS
+      // (kein Chat, kein Handover, reveal.B = null — der echte Zwischenstand).
+      const shared = {
+        [META_KEY]: mock.meta,
+        [key(mock.meta, "handover:A", "kernwetten")]: mock.shared[key(mock.meta, "handover:A", "kernwetten")],
+        [key(mock.meta, "bstate")]: stempel({ reveal: { A: baueReveal(mock.meta).A, B: null } }),
+      };
+      const chats = einzelFertigChats(mock.meta);
+      const privat = { [key(mock.meta, "chat:A:einzel")]: chats[key(mock.meta, "chat:A:einzel")] };
+      await setzeZustand(store, { shared, privat });
+    },
+  },
+  {
     id: "freigaben-da", titel: "Auftragsklärung · beide Freigaben liegen vor",
-    beschreibung: "Einzelsessions abgeschlossen, beide Übergaben gequert — die gemeinsame Klärung steht an.",
+    beschreibung: "Einzelsessions abgeschlossen, beide Übergaben gequert, Aufdeck-Pakete gewählt — die gemeinsame Auflösung (mit Aufdecken) steht an.",
     async wende(store) {
       const mock = baueMockdaten();
       // S59 · D4: Handover nie ohne die zugehörigen freigegebenen Einzel-Chats.
-      await setzeZustand(store, { shared: nur(mock, [], ["kernwetten"]), privat: einzelFertigChats(mock.meta) });
+      // S60: reveal beider Seiten liegt vor (Mini-Gate "ja"), revealLog bewusst
+      // NICHT — das Aufdecken steht ja erst bevor (Wegweiser-Variante "MitAufdeck").
+      const shared = nur(mock, [], ["kernwetten"]);
+      shared[key(mock.meta, "bstate")] = stempel({ reveal: baueReveal(mock.meta) });
+      await setzeZustand(store, { shared, privat: einzelFertigChats(mock.meta) });
     },
   },
   {
@@ -201,6 +266,12 @@ export const SZENEN = [
 
 /* ================= Panel-UI ================= */
 
+/** S60 · Quittung: die Bestätigung einer Szene/Ladung überlebt den reboot
+    (der das Panel neu aufbaut und die Meldung sonst wegreißt). Modul-
+    Lebensdauer genügt — reboot läuft im selben JS-Kontext. Einmalig:
+    der nächste Panel-Aufbau zeigt sie an und verwirft sie. */
+export const quittung = { text: null };
+
 export function createDevPanel({ doc, host, store, reboot }) {
   const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   host.innerHTML = `
@@ -228,12 +299,17 @@ export function createDevPanel({ doc, host, store, reboot }) {
   const $ = id => host.querySelector("#" + id);
   const msg = (t, rot) => { const m = $("devMsg"); m.textContent = t; m.style.color = rot ? "#b4232a" : "#0f766e"; };
 
+  // Quittung des letzten Setzens anzeigen (überlebt den reboot) — einmalig.
+  if (quittung.text) { msg(quittung.text); quittung.text = null; }
+
   for (const b of host.querySelectorAll("[data-szene]")) {
     b.addEventListener("click", async () => {
       const s = SZENEN.find(x => x.id === b.getAttribute("data-szene"));
       try {
         await s.wende(store);
-        msg("Szene „" + s.titel + "“ gesetzt.");
+        const text = "Szene „" + s.titel + "“ eingespielt · " + new Date().toLocaleTimeString();
+        msg(text);
+        quittung.text = text;   // der reboot baut das Panel neu — die Quittung reist mit
         await reboot();
       } catch (e) { msg("Szene fehlgeschlagen: " + e.message, true); }
     });
@@ -258,14 +334,21 @@ export function createDevPanel({ doc, host, store, reboot }) {
     try {
       const dump = JSON.parse($("devDump").value);
       await ladeZustand(store, dump);
-      msg("Zustand geladen.");
+      const text = "Zustand geladen · " + new Date().toLocaleTimeString();
+      msg(text);
+      quittung.text = text;
       await reboot();
     } catch (e) { msg("Laden fehlgeschlagen: " + e.message, true); }
   });
 
   $("devWipe").addEventListener("click", async () => {
-    try { await wipeZustand(store); msg("Alles zurückgesetzt."); await reboot(); }
-    catch (e) { msg("Zurücksetzen fehlgeschlagen: " + e.message, true); }
+    try {
+      await wipeZustand(store);
+      const text = "Alles zurückgesetzt · " + new Date().toLocaleTimeString();
+      msg(text);
+      quittung.text = text;
+      await reboot();
+    } catch (e) { msg("Zurücksetzen fehlgeschlagen: " + e.message, true); }
   });
 
   return { host };
