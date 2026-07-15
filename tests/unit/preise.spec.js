@@ -23,4 +23,9 @@ describe("Preise · kostenFuer / cacheQuote", () => {
     expect(cacheQuote({ in: 100, cacheRead: 300, cacheWrite: 0 })).toBeCloseTo(0.75, 6);
     expect(cacheQuote({ in: 0, cacheRead: 0, cacheWrite: 0 })).toBe(0);
   });
+
+  it("langlebig=true → Cache-Writes zum 1h-Tarif (2× Input) (S65)", () => {
+    expect(kostenFuer("claude-sonnet-5", { cacheWrite: 1e6 })).toBeCloseTo(2.50, 6);                    // 5-Min-Default
+    expect(kostenFuer("claude-sonnet-5", { cacheWrite: 1e6 }, { langlebig: true })).toBeCloseTo(4.00, 6); // 1h
+  });
 });

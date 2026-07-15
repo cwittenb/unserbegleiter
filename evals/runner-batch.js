@@ -26,13 +26,14 @@ export async function laufeAlleBatch(szenarien, deps) {
   const { pipelineModell, judgeModell, stand, melde, batch } = deps;
   const fuehreBatch = deps.fuehreBatch || fuehreBatchAus;   // injizierbar für Tests
   const zeit = deps.zeit || new Date().toISOString();
+  const t0 = Date.now();   // Gesamt-Wallclock des Batch-Laufs (S65)
 
   // Konversationen: eine je (Szenario × Sample).
   const konvs = [];
   for (const sz of szenarien) {
     const anzahl = deps.n || sz.n || 3;
     for (let i = 0; i < anzahl; i++)
-      konvs.push({ konvId: sz.id + "_" + (i + 1), sz, nr: i + 1, system: sysPromptFuer(sz), messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, urteil: null });
+      konvs.push({ konvId: sz.id + "_" + (i + 1), sz, nr: i + 1, system: sysPromptFuer(sz), messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null });
   }
   const maxTurns = konvs.reduce((m, k) => Math.max(m, k.sz.eingaben.length), 0);
 
@@ -41,20 +42,21 @@ export async function laufeAlleBatch(szenarien, deps) {
     const requests = [];
     const idx = new Map();
     for (const k of konvs) {
-      if (k.fehler) continue;
+      if (k.fehler || k.leer) continue;                 // Fehler/leere Antwort → nicht weiter (S65)
       const eingabe = k.sz.eingaben[d];
       if (eingabe === undefined) continue;
       k.messages.push({ role: "user", content: eingabe });
-      const cid = "p_" + k.konvId + "_t" + d;   // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
+      const cid = "p_" + k.konvId + "_t" + d;           // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
       idx.set(cid, k);
       requests.push({
         custom_id: cid,
         params: {
           model: pipelineModell,
           max_tokens: MAX_TOKENS,
-          // Pipeline-Caching an: der je Szenario identische System-Prompt cacht INNERHALB
-          // des Turn-Batches über die Samples desselben Szenarios (zusätzlich zum −50 %).
-          system: [{ type: "text", text: k.system, cache_control: { type: "ephemeral" } }],
+          // Pipeline-Caching mit 1h-TTL (S65): die Turn-Batches liegen Minuten auseinander,
+          // der 5-Min-Cache würde zwischen den Turns ablaufen. 1h hält den System-Prompt über
+          // alle Turn-Batches → gelesen statt je Turn neu geschrieben (höhere Cache-Quote).
+          system: [{ type: "text", text: k.system, cache_control: { type: "ephemeral", ttl: "1h" } }],
           messages: k.messages.map(m => ({ role: m.role, content: m.content })),
         },
       });
@@ -62,12 +64,14 @@ export async function laufeAlleBatch(szenarien, deps) {
     if (!requests.length) continue;
     if (typeof melde === "function") melde({ phase: "batch", label: "Pipeline Turn " + (d + 1) + "/" + maxTurns, gesamt: requests.length });
     const ergebnis = await fuehreBatch(requests, batch);
+    if (typeof melde === "function") melde({ phase: "batch-fertig" });
     for (const [cid, k] of idx) {
       const r = ergebnis.get(cid);
       if (!r || r.fehler) { k.fehler = "Batch-Fehler (Pipeline Turn " + (d + 1) + "): " + (r ? r.fehler : "kein Ergebnis"); continue; }
       const { text, usage } = LLM_PROVIDERS.anthropic.parse(r.message);
       addUsage(k.pipe, usage);
       k.messages.push({ role: "assistant", content: text });
+      if (!text || !String(text).trim()) k.leer = "leere Pipeline-Antwort (Turn " + (d + 1) + ")";   // Anomalie → nicht weiter (S65)
     }
   }
 
@@ -75,7 +79,7 @@ export async function laufeAlleBatch(szenarien, deps) {
   const jreq = [];
   const jidx = new Map();
   for (const k of konvs) {
-    if (k.fehler) continue;
+    if (k.fehler || k.leer) continue;                   // leere Antwort wird nicht gerichtet (S65)
     const cid = "j_" + k.konvId;   // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
     jidx.set(cid, k);
     jreq.push({
@@ -91,6 +95,7 @@ export async function laufeAlleBatch(szenarien, deps) {
   if (jreq.length) {
     if (typeof melde === "function") melde({ phase: "batch", label: "Judge", gesamt: jreq.length });
     const jerg = await fuehreBatch(jreq, batch);
+    if (typeof melde === "function") melde({ phase: "batch-fertig" });
     for (const [cid, k] of jidx) {
       const r = jerg.get(cid);
       if (!r || r.fehler) { k.urteil = { bewertet: false, fehler: "Batch-Fehler (Judge): " + (r ? r.fehler : "kein Ergebnis") }; continue; }
@@ -104,7 +109,9 @@ export async function laufeAlleBatch(szenarien, deps) {
   // Phase 3 — Samples → Szenario-Ergebnisse → Report (geteilte Helfer)
   const proSz = new Map();
   for (const k of konvs) {
-    const urteil = k.fehler ? { bewertet: false, fehler: k.fehler } : (k.urteil || { bewertet: false, fehler: "kein Judge-Ergebnis" });
+    const urteil = k.fehler ? { bewertet: false, fehler: k.fehler }
+      : k.leer ? { bewertet: false, fehler: k.leer }                       // leere Antwort → unbewertet (S65)
+      : (k.urteil || { bewertet: false, fehler: "kein Judge-Ergebnis" });
     const sample = sampleAusUrteil(k.sz, k.messages, urteil, k.nr);
     if (!proSz.has(k.sz.id)) proSz.set(k.sz.id, { sz: k.sz, samples: [], pipe: leerTok(), judge: leerTok() });
     const e = proSz.get(k.sz.id);
@@ -122,5 +129,7 @@ export async function laufeAlleBatch(szenarien, deps) {
     ergebnisse.push(r);
     if (typeof deps.persistiere === "function") await deps.persistiere(bauBericht(ergebnisse, stand, zeit, false));
   }
-  return bauBericht(ergebnisse, stand, zeit, true);
+  const bericht = bauBericht(ergebnisse, stand, zeit, true);
+  bericht.telemetrie.ms = Date.now() - t0;   // echte Gesamt-Wallclock des Batch-Laufs (S65)
+  return bericht;
 }

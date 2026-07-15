@@ -35,8 +35,18 @@ export async function spieleSample(pipelineCall, szenario) {
     messages.push({ role: "user", content: eingabe });
     const { text } = await pipelineCall(system, messages);
     messages.push({ role: "assistant", content: text });
+    if (!text || !String(text).trim()) break;   // leere Antwort → nicht weiterkaskadieren (S65)
   }
   return messages;
+}
+
+/** 1-basierte Turn-Nr. der ersten leeren Assistant-Antwort im Transkript, sonst 0 (S65). */
+export function leereAntwortTurn(transkript) {
+  let t = 0;
+  for (const m of (transkript || [])) {
+    if (m.role === "assistant") { t++; if (!m.content || !String(m.content).trim()) return t; }
+  }
+  return 0;
 }
 
 /** Ein Szenario: n Samples spielen, richten, Härteregeln anwenden. */
@@ -77,7 +87,10 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
   const samples = [];
   for (let i = 0; i < anzahl; i++) {
     const transkript = await spieleSample(pipelineCall, szenario);
-    const urteil = await richte(judgeCall, szenario, transkript, judgeOpts);
+    const leer = leereAntwortTurn(transkript);
+    const urteil = leer
+      ? { bewertet: false, fehler: "leere Pipeline-Antwort (Turn " + leer + ")" }   // techn. Anomalie, kein Content-Verstoß (S65)
+      : await richte(judgeCall, szenario, transkript, judgeOpts);
     samples.push(sampleAusUrteil(szenario, transkript, urteil, i + 1));
   }
   return szenarioAusSamples(szenario, samples, anzahl);

@@ -119,8 +119,9 @@ async function main() {
   const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true)), tPipe);
   const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false)), tJudge);
   const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
-  const laufKosten = (pipeTok, judgeTok, faktor = 1) => {
-    const kp = kostenFuer(pipelineModell, pipeTok), kj = kostenFuer(judgeModell, judgeTok);
+  const laufKosten = (pipeTok, judgeTok, faktor = 1, langlebig = false) => {
+    // langlebig=true: Pipeline-Cache-Writes zum 1h-Tarif (S65, Batch); der Judge cacht nicht.
+    const kp = kostenFuer(pipelineModell, pipeTok, { langlebig }), kj = kostenFuer(judgeModell, judgeTok);
     return (kp == null || kj == null) ? null : { pipeline: kp * faktor, judge: kj * faktor, gesamt: (kp + kj) * faktor };
   };
 
@@ -148,7 +149,8 @@ async function main() {
 
   // Live-Fortschritt (S52/S55). Im Batch-Modus (S57) statt je Szenario je Batch-Phase.
   const melde = ev => {
-    if (ev.phase === "batch") { console.log("[Batch] " + ev.label + " — " + ev.gesamt + " Anfragen …"); return; }
+    if (ev.phase === "batch") { process.stdout.write("[Batch] " + ev.label + " — " + ev.gesamt + " Anfragen "); return; }
+    if (ev.phase === "batch-fertig") { process.stdout.write(" fertig\n"); return; }
     if (ev.phase === "start")
       process.stdout.write("[" + String(ev.i).padStart(2) + "/" + ev.gesamt + "] " + ev.id.padEnd(9) + " … ");
     else {
@@ -178,14 +180,14 @@ async function main() {
         pipelineModell, judgeModell, n, zeit, persistiere, melde, stand,
         batch: {
           apiKey, intervallMs: batchIntervallMs, maxMs: batchMaxMs,
-          fortschritt: ev => process.stdout.write("    läuft: " + ev.fertig + "/" + ev.gesamt + "\n"),
+          fortschritt: () => process.stdout.write("."),
         },
       })
     : await laufeAlle(szenarien, {
         pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen, stand,
       });
 
-  bericht.kosten = laufKosten(bericht.telemetrie.pipe, bericht.telemetrie.judge, batchModus ? 0.5 : 1);   // echte Kosten aus usage (S55); Batch −50 % (S57)
+  bericht.kosten = laufKosten(bericht.telemetrie.pipe, bericht.telemetrie.judge, batchModus ? 0.5 : 1, batchModus);   // Batch: −50 % + 1h-Write-Tarif (S65)
   await writeFile(datei, JSON.stringify(bericht, null, 2));   // Endstand (vollstaendig:true)
 
   console.log("\n──── Ergebnis (je Familie, kein Gesamt-Score) ────");

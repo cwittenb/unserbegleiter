@@ -10,15 +10,17 @@ const daten = JSON.parse(readFileSync(new URL("./preise.json", import.meta.url),
 export const PREISE = daten.modelle || {};
 export const PREIS_STAND = daten.stand || "";
 
-/** Kosten (USD) für ein Modell und ein Token-Bündel {in,out,cacheRead,cacheWrite}. */
-export function kostenFuer(modell, token) {
+/** Kosten (USD) für ein Modell und ein Token-Bündel {in,out,cacheRead,cacheWrite}.
+ *  opts.langlebig=true → Cache-Writes zum 1h-TTL-Tarif (S65). */
+export function kostenFuer(modell, token, opts = {}) {
   const p = PREISE[modell];
   if (!p) return null;
   const t = token || {};
+  const cwPreis = (opts.langlebig && p.cacheWrite1h != null) ? p.cacheWrite1h : p.cacheWrite;
   return ((t.in || 0) * p.in
     + (t.out || 0) * p.out
     + (t.cacheRead || 0) * p.cacheRead
-    + (t.cacheWrite || 0) * p.cacheWrite) / 1e6;
+    + (t.cacheWrite || 0) * cwPreis) / 1e6;
 }
 
 /** Cache-Trefferquote: cacheRead / (in + cacheRead + cacheWrite). */

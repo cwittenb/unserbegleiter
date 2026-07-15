@@ -83,4 +83,57 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
     expect(b.szenarien[0].status).not.toBe("gruen");
     expect(b.szenarien[0].samples[0].judgeFehler).toContain("Batch-Fehler");
   });
+
+  it("Pipeline-Requests tragen 1h-Cache-TTL auf dem System-Prompt (S65)", async () => {
+    let cc = null;
+    const fuehreBatch = async requests => {
+      const map = new Map();
+      for (const r of requests) {
+        if (r.custom_id.startsWith("p_") && cc === null) cc = r.params.system[0].cache_control;
+        map.set(r.custom_id, { message: r.custom_id.startsWith("j_")
+          ? nachricht(JSON.stringify({ checks: [{ id: "C1", antwort: "nein", beleg: "ok" }] }))
+          : nachricht("x") });
+      }
+      return map;
+    };
+    await laufeAlleBatch([{ ...LEAK, n: 1 }], {
+      pipelineModell: "claude-sonnet-5", judgeModell: "claude-opus-4-8", n: 1, stand: {}, batch: {}, fuehreBatch,
+    });
+    expect(cc).toEqual({ type: "ephemeral", ttl: "1h" });
+  });
+
+  it("Gesamt-Wallclock landet im Bericht (nicht 0-hart) (S65)", async () => {
+    const fuehreBatch = async requests => {
+      await new Promise(r => setTimeout(r, 3));
+      const map = new Map();
+      for (const r of requests) map.set(r.custom_id, { message: r.custom_id.startsWith("j_")
+        ? nachricht(JSON.stringify({ checks: [{ id: "C1", antwort: "nein", beleg: "ok" }] }))
+        : nachricht("x") });
+      return map;
+    };
+    const b = await laufeAlleBatch([{ ...LEAK, n: 1 }], {
+      pipelineModell: "claude-sonnet-5", judgeModell: "claude-opus-4-8", n: 1, stand: {}, batch: {}, fuehreBatch,
+    });
+    expect(typeof b.telemetrie.ms).toBe("number");
+    expect(b.telemetrie.ms).toBeGreaterThan(0);
+  });
+
+  it("leere Pipeline-Antwort → Sample unbewertet, kein Judge, nicht grün (S65)", async () => {
+    let judgeCalls = 0;
+    const fuehreBatch = async requests => {
+      const map = new Map();
+      for (const r of requests) {
+        if (r.custom_id.startsWith("j_")) { judgeCalls++; map.set(r.custom_id, { message: nachricht("{}") }); }
+        else map.set(r.custom_id, { message: nachricht("") });   // leere Antwort
+      }
+      return map;
+    };
+    const b = await laufeAlleBatch([{ ...LEAK, n: 1 }], {
+      pipelineModell: "claude-sonnet-5", judgeModell: "claude-opus-4-8", n: 1, stand: {}, batch: {}, fuehreBatch,
+    });
+    expect(b.szenarien[0].samples[0].unbewertet).toBe(true);
+    expect(b.szenarien[0].samples[0].judgeFehler).toMatch(/leere Pipeline-Antwort/);
+    expect(b.szenarien[0].status).not.toBe("gruen");
+    expect(judgeCalls).toBe(0);
+  });
 });
