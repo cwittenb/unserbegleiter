@@ -92,9 +92,9 @@ async function main() {
   const drosselPipeline = baueDrossel({ rpm });
   const drosselJudge = crossProvider ? baueDrossel({ rpm: 0 }) : drosselPipeline;
 
-  const cfgFuer = (prov, key, modell, dr) => prov === "mistral"
+  const cfgFuer = (prov, key, modell, dr, cache) => prov === "mistral"
     ? { provider: "mistral", mode: "direct", apiKey: key, models: { mistral: modell }, drossel: dr }
-    : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr };
+    : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr, cache };
 
   // Token-Erfassung (S55): zählender Wrapper um beide Adapter — je Aufruf die echten
   // usage-Token (in/out/cacheRead/cacheWrite) aufsummieren und das Ergebnis unverändert
@@ -109,8 +109,12 @@ async function main() {
     akk.cacheRead += u.cacheRead || 0; akk.cacheWrite += u.cacheWrite || 0; akk.calls++;
     return r;
   };
-  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline)), tPipe);
-  const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge)), tJudge);
+  // Prompt-Caching: Pipeline AN (großer, je Turn identischer System-Prompt → ~80%
+  // Cache-Treffer). Judge AUS (S56): bei n>1 hat jedes Sample ein anderes Transkript →
+  // kein Wiederlesen; der Cache wäre reiner Write-Overhead (2,5× Write-Kosten, zählt
+  // zudem gegen das Rate-Limit). Telemetrie-belegt: Judge cacheRead=0, cacheWrite>0.
+  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true)), tPipe);
+  const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false)), tJudge);
   const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
   const laufKosten = (pipeTok, judgeTok) => {
     const kp = kostenFuer(pipelineModell, pipeTok), kj = kostenFuer(judgeModell, judgeTok);
@@ -123,6 +127,7 @@ async function main() {
     " · Judge " + judgeProvider + "/" + judgeModell);
   console.log("Drossel: Pipeline " + (rpm ? rpm + " RPM" : "unlimited") +
     (crossProvider ? " · Judge unlimited (Provider " + judgeProvider + ")" : " (mit Judge geteilt)") +
+    " · Judge-Cache aus" +
     (weiterBeiFehler ? " · weiter-bei-fehler" : ""));
   console.log("Szenarien: " + szenarien.map(s => s.id).join(", ") + (n ? " · n=" + n : ""));
 
