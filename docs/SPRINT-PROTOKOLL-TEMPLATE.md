@@ -27,6 +27,9 @@
 
 ## Eval-Kadenz (S66 · Review-Empfehlung 6+7 — vor dem Merge abhaken)
 
+- [ ] **Berührt der Sprint UI-Verhalten, Session-Wiring oder Marker→Widget-Ketten?** → Selbstfahrt lokal fahren:
+      Dev-Panel-Knopf im Artefakt bzw. `#selbstfahrt` im gebauten Build (Bericht: `window.__PB_SELBSTFAHRT__`);
+      in CI laufen dieselben Journeys als `tests/e2e/` bei jedem `npm test` mit (S67)
 - [ ] **Berührt der Sprint `core/prompts/*` oder Session-Verhalten?** → Lauf der betroffenen Familien:
       `npm run eval -- --szenario <ID>` bzw. `npm run eval -- --familie <FAM>`
 - [ ] **Berührt der Sprint den Szenarien-Katalog?** → `npm run eval:matrix` (Abdeckungs-Matrix aktualisieren;

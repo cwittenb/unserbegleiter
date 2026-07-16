@@ -234,6 +234,10 @@ export function createApp({ doc, backend, root, diktat }) {
      den geteilten und persönlichen Zustand. Fehlertolerant: was nicht
      erreichbar ist, zählt als "nicht vorhanden". */
   async function ladeLage() {
+    // Selbstheilung (S67, Selbstfahrt-Fund): Das Screen-Gerüst ist klickbar,
+    // BEVOR boot() state.info gesetzt hat — ein schneller Raumwechsel traf
+    // dann state.info.name/role als null (Fehlerbox statt Wegweiser).
+    if (!state.info) state.info = await backend.info();
     const still = p => Promise.resolve().then(p).catch(() => null);
     const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat, findings, gemeinsamChat] = await Promise.all([
       still(() => backend.bstate.get("reveal")),
@@ -792,7 +796,7 @@ export function createApp({ doc, backend, root, diktat }) {
   
   async function startChat(art) {
     err("");
-    const info = state.info;
+    const info = state.info || (state.info = await backend.info());   // Selbstheilung (S67), s. ladeLage
     // Sprach-Schnappschuss: neue Sessions starten in der Paarsprache; laufende
     // und pausierte behalten ihre Sprache (Resume bricht nicht mitten im
     // Gespräch um). Der Schnappschuss steuert ALLE Korpus-Zugriffe via K().
