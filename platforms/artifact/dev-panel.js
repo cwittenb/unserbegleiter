@@ -23,22 +23,63 @@ const PREFIXES = [META_KEY, REPO_PREFIX, TOKEN_PREFIX];
 /* ================= Zustand speichern / laden ================= */
 
 /** Vollständiger Dump: Meta + alle Repo-Keys beider Welten. */
+/* ================= Robuste Storage-Schicht (S68) =================
+   Die Sandbox drosselt Storage-Calls; ArtifactStore.set/del melden Fehler
+   still als false. Ein unbegrenzter Promise.all-Burst verlor deshalb Writes —
+   Quittung „eingespielt", Stand leer (U1). Hier: begrenzte Parallelität in
+   Wellen + Wiederholung mit Backoff + Fehlerwurf statt stillem false. */
+
+const WELLE = 4;                      // gleichzeitige Storage-Calls
+const RUHE_MS = 30;                   // Atempause zwischen Wellen
+const VERSUCHE = 4;                   // je Call: 1 + 3 Wiederholungen
+const BACKOFF_MS = [0, 80, 250, 600];
+const kurzSchlaf = ms => new Promise(r => setTimeout(r, ms));
+
+async function inWellen(aufgaben) {
+  for (let i = 0; i < aufgaben.length; i += WELLE) {
+    await Promise.all(aufgaben.slice(i, i + WELLE).map(f => f()));
+    if (i + WELLE < aufgaben.length) await kurzSchlaf(RUHE_MS);
+  }
+}
+
+async function mussSet(store, k, v, shared) {
+  for (let n = 0; n < VERSUCHE; n++) {
+    if (n) await kurzSchlaf(BACKOFF_MS[n]);
+    if (await store.set(k, v, shared)) return;
+  }
+  throw new Error("Schreiben endgültig fehlgeschlagen (Drossel?): " + k);
+}
+
+async function mussDel(store, k, shared) {
+  for (let n = 0; n < VERSUCHE; n++) {
+    if (n) await kurzSchlaf(BACKOFF_MS[n]);
+    await store.del(k, shared);                                // del ist idempotent …
+    try { if (await store.get(k, shared) === null) return; }   // … Erfolg = weg
+    catch { return; }
+  }
+  throw new Error("Löschen endgültig fehlgeschlagen (Drossel?): " + k);
+}
+
 export async function dumpZustand(store) {
+  // S68: parallel statt sequenziell — jeder Storage-Call ist in der Sandbox ein
+  // eigener RPC; die Betrieb-Szene hat Dutzende Keys (Ursache U1 der zähen Szenen).
   const dump = { version: DUMP_VERSION, zeit: new Date().toISOString(), shared: {}, privat: {} };
   for (const shared of [true, false]) {
     const ziel = shared ? dump.shared : dump.privat;
-    for (const prefix of PREFIXES) {
-      for (const k of await store.list(prefix, shared)) ziel[k] = await store.get(k, shared);
-    }
+    const listen = await Promise.all(PREFIXES.map(prefix => store.list(prefix, shared)));
+    const keys = [...new Set(listen.flat())];
+    const werte = await Promise.all(keys.map(k => store.get(k, shared)));
+    keys.forEach((k, i) => { ziel[k] = werte[i]; });
   }
   return dump;
 }
 
 /** Alles unter dem Dev-Namensraum entfernen (beide Welten, inkl. Meta). */
 export async function wipeZustand(store) {
-  for (const shared of [true, false])
-    for (const prefix of PREFIXES)
-      for (const k of await store.list(prefix, shared)) await store.del(k, shared);
+  for (const shared of [true, false]) {
+    const listen = await Promise.all(PREFIXES.map(prefix => store.list(prefix, shared)));
+    await inWellen([...new Set(listen.flat())].map(k => () => mussDel(store, k, shared)));
+  }
 }
 
 /** Dump einspielen: erst wischen, dann exakt die gesicherten Keys schreiben. */
@@ -46,8 +87,28 @@ export async function ladeZustand(store, dump) {
   if (!dump || dump.version !== DUMP_VERSION || !dump.shared || !dump.privat)
     throw new Error("Kein gültiger Zustands-Dump (version " + DUMP_VERSION + " erwartet).");
   await wipeZustand(store);
-  for (const [k, v] of Object.entries(dump.shared)) await store.set(k, v, true);
-  for (const [k, v] of Object.entries(dump.privat)) await store.set(k, v, false);
+  await inWellen([
+    ...Object.entries(dump.shared).map(([k, v]) => () => mussSet(store, k, v, true)),
+    ...Object.entries(dump.privat).map(([k, v]) => () => mussSet(store, k, v, false)),
+  ]);
+  await pruefeEingespielt(store, dump.shared, dump.privat);
+}
+
+/** Verifikation nach dem Einspielen (U4): Meta zurücklesen und die Key-Mengen
+ *  beider Welten mit dem Soll vergleichen — erst dann darf eine Quittung
+ *  behaupten, es sei etwas eingespielt. */
+export async function pruefeEingespielt(store, shared, privat) {
+  const fehlend = [];
+  for (const [welt, soll] of [[true, shared], [false, privat || {}]]) {
+    const listen = await Promise.all(PREFIXES.map(prefix => store.list(prefix, welt)));
+    const ist = new Set(listen.flat());
+    for (const k of Object.keys(soll)) if (!ist.has(k)) fehlend.push((welt ? "shared:" : "privat:") + k);
+  }
+  if (fehlend.length)
+    throw new Error("Einspielen unvollständig — fehlende Einträge: " + fehlend.join(", "));
+  const meta = shared[META_KEY] ? await store.get(META_KEY, true) : null;
+  if (shared[META_KEY] && (!meta || meta.code !== shared[META_KEY].code))
+    throw new Error("Einspielen unvollständig — Meta nicht lesbar.");
 }
 
 /* ================= Mockdaten-Bausteine ================= */
@@ -179,8 +240,11 @@ export function einzelFertigChats(meta) {
 
 async function setzeZustand(store, { shared, privat }) {
   await wipeZustand(store);
-  for (const [k, v] of Object.entries(shared)) await store.set(k, v, true);
-  for (const [k, v] of Object.entries(privat || {})) await store.set(k, v, false);
+  await inWellen([
+    ...Object.entries(shared).map(([k, v]) => () => mussSet(store, k, v, true)),
+    ...Object.entries(privat || {}).map(([k, v]) => () => mussSet(store, k, v, false)),
+  ]);
+  await pruefeEingespielt(store, shared, privat);
 }
 
 function nur(mock, teile /* z. B. ["bstate"] */, module) {
@@ -334,19 +398,46 @@ export function createDevPanel({ doc, host, store, reboot }) {
     catch (e) { msg("Zurücksetzen fehlgeschlagen: " + e.message, true); }
   });
 
-  // Quittung des letzten Setzens anzeigen (überlebt den reboot) — einmalig.
+  // Quittung des letzten Setzens anzeigen — greift nur, falls ein Aufrufer das
+  // Panel doch einmal neu baut; im Normalfall lebt das Panel neben pbMain weiter
+  // und die Erfolgsmeldung bleibt einfach stehen (S68, Ursache U3).
   if (quittung.text) { msg(quittung.text); quittung.text = null; }
 
+  /* S68 · Ein Weg für alle Zustands-Aktionen (Szenen, Laden, Zurücksetzen):
+     1 Guard — läuft bereits eine Aktion, werden weitere Klicks ignoriert
+       (vorher: zweiter Klick startete ein NEBENLÄUFIGES zweites wende → Race).
+     2 Sofortiges Feedback + alle Aktions-Buttons gesperrt.
+     3 Erfolgsmeldung erst NACH dem Reboot — mit Handlungsanweisung, denn der
+       Reboot landet auf der optisch identischen Rollenwahl („nichts passiert"-
+       Eindruck); erst die Rollenwahl betritt den neuen Stand. */
+  let aktionLaeuft = false;
+  const aktionsKnoepfe = () => [...host.querySelectorAll("[data-szene]"), $("devLoad"), $("devWipe")];
+  async function fuehreAus(busyText, aktion, erfolgText) {
+    if (aktionLaeuft) return;
+    aktionLaeuft = true;
+    for (const k of aktionsKnoepfe()) k.disabled = true;
+    msg(busyText + " …");
+    try {
+      await aktion();
+      await reboot();
+      const meta = await store.get(META_KEY, true).catch(() => null);
+      // msg() läuft über den Host-Knoten und erreicht auch ein während des
+      // Reboots neu gebautes Panel — die Quittungs-Weiche ist damit unnötig.
+      msg(erfolgText + " · " + new Date().toLocaleTimeString() +
+        (meta ? " — Rolle wählen, um den neuen Stand zu betreten." : " — die Einrichtung erscheint."));
+    } catch (e) {
+      msg(busyText + " fehlgeschlagen: " + e.message, true);
+    } finally {
+      aktionLaeuft = false;
+      for (const k of aktionsKnoepfe()) k.disabled = false;
+    }
+  }
+
   for (const b of host.querySelectorAll("[data-szene]")) {
-    b.addEventListener("click", async () => {
+    b.addEventListener("click", () => {
       const s = SZENEN.find(x => x.id === b.getAttribute("data-szene"));
-      try {
-        await s.wende(store);
-        const text = "Szene „" + s.titel + "“ eingespielt · " + new Date().toLocaleTimeString();
-        msg(text);
-        quittung.text = text;   // der reboot baut das Panel neu — die Quittung reist mit
-        await reboot();
-      } catch (e) { msg("Szene fehlgeschlagen: " + e.message, true); }
+      return fuehreAus("Szene „" + s.titel + "“ wird eingespielt", () => s.wende(store),
+        "Szene „" + s.titel + "“ eingespielt");
     });
   }
 
@@ -365,26 +456,11 @@ export function createDevPanel({ doc, host, store, reboot }) {
     } catch (e) { msg("Speichern fehlgeschlagen: " + e.message, true); }
   });
 
-  $("devLoad").addEventListener("click", async () => {
-    try {
-      const dump = JSON.parse($("devDump").value);
-      await ladeZustand(store, dump);
-      const text = "Zustand geladen · " + new Date().toLocaleTimeString();
-      msg(text);
-      quittung.text = text;
-      await reboot();
-    } catch (e) { msg("Laden fehlgeschlagen: " + e.message, true); }
-  });
+  $("devLoad").addEventListener("click", () =>
+    fuehreAus("Zustand wird geladen", () => ladeZustand(store, JSON.parse($("devDump").value)), "Zustand geladen"));
 
-  $("devWipe").addEventListener("click", async () => {
-    try {
-      await wipeZustand(store);
-      const text = "Alles zurückgesetzt · " + new Date().toLocaleTimeString();
-      msg(text);
-      quittung.text = text;
-      await reboot();
-    } catch (e) { msg("Zurücksetzen fehlgeschlagen: " + e.message, true); }
-  });
+  $("devWipe").addEventListener("click", () =>
+    fuehreAus("Alles wird zurückgesetzt", () => wipeZustand(store), "Alles zurückgesetzt"));
 
   return { host };
 }

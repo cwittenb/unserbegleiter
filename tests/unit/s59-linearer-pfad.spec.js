@@ -182,12 +182,16 @@ describe("S59 · D4: Dev-Panel seedet konsistente Zustände", () => {
   });
 
   it("Szene 'freigaben-da' schreibt die privaten Chat-Seeds mit", async () => {
+    // S68: Der Stub erfüllt jetzt den ArtifactStore-Vertrag (set → true bei
+    // Erfolg; list/get sehen das Geschriebene) — die gehärtete Szenen-Schicht
+    // wiederholt scheinbar fehlgeschlagene Writes und VERIFIZIERT den Stand.
     const geschrieben = { shared: {}, privat: {} };
+    const welt = shared => geschrieben[shared ? "shared" : "privat"];
     const store = {
-      async set(k, v, shared) { geschrieben[shared ? "shared" : "privat"][k] = v; },
-      async get() { return null; },
-      async delete() {},
-      async list() { return []; },
+      async set(k, v, shared) { welt(shared)[k] = v; return true; },
+      async get(k, shared) { return k in welt(shared) ? welt(shared)[k] : null; },
+      async delete(k, shared) { delete welt(shared)[k]; },
+      async list(prefix, shared) { return Object.keys(welt(shared)).filter(x => x.startsWith(prefix || "")); },
     };
     const szene = SZENEN.find(s => s.id === "freigaben-da");
     await szene.wende(store);

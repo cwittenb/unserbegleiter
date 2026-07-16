@@ -117,7 +117,15 @@ describe("Dev-Panel · Szenen", () => {
 
 describe("Dev-Panel · UI", () => {
   const tick = () => new Promise(r => setTimeout(r, 0));
-  async function klick(el) { el.click(); for (let i = 0; i < 6; i++) await tick(); }
+  // S68: Zustands-Läufe haben jetzt echte Wartetakte (Wellen + Backoff) und eine
+  // Klick-Sperre — nach dem Klick pollen, bis das Panel wieder frei ist.
+  async function klick(el) {
+    el.click();
+    for (let i = 0; i < 6; i++) await tick();
+    const frei = () => ![...document.querySelectorAll("[data-szene], #devLoad, #devWipe")].some(b => b.disabled);
+    for (let i = 0; i < 300 && !frei(); i++) await new Promise(r => setTimeout(r, 10));
+    for (let i = 0; i < 6; i++) await tick();
+  }
 
   it("Szenen-Knopf setzt den Zustand und ruft reboot; Speichern füllt das Textfeld; Laden stellt her", async () => {
     document.body.innerHTML = '<div id="host"></div>';
@@ -150,7 +158,7 @@ describe("Dev-Panel · UI", () => {
     await szene("onboarding-fertig").wende(store);
     document.querySelector("#devDump").value = "kein json";
     await klick(document.querySelector("#devLoad"));
-    expect(document.querySelector("#devMsg").textContent).toContain("Laden fehlgeschlagen");
+    expect(document.querySelector("#devMsg").textContent).toContain("fehlgeschlagen");   // S68: einheitlicher Aktions-Helfer formuliert „Zustand wird geladen fehlgeschlagen: …"
     expect(reboots).toBe(0);
     expect(await store.get("PBDEV:meta", true)).toMatchObject({ nameA: "Anna" });
   });
@@ -158,7 +166,15 @@ describe("Dev-Panel · UI", () => {
 
 describe("Dev-Panel · Token-Zähler (S61)", () => {
   const tick = () => new Promise(r => setTimeout(r, 0));
-  async function klick(el) { el.click(); for (let i = 0; i < 6; i++) await tick(); }
+  // S68: Zustands-Läufe haben jetzt echte Wartetakte (Wellen + Backoff) und eine
+  // Klick-Sperre — nach dem Klick pollen, bis das Panel wieder frei ist.
+  async function klick(el) {
+    el.click();
+    for (let i = 0; i < 6; i++) await tick();
+    const frei = () => ![...document.querySelectorAll("[data-szene], #devLoad, #devWipe")].some(b => b.disabled);
+    for (let i = 0; i < 300 && !frei(); i++) await new Promise(r => setTimeout(r, 10));
+    for (let i = 0; i < 6; i++) await tick();
+  }
   const stand = { calls: 2, in: 14, out: 4, cacheRead: 6, cacheWrite: 0, aktualisiert: 1 };
 
   it("zeigt gespeicherte Stände beim Start und aktualisiert live über pb:tokens", async () => {

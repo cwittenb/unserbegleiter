@@ -158,7 +158,15 @@ describe("S60 · Szene 'einseitig-frei' (meine Klärung fertig, Partner nicht)",
 
 describe("S60 · Szenen-Quittung überlebt den reboot", () => {
   const tick = () => new Promise(r => setTimeout(r, 0));
-  async function klick(el) { el.click(); for (let i = 0; i < 6; i++) await tick(); }
+  // S68: Zustands-Läufe haben jetzt echte Wartetakte (Wellen + Backoff) und eine
+  // Klick-Sperre — nach dem Klick pollen, bis das Panel wieder frei ist.
+  async function klick(el) {
+    el.click();
+    for (let i = 0; i < 6; i++) await tick();
+    const frei = () => ![...document.querySelectorAll("[data-szene], #devLoad, #devWipe")].some(b => b.disabled);
+    for (let i = 0; i < 300 && !frei(); i++) await new Promise(r => setTimeout(r, 10));
+    for (let i = 0; i < 6; i++) await tick();
+  }
   const baue = reboot => createDevPanel({ doc: document, host: document.getElementById("host"), store, reboot });
 
   it("Szene anwenden → reboot baut Panel neu → Quittung steht im NEUEN Panel; danach verworfen", async () => {
