@@ -29,11 +29,14 @@ const PREFIXES = [META_KEY, REPO_PREFIX, TOKEN_PREFIX];
    Quittung „eingespielt", Stand leer (U1). Hier: begrenzte Parallelität in
    Wellen + Wiederholung mit Backoff + Fehlerwurf statt stillem false. */
 
-const WELLE = 4;                      // gleichzeitige Storage-Calls
-const RUHE_MS = 30;                   // Atempause zwischen Wellen
-const VERSUCHE = 4;                   // je Call: 1 + 3 Wiederholungen
-const BACKOFF_MS = [0, 80, 250, 600];
+const WELLE = 3;                      // gleichzeitige Storage-Calls (drosselfreundlich)
+const RUHE_MS = 40;                   // Atempause zwischen Wellen
+const VERSUCHE = 6;                   // je Key: 1 + 5 Wiederholungen, Fenster ~5,6 s
+const BACKOFF_MS = [0, 120, 300, 700, 1500, 3000];
 const kurzSchlaf = ms => new Promise(r => setTimeout(r, ms));
+// Jitter bricht den Gleichtakt einer Welle: ohne ihn wiederholen alle Keys
+// einer Welle exakt synchron — gegen eine echte Drossel der schlechteste Takt.
+const mitJitter = ms => ms + Math.floor(Math.random() * (ms / 2 + 1));
 
 async function inWellen(aufgaben) {
   for (let i = 0; i < aufgaben.length; i += WELLE) {
@@ -42,22 +45,35 @@ async function inWellen(aufgaben) {
   }
 }
 
+/* Iteration 3 (Feld-Befund „immer: Schreiben endgültig fehlgeschlagen"):
+   ERFOLG = RÜCKLESEN, nie der Rückgabewert von set(). Die Sandbox-Doku nennt
+   für storage.set «{key,value,shared} | null» — liefert eine Runtime bei
+   Erfolg null/undefined, wertete die alte Prüfung JEDEN gelungenen Write als
+   Fehlschlag und warf nach vier Umschreibungen. Rücklesen ist gegen beide
+   Welten robust: Vertragsdrift UND echte Drosselung. */
 async function mussSet(store, k, v, shared) {
+  const soll = JSON.stringify(v);
+  let letzte = "set lieferte kein bestätigendes Ergebnis";
   for (let n = 0; n < VERSUCHE; n++) {
-    if (n) await kurzSchlaf(BACKOFF_MS[n]);
-    if (await store.set(k, v, shared)) return;
+    if (n) await kurzSchlaf(mitJitter(BACKOFF_MS[n]));
+    try { await store.set(k, v, shared); } catch (e) { letzte = e.message; }
+    try {
+      const ist = await store.get(k, shared);
+      if (ist !== null && JSON.stringify(ist) === soll) return;
+      letzte = ist === null ? "Rücklesen fand den Key nicht" : "Rücklesen lieferte abweichenden Wert";
+    } catch (e) { letzte = "Rücklesen scheiterte: " + e.message; }
   }
-  throw new Error("Schreiben endgültig fehlgeschlagen (Drossel?): " + k);
+  throw new Error("Schreiben endgültig fehlgeschlagen (" + letzte + "): " + k);
 }
 
 async function mussDel(store, k, shared) {
   for (let n = 0; n < VERSUCHE; n++) {
-    if (n) await kurzSchlaf(BACKOFF_MS[n]);
+    if (n) await kurzSchlaf(mitJitter(BACKOFF_MS[n]));
     await store.del(k, shared);                                // del ist idempotent …
     try { if (await store.get(k, shared) === null) return; }   // … Erfolg = weg
     catch { return; }
   }
-  throw new Error("Löschen endgültig fehlgeschlagen (Drossel?): " + k);
+  throw new Error("Löschen endgültig fehlgeschlagen: " + k);
 }
 
 export async function dumpZustand(store) {

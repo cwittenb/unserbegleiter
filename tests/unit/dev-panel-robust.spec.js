@@ -15,7 +15,7 @@ const tick = () => new Promise(r => setTimeout(r, 0));
 /** Fake-window.storage mit Drossel: höchstens `maxParallel` gleichzeitig, jeder
  *  Call darüber schlägt fehl; optional schlagen die ersten `transient` Versuche
  *  je Key fehl (Rate-Limit-Simulation). Zählt den Parallelitäts-Höchststand. */
-function drosselStorage({ maxParallel = 4, transient = 0 } = {}) {
+function drosselStorage({ maxParallel = 4, transient = 0, setLiefertUndefined = false } = {}) {
   const welten = { true: new Map(), false: new Map() };
   const w = s => welten[String(!!s)];
   const fehlversuche = new Map();
@@ -32,7 +32,7 @@ function drosselStorage({ maxParallel = 4, transient = 0 } = {}) {
   return {
     spitze: () => spitze,
     async get(key, shared) { betrete(); try { if (!w(shared).has(key)) throw new Error("not found"); return { value: w(shared).get(key) }; } finally { verlasse(); } },
-    async set(key, value, shared) { betrete(); try { vielleichtTransient("s:" + key); w(shared).set(key, value); return { ok: true }; } finally { verlasse(); } },
+    async set(key, value, shared) { betrete(); try { vielleichtTransient("s:" + key); w(shared).set(key, value); return setLiefertUndefined ? undefined : { ok: true }; } finally { verlasse(); } },
     async delete(key, shared) { betrete(); try { vielleichtTransient("d:" + key); w(shared).delete(key); } finally { verlasse(); } },
     async list(prefix, shared) { betrete(); try { return { keys: [...w(shared).keys()].filter(k => k.startsWith(prefix || "")) }; } finally { verlasse(); } },
   };
@@ -45,7 +45,7 @@ function baue(store, reboot) {
 
 const warteFrei = async () => {
   const frei = () => ![...document.querySelectorAll("[data-szene], #devLoad, #devWipe")].some(b => b.disabled);
-  for (let i = 0; i < 400 && !frei(); i++) await new Promise(r => setTimeout(r, 10));
+  for (let i = 0; i < 1400 && !frei(); i++)   // It.3: Fehlerpfade brauchen das volle Retry-Fenster (~8 s + Jitter) await new Promise(r => setTimeout(r, 10));
   for (let i = 0; i < 6; i++) await tick();
 };
 
@@ -76,6 +76,37 @@ describe("S68 · Drossel-Überleben (U1)", () => {
     await SZENEN.find(s => s.id === "betrieb").wende(store);
     expect(roh.spitze()).toBeLessThanOrEqual(4);
   }, 20000);
+});
+
+describe("S68 · Vertragsdrift der Sandbox (Iteration 3)", () => {
+  it("set() liefert bei ERFOLG undefined (Feld-Befund „immer fehlgeschlagen“) — Rücklesen erkennt den Erfolg, Szene läuft durch", async () => {
+    const roh = drosselStorage({ setLiefertUndefined: true });
+    const store = new ArtifactStore(roh);
+    let reboots = 0;
+    baue(store, async () => { reboots++; });
+    document.querySelector('[data-szene="freigaben-da"]').click();
+    await warteFrei();
+    expect(reboots).toBe(1);
+    expect(document.querySelector("#devMsg").textContent).toContain("eingespielt");
+    expect(document.querySelector("#devMsg").textContent).not.toContain("fehlgeschlagen");
+    expect((await store.get("PBDEV:meta", true)).code).toBe(MOCK_META.code);
+  }, 20000);
+
+  it("Rücklesen entlarvt einen ECHT verlorenen Write trotz set()-Erfolgsobjekt — sprechende Fehlermeldung", async () => {
+    const roh = drosselStorage({});
+    const echtesSet = roh.set.bind(roh);
+    roh.set = async (k, v, shared) => { if (String(k).includes("handover:A")) return { ok: true }; return echtesSet(k, v, shared); };
+    const store = new ArtifactStore(roh);
+    let reboots = 0;
+    baue(store, async () => { reboots++; });
+    document.querySelector('[data-szene="freigaben-da"]').click();
+    await warteFrei();
+    expect(reboots).toBe(0);
+    const m = document.querySelector("#devMsg").textContent;
+    expect(m).toContain("fehlgeschlagen");
+    expect(m).toContain("Rücklesen fand den Key nicht");
+    expect(m).toContain("handover:A");
+  }, 30000);
 });
 
 describe("S68 · Fehlerpfad ohne falsche Quittung (U4)", () => {
