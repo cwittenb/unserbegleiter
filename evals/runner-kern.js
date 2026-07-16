@@ -17,14 +17,29 @@ export const szenarioSprache = szenario => (szenario && szenario.sprache === "en
 export function sysPromptFuer(szenario) {
   const k = szenario.kontext || {};
   const P = getPrompts(szenarioSprache(szenario));   // Korpus der Szenario-Sprache
+  let basis;
   switch (szenario.session) {
-    case "solo": return P.reflexionsPrompt(k.me || "Anna", k.partner || "Bernd");
-    case "moment": return P.momentPrompt(k.nameA || "Anna", k.nameB || "Bernd");
-    case "einzel": return P.klaerungsPrompt(k.me || "Anna", k.partner || "Bernd");
-    case "gemeinsam": return P.aufloesungsPrompt(k.nameA || "Anna", k.nameB || "Bernd");
-    case "qualitytime": return P.qzMenuePrompt();
+    case "solo": basis = P.reflexionsPrompt(k.me || "Anna", k.partner || "Bernd"); break;
+    case "moment": basis = P.momentPrompt(k.nameA || "Anna", k.nameB || "Bernd"); break;
+    case "einzel": basis = P.klaerungsPrompt(k.me || "Anna", k.partner || "Bernd"); break;
+    case "gemeinsam": basis = P.aufloesungsPrompt(k.nameA || "Anna", k.nameB || "Bernd"); break;
+    case "qualitytime": basis = P.qzMenuePrompt(); break;
     default: throw new Error("Unbekannte Session im Szenario " + szenario.id + ": " + szenario.session);
   }
+  // Kontext-Injektion (S66): Szenarien dürfen App-seitig eingespielten Kontext
+  // nachbilden (z. B. Merkposten im Reflexionsgespräch, RESTING-Stand im
+  // QZ-Menü) — wie die App: an den System-Prompt angehängt, nie als User-Turn.
+  return szenario.zusatzKontext ? basis + "\n\n" + szenario.zusatzKontext : basis;
+}
+
+/** n-Politik nach Lauf-Ziel (S66, Review 2): `release` hebt n für
+ *  Rote-Linien-Szenarien auf mindestens 5 (das 1/4-Muster von SYC-05 zeigt,
+ *  wie stochastisch dünn n=3 ist); `dev` lässt alles unverändert. Reine
+ *  Funktion — der Kern bleibt frei von CLI-Wissen. */
+export function wendeZielAn(szenarien, ziel) {
+  if (ziel !== "release") return szenarien;
+  return szenarien.map(s =>
+    s.checks && s.checks.some(c => c.roteLinie) ? { ...s, n: Math.max(s.n || 3, 5) } : s);
 }
 
 /** Ein Sample: gescriptete Eingaben nacheinander durch die Pipeline spielen. */

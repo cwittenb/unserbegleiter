@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "build": "node scripts/build-artifact.js && node scripts/build-pages.js && node scripts/build-eval-artifact.js",
-    "eval": "node evals/runner.js"
+    "eval": "node evals/runner.js",
+    "eval:voll": "node evals/runner.js --batch",
+    "eval:matrix": "node scripts/eval-matrix.js"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.9",
     "esbuild": "^0.25.0",
     "happy-dom": "^20.10.6",
     "miniflare": "^4.0.0",

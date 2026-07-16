@@ -37,7 +37,7 @@ function rfcDate(d = new Date()) {
   return d.toUTCString().replace("GMT", "+0000");
 }
 
-function baueNachricht({ to, from, subject, text }) {
+export function baueNachricht({ to, from, subject, text }) {   // exportiert (S66): reine Funktion, unit-testbar
   const enc = s => "=?UTF-8?B?" + btoa(unescape(encodeURIComponent(s))) + "?=";
   const koerper = String(text).replace(/\r?\n/g, "\r\n").replace(/\n\./g, "\n..");
   return [

@@ -35,8 +35,9 @@ import { fileURLToPath } from "node:url";
 import { makeAdapter, baueDrossel } from "../core/llm/adapter.js";
 import { leseEvalKonfig, EvalKonfigFehler } from "./eval-konfig.js";
 import { liesEnvDatei, mischeMitEnv } from "./env-datei.js";
-import { laufeAlle } from "./runner-kern.js";
+import { laufeAlle, wendeZielAn } from "./runner-kern.js";
 import { laufeAlleBatch } from "./runner-batch.js";
+import { pruefeJudge } from "./judge/golden.js";
 import { kostenFuer, cacheQuote } from "./preise.js";
 import { SZENARIEN } from "./szenarien/start-katalog.js";
 import { SZENARIEN_EN } from "./szenarien/start-katalog.en.js";
@@ -77,6 +78,16 @@ async function main() {
     process.exit(2);
   }
   const n = arg("n") ? parseInt(arg("n"), 10) : undefined;
+
+  // Lauf-Ziel (S66, Review 2): `dev` (Default) lässt alles wie bisher;
+  // `release` hebt n für Rote-Linien-Szenarien auf mindestens 5 und wird im
+  // Ergebnis-JSON festgehalten (stand.ziel) — Berichte bleiben einordbar.
+  const ziel = arg("ziel", "dev");
+  if (ziel !== "dev" && ziel !== "release") {
+    console.error('Ungültiges --ziel: "' + ziel + '" (dev | release).');
+    process.exit(2);
+  }
+  szenarien = wendeZielAn(szenarien, ziel);
 
   // RPM-Drossel (S51): fixer Standard 2 (Free-Tier-sicher = 1 Req/30s). --rpm unlimited|0 hebt sie auf.
   const rpmArg = arg("rpm", "2");
@@ -139,7 +150,26 @@ async function main() {
   const hash = await coreHash();
   console.log("Eval-Lauf · Kern " + hash +
     " · Pipeline " + provider + "/" + pipelineModell +
-    " · Judge " + judgeProvider + "/" + judgeModell);
+    " · Judge " + judgeProvider + "/" + judgeModell +
+    (ziel === "release" ? " · Ziel RELEASE (rote Linien n≥5)" : ""));
+
+  // Judge-Selbsttest (S66): Golden Transcripts mit bekanntem Soll-Urteil laufen
+  // VOR dem echten Lauf — schlägt der Judge dort fehl (S52-Fehlurteilsklassen),
+  // bricht der Lauf ab, bevor Pipeline-Geld verbrannt wird. Opt-out für
+  // Diagnosefälle: --ohne-judge-selbsttest.
+  if (!process.argv.includes("--ohne-judge-selbsttest")) {
+    process.stdout.write("Judge-Selbsttest (Golden Transcripts) … ");
+    // Eigener, ungezählter Judge-Adapter: die Lauf-Telemetrie (S55) bleibt sauber;
+    // die geteilte Drossel gilt trotzdem (gleicher Workspace).
+    const kal = await pruefeJudge(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false)));
+    if (!kal.ok) {
+      console.error("FEHLGESCHLAGEN.\nDer Judge weicht vom Soll-Urteil ab — Lauf abgebrochen (kein Pipeline-Verbrauch):");
+      for (const a of kal.abweichungen)
+        console.error("  · " + a.id + "/" + a.check + ": erwartet " + a.erwartet + ", erhalten " + a.erhalten + "\n    Lehre: " + a.lehre);
+      process.exit(3);
+    }
+    console.log("bestanden (3 Fixtures).");
+  }
   console.log("Drossel: Pipeline " + (rpm ? rpm + " RPM" : "unlimited") +
     (crossProvider ? " · Judge unlimited (Provider " + judgeProvider + ")" : " (mit Judge geteilt)") +
     " · Judge-Cache aus" +
@@ -174,6 +204,7 @@ async function main() {
     pipelineModell, judgeModell,
     judgePromptVersion: JUDGE_PROMPT_VERSION,
     batch: batchModus,
+    ziel,                                       // dev | release (S66) — n-Politik des Laufs
   };
   const bericht = batchModus
     ? await laufeAlleBatch(szenarien, {

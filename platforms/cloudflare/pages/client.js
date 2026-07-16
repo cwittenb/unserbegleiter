@@ -11,7 +11,7 @@ import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../..
 const doc = document;
 const app = doc.getElementById("app");
 
-async function api(method, pfad, body) {
+export async function api(method, pfad, body) {
   const r = await fetch(pfad, {
     method,
     credentials: "include",
@@ -23,11 +23,14 @@ async function api(method, pfad, body) {
   return data;
 }
 
-function remoteBackend() {
+export function remoteBackend() {
   return {
     info: () => api("GET", "/api/me"),
     language: {
-      request: ziel => api("POST", "/api/language", { target }),
+      // Bugfix (S66): der Parameter hieß `ziel`, der Body referenzierte die
+      // NICHT existierende Variable `target` → ReferenceError bei jedem
+      // Sprachwechsel-Antrag. Der Worker erwartet { target } (S30·C3).
+      request: target => api("POST", "/api/language", { target }),
       withdraw: () => api("DELETE", "/api/language"),
     },
     bstate: {
@@ -57,7 +60,7 @@ function remoteBackend() {
   };
 }
 
-async function boot() {
+export async function boot() {
   applyDesign(doc);   // Design ab Start — auch Wiedereinstieg/Fehler-Screens
   // Vor-Session-Sprache (Stufe D): vor Anmeldung gibt es kein pstate —
   // gespeicherte Wahl → Browser-Sprache → de. Nach der Anmeldung bleibt
@@ -106,7 +109,7 @@ function fehlerBox(text) {
  *  frischen Link an seine hinterlegte Adresse schicken lassen. Keine Enumeration:
  *  die Antwort ist immer dieselbe. Optional mit vorangestellter Fehlermeldung
  *  (verbrauchter/abgelaufener Link). */
-function zeigeWiedereinstieg(enrollFehler) {
+export function zeigeWiedereinstieg(enrollFehler) {
   app.innerHTML =
     '<div style="max-width:440px;margin:0 auto;font-family:inherit">' +
     (enrollFehler ? fehlerBox(fehlerText(enrollFehler)) : "") +

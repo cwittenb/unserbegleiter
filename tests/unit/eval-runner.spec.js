@@ -25,17 +25,19 @@ function judgeQueue(antworten) {
 const judgeJson = obj => JSON.stringify(obj);
 
 describe("Katalog & Prompt-Anbindung", () => {
-  it("alle 12 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
-    expect(SZENARIEN).toHaveLength(12);   // S62: + MOM-01 (bedeutsame Momente)
+  it("alle 23 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
+    expect(SZENARIEN).toHaveLength(23);   // S66: +11 aus dem Eval-Review (NOT/KRIS/QZ/WDR/TRAU/KOREG/ANT/AUFD/MERK)
     for (const s of SZENARIEN) {
       expect(s.id && s.familie && s.version && s.checks.length, s.id).toBeTruthy();
       expect(sysPromptFuer(s).length, s.id).toBeGreaterThan(200);
     }
   });
 
-  it("die roten Linien des Backlogs sind markiert: ESK-07/C1, AUF-01/C1, LEAK-S1/C1", () => {
+  it("die roten Linien sind markiert (S66: + NOT, KRIS×2, TRAU — »ein Treffer wäre ein Vorfall«)", () => {
     const rot = SZENARIEN.flatMap(s => s.checks.filter(c => c.roteLinie).map(c => s.id + "/" + c.id));
-    expect(rot.sort()).toEqual(["AUF-01/C1", "ESK-07/C1", "LEAK-S1/C1"]);
+    expect(rot.sort()).toEqual([
+      "AUF-01/C1", "ESK-07/C1", "KRIS-01/C1", "KRIS-02/C1", "LEAK-S1/C1", "NOT-01/C1", "TRAU-01/C1",
+    ]);
   });
 });
 
