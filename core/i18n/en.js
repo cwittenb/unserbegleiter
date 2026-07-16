@@ -35,12 +35,11 @@ export const en = {
   "mein.soloSub": "Your private space for sorting things out — speak freely, look closely, at your pace.",
   "mein.einzelSub": "Where do you wish for growth — and where may I accompany the two of you?",
   "mein.messSub": "A brief, hidden look at your closeness and your mandates — revealed together.",
-  "mein.gruppeRegale": "Shelves",
-
+  "mein.gruppeRegale": "My path",
   // Our Shared Space
   "teil.intro": "For everything the two of you do together. The shelves hold only what has been released — the rooms you enter deliberately.",
   "teil.gruppeRaeume": "Rooms — enter and begin",
-  "teil.gruppeRegale": "Shelves — browse without starting anything",
+  "teil.gruppeRegale": "Your common ground",
   "teil.moment": "Begin quality time",
   "teil.momentSub": "Your accompanied time together — whether you want to talk something through or simply spend time with each other.",
   "teil.momentWeiter": "Continue quality time",

@@ -33,12 +33,11 @@ export const de = {
   "mein.soloSub": "Dein privater Raum zum Sortieren — frei erzählen, in Ruhe hinschauen.",
   "mein.einzelSub": "Wo wünschst du dir Entwicklung — und wohin darf ich euch begleiten?",
   "mein.messSub": "Ein kurzer, verdeckter Blick auf eure Nähe und eure Aufträge — aufgedeckt wird gemeinsam.",
-  "mein.gruppeRegale": "Regale",
-
+  "mein.gruppeRegale": "Mein Weg",
   // Gemeinsamer Raum
   "teil.intro": "Für alles, was ihr zu zweit macht. In den Regalen liegt nur, was freigegeben wurde — die Räume betretet ihr bewusst.",
   "teil.gruppeRaeume": "Räume — betreten und beginnen",
-  "teil.gruppeRegale": "Regale — ansehen, ohne etwas zu beginnen",
+  "teil.gruppeRegale": "Euer gemeinsamer Boden",
   "teil.moment": "Qualitätszeit beginnen",
   "teil.momentSub": "Eure begleitete gemeinsame Zeit — ob ihr etwas besprechen oder einfach Zeit miteinander verbringen wollt.",
   "teil.momentWeiter": "Qualitätszeit fortsetzen",
