@@ -559,6 +559,19 @@ export function createApp({ doc, backend, root, diktat }) {
     if (nah) { box.scrollTop = box.scrollHeight; scrolleZumEingabefeld(); }
   }
 
+  /** S70 · Auslastungs-Wiederholung: ruhige, ZAHLENLOSE Warteanzeige in der
+   *  Tipp-Blase. Retries laufen vor dem ersten Token — eine bereits laufende
+   *  Stream-Anzeige wird deshalb nie überschrieben. */
+  function zeigeAusgelastet(art) {
+    if (art !== "overloaded_retry" || state.streamText) return;
+    const box = $("pbMsgs");
+    if (!box) return;
+    let d = box.querySelector("#pbStream");
+    if (!d) { d = el("div", "pb-msg ai"); d.id = "pbStream"; box.appendChild(d); }
+    d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>' +
+      '<span class="pb-sub" style="display:block;margin-top:4px">' + t("chat.ausgelastetWarte") + '</span>';
+  }
+
   /* S62 · Scroll-Disziplin (löst den harten S53-Sprung ans Seitenende ab):
      Ziel ist das EINGABEFELD (Composer), nie document.scrollHeight — Footer
      oder Dev-Panel unterhalb bleiben außerhalb der Sicht-Verankerung. Sticky
@@ -634,13 +647,39 @@ export function createApp({ doc, backend, root, diktat }) {
      an, Senden gesperrt, dann Antwort. Panels (Regler, Skala, Gate, Kapitel,
      Freigabe …) laufen hierüber — fehlender Ladezustand nach Panel-Submits
      war ein globales Problem, das hier zentral gelöst ist. */
+  /** S70 · Auslastung erkennen: stabiler Code (Proxy-Grenze) ODER nackter
+   *  HTTP-Status aus Altpfaden — beide bekommen dieselbe freundliche Meldung. */
+  const istUeberlastet = e => !!e &&
+    (e.code === "llm_overloaded" || e.status === 429 || e.status === 503 || e.status === 529);
+
+  /** S70 · „Erneut senden": der gescheiterte Zug liegt vollständig im Verlauf
+   *  (die User-Nachricht ist gespeichert) — resume() beantwortet den offenen
+   *  Zug, ohne dass die Person ihren Text neu tippen muss. */
+  function zeigeErneutSenden() {
+    const b = $("pbErr");
+    if (!b || !state.engine) return;
+    const k = el("button", "pb-btn");
+    k.id = "btnErneutSenden";
+    k.textContent = t("chat.erneutSenden");
+    k.style.marginLeft = "8px";
+    k.addEventListener("click", () => { err(""); warteAntwort(() => state.engine.resume(), true); });
+    b.appendChild(k);
+  }
+
   async function warteAntwort(lauf, scrollErzwingen = false) {
     setzeWarten(true);
+    // S70: jeder NEUE Wartevorgang macht ein offenes Retry-Angebot ungültig —
+    // ein stehengebliebener Knopf dürfte später keinen falschen resume() feuern.
+    const altKnopf = $("btnErneutSenden");
+    if (altKnopf) altKnopf.remove();
     const bs = $("btnSend");
     if (bs) bs.disabled = true;
     renderMsgs(scrollErzwingen);
     try { await (typeof lauf === "function" ? lauf() : lauf); }
-    catch (e) { err(e.message); }
+    catch (e) {
+      if (istUeberlastet(e)) { err(fehlerText(e)); zeigeErneutSenden(); }   // S70
+      else err(e.message);
+    }
     finally {
       setzeWarten(false);
       if (bs) bs.disabled = false;
@@ -878,6 +917,7 @@ export function createApp({ doc, backend, root, diktat }) {
         onPersonError: err,
         onRender: renderMsgs,
         onDelta: zeigeStream,
+        onStatus: zeigeAusgelastet,   // S70: zahlenlose Warteanzeige bei Auslastungs-Retries
       },
     });
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;

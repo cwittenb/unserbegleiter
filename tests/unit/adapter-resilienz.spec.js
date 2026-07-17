@@ -67,16 +67,19 @@ describe("Adapter · Retry bei 429/5xx", () => {
     expect(geschlafen).toEqual([3000]);   // Retry-After respektiert
   });
 
-  it("500 → Exponential-Backoff, dann Erfolg", async () => {
+  it("500 → Exponential-Backoff (S70: als Jitter-Obergrenze), dann Erfolg", async () => {
+    // S70 zieht die Wartezeit gleichverteilt aus [0, backoffMs·2^v] (Full
+    // Jitter). Mit zufall()=1 wird die Obergrenze exakt getroffen — die
+    // ursprüngliche S51-Zusicherung (Exponential-Deckel) bleibt so prüfbar.
     const geschlafen = [];
     const f = folgeFetch([
       resp(500, { body: { message: "boom" } }),
       resp(200, { body: OPENAI_OK }),
     ]);
-    const call = makeAdapter({ ...MISTRAL, versuche: 4, backoffMs: 1000, schlaf: async ms => geschlafen.push(ms) }, f);
+    const call = makeAdapter({ ...MISTRAL, versuche: 4, backoffMs: 1000, zufall: () => 1, schlaf: async ms => geschlafen.push(ms) }, f);
     const r = await call("SYS", []);
     expect(r.text).toBe("Antwort");
-    expect(geschlafen).toEqual([1000]);   // backoffMs * 2^0
+    expect(geschlafen).toEqual([1000]);   // 1 · backoffMs · 2^0
   });
 
   it("dauerhaft 429 → nach erschöpften Versuchen wirft LlmHttpError", async () => {

@@ -105,6 +105,8 @@ export const de = {
   "chat.deineZahl": "Deine Zahl:",
   "chat.tippt": "Die Begleitung schreibt",
   "chat.diktieren": "Diktieren",
+  "chat.ausgelastetWarte": "Gerade ist viel los \u2014 ich bleibe dran \u2026",
+  "chat.erneutSenden": "Erneut senden",
 
   // Gate (Selbstmitteilung)
   "gate.titel": "Deine Selbstmitteilung zur Freigabe",
@@ -298,6 +300,7 @@ export const de = {
   "fehler.code.mail_failed": "Der Versand ist gerade nicht möglich. Bitte versuche es später erneut.",
   "fehler.code.verify_rate": "Zu viele Anfragen. Bitte etwas später erneut.",
   "fehler.code.email_mismatch": "Die Adresse passt nicht zur offenen Bestätigung. Bitte fordere einen neuen Code an.",
+  "fehler.code.llm_overloaded": "Der Dienst ist gerade stark ausgelastet. Deine Nachricht ist nicht verloren \u2014 bitte sende sie gleich noch einmal.",
 
   // Theme-Umschalter
   "theme.hell": "Hell",

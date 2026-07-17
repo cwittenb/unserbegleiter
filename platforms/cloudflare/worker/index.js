@@ -456,10 +456,19 @@ async function route(request, env) {
       return fehler("LLM nicht konfiguriert: LLM_PROVIDER=\"" + env.LLM_PROVIDER + "\", aber " + pOben + "_API_KEY fehlt im Worker-Environment.", 500);
     if (!modell)
       return fehler("LLM nicht konfiguriert: LLM_PROVIDER=\"" + env.LLM_PROVIDER + "\", aber " + pOben + "_MODEL fehlt im Worker-Environment.", 500);
-    const call = makeAdapter(
-      { provider: env.LLM_PROVIDER, mode: "direct", apiKey, models: { [env.LLM_PROVIDER]: modell } },
-      fetchFn
-    );
+    // S70 · Overload-Härtung: gedeckeltes Retry-Fenster MIT Full-Jitter im
+    // Adapter (429/503/529 & 5xx). Bewusst KURZ (Worst-Case ≈ 10–12 s), weil
+    // die Retries im bereits geöffneten SSE-Strom laufen — lange Stille auf
+    // offener Verbindung riskiert Idle-Timeouts von Zwischenschichten. Die
+    // Werte sind Robustheits-Tuning (kein Provider-Wissen) und per env
+    // übersteuerbar: LLM_VERSUCHE / LLM_BACKOFF_MS / LLM_MAX_BACKOFF_MS.
+    const zahl = (roh, sonst) => { const n = Number(roh); return Number.isFinite(n) && n > 0 ? n : sonst; };
+    const llmCfg = {
+      provider: env.LLM_PROVIDER, mode: "direct", apiKey, models: { [env.LLM_PROVIDER]: modell },
+      versuche: zahl(env.LLM_VERSUCHE, 4),
+      backoffMs: zahl(env.LLM_BACKOFF_MS, 1500),
+      maxBackoffMs: zahl(env.LLM_MAX_BACKOFF_MS, 6000),
+    };
     if (stream === true) {
       // Streaming-Pfad: Upstream-SSE wird vom Adapter geparst und hier als
       // provider-neutrale SSE re-emittiert ({delta}… {done} | {error}).
@@ -470,6 +479,11 @@ async function route(request, env) {
       const { readable, writable } = new TransformStream();
       const writer = writable.getWriter();
       const sende = obj => writer.write(enc.encode("data: " + JSON.stringify(obj) + "\n\n"));
+      // S70: je Upstream-Wiederholung ein zahlenloses {retry}-Event — der
+      // Client zeigt eine ruhige Warteanzeige. Fehler-Events tragen den
+      // stabilen Code FLACH ({error, code}), exakt wie fehler() im JSON-Pfad;
+      // Alt-Clients lesen error weiter als String (rückwärtskompatibel).
+      const call = makeAdapter({ ...llmCfg, onRetry: () => { sende({ retry: true }); } }, fetchFn);
       (async () => {
         try {
           const antwort = await call(system, messages, d => { sende({ delta: d }); });
@@ -479,7 +493,7 @@ async function route(request, env) {
           // nie die Antwort und blockiert sie nie (Best-Effort im Modul).
           await erfasseUsage(kv, session.code, antwort.usage, now);
         } catch (e) {
-          await sende({ error: e.message || "LLM-Fehler" });
+          await sende(e && e.code ? { error: e.message || "LLM-Fehler", code: e.code } : { error: e.message || "LLM-Fehler" });
         } finally {
           try { await writer.close(); } catch { /* Client weg */ }
         }
@@ -492,6 +506,9 @@ async function route(request, env) {
         },
       });
     }
+    // JSON-Altpfad: Fehler wandern zum äußeren Catch, der e.code bereits als
+    // fehler(msg, status, code) serialisiert — hier ist nichts zu tun (S70).
+    const call = makeAdapter(llmCfg, fetchFn);
     const antwort = await call(system, messages);
     if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
     await erfasseUsage(kv, session.code, antwort.usage, now);   // S61, Best-Effort

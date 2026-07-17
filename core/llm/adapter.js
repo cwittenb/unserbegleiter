@@ -5,6 +5,8 @@
 //   await call(systemPrompt, messages)           → { text, stop, usage }
 //   await call(systemPrompt, messages, onDelta)  → dito; onDelta(teilText)
 //                                                  feuert je Text-Häppchen
+//   await call(sys, msgs, onDelta, onStatus)     → dito; onStatus("overloaded_retry")
+//                                                  je Auslastungs-Wiederholung (S70)
 //
 // Streaming (SSE) senkt die gefühlte Latenz massiv: der erste Buchstabe
 // erscheint nach Time-to-first-token statt nach der Gesamtdauer. Ohne
@@ -194,12 +196,16 @@ export const LLM_PROVIDERS = {
 
 /* ---- Robustheit: HTTP-Fehler, Retry-After, Backoff, RPM-Drossel (S51) ---- */
 
-/** Getippter Transportfehler — trägt Status und (falls vorhanden) Retry-After (Sekunden). */
+/** Getippter Transportfehler — trägt Status und (falls vorhanden) Retry-After (Sekunden).
+ *  S70: .code = "llm_overloaded" bei Auslastungs-Status (429/503/529) — ein
+ *  STABILER Code, den fehlerText() lokalisieren und der Worker über die
+ *  Proxy-Grenze reichen kann; alle anderen Status tragen code null. */
 export class LlmHttpError extends Error {
   constructor(status, retryAfterS, koerper) {
     super("LLM HTTP " + status + (koerper ? " — " + String(koerper).slice(0, 200) : ""));
     this.name = "LlmHttpError";
     this.status = status;
+    this.code = (status === 429 || status === 503 || status === 529) ? "llm_overloaded" : null;
     this.retryAfterS = (typeof retryAfterS === "number" && retryAfterS >= 0) ? retryAfterS : null;
     this.koerper = koerper || "";
   }
@@ -250,8 +256,15 @@ export function baueDrossel({ rpm, uhr } = {}) {
   return drossel;
 }
 
-/** Wiederholt fn bei HTTP 429/5xx (mit Retry-After bzw. gedeckeltem Exponential-Backoff). */
-async function mitWiederholung(fn, { versuche, backoffMs, maxBackoffMs, schlaf }) {
+/** Wiederholt fn bei HTTP 429/5xx (mit Retry-After bzw. gedeckeltem Exponential-Backoff).
+ *  S70 · Full Jitter: ohne Server-Anweisung (Retry-After) wird die Wartezeit
+ *  gleichverteilt aus [0, min(maxBackoffMs, backoffMs·2^v)] gezogen — sonst
+ *  feuern beide Partner (und alle Clients) im Gleichtakt in dieselben
+ *  Overload-Fenster. Ein Retry-After-Header schlägt den Jitter IMMER (die
+ *  Server-Anweisung wird nicht verwässert). zufall ist injizierbar
+ *  (deterministische Tests); onRetry({status, versuch}) feuert VOR jeder
+ *  Wartephase — Fehler des Callbacks brechen den Retry nie ab. */
+async function mitWiederholung(fn, { versuche, backoffMs, maxBackoffMs, schlaf, zufall, onRetry }) {
   let letzter;
   for (let v = 0; v < versuche; v++) {
     try {
@@ -260,9 +273,10 @@ async function mitWiederholung(fn, { versuche, backoffMs, maxBackoffMs, schlaf }
       letzter = e;
       const wiederholbar = e instanceof LlmHttpError && (e.status === 429 || (e.status >= 500 && e.status <= 599));
       if (!wiederholbar || v === versuche - 1) throw e;
+      if (typeof onRetry === "function") { try { onRetry({ status: e.status, versuch: v + 1 }); } catch { /* Anzeige ist Komfort */ } }
       const wartenMs = e.retryAfterS != null
         ? e.retryAfterS * 1000
-        : Math.min(maxBackoffMs, backoffMs * (2 ** v));
+        : (typeof zufall === "function" ? zufall() : Math.random()) * Math.min(maxBackoffMs, backoffMs * (2 ** v));
       await schlaf(Math.max(0, wartenMs));
     }
   }
@@ -285,8 +299,18 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     // stream:true; der Worker antwortet dann mit provider-neutraler SSE:
     //   data: {"delta":"…"}   … je Text-Häppchen
     //   data: {"done":{text,stop,usage[,kontingent]}}   … genau einmal am Ende
-    //   data: {"error":"…"}   … statt done bei Upstream-Fehlern
-    async function callClaude(systemPrompt, messages, onDelta) {
+    //   data: {"retry":true}  … je Upstream-Wiederholung bei Auslastung (S70)
+    //   data: {"error":"…"[, "code":"…"]}   … statt done bei Upstream-Fehlern
+    // S70: onStatus("overloaded_retry") ist der zweite Rückkanal neben onDelta —
+    // rein informativ (Warteanzeige), nie Teil des Antworttexts. Fehler-Events
+    // tragen einen optionalen stabilen code (flach, wie fehler() im Worker);
+    // die Alt-Form ohne code bleibt gültig (alter Worker, neuer Client).
+    const wirfProxyFehler = (meldung, code) => {
+      const e = new Error(typeof meldung === "string" && meldung ? meldung : "API-Fehler");
+      if (code) e.code = code;
+      throw e;
+    };
+    async function callClaude(systemPrompt, messages, onDelta, onStatus) {
       const streamen = typeof onDelta === "function" && cfg.stream !== false;
       const nutz = { system: systemPrompt, messages: messages.map(m => ({ role: m.role, content: m.content })) };
       if (streamen) nutz.stream = true;
@@ -301,7 +325,8 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
         let text = "";
         for await (const d of sseDaten(resp)) {
           let ev; try { ev = JSON.parse(d); } catch { continue; }
-          if (ev.error) throw new Error(ev.error);
+          if (ev.retry) { if (typeof onStatus === "function") { try { onStatus("overloaded_retry"); } catch { /* Anzeige ist Komfort */ } } continue; }
+          if (ev.error) wirfProxyFehler(ev.error, ev.code);
           if (typeof ev.delta === "string" && ev.delta) { text += ev.delta; onDelta(ev.delta); }
           if (ev.done) {
             callClaude.kontingent = ev.done.kontingent || null;   // Hinweis für die UI
@@ -313,7 +338,7 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
         return { text: text.trim(), stop: null, usage: null };
       }
       const data = await resp.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) wirfProxyFehler(data.error, data.code);
       callClaude.kontingent = data.kontingent || null;   // Hinweis für die UI
       return data;   // {text, stop, usage[, kontingent]} — Fassadenform vom Worker
     }
@@ -339,11 +364,24 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     backoffMs: Number.isFinite(cfg.backoffMs) ? cfg.backoffMs : 2000,
     maxBackoffMs: Number.isFinite(cfg.maxBackoffMs) ? cfg.maxBackoffMs : 30000,
     schlaf: typeof cfg.schlaf === "function" ? cfg.schlaf : (ms => new Promise(r => setTimeout(r, ms))),
+    zufall: typeof cfg.zufall === "function" ? cfg.zufall : undefined,     // S70: injizierbarer Jitter-RNG
+    onRetry: typeof cfg.onRetry === "function" ? cfg.onRetry : undefined,  // S70: Konfigurations-Hook (Worker → SSE)
   };
 
-  return function callClaude(systemPrompt, messages, onDelta) {
+  return function callClaude(systemPrompt, messages, onDelta, onStatus) {
     const streamen = typeof onDelta === "function" && cfg.stream !== false;
     const body = streamen ? P.streamBody(cfg, systemPrompt, messages) : P.body(cfg, systemPrompt, messages);
+    // S70: per-Aufruf-Statuskanal — direct/keyless melden lokale Retries direkt
+    // an onStatus, symmetrisch zum {retry}-Event des Proxy-Modus. Beide Hooks
+    // (cfg.onRetry UND onStatus) feuern, falls beide gesetzt sind.
+    const lokal = { ...retry };
+    if (typeof onStatus === "function") {
+      const konfig = retry.onRetry;
+      lokal.onRetry = info => {
+        if (konfig) { try { konfig(info); } catch { /* Anzeige ist Komfort */ } }
+        try { onStatus("overloaded_retry"); } catch { /* Anzeige ist Komfort */ }
+      };
+    }
     return mitWiederholung(async () => {
       await drossel();                                     // geteilte RPM-Drossel (pro Workspace), falls gesetzt
       const resp = await fetchFn(P.url(cfg), {
@@ -359,6 +397,6 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
       if (streamen && istEventStream(resp)) return P.streamParse(resp, onDelta);
       const data = await resp.json();
       return P.parse(data);
-    }, retry);
+    }, lokal);
   };
 }

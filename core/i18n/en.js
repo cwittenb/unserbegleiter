@@ -107,6 +107,8 @@ export const en = {
   "chat.deineZahl": "Your number:",
   "chat.tippt": "The Companion is writing",
   "chat.diktieren": "Dictate",
+  "chat.ausgelastetWarte": "Quite busy right now \u2014 I'll keep at it \u2026",
+  "chat.erneutSenden": "Send again",
 
   // Gate (personal sharing)
   "gate.titel": "Your words, ready to share",
@@ -300,6 +302,7 @@ export const en = {
   "fehler.code.mail_failed": "Sending is not possible right now. Please try again later.",
   "fehler.code.verify_rate": "Too many requests. Please try again a little later.",
   "fehler.code.email_mismatch": "The address does not match the pending confirmation. Please request a new code.",
+  "fehler.code.llm_overloaded": "The service is under heavy load right now. Your message is not lost \u2014 please send it again in a moment.",
 
   // Theme toggle
   "theme.hell": "Light",

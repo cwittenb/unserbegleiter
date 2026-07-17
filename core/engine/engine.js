@@ -84,7 +84,9 @@ export class Engine {
       const onDelta = this.hooks.onDelta
         ? (d) => { teil += d; this.hooks.onDelta(teil); }
         : undefined;
-      const { text, stop } = await this.llm(this.def.sysPrompt(this.ctx), this.chat.messages, onDelta);
+      // S70: onStatus ist der zweite Rückkanal (Auslastungs-Wiederholungen) —
+      // rein informativ für die Warteanzeige, nie Teil des Antworttexts.
+      const { text, stop } = await this.llm(this.def.sysPrompt(this.ctx), this.chat.messages, onDelta, this.hooks.onStatus);
       this.chat.messages.push({ role: "assistant", content: text });
       this.chat.lastStop = stop || null;
       await this._save();

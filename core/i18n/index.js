@@ -37,8 +37,14 @@ export function hatKey(key) {
 
 // Fehlertexte: Worker liefert stabile Codes (e.code) — falls das Wörterbuch
 // den Code kennt, kommt die lokalisierte Meldung; sonst die Server-Meldung.
+// S70: Auslastung wird auch OHNE Code am nackten HTTP-Status erkannt
+// (429/503/529) — Fehler aus Altpfaden oder direktem Transport tragen nur
+// .status, sollen aber dieselbe freundliche Meldung bekommen.
 export function fehlerText(e) {
-  const k = e && e.code ? "fehler.code." + e.code : null;
+  const status = e && typeof e.status === "number" ? e.status : null;
+  const code = (e && e.code) ||
+    ((status === 429 || status === 503 || status === 529) ? "llm_overloaded" : null);
+  const k = code ? "fehler.code." + code : null;
   if (k && hatKey(k)) return t(k);
   return (e && e.message) || String(e);
 }
