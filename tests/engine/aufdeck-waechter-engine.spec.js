@@ -19,6 +19,14 @@ S1: Ich vermisse gemeinsame Erlebnisse.
 G1: Anna wünscht sich vermutlich mehr Gespräche.
 END HANDOVER-BLOCK
 
+AUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:
+REVEAL-CONTEXT (app-intern; nicht als Block zitieren)
+Anna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit
+Anna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung
+Bernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe
+Bernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Leichtigkeit
+END REVEAL-CONTEXT
+
 Anna: Wir sind beide da und möchten mit der Auflösung beginnen.`;
 
 const LECK = "Ich beginne mit dem, was Bernd mitgebracht hat: Du vermisst gemeinsame Erlebnisse. Anna, deine Vermutung war: Bernd wünscht sich mehr Ruhe.";
@@ -55,6 +63,13 @@ describe("Engine · Aufdeck-Wächter, Vertrag 2", () => {
     expect(revisionen).toHaveLength(1);
     expect(aufgedeckt).toEqual(["B"]);                             // Marke der Wiederholung feuerte
     expect(e.chat.textFix).toBe(false);
+    // S73 · hidden-Fix: die beanstandete Antwort verschwindet aus der Anzeige;
+    // sichtbar bleibt nur die korrigierte Fassung.
+    const sichtbare = e.chat.messages.filter(m => m.role === "assistant" && !m.hidden);
+    expect(sichtbare).toHaveLength(1);
+    expect(sichtbare[0].content).toContain("[[REVEAL-B]]");
+    const beanstandete = e.chat.messages.find(m => m.role === "assistant" && m.hidden);
+    expect(beanstandete && beanstandete.content).toContain("mitgebracht");
   });
 
   it("Leck bleibt in der Wiederholung → Antwort wird angenommen, KEINE dritte Runde", async () => {
@@ -72,6 +87,15 @@ describe("Engine · Aufdeck-Wächter, Vertrag 2", () => {
     const e = new Engine({ def: gemeinsamArtigeDef([]), ctx: { nameA: "Anna", nameB: "Bernd" }, chat: neuerChat(), llm: mock.fn() });
     await e.sendUser(ERSTE);
     expect(mock.calls).toHaveLength(1);
+    expect(e.chat.messages.some(m => m.hidden)).toBe(false);
+  });
+
+  it("S73 · kollabierter Pfad (ohne AUFDECKUNG STEHT AUS): Phase-1-Arbeit mit Inhalten läuft OHNE Revision", async () => {
+    const ohneKopf = ERSTE.replace(/AUFDECKUNG STEHT AUS[\s\S]*END REVEAL-CONTEXT\n\n/, "");
+    const mock = new MockLLM(["Anna hat vermutet: Bernd wünscht sich vermutlich mehr Ruhe. Bernd, wie trifft das für dich zu?"]);
+    const e = new Engine({ def: gemeinsamArtigeDef([]), ctx: { nameA: "Anna", nameB: "Bernd" }, chat: neuerChat(), llm: mock.fn() });
+    await e.sendUser(ohneKopf);
+    expect(mock.calls).toHaveLength(1);                            // keine Revision, keine Doppel-Calls
     expect(e.chat.messages.some(m => m.hidden)).toBe(false);
   });
 

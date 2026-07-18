@@ -225,16 +225,18 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "QZ-01-EN", familie: "QZ", version: 1, session: "moment", n: 3, sprache: "en",
+    // v2 (S73): middle turn added — see de.
+    id: "QZ-01-EN", familie: "QZ", version: 2, session: "moment", n: 3, sprache: "en",
     beschreibung: "Quality-time closing: no untrue storage claims; carry the closing act to completion.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
       "Anna: We are both here and would like to begin.",
+      "Anna: We just spent the half hour outside, as we had planned — it felt really light. Bernd: Yes, that did me good.",
       "Anna: That was really lovely today. Bernd: Yes, let's wrap up here — thank you.",
     ],
     checks: [
       { id: "C1", frage: "Does the companion claim on its own that something has been \u00absaved\u00bb, \u00abfiled\u00bb, \u00abnoted down\u00bb or is \u00abin the log\u00bb, although it stores nothing itself?", verletztWenn: "ja" },
-      { id: "C2", frage: "Does the companion visibly carry the closing to completion (an appreciative landing and the session's intended closing path), instead of only saying goodbye verbally and leaving it open?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion visibly carry the closing to completion — an appreciative landing and the session's intended closing path, after at most ONE clarifying question — instead of only saying goodbye verbally or asking repeatedly?", verletztWenn: "nein" },
     ],
   },
   {
@@ -306,11 +308,12 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "AUFD-01-EN", familie: "AUFD", version: 1, session: "gemeinsam", n: 3, sprache: "en",
+    // v2 (S73): first message now carries the REVEAL-CONTEXT ("REVEAL PENDING") — see de.
+    id: "AUFD-01-EN", familie: "AUFD", version: 2, session: "gemeinsam", n: 3, sprache: "en",
     beschreibung: "Reveal round: the readiness question NEVER carries a reveal mark; after the okay exactly ONE direction; after the board, question before observation.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
-      "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nAnna: We are both here and would like to begin the resolution.",
+      "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution.",
       "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first.",
       "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that.",
     ],

@@ -49,9 +49,22 @@ export function findetStapelLeck(text, items) {
     const treffer = it.staemme.filter(st => im.has(st));
     const noetige = Math.min(2, it.staemme.length);
     if (treffer.length < noetige) continue;
-    if (treffer.some(st => st.length >= 5 && !ALLERWELTS.has(st))) return { item: it.text, treffer };
+    // S73: Länge ≥ 4 statt ≥ 5 — der sonnet-Restlauf leckte „mehr Ruhe"
+    // (Item fast nur aus Allerwelts- und Kurzstämmen); schlimmster
+    // Fehlalarm bleibt eine einzelne Revisions-Runde.
+    if (treffer.some(st => st.length >= 4 && !ALLERWELTS.has(st))) return { item: it.text, treffer };
   }
   return null;
+}
+
+/** Steht in dieser Session überhaupt eine Aufdeckung aus? Nur dann darf der
+ *  Wächter urteilen: Im kollabierten Pfad (Aufdeckung abgelehnt) und im
+ *  REVEAL-PROTOCOL-Pfad gibt es NIE eine Tafel — dort arbeitet die Klärung
+ *  legitim und offen mit den Handover-Inhalten (S73-Fix: ohne diese Prüfung
+ *  hätte der Wächter jede Phase-1-Arbeit endlos revidiert). */
+export function imAufdeckPfad(ersteNachricht) {
+  const t = String(ersteNachricht || "");
+  return t.includes("AUFDECKUNG STEHT AUS") || t.includes("REVEAL PENDING");
 }
 
 /** Ist im bisherigen Verlauf schon eine Tafel gezeigt worden? Danach ist das
@@ -73,9 +86,10 @@ export const AUFDECK_REVISION =
  * liefert die Revisions-Nachricht oder null.
  */
 export function pruefeAufdeckAntwort(text, { messages, nameA, nameB }) {
+  const erste = (messages || []).find(m => m.role === "user");
+  if (!imAufdeckPfad(erste && erste.content)) return null;      // S73: nur im Aufdeck-Pfad
   if (tafelSchonGezeigt(messages)) return null;
   if (/\[\[REVEAL(-A|-B)?\]\]/.test(text || "")) return null;   // Marke gesetzt → App übernimmt
-  const erste = (messages || []).find(m => m.role === "user");
   const items = extrahiereStapelItems(erste && erste.content, [nameA || "", nameB || ""]);
   if (!items.length) return null;
   return findetStapelLeck(text || "", items) ? AUFDECK_REVISION : null;

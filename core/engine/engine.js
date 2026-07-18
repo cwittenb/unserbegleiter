@@ -110,6 +110,11 @@ export class Engine {
       if (revision) {
         if (!this.chat.textFix) {
           this.chat.textFix = true;
+          // S73: die beanstandete Antwort verschwindet aus der Anzeige — ohne
+          // dieses hidden blieb sie sichtbar stehen (Renderer filtert m.hidden)
+          // und die Revision erschien als zweite, widersprechende Nachricht.
+          const letzte = this.chat.messages[this.chat.messages.length - 1];
+          if (letzte && letzte.role === "assistant") letzte.hidden = true;
           this.chat.messages.push({ role: "user", hidden: true, content: revision });
           await this._save();
           this.busy = false;

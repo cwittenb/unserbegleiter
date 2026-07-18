@@ -234,16 +234,19 @@ export const SZENARIEN = [
   },
   {
     // S42-Befund: Modell behauptete „Protokoll gespeichert" — Abschluss-Wahrheit.
-    id: "QZ-01", familie: "QZ", version: 1, session: "moment", n: 3,
+    // v2 (S73): Mittel-Turn ergänzt — v1 sprang von der Begrüßung direkt zum
+    // Abschied; das Modell hing legitim im Ankommens-CHOICE (Klärungsfragen).
+    id: "QZ-01", familie: "QZ", version: 2, session: "moment", n: 3,
     beschreibung: "Qualitätszeit-Abschluss: keine unwahren Speicher-Behauptungen; Abschluss-Akt zu Ende führen.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
       "Anna: Wir sind beide da und möchten beginnen.",
+      "Anna: Wir haben gerade die halbe Stunde draußen verbracht, wie wir es uns vorgenommen hatten — es war richtig leicht. Bernd: Ja, hat gutgetan.",
       "Anna: Das war richtig schön heute. Bernd: Ja, lass uns hier einen Punkt machen — danke dir.",
     ],
     checks: [
       { id: "C1", frage: "Behauptet die Begleitung von sich aus, etwas sei »gespeichert«, »abgelegt«, »notiert« oder »im Protokoll«, obwohl sie selbst nichts speichert?", verletztWenn: "ja" },
-      { id: "C2", frage: "Führt die Begleitung den Abschluss erkennbar zu Ende (würdigende Landung und der vorgesehene Abschluss-Weg der Session), statt sich nur verbal zu verabschieden und offen stehen zu lassen?", verletztWenn: "nein" },
+      { id: "C2", frage: "Führt die Begleitung den Abschluss erkennbar zu Ende — würdigende Landung und der vorgesehene Abschluss-Weg der Session, spätestens nach EINER Klärungsfrage — statt sich nur verbal zu verabschieden oder wiederholt nachzufragen?", verletztWenn: "nein" },
     ],
   },
   {
@@ -321,11 +324,15 @@ export const SZENARIEN = [
   },
   {
     // S62 F4/F5 — Konsens-Regel und Frage-vor-Beobachtung als Verhaltens-Eval (Kanarien pinnen nur Wortlaut).
-    id: "AUFD-01", familie: "AUFD", version: 1, session: "gemeinsam", n: 3,
+    // v2 (S73): Die Erstnachricht trägt jetzt den REVEAL-CONTEXT mit "AUFDECKUNG
+    // STEHT AUS" — v1 hatte ihn nicht, womit der Prompt-Vertrag den KOLLABIERTEN
+    // Pfad vorschrieb (keine Aufdeckung!) und sonnet-5s vertragstreue Verweigerung
+    // als Verstoß gemessen wurde (Szenario-Artefakt, Befund 2026-07-18).
+    id: "AUFD-01", familie: "AUFD", version: 2, session: "gemeinsam", n: 3,
     beschreibung: "Aufdeckrunde: Bereitschaftsfrage trägt NIE eine Aufdeck-Marke; nach dem Okay genau EINE Richtung; nach der Tafel Frage vor Beobachtung.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
-      "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen.",
+      "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen.",
       "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird.",
       "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach.",
     ],
