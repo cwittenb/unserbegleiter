@@ -34,12 +34,13 @@ function fakeMachAdapter(plaene = {}) {
       const id = /Szenario (\S+) v/.exec(user)[1];
       const sz = SZENARIEN.find(s => s.id === id);
       const plan = plaene[id] || {};
+      // S76: strukturierter Judge-Pfad — Wire-Felder verdict/evidence (yes/no).
       const checks = sz.checks.map(c => ({
         id: c.id,
-        antwort: plan[c.id] || ((c.verletztWenn || "ja") === "ja" ? "nein" : "ja"),
-        beleg: "«Testbeleg»",
+        verdict: (plan[c.id] || ((c.verletztWenn || "ja") === "ja" ? "nein" : "ja")) === "ja" ? "yes" : "no",
+        evidence: "«Testbeleg»",
       }));
-      return { text: JSON.stringify({ checks }) };
+      return { data: { checks } };
     }
     return { text: "Begleitungs-Antwort von " + modell + "." };
   };
@@ -160,7 +161,7 @@ describe("Eval-Artefakt · Abbruch-Rettung", () => {
       if (system.startsWith("Du bist ein strenger")) {
         const id = /Szenario (\S+) v/.exec(messages[messages.length - 1].content)[1];
         const sz = SZENARIEN.find(s => s.id === id);
-        return { text: JSON.stringify({ checks: sz.checks.map(c => ({ id: c.id, antwort: (c.verletztWenn || "ja") === "ja" ? "nein" : "ja", beleg: "b" })) }) };
+        return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "b" })) } };
       }
       if (++calls > 2) throw new Error('{"type":"exceeded_limit","resetsAt":1783296000}');
       return { text: "ok" };

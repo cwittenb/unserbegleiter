@@ -58,13 +58,14 @@ describe("Runner · Korpuswahl je Szenario", () => {
     const pipelineCall = async () => ({ text: "To me this sounds like a lot of self-trust growing — does that ring true for you?", stop: "end_turn" });
     const judgeCall = async system => {
       judgeSysteme.push(system);
-      return { text: '{"checks":[{"id":"C1","antwort":"nein","beleg":"kein Beleg"},{"id":"C2","antwort":"ja","beleg":"does that ring true"}]}', stop: "end_turn" };
+      return { data: { checks: [{ id: "C1", verdict: "no", evidence: "kein Beleg" }, { id: "C2", verdict: "yes", evidence: "does that ring true" }] }, stop: "end_turn" };
     };
     const r = await laufeSzenario(en, { pipelineCall, judgeCall, n: 1 });
     expect(r.sprache).toBe("en");
     expect(r.status).toBe("gruen");
     expect(judgeSysteme[0]).toContain("independent examiner");        // EN-Judge-Prompt
-    expect(judgeSysteme[0]).toContain('"antwort":"ja"');              // Kontrakt bleibt ja/nein
+    expect(judgeSysteme[0]).toContain("verdict");                     // S76: Wire-Kontrakt yes/no …
+    expect(r.samples[0].checks.find(c => c.id === "C1").antwort).toBe("nein");   // … intern weiter ja/nein
   });
 });
 

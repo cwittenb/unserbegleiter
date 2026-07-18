@@ -7,6 +7,16 @@
 //                                                  feuert je Text-Häppchen
 //   await call(sys, msgs, onDelta, onStatus)     → dito; onStatus("overloaded_retry")
 //                                                  je Auslastungs-Wiederholung (S70)
+//   await call(sys, msgs, { structured })        → { text, stop, usage, data } (S76)
+//                                                  data = geparste Strukturausgabe
+//
+// S76 · Strukturausgabe: Statt die Struktur aus Fließtext zu parsen, wird sie
+// vom Provider ERZWUNGEN — anthropic über Tool-Use (tool_choice), mistral/openai
+// über response_format json_schema (strict). Beide liefern dieselbe Fassade;
+// .data ist das geparste Objekt. Kein stiller Downgrade: fehlt die Struktur
+// oder wurde sie abgeschnitten, wirft der Adapter mit Diagnose-Auszug (Muster
+// parseBlock: melden statt raten). Streaming + structured folgt mit dem
+// Worker-Extraktor (S77) und wirft bis dahin bewusst.
 //
 // Streaming (SSE) senkt die gefühlte Latenz massiv: der erste Buchstabe
 // erscheint nach Time-to-first-token statt nach der Gesamtdauer. Ohne
@@ -74,6 +84,32 @@ export async function* sseDaten(resp) {
   if (daten.length) yield daten.join("\n");
 }
 
+/* ---- Strukturausgabe (S76) ---- */
+
+/** Kurzer Diagnose-Auszug für Fehlermeldungen (nie die ganze Antwort). */
+function strukturAuszug(roh) {
+  const t = String(roh == null ? "" : roh).replace(/\s+/g, " ").trim().slice(0, 160);
+  return t ? " — Anfang: «" + t + (String(roh).length > 160 ? "…" : "") + "»" : "";
+}
+
+/** Abgeschnittene Strukturausgabe ist ein HARTER Fehler: halbes JSON ist keine
+ *  halbe Antwort, sondern gar keine (anthropic: max_tokens, openai/mistral: length). */
+function pruefeAbschnitt(stop, roh) {
+  if (stop === "max_tokens" || stop === "length")
+    throw new Error("Strukturausgabe abgeschnitten (stop=" + stop + ") — max_tokens erhöhen." + strukturAuszug(roh));
+}
+
+/** Prüft die structured-Option des Aufrufers (Konfigurationspflicht-Muster). */
+export function pruefeStructured(structured) {
+  if (!structured || typeof structured !== "object")
+    throw new Error("structured muss ein Objekt { name, schema } sein.");
+  if (typeof structured.name !== "string" || !structured.name)
+    throw new Error("structured.name fehlt.");
+  if (!structured.schema || typeof structured.schema !== "object")
+    throw new Error("structured.schema fehlt.");
+  return structured;
+}
+
 function openaiCompat(baseUrl, modelKey) {
   return {
     url: () => baseUrl,
@@ -94,6 +130,25 @@ function openaiCompat(baseUrl, modelKey) {
       // Mistral liefert usage von selbst und könnte unbekannte Felder abweisen.
       if (modelKey === "openai") b.stream_options = { include_usage: true };
       return b;
+    },
+    // response_format json_schema mit strict:true — von Sonde v1/v2 gegen
+    // mistral-large verifiziert (100 % Parse + Schema, inkl. nullable Union).
+    structuredBody(cfg, systemPrompt, messages, structured) {
+      return {
+        ...this.body(cfg, systemPrompt, messages),
+        response_format: {
+          type: "json_schema",
+          json_schema: { name: structured.name, schema: structured.schema, strict: true },
+        },
+      };
+    },
+    parseStructured(data) {
+      const r = this.parse(data);
+      pruefeAbschnitt(r.stop, r.text);
+      let d;
+      try { d = JSON.parse(r.text); }
+      catch (e) { throw new Error("Strukturausgabe ist kein JSON: " + e.message + strukturAuszug(r.text)); }
+      return { ...r, data: d };
     },
     parse(data) {
       if (data.error) throw new Error(data.error.message || "API-Fehler");
@@ -155,6 +210,37 @@ export const LLM_PROVIDERS = {
     },
     streamBody(cfg, systemPrompt, messages) {
       return { ...this.body(cfg, systemPrompt, messages), stream: true };
+    },
+    // Erzwungener Tool-Use: tool_choice macht den Tool-Aufruf zur Pflicht, die
+    // Argumente sind die Strukturausgabe. Das Schema-Objekt wird UNVERÄNDERT
+    // durchgereicht (stabile Serialisierung → Prompt-Cache-Treffer bleiben).
+    structuredBody(cfg, systemPrompt, messages, structured) {
+      return {
+        ...this.body(cfg, systemPrompt, messages),
+        tools: [{
+          name: structured.name,
+          description: structured.description || "Liefert die Antwort in der geforderten Struktur.",
+          input_schema: structured.schema,
+        }],
+        tool_choice: { type: "tool", name: structured.name },
+      };
+    },
+    parseStructured(data, name) {
+      if (data.error) throw new Error(data.error.message || "Anthropic-Fehler");
+      const bloecke = data.content || [];
+      const text = bloecke.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
+      pruefeAbschnitt(data.stop_reason, text);
+      const tu = bloecke.find(b => b.type === "tool_use" && (!name || b.name === name));
+      if (!tu || !tu.input || typeof tu.input !== "object")
+        throw new Error("Strukturausgabe fehlt: kein tool_use-Block (stop_reason=" + data.stop_reason + ")" + strukturAuszug(text));
+      const u = data.usage || {};
+      return {
+        text, data: tu.input, stop: data.stop_reason,
+        usage: {
+          in: u.input_tokens, out: u.output_tokens,
+          cacheWrite: u.cache_creation_input_tokens, cacheRead: u.cache_read_input_tokens,
+        },
+      };
     },
     parse(data) {
       if (data.error) throw new Error(data.error.message || "Anthropic-Fehler");
@@ -284,6 +370,28 @@ async function mitWiederholung(fn, { versuche, backoffMs, maxBackoffMs, schlaf, 
 }
 
 /**
+ * Liest das dritte/vierte Fassaden-Argument (S76).
+ * Funktion ⇒ Altpfad onDelta; Objekt ⇒ Optionen { structured, onDelta?, onStatus? }.
+ * structured + onDelta gemeinsam wirft bewusst: der inkrementelle Extraktor
+ * (Worker) kommt mit S77 — bis dahin gibt es kein halbgares Verhalten.
+ */
+export function leseAufrufOptionen(drittes, viertes) {
+  if (typeof drittes === "function") return { onDelta: drittes, onStatus: viertes, structured: null };
+  if (drittes && typeof drittes === "object") {
+    const structured = drittes.structured ? pruefeStructured(drittes.structured) : null;
+    const onDelta = typeof drittes.onDelta === "function" ? drittes.onDelta : null;
+    if (structured && onDelta)
+      throw new Error("structured + Streaming ist noch nicht unterstützt (Worker-Extraktor folgt mit S77).");
+    return {
+      onDelta,
+      onStatus: typeof drittes.onStatus === "function" ? drittes.onStatus : viertes,
+      structured,
+    };
+  }
+  return { onDelta: null, onStatus: viertes, structured: null };
+}
+
+/**
  * Baut die callClaude-Fassade.
  * @param {object} cfgIn — überschreibt LLM_DEFAULTS
  * @param {function} fetchFn — injizierbar; default globalThis.fetch
@@ -310,10 +418,14 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
       if (code) e.code = code;
       throw e;
     };
-    async function callClaude(systemPrompt, messages, onDelta, onStatus) {
+    async function callClaude(systemPrompt, messages, drittes, viertes) {
+      const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
       const streamen = typeof onDelta === "function" && cfg.stream !== false;
       const nutz = { system: systemPrompt, messages: messages.map(m => ({ role: m.role, content: m.content })) };
       if (streamen) nutz.stream = true;
+      // S76: Der Worker übersetzt die Struktur providerspezifisch — der Client
+      // schickt nur Name und Schema und bekommt data in der Fassade zurück.
+      if (structured) nutz.structured = { name: structured.name, schema: structured.schema, description: structured.description };
       const resp = await fetchFn(cfg.proxyUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -368,9 +480,12 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     onRetry: typeof cfg.onRetry === "function" ? cfg.onRetry : undefined,  // S70: Konfigurations-Hook (Worker → SSE)
   };
 
-  return function callClaude(systemPrompt, messages, onDelta, onStatus) {
+  return function callClaude(systemPrompt, messages, drittes, viertes) {
+    const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
     const streamen = typeof onDelta === "function" && cfg.stream !== false;
-    const body = streamen ? P.streamBody(cfg, systemPrompt, messages) : P.body(cfg, systemPrompt, messages);
+    const body = structured
+      ? P.structuredBody(cfg, systemPrompt, messages, structured)
+      : streamen ? P.streamBody(cfg, systemPrompt, messages) : P.body(cfg, systemPrompt, messages);
     // S70: per-Aufruf-Statuskanal — direct/keyless melden lokale Retries direkt
     // an onStatus, symmetrisch zum {retry}-Event des Proxy-Modus. Beide Hooks
     // (cfg.onRetry UND onStatus) feuern, falls beide gesetzt sind.
@@ -396,7 +511,7 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
       }
       if (streamen && istEventStream(resp)) return P.streamParse(resp, onDelta);
       const data = await resp.json();
-      return P.parse(data);
+      return structured ? P.parseStructured(data, structured.name) : P.parse(data);
     }, lokal);
   };
 }

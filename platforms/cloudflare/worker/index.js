@@ -432,8 +432,21 @@ async function route(request, env) {
           Davor der Missbrauchsschutz (§5.4): Duplikat-Wächter → Raten-Limit →
           Kontingent — alles OHNE Upstream-Kontakt abgewiesen. ---- */
   if (p === "/api/llm" && request.method === "POST") {
-    const { system, messages, stream } = await request.json();
+    const { system, messages, stream, structured } = await request.json();
     if (typeof system !== "string" || !Array.isArray(messages)) return fehler("system und messages sind Pflicht", 400);
+    // S76 · Strukturausgabe: der Client schickt Name + JSON-Schema, der Worker
+    // übersetzt providerspezifisch (Tool-Use bzw. response_format). Grenzen:
+    // vollständige Angabe erzwingen (kein Raten) und Größe deckeln — ein
+    // öffentlicher Endpunkt darf keine Schema-Bomben in den Upstream tragen.
+    if (structured !== undefined && structured !== null) {
+      if (typeof structured !== "object" || typeof structured.name !== "string" || !structured.name
+          || !structured.schema || typeof structured.schema !== "object")
+        return fehler("structured unvollständig: { name, schema } sind Pflicht", 400);
+      if (JSON.stringify(structured).length > 20000)
+        return fehler("structured zu groß (max. 20000 Zeichen)", 400);
+      if (stream === true)
+        return fehler("structured mit stream wird noch nicht unterstützt (S77)", 400);
+    }
     const letzte = [...messages].reverse().find(x => x.role === "user");
     const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
     if (!q.ok) return fehler(q.meldung, q.status);
@@ -509,7 +522,7 @@ async function route(request, env) {
     // JSON-Altpfad: Fehler wandern zum äußeren Catch, der e.code bereits als
     // fehler(msg, status, code) serialisiert — hier ist nichts zu tun (S70).
     const call = makeAdapter(llmCfg, fetchFn);
-    const antwort = await call(system, messages);
+    const antwort = await call(system, messages, structured ? { structured } : undefined);
     if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
     await erfasseUsage(kv, session.code, antwort.usage, now);   // S61, Best-Effort
     return json(antwort);

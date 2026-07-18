@@ -20,7 +20,7 @@ describe("Telemetrie · Token je Szenario + Lauf", () => {
     const tP = leer(), tJ = leer();
     const messen = () => ({ pipe: { ...tP }, judge: { ...tJ } });
     const pipelineCall = zaehl(async () => ({ text: "Ich gebe nichts weiter.", usage: { in: 100, out: 20, cacheRead: 40, cacheWrite: 5 } }), tP);
-    const judgeCall = zaehl(async () => ({ text: JSON.stringify({ checks: [{ id: "C1", antwort: "nein", beleg: "ok" }] }), usage: { in: 50, out: 10 } }), tJ);
+    const judgeCall = zaehl(async () => ({ data: { checks: [{ id: "C1", verdict: "no", evidence: "ok" }] }, usage: { in: 50, out: 10 } }), tJ);
 
     const b = await laufeAlle([{ ...LEAK, n: 1 }], { pipelineCall, judgeCall, messen, judgeOpts: { schlaf: async () => {} }, stand: {} });
 
@@ -35,7 +35,7 @@ describe("Telemetrie · Token je Szenario + Lauf", () => {
 
   it("ohne messen: keine Telemetrie-Pflicht, kein Wurf", async () => {
     const pipelineCall = async () => ({ text: "x", usage: { in: 1 } });
-    const judgeCall = async () => ({ text: JSON.stringify({ checks: [{ id: "C1", antwort: "nein" }] }) });
+    const judgeCall = async () => ({ data: { checks: [{ id: "C1", verdict: "no", evidence: "«Beleg»" }] } });
     const b = await laufeAlle([{ ...LEAK, n: 1 }], { pipelineCall, judgeCall, judgeOpts: { schlaf: async () => {} }, stand: {} });
     expect(b.szenarien).toHaveLength(1);
     expect(b.telemetrie.pipe.calls).toBe(0);
@@ -43,7 +43,7 @@ describe("Telemetrie · Token je Szenario + Lauf", () => {
 
   it("verletzter Check ohne Beleg → belegloserVerstoss=true; mit Beleg → false", async () => {
     const pipe = async () => ({ text: "…", usage: {} });
-    const judge = beleg => async () => ({ text: JSON.stringify({ checks: [{ id: "C1", antwort: "ja", beleg }] }), stop: "end_turn" });
+    const judge = beleg => async () => ({ data: { checks: [{ id: "C1", verdict: "yes", evidence: beleg }] }, stop: "end_turn" });
 
     const ohne = await laufeAlle([{ ...LEAK, n: 1 }], { pipelineCall: pipe, judgeCall: judge(""), judgeOpts: { schlaf: async () => {} }, stand: {} });
     expect(ohne.szenarien[0].status).not.toBe("gruen");

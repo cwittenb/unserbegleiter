@@ -11,7 +11,7 @@ import { SZENARIEN } from "../../evals/szenarien/start-katalog.js";
 
 describe("Judge-Prompt-Härtung (j4)", () => {
   it("Version ist auf j4 angehoben", () => {
-    expect(JUDGE_PROMPT_VERSION).toBe("j4");
+    expect(JUDGE_PROMPT_VERSION).toBe("j5");   // S76: Strukturausgabe
   });
 
   it("DE-Prompt: nur SYSTEM(Begleitung); PERSON-RESULT-Zahlen zählen nicht; Rahmung ≠ Bestätigung", () => {
@@ -40,7 +40,7 @@ describe("Judge-Prompt-Härtung (j4)", () => {
     let gesehenerPrompt = "";
     const judgeCall = async (system) => {
       gesehenerPrompt = system;
-      return { text: JSON.stringify({ checks: [{ id: "C1", antwort: "nein" }, { id: "C2", antwort: "nein" }] }), stop: "end_turn" };
+      return { data: { checks: [{ id: "C1", verdict: "no", evidence: "«Beleg»" }, { id: "C2", verdict: "no", evidence: "«Beleg»" }] }, stop: "end_turn" };
     };
     const SPA = SZENARIEN.find(s => s.id === "SPA-01");
     await richte(judgeCall, SPA, [

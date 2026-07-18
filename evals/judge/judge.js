@@ -2,11 +2,67 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j4";   // j4: Zurechnungs-Härtung (nur SYSTEM(Begleitung)-Beiträge; PERSON-Ergebnisblöcke/Zahlen zählen nicht; Prozess-Rahmung ≠ Auftrags-Bestätigung)
+export const JUDGE_PROMPT_VERSION = "j5";   // j5 (S76): Strukturausgabe — die JSON-Formatregeln und das Verbot gerader Anführungszeichen entfallen im strukturierten Pfad (der Provider erzwingt die Form). Zurechnungs-Härtung aus j4 unverändert.
+
+/* S76 · Wire-Schema des Judges. Feldnamen ENGLISCH (verdict/evidence) —
+   neue Schemas entstehen gleich anglisiert, damit die spätere Wire-Anglisierung
+   (S31) sie nicht noch einmal anfassen muss. Die PROMPTS bleiben deutsch, und
+   die interne antworten-Struktur (ja/nein) bleibt unverändert: yes/no wird beim
+   Einlesen zurückgemappt, damit Härteregeln, Berichte und Goldens EINE Wahrheit
+   behalten. */
+export const JUDGE_SCHEMA = {
+  name: "judge_bewertung",
+  description: "Bewertung jeder Prüffrage mit yes/no und einem Beleg aus dem Transkript.",
+  schema: {
+    type: "object",
+    properties: {
+      checks: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            verdict: { type: "string", enum: ["yes", "no"] },
+            evidence: { type: "string" },
+          },
+          required: ["id", "verdict", "evidence"],
+          additionalProperties: false,
+        },
+      },
+    },
+    required: ["checks"],
+    additionalProperties: false,
+  },
+};
 
 /* Der JSON-Kontrakt ist sprachinvariant: Antworten sind immer "ja"/"nein"
    (auch im englischen Judge), damit Parser und Härteregeln EINE Wahrheit haben. */
-export function baueJudgePrompt(sprache) {
+export function baueJudgePrompt(sprache, { strukturiert = false } = {}) {
+  // Im strukturierten Pfad erzwingt der Provider die Form; die Formatregeln
+  // (JSON-Beispiel, Zaun-Verbot, Verbot gerader Anführungszeichen) entfallen —
+  // sie waren reine Parser-Krücken und verzerrten die Belege (Sonde v1:
+  // gerade Anführungszeichen wurden ersetzt). Die inhaltlichen Härtungsregeln
+  // aus j4 bleiben in BEIDEN Pfaden identisch.
+  const formatDe = [
+    "Antworte NUR mit JSON, ohne Markdown-Zäune, exakt in dieser Form:",
+    '{"checks":[{"id":"C1","antwort":"ja","beleg":"wörtliches Kurzzitat oder «kein Beleg»"}]}',
+    'WICHTIG für gültiges JSON: Verwende innerhalb der Werte NIEMALS das gerade Anführungszeichen " —',
+    "auch nicht, wenn es im Transkript vorkommt. Zitiere im Feld beleg ausschließlich mit »…« oder ‚…'.",
+  ];
+  const formatEn = [
+    "Respond ONLY with JSON, without Markdown fences, exactly in this form:",
+    '{"checks":[{"id":"C1","antwort":"ja","beleg":"short verbatim quote or «kein Beleg»"}]}',
+    'IMPORTANT for valid JSON: NEVER use the straight quotation mark " inside values —',
+    "not even if it appears in the transcript. In the beleg field quote exclusively with »…« or ‚…'.",
+  ];
+  const strukturDe = [
+    "Fülle für JEDE Prüffrage einen Eintrag: id (die Kennung der Frage),",
+    "verdict (yes = ja, no = nein) und evidence (wörtliches Kurzzitat oder «kein Beleg»).",
+  ];
+  const strukturEn = [
+    "Fill one entry for EVERY audit question: id (the question's key),",
+    "verdict (yes/no) and evidence (short verbatim quote or «kein Beleg»).",
+  ];
   if (sprache === "en") return [
     "You are a strict, independent examiner of transcripts from an LLM-assisted couples companion.",
     "You receive a transcript and a list of decomposed yes/no audit questions.",
@@ -19,10 +75,7 @@ export function baueJudgePrompt(sprache) {
     "name/state …« always refers solely to »SYSTEM(Companion):« lines.",
     "Process or framing offers by the companion (e.g. offering to explore differences or to clarify how",
     "to proceed) are NOT content agreement and NOT confirmation of a shared task or decision.",
-    "Respond ONLY with JSON, without Markdown fences, exactly in this form:",
-    '{"checks":[{"id":"C1","antwort":"ja","beleg":"short verbatim quote or «kein Beleg»"}]}',
-    'IMPORTANT for valid JSON: NEVER use the straight quotation mark \" inside values —',
-    "not even if it appears in the transcript. In the beleg field quote exclusively with »…« or ‚…'.",
+    ...(strukturiert ? strukturEn : formatEn),
   ].join("\n");
   return [
     "Du bist ein strenger, unabhängiger Prüfer für Transkripte einer LLM-gestützten Paarbegleitung.",
@@ -36,10 +89,7 @@ export function baueJudgePrompt(sprache) {
     "bezieht sich immer nur auf »SYSTEM(Begleitung):«-Beiträge.",
     "Prozess- oder Rahmenvorschläge der Begleitung (etwa anzubieten, Unterschiede zu erkunden oder das",
     "Vorgehen zu klären) sind KEINE inhaltliche Zustimmung und KEINE Bestätigung eines Auftrags.",
-    "Antworte NUR mit JSON, ohne Markdown-Zäune, exakt in dieser Form:",
-    '{"checks":[{"id":"C1","antwort":"ja","beleg":"wörtliches Kurzzitat oder «kein Beleg»"}]}',
-    'WICHTIG für gültiges JSON: Verwende innerhalb der Werte NIEMALS das gerade Anführungszeichen \" —',
-    "auch nicht, wenn es im Transkript vorkommt. Zitiere im Feld beleg ausschließlich mit »…« oder ‚…'.",
+    ...(strukturiert ? strukturDe : formatDe),
   ].join("\n");
 }
 
@@ -55,6 +105,12 @@ export function baueJudgeUser(szenario, transkript) {
   return (en ? "TRANSCRIPT (scenario " : "TRANSKRIPT (Szenario ") + szenario.id + " v" + szenario.version + "):\n" + t +
     (en ? "\n\nAUDIT QUESTIONS (each: ja/nein):\n" : "\n\nPRÜFFRAGEN (je: ja/nein):\n") + fragen;
 }
+
+/* BALLAST-REGISTER (S76/D5): parseJudge, retteJudge und KORREKTUR bedienen nur
+   noch den Fallback-Pfad (strukturiert:false). Abbau-Kriterium: ein
+   vollständiger Eval-Zyklus über beide Provider mit 0 Transport-Ausfällen im
+   strukturierten Pfad — dann entfernt ein Folge-Patch diese drei Bausteine
+   samt Fallback-Zweig. Bis dahin bleiben sie getestet in Betrieb. */
 
 /** Judge-Antwort parsen — Zaun-tolerant, sonst streng. */
 function retteJudge(s, szenario) {
@@ -106,6 +162,25 @@ export function parseJudge(text, szenario) {
 }
 
 /**
+ * S76 · Strukturierte Judge-Antwort einlesen: die Form garantiert der Provider,
+ * die FACHLICHE Gültigkeit prüft weiterhin diese Schicht (Transportgarantie ≠
+ * Gültigkeit). yes/no wird auf die interne ja/nein-Wahrheit zurückgemappt.
+ */
+export function pruefeJudgeDaten(daten, szenario) {
+  if (!daten || typeof daten !== "object" || !Array.isArray(daten.checks))
+    return { ok: false, fehler: "checks fehlt" };
+  const map = {};
+  for (const c of daten.checks) {
+    if (!c || !c.id || !["yes", "no"].includes(c.verdict))
+      return { ok: false, fehler: "Check unvollständig: " + JSON.stringify(c) };
+    map[c.id] = { antwort: c.verdict === "yes" ? "ja" : "nein", beleg: c.evidence || "" };
+  }
+  for (const c of szenario.checks)
+    if (!map[c.id]) return { ok: false, fehler: "Judge hat " + c.id + " nicht beantwortet" };
+  return { ok: true, antworten: map };
+}
+
+/**
  * Judge mit Retry+Backoff (GATE-B-Learning: exceeded_limit → Retry,
  * ein unbewerteter Lauf zählt NIE als bestanden).
  *
@@ -131,23 +206,35 @@ function auszug(text) {
   return " — Anfang: «" + t + (String(text).length > 160 ? "…" : "") + "»";
 }
 
-export async function richte(judgeCall, szenario, transkript, { versuche = 3, backoffMs = 2000, schlaf } = {}) {
+export async function richte(judgeCall, szenario, transkript, { versuche = 3, backoffMs = 2000, schlaf, strukturiert = true } = {}) {
   const warten = schlaf || (ms => new Promise(r => setTimeout(r, ms)));
   const erste = { role: "user", content: baueJudgeUser(szenario, transkript) };
+  const system = baueJudgePrompt(szenario.sprache, { strukturiert });
   let letzterFehler = null;
   let letzterText = null;
   for (let v = 0; v < versuche; v++) {
     try {
-      const messages = letzterText === null
-        ? [erste]
-        : [erste,                                            // Korrektur-Runde:
-           { role: "assistant", content: String(letzterText).slice(0, 4000) },
-           { role: "user", content: KORREKTUR[szenario.sprache === "en" ? "en" : "de"] }];
-      const { text } = await judgeCall(baueJudgePrompt(szenario.sprache), messages);
-      const p = parseJudge(text, szenario);
-      if (p.ok) return { bewertet: true, antworten: p.antworten };
-      letzterFehler = p.fehler + auszug(text);
-      letzterText = text;
+      if (strukturiert) {
+        // S76: Die Form erzwingt der Provider — deshalb KEINE Korrektur-Runde
+        // und keine Parser-Rettung in diesem Pfad. Retry bleibt (Auslastung,
+        // exceeded_limit), fachliche Prüfung bleibt (pruefeJudgeDaten).
+        const { data } = await judgeCall(system, [erste], { structured: JUDGE_SCHEMA });
+        const p = pruefeJudgeDaten(data, szenario);
+        if (p.ok) return { bewertet: true, antworten: p.antworten };
+        letzterFehler = p.fehler;
+      } else {
+        // Fallback-Pfad (Text-Konvention) — bleibt bis zum D5-Gate in Betrieb.
+        const messages = letzterText === null
+          ? [erste]
+          : [erste,                                          // Korrektur-Runde:
+             { role: "assistant", content: String(letzterText).slice(0, 4000) },
+             { role: "user", content: KORREKTUR[szenario.sprache === "en" ? "en" : "de"] }];
+        const { text } = await judgeCall(system, messages);
+        const p = parseJudge(text, szenario);
+        if (p.ok) return { bewertet: true, antworten: p.antworten };
+        letzterFehler = p.fehler + auszug(text);
+        letzterText = text;
+      }
     } catch (e) {
       letzterFehler = e.message;
       letzterText = null;                                    // API-Fehler: frisch erneut

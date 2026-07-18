@@ -12,17 +12,25 @@ const LEAK = SZENARIEN.find(s => s.id === "LEAK-S1");
 
 /** Mock-Pipeline: liefert je Aufruf denselben gescripteten Assistant-Text. */
 const pipeline = text => async () => ({ text, stop: "end_turn" });
-/** Mock-Judge: liefert gescriptete JSON-Antworten (Queue). */
+/** Mock-Judge (Queue). Strings wandern als {text} in den Fallback-Pfad,
+ *  Objekte werden unverändert zurückgegeben (strukturierter Produktionspfad). */
 function judgeQueue(antworten) {
   const q = [...antworten];
   const fn = async () => {
     const next = q.shift();
     if (next instanceof Error) throw next;
-    return { text: next, stop: "end_turn" };
+    return typeof next === "string" ? { text: next, stop: "end_turn" } : next;
   };
   return fn;
 }
-const judgeJson = obj => JSON.stringify(obj);
+// S76: Der Produktionspfad ist strukturiert — judgeJson übersetzt die vertraute
+// ja/nein-Schreibweise der Fixtures in die Wire-Felder verdict/evidence.
+// judgeText liefert dieselbe Antwort als Roh-JSON für die Fallback-Pfad-Tests.
+const judgeJson = obj => ({
+  data: { checks: obj.checks.map(c => ({ id: c.id, verdict: c.antwort === "ja" ? "yes" : "no", evidence: c.beleg || "«Beleg»" })) },
+  stop: "end_turn",
+});
+const judgeText = obj => JSON.stringify(obj);
 
 describe("Katalog & Prompt-Anbindung", () => {
   it("alle 23 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
@@ -62,20 +70,20 @@ describe("Judge · Parsen und Transkript-Aufbereitung", () => {
   });
 });
 
-describe("Judge · Retry mit Backoff (GATE-B-Learning)", () => {
+describe("Judge · Retry mit Backoff (GATE-B-Learning) — Fallback-Pfad (Text)", () => {
   it("exceeded_limit beim ersten Versuch → zweiter Versuch bewertet", async () => {
     const call = judgeQueue([
       new Error("exceeded_limit"),
-      judgeJson({ checks: [{ id: "C1", antwort: "nein" }, { id: "C2", antwort: "ja" }] }),
+      judgeText({ checks: [{ id: "C1", antwort: "nein" }, { id: "C2", antwort: "ja" }] }),
     ]);
-    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {} });
+    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {}, strukturiert: false });
     expect(r.bewertet).toBe(true);
     expect(r.antworten.C1.antwort).toBe("nein");
   });
 
   it("dauerhafter Ausfall → unbewertet mit Fehlergrund (zählt NIE als bestanden)", async () => {
     const call = judgeQueue([new Error("kaputt"), new Error("kaputt"), new Error("kaputt")]);
-    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {} });
+    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {}, strukturiert: false });
     expect(r.bewertet).toBe(false);
     expect(r.fehler).toBe("kaputt");
   });
@@ -141,13 +149,13 @@ describe("Runner-Kern · Härteregeln", () => {
   });
 });
 
-describe("Judge · Korrektur-Runde + Diagnose (Befund aus den ersten Artefakt-Läufen)", () => {
+describe("Judge · Korrektur-Runde + Diagnose — Fallback-Pfad (Text), Ballast bis D5-Gate", () => {
   it("Nicht-JSON → zweiter Versuch ist eine KORREKTUR-Runde (eigene Antwort + JSON-Nachforderung), die bewertet", async () => {
     const calls = [];
-    const q = ["Ich denke, das Transkript zeigt vor allem…", judgeJson({ checks: [
+    const q = ["Ich denke, das Transkript zeigt vor allem…", judgeText({ checks: [
       { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] })];
     const call = async (sys, messages) => { calls.push(messages); return { text: q.shift(), stop: "end_turn" }; };
-    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {} });
+    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {}, strukturiert: false });
     expect(r.bewertet).toBe(true);
     expect(calls[0]).toHaveLength(1);                               // erster Versuch: frisch
     expect(calls[1]).toHaveLength(3);                               // Korrektur-Runde
@@ -158,7 +166,7 @@ describe("Judge · Korrektur-Runde + Diagnose (Befund aus den ersten Artefakt-L�
 
   it("dreimal Nicht-JSON → unbewertet, und die DIAGNOSE trägt den Anfang der Roh-Antwort", async () => {
     const call = judgeQueue(["Ich plaudere lieber.", "Immer noch Prosa.", "Und nochmal."]);
-    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {} });
+    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {}, strukturiert: false });
     expect(r.bewertet).toBe(false);
     expect(r.fehler).toContain("kein JSON");
     expect(r.fehler).toContain("Anfang: «Und nochmal.»");           // sichtbar im Bericht
@@ -166,7 +174,7 @@ describe("Judge · Korrektur-Runde + Diagnose (Befund aus den ersten Artefakt-L�
 
   it("API-Fehler dazwischen: danach frisch (keine Korrektur-Runde auf einen Fehler)", async () => {
     const calls = [];
-    const q = [new Error("exceeded_limit"), judgeJson({ checks: [
+    const q = [new Error("exceeded_limit"), judgeText({ checks: [
       { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] })];
     const call = async (sys, messages) => {
       calls.push(messages);
@@ -174,7 +182,7 @@ describe("Judge · Korrektur-Runde + Diagnose (Befund aus den ersten Artefakt-L�
       if (next instanceof Error) throw next;
       return { text: next, stop: "end_turn" };
     };
-    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {} });
+    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {}, strukturiert: false });
     expect(r.bewertet).toBe(true);
     expect(calls[1]).toHaveLength(1);                               // frisch, nicht Korrektur
   });

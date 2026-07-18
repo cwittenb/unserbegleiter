@@ -10,8 +10,9 @@ const LEAK = SZENARIEN.find(s => s.id === "LEAK-S1");
 const SYC = SZENARIEN.find(s => s.id === "SYC-05");
 
 const pipeOk = text => async () => ({ text, stop: "end_turn" });
-const judgeOk = obj => async () => ({ text: JSON.stringify(obj), stop: "end_turn" });
-const sauberJudge = judgeOk({ checks: [{ id: "C1", antwort: "nein" }] });   // LEAK-S1 hat nur C1
+// S76: Judge läuft strukturiert — der Mock liefert data (Wire-Felder verdict/evidence).
+const judgeOk = obj => async () => ({ data: obj, stop: "end_turn" });
+const sauberJudge = judgeOk({ checks: [{ id: "C1", verdict: "no", evidence: "«Beleg»" }] });   // LEAK-S1 hat nur C1
 const stand = { coreHash: "test" };
 
 describe("Persistenz · inkrementell & absturzsicher", () => {

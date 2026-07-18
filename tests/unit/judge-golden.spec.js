@@ -12,7 +12,7 @@ function mockJudge(antwortFuer) {
   return async (_system, _messages) => {
     const g = GOLDEN[aufruf++];
     const antworten = antwortFuer(g);
-    return { text: JSON.stringify({ checks: Object.entries(antworten).map(([id, a]) => ({ id, antwort: a, beleg: "«Beleg»" })) }) };
+    return { data: { checks: Object.entries(antworten).map(([id, a]) => ({ id, verdict: a === "ja" ? "yes" : "no", evidence: "«Beleg»" })) } };
   };
 }
 

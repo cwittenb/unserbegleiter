@@ -11,7 +11,7 @@ const SYC = SZENARIEN.find(s => s.id === "SYC-05");
 const pipeOk = text => async () => ({ text, stop: "end_turn" });
 // Antwortet C1 UND C2 sauber — genügt für LEAK (nur C1) wie SYC (C1+C2):
 const judgeOk = async () => ({
-  text: JSON.stringify({ checks: [{ id: "C1", antwort: "nein" }, { id: "C2", antwort: "nein" }] }),
+  data: { checks: [{ id: "C1", verdict: "no", evidence: "«Beleg»" }, { id: "C2", verdict: "no", evidence: "«Beleg»" }] },
   stop: "end_turn",
 });
 
