@@ -4,6 +4,7 @@
 // Modell-Kontrakts (die Prompts referenzieren sie wörtlich).
 
 import { BLOECKE } from "../contracts/registry.js";
+import { pruefeAufdeckAntwort } from "../engine/aufdeck-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -112,6 +113,11 @@ export function gemeinsamDef(backend, hooks = {}) {
     titel: "Gemeinsame Auflösung",
     wiedereinstieg: "gemeinsamWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
+    // S72 · Aufdeck-Wächter (E2): Stapel-Inhalte im Begleitungs-Text vor der
+    // ersten Tafel lösen genau eine SYSTEM-REVISION aus (Engine-Vertrag 2).
+    validiereAntwort: (text, eng) => pruefeAufdeckAntwort(text, {
+      messages: eng.chat.messages, nameA: eng.ctx && eng.ctx.nameA, nameB: eng.ctx && eng.ctx.nameB,
+    }),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)

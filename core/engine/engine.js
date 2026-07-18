@@ -97,9 +97,32 @@ export class Engine {
     }
   }
 
-  /** Dispatcher: Marker → Panel, sonst Block → Schema → Handler/Korrektur. */
+  /** Dispatcher: Validator → Marker → Block → Schema → Handler/Korrektur. */
   async _afterAssistant(text) {
     if (!this.def.canAct(this.chat)) return;
+
+    // S72 · Text-Validator der Session-Definition (z. B. Aufdeck-Wächter):
+    // liefert er eine Revisions-Nachricht, gilt Vertrag 2 — GENAU EINE
+    // automatische Korrektur-Runde, danach wird die Antwort angenommen
+    // (die Prompt-Regeln bleiben die erste Verteidigung).
+    if (this.def.validiereAntwort) {
+      const revision = this.def.validiereAntwort(text, this);
+      if (revision) {
+        if (!this.chat.textFix) {
+          this.chat.textFix = true;
+          this.chat.messages.push({ role: "user", hidden: true, content: revision });
+          await this._save();
+          this.busy = false;
+          await this.requestAssistant();
+          return;
+        }
+        this.chat.textFix = false;                     // zweite Runde: annehmen, nicht endlos drehen
+        await this._save();
+      } else if (this.chat.textFix) {
+        this.chat.textFix = false;
+        await this._save();
+      }
+    }
 
     const mk = findeMarker(text, this.def.markerOrder);
     if (mk) { this.def.markers[mk](this); return; }
