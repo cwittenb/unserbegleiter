@@ -45,7 +45,12 @@ export const BLOECKE = {
   }),
   choice: blockDef({
     start: "CHOICE-BLOCK", end: "END CHOICE-BLOCK",
-    placeholder: "Euer verbindendes Angebot:",
+    // S71: Kein statischer, geteilter Vorab-Etikett im Verlauf — er nähme ein
+    // Ergebnis vorweg (z. B. „verbindend“, was das System nicht wissen kann) und
+    // doppelt ohnehin die kontextspezifische Menü-Überschrift. Die Beschriftung
+    // trägt allein der Menü-Titel (arrive/connect/farewell je eigen), den das
+    // Modell bzw. der Fallback choice.<id>.titel liefert.
+    placeholder: "",
     dataset: "choice", schema: choiceSchema,
   }),
   aufdeck: blockDef({

@@ -152,7 +152,7 @@ export const de = {
   "weg.messBereit": "Eure Prozessreflexion ist vollständig — die Aufdeckung wartet in der nächsten Gemeinsamen Session.",
   "weg.messOffen": "Eine Prozessreflexions-Runde in deinem Raum wartet auf deinen verdeckten Beitrag.",
   "weg.momentOffen": "Eure Qualitätszeit im gemeinsamen Raum ist offen — ihr könnt genau dort weitermachen.",
-  "weg.aufloesungOffen": "Eure Gemeinsame Auflösung im gemeinsamen Raum ist offen — ihr könnt genau dort weitermachen.",
+  "weg.aufloesungOffen": "Eure Gemeinsame Auflösung ist offen — ihr könnt genau dort weitermachen.",
   "weg.soloErster": "Ein guter erster Schritt: ein Reflexionsgespräch — dein privater Raum zum Sortieren.",
   "weg.startAuftrag": "Ein guter erster Schritt: Starte direkt mit deiner Auftragsklärung in deinem Raum — wir schauen, wo du dir Entwicklung wünschst und wie ich dich begleiten kann.",
   "weg.startSolo": "Deinen Raum kannst du auch erstmal für ein Reflexionsgespräch nutzen.",

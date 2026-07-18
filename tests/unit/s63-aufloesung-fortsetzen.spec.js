@@ -71,7 +71,7 @@ describe("S63 · Vorraum spiegelt die pausierte Gemeinsame Auflösung", () => {
     await pausierteAufloesung(backend);
     await bootApp(backend);
     const weg = root.querySelector("#wegStart").textContent;
-    expect(weg).toContain("Eure Gemeinsame Auflösung im gemeinsamen Raum ist offen");
+    expect(weg).toContain("Eure Gemeinsame Auflösung ist offen");
     expect(weg).not.toContain("Startet eure Gemeinsame Auflösung");
   });
 
@@ -111,7 +111,7 @@ describe("S63 · Vorraum spiegelt die pausierte Gemeinsame Auflösung", () => {
     await backend.bstate.set("findings", { at: "2026-07-15T10:00:00Z" });
     await bootApp(backend);
     const wegStart = root.querySelector("#wegStart").textContent;
-    expect(wegStart).not.toContain("Gemeinsame Auflösung im gemeinsamen Raum ist offen");
+    expect(wegStart).not.toContain("Eure Gemeinsame Auflösung ist offen");
     expect(wegStart).not.toContain("Startet eure Gemeinsame Auflösung");
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();

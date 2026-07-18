@@ -154,7 +154,7 @@ export const en = {
   "weg.messBereit": "Your process reflection is complete — the reveal awaits in the next Shared Session.",
   "weg.messOffen": "A process-reflection round in your own space is waiting for your concealed contribution.",
   "weg.momentOffen": "Your quality time in the shared space is open — you can continue right where you left off.",
-  "weg.aufloesungOffen": "Your Shared Resolution in the shared space is open — you can continue right where you left off.",
+  "weg.aufloesungOffen": "Your Shared Resolution is open — you can continue right where you left off.",
   "weg.soloErster": "A good first step: a reflection session — your private space for sorting.",
   "weg.startAuftrag": "A good first step: start right away with your mandate clarification in your own space — we\u2019ll look at where you want to grow and how I can accompany you.",
   "weg.startSolo": "You can also use your space for a reflection conversation first.",

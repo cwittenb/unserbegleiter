@@ -74,6 +74,13 @@ export function korrekturNachricht(b, errors) {
 export function cleanDisplay(text, alleMarker, alleBloecke) {
   let t = String(text ?? "");
   for (const mk of alleMarker || []) t = t.split(mk).join("");
-  for (const b of alleBloecke || []) t = t.replace(b.stripRe, b.placeholder);
+  for (const b of alleBloecke || []) {
+    // S71: Ein sichtbarer Platzhalter darf nicht am vorigen Satz kleben — das
+    // führende [-*\s]* der stripRe frisst sonst den Zeilenumbruch. Darum stellen
+    // wir ihn als eigenen Absatz voran. Leere (unsichtbare) Platzhalter bleiben
+    // spurlos, damit versteckte Blöcke (Merkposten u. a.) nichts hinterlassen.
+    const ersatz = b.placeholder ? "\n\n" + b.placeholder : "";
+    t = t.replace(b.stripRe, ersatz);
+  }
   return t.replace(/\n{3,}/g, "\n\n").trim();
 }

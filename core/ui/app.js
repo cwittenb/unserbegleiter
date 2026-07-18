@@ -833,6 +833,7 @@ export function createApp({ doc, backend, root, diktat }) {
     return karte;
   }
   
+  const FORTSETZ_PAUSE_MS = 5 * 60 * 1000;   // S71: unter fünf Minuten Abwesenheit machen wir nahtlos weiter, erst danach das Wiedereinstiegs-Ritual
   async function startChat(art) {
     err("");
     const info = state.info || (state.info = await backend.info());   // Selbstheilung (S67), s. ladeLage
@@ -904,8 +905,17 @@ export function createApp({ doc, backend, root, diktat }) {
     // S64 · Generischer Wiedereinstieg: jede SessionDef, die einen
     // wiedereinstieg-Steuertext deklariert, meldet dem Modell das erneute
     // Betreten ihrer laufenden Session — kein Sonderfall je Raum mehr.
+    // S71 · Fortsetzenpause: Kehrt das Paar binnen fünf Minuten zurück, machen
+    // wir NAHTLOS weiter (kein Wiedereinstiegs-Ritual, kein Ankommens-Menü); erst
+    // ab fünf Minuten Abwesenheit greift die Zeremonie. Ohne Pausenstempel
+    // (Legacy oder Tab-Abbruch) gilt der sichere Default: Zeremonie. Gestempelt
+    // wird beim Verlassen des Raums (btnChatZurueck). Der NACHKLANG bleibt
+    // unberührt — er hängt an einzelRueckkehr, nicht an dieser Schwelle.
+    const pausenAlterMs = chat.pausedAt != null ? (Date.now() - chat.pausedAt) : Infinity;
+    const langeGenugPausiert = pausenAlterMs >= FORTSETZ_PAUSE_MS;
     const wiedereinstieg = def.wiedereinstieg && !einzelRueckkehr &&
-      chat.status === "running" && zugFrei ? def.wiedereinstieg : null;
+      chat.status === "running" && zugFrei && langeGenugPausiert ? def.wiedereinstieg : null;
+    chat.pausedAt = null;   // die nun aktive Session trägt keinen Pausenstempel mehr
     const korpusSprache = (gespeichert && gespeichert.language) || paarSprache;
     setKorpusSprache(korpusSprache);
     if (!gespeichert) chat.language = korpusSprache;
@@ -1260,6 +1270,19 @@ export function createApp({ doc, backend, root, diktat }) {
     });
   }
 
+  // S71 · Verlässt jemand den Chat, stempeln wir den Pausenbeginn auf die
+  // laufende Session — so bleibt eine kurze Rückkehr (< 5 Min) nahtlos, während
+  // längere Abwesenheit das Wiedereinstiegs-Ritual auslöst. Wartet ein Panel
+  // oder ein offener User-Zug, ist der Stempel folgenlos (die Zeremonie prüft
+  // ohnehin auf einen freien Assistant-Zug).
+  async function pausiereChat() {
+    const e = state.engine;
+    if (!e || !e.chat || e.chat.status !== "running") return;
+    e.chat.pausedAt = Date.now();
+    try { await backend.chat.save(state.chatShared ? "shared" : "mine", state.chatId, e.chat); }
+    catch { /* Verlassen darf am Speichern nicht scheitern */ }
+  }
+
   /* Verdrahtung — die Zurück-Wege führen in den Vorraum, aus dem man kam:
      Raum verlassen landet nicht mehr auf der Hauptübersicht, sondern im
      jeweiligen Vorraum (Erwartungs-Kontinuität, S35). */
@@ -1267,7 +1290,10 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnSharedRoom").addEventListener("click", () => betrete("scrShared"));
   $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));
   $("btnZurueck2").addEventListener("click", () => betrete("scrStart"));
-  $("btnChatZurueck").addEventListener("click", () => betrete(state.herkunft || "scrStart"));
+  $("btnChatZurueck").addEventListener("click", async () => {
+    await pausiereChat();
+    betrete(state.herkunft || "scrStart");
+  });
   // S42 · Expliziter Abschluss der Qualitätszeit: bittet die Begleitung um den
   // Abschluss-Akt; das Modell erzeugt das Protokoll (MOMENT-BLOCK), die App
   // legt es in "Gemeinsame Momente" ab und schließt die Session wirklich.
