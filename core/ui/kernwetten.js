@@ -153,6 +153,36 @@ export function gemeinsamDef(backend, hooks = {}) {
         ...BLOECKE.befund,
         handle: async (data, engine) => {
           await backend.bstate.set("findings", { at: new Date().toISOString(), ...data });
+          // S74 · "Ich halte alles fest" muss stimmen: Der bestätigte gemeinsame
+          // Auftrag und die individuellen Aufträge werden als aktive Agenda-
+          // Einträge angelegt (Writer-Format des GOAL-BLOCKs). Bewusst NICHT
+          // dabei: goalAdditions ("das wollen wir nicht") — die bleiben im
+          // Befund als stille Achtsamkeits-Marker; das Paar führt eine positive
+          // Zielausrichtung. Idempotent über findingsSeededAt (resume-fest);
+          // das Seeding darf den Abschluss nie brechen.
+          try {
+            const auf = (await backend.bstate.get("goals")) || { items: [], seq: 0 };
+            if (!auf.findingsSeededAt) {
+              const neu = [];
+              if (data.sharedGoal && data.sharedGoal.confirmedByBoth && data.sharedGoal.text)
+                neu.push({ art: "shared", text: data.sharedGoal.text, owner: null, baseline: data.sharedGoal.baseline || {} });
+              for (const g of (Array.isArray(data.individualGoals) ? data.individualGoals : []))
+                if (g && g.text) neu.push({ art: "individual", text: g.text, owner: g.person || null, baseline: {} });
+              if (neu.length) {
+                for (const a of neu) {
+                  auf.seq = (auf.seq || 0) + 1;
+                  auf.items.push({
+                    id: (a.art === "shared" ? "AG" : "AI") + auf.seq,
+                    text: a.text, art: a.art, owner: a.owner,
+                    status: "active", baseline: a.baseline,
+                    createdAt: new Date().toISOString(),
+                  });
+                }
+                auf.findingsSeededAt = new Date().toISOString();
+                await backend.bstate.set("goals", auf);
+              }
+            }
+          } catch { /* Abschluss geht vor — Befund bleibt die Quelle der Wahrheit */ }
           engine.chat.status = "finished";
           if (hooks.onBefund) hooks.onBefund(data);
         },

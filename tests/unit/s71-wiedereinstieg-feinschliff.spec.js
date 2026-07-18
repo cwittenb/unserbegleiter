@@ -169,10 +169,10 @@ describe("S71 · Prompt-Härtung Wiedereinstieg (de + en)", () => {
 
 describe("S71 · Anzeige-Hygiene: Platzhalter klebt nicht, Choice ohne Vorab-Etikett", () => {
   it("ein sichtbarer Platzhalter bekommt einen Absatz, statt am Satz zu kleben", () => {
-    const text = 'Hier ist, was ich sehe:CLARIFICATION-BLOCK{"x":1}END CLARIFICATION-BLOCK';
-    const out = cleanDisplay(text, [], [BLOECKE.befund]);
-    expect(out).not.toMatch(/sehe:Euer Befund:/);   // nicht mehr geklebt
-    expect(out).toContain("Euer Befund:");
+    const text = 'Hier ist, was ich sehe:CLOSURE-BLOCK{"x":1}END CLOSURE-BLOCK';
+    const out = cleanDisplay(text, [], [BLOECKE.abschluss]);
+    expect(out).not.toMatch(/sehe:Deine Abschluss-Übersicht zur Freigabe:/);   // nicht mehr geklebt
+    expect(out).toContain("Deine Abschluss-Übersicht zur Freigabe:");
   });
 
   it("das CHOICE-Menü trägt keinen statischen Vorab-Etikett mehr (kein „verbindend“)", () => {

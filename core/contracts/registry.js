@@ -15,7 +15,10 @@ export const BLOECKE = {
   }),
   befund: blockDef({
     start: "CLARIFICATION-BLOCK", end: "END CLARIFICATION-BLOCK",
-    placeholder: "Euer Befund:",
+    // S74: still gespeichert, ohne Etikett — "Befund" ist Klinik-Sprache, und
+    // der Abschieds-Text der Begleitung trägt den Moment allein; das Ergebnis
+    // lebt sichtbar in der Agenda (Aufträge aus dem Befund).
+    placeholder: "",
     dataset: "befund", schema: befundSchema,
   }),
   zeitleiste: blockDef({

@@ -206,7 +206,7 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkpost
   return KT("sk.kopf") + "\n" + teile.join("\n\n");
 }
 
-export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings, qualitytime }, nameA, nameB) {
+export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings, qualitytime, findings }, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];
 
@@ -214,6 +214,14 @@ export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharing
   teile.push(aktive.length
     ? "GOALS:\n" + aktive.map(a => "- " + a.id + " (" + a.art + (a.owner ? ", " + a.owner : "") + ", " + a.status + "): " + a.text).join("\n")
     : KT("mk.auftraegeLeer"));
+
+  // S74 · Beidseitig bestätigte "das wollen wir nicht"-Zeilen aus dem Befund:
+  // KEINE Agenda-Einträge (das Paar führt eine positive Zielausrichtung) —
+  // stille Achtsamkeits-Marker für die Begleitung in den Folgesessions.
+  const vermeiden = (findings && findings.concerns && Array.isArray(findings.concerns.goalAdditions))
+    ? findings.concerns.goalAdditions.filter(Boolean) : [];
+  if (vermeiden.length)
+    teile.push(KT("mk.vermeidenKopf") + "\n" + vermeiden.map(v => "- " + v).join("\n"));
 
   const offen = ((agenda && agenda.items) || []).filter(i => i.state === "open");
   teile.push(offen.length

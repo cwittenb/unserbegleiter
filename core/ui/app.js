@@ -411,6 +411,11 @@ export function createApp({ doc, backend, root, diktat }) {
     // btnMoment/btnEinzel); der Subtext wechselt mit.
     const bg = $("btnGemeinsam");
     if (bg) bg.textContent = lage.aufloesungOffen ? t("teil.gemeinsamWeiter") : t("teil.gemeinsam");
+    // S74 · Nach dem Befund ist die Auflösung abgeschlossen — die ganze Karte
+    // (Knopf + Subtext) verschwindet, statt wieder "beginnen" anzubieten; der
+    // lineare Pfad geht bei der Prozessreflexion weiter.
+    const bgKarte = bg ? bg.closest(".pb-card") : null;
+    if (bgKarte) bgKarte.classList.toggle("pb-hidden", !!lage.aufloesungGelaufen);
     // S62 · Dauerhafter Subtext unter der Auflösungs-Karte; solange gesperrt,
     // weicht er dem Gate-Hinweis (nie beide zugleich).
     const gSub = $("gemeinsamSub");
@@ -516,8 +521,18 @@ export function createApp({ doc, backend, root, diktat }) {
     if (!boxS) return;
     const msgs = state.engine ? state.engine.chat.messages.filter(m => !m.hidden) : [];
     const letzte = msgs.length ? msgs[msgs.length - 1] : null;
-    const skala = !state.warten && letzte && letzte.role === "assistant" &&
-      /[Ss]kala von 1 bis 10/.test(letzte.content);
+    // S74 · Die Leiste ist eine Text-Heuristik — sie schweigt, wenn der letzte
+    // Zug eine Marke oder einen Block trägt (dann antwortet ein Panel, etwa
+    // die verdeckten Startwerte bei [[BASELINE]]) oder ein Panel bereits offen
+    // ist; sonst standen zwei Regler übereinander. Erkennt de- und en-Wortlaut.
+    const def = state.engine ? state.engine.def : null;
+    const zugFrei = !!letzte && !findeMarker(letzte.content || "", (def && def.markerOrder) || []) &&
+      !findeBlock(letzte.content || "", (def && (def.blocks || (def.block ? [def.block] : []))) || []);
+    const panelOffen = ["kwPanel", "gatePanel"].some(id => {
+      const p = $(id); return p && !p.classList.contains("pb-hidden");
+    });
+    const skala = !state.warten && letzte && letzte.role === "assistant" && zugFrei && !panelOffen &&
+      /[Ss]kala von 1 bis 10|scale (?:of|from) 1 (?:to|through) 10/.test(letzte.content);
     boxS.classList.toggle("offen", !!skala);
   }
 
@@ -639,6 +654,19 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     if (nah) { box.scrollTop = box.scrollHeight; scrolleZumEingabefeld(); }
     aktualisiereSkala();
+    aktualisiereComposer();
+  }
+
+  // S74 · Ist die Session abgeschlossen (Befund gespeichert), tritt der
+  // "Raum verlassen"-Knopf an die Stelle des Composers: nichts Eintippbares
+  // kann mehr im Nirwana verschwinden (die Engine nähme es ohnehin nicht an,
+  // und die Fehlzeile stand außer Sicht am Seitenanfang). Der NACHKLANG der
+  // Auftragsklärung bleibt unberührt — er heilt seinen Status auf "running".
+  function aktualisiereComposer() {
+    const c = $("pbComposer");
+    if (!c) return;
+    const fertig = !!(state.engine && state.engine.chat && state.engine.chat.status !== "running");
+    c.classList.toggle("pb-hidden", fertig);
   }
 
   function setzeWarten(v) { state.warten = v; aktualisiereBusy(); }
@@ -974,17 +1002,18 @@ export function createApp({ doc, backend, root, diktat }) {
         if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
       }
       if (art === "moment") {
-        const [goals, agenda, momentLog, measurements, freiA, freiB] = await Promise.all([
+        const [goals, agenda, momentLog, measurements, freiA, freiB, findings] = await Promise.all([
           backend.bstate.get("goals"), backend.bstate.get("agenda"),
           backend.bstate.get("momentLog"), backend.bstate.get("measurements"),
           Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
           Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
+          backend.bstate.get("findings").catch(() => null),
         ]);
         chat.messages.push({
           role: "user", hidden: true,
           content: baueMomentKontext(
             {
-              goals, agenda, momentLog,
+              goals, agenda, momentLog, findings,
               qualitytime: await backend.bstate.get("qualitytime").catch(() => null),
               messrunde: (() => { const r = bereiteRunde(measurements); return r ? formatiereMessrunde(r, info.nameA, info.nameB) : null; })(),
               sharings: [freiA, freiB].filter(Boolean),
