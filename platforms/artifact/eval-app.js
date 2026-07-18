@@ -125,8 +125,12 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
     let pCalls = 0, jCalls = 0, aktuell = "";
     const zeige = () => status("Läuft … " + aktuell + " · Pipeline-Aufrufe: " + pCalls + " · Judge-Aufrufe: " + jCalls);
     const roh = { p: machAdapter(pm), j: machAdapter(jm) };
-    const pipelineCall = async (sys, msgs) => { pCalls++; zeige(); return roh.p(sys, msgs); };
-    const judgeCall = async (sys, msgs) => { jCalls++; zeige(); return roh.j(sys, msgs); };
+    // ALLE Argumente durchreichen (…rest): seit S76 trägt das dritte Argument
+    // die Aufruf-Optionen (u. a. { structured }). Eine feste Stelligkeit hier
+    // verschluckt sie lautlos — der Judge fiele auf den Textpfad zurück und
+    // lieferte kein data (Befund: 30/30 Samples „checks fehlt").
+    const pipelineCall = async (...a) => { pCalls++; zeige(); return roh.p(...a); };
+    const judgeCall = async (...a) => { jCalls++; zeige(); return roh.j(...a); };
 
     const ergebnisse = [];
     let abbruch = null;
