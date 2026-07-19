@@ -6,7 +6,7 @@
 
 export const en = {
   // General
-  "allg.marke": "Couples Companion",
+  "allg.marke": "roomfortwo",
   "allg.hallo": "Hello {name}",
   "allg.zurueck": "← Back",
   "allg.weiter": "Continue",

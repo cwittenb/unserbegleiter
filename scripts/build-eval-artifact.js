@@ -21,7 +21,7 @@ export async function buildEvalArtifact({ outDir = path.join(ROOT, "dist") } = {
   bundle = bundle.replace(/<\/script>/gi, "<\\/script>");
   const html = `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Paarbegleitung · Eval-Runner · ${stamp}</title>
+<title>raumzuzweit · Eval-Runner · ${stamp}</title>
 <style>:root{--bg:#f5f7f9;--ink:#1b2430}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 #app{max-width:760px;margin:0 auto;padding:24px 18px}</style></head>

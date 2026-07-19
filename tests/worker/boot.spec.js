@@ -34,7 +34,7 @@ describe("Worker-Boot", () => {
     const res = await mf.dispatchFetch("http://pb.test/api/health");
     expect(res.status).toBe(200);
     const j = await res.json();
-    expect(j.app).toBe("Paarbegleitung Neubau");
+    expect(j.app).toBe("raumzuzweit");
     expect(j.core).toMatch(/^\d+\.\d+\.\d+/);
   });
 

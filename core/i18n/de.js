@@ -4,7 +4,7 @@
 
 export const de = {
   // Allgemein
-  "allg.marke": "Paarbegleitung",
+  "allg.marke": "raumzuzweit",
   "allg.hallo": "Hallo {name}",
   "allg.zurueck": "← Zurück",
   "allg.weiter": "Weiter",

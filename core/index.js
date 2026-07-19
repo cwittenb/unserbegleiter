@@ -1,8 +1,8 @@
-// Plattformneutraler Kern der Paarbegleitung.
+// Plattformneutraler Kern von raumzuzweit (Paarbegleitung).
 // Kennt weder window.storage noch KV noch fetch-Details — nur injizierte Adapter.
 
 export const CORE_VERSION = "1.0.0-s0";
-export const APP_NAME = "Paarbegleitung Neubau";
+export const APP_NAME = "raumzuzweit";
 
 // Die Fachschichten wachsen in den Sprints 1–4:
 //   contracts/  — Marker-, Block-, Übergabe-Vertrag + Schemas   (S1)

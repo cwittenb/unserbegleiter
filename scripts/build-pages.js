@@ -61,7 +61,7 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
 
   await writeFile(path.join(outDir, "public/index.html"), `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Paarbegleitung</title>
+<title>raumzuzweit</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="${THEME_COLOR}">
 <meta name="mobile-web-app-capable" content="yes">

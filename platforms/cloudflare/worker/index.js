@@ -181,7 +181,7 @@ async function route(request, env) {
       await makeMailer(env).sendMail({
         to: adresse,
         subject: "Neuer Zugangslink für dein Konto erzeugt",
-        text: "Für deinen Zugang zur Paarbegleitung wurde soeben vom Betreiber ein neuer Zugangslink erzeugt.\n\n" +
+        text: "Für deinen Zugang zu raumzuzweit wurde soeben vom Betreiber ein neuer Zugangslink erzeugt.\n\n" +
               "Warst du das nicht bzw. hast du das nicht angefragt, melde dich bitte umgehend beim Betreiber.",
       });
       benachrichtigt = true;
@@ -219,7 +219,7 @@ async function route(request, env) {
     await makeMailer(env).sendMail({
       to: adresse,
       subject: "Dein neuer Zugangslink",
-      text: "Hier ist dein neuer Zugangslink zur Paarbegleitung:\n\n" +
+      text: "Hier ist dein neuer Zugangslink zu raumzuzweit:\n\n" +
             url.origin + "/#t=" + token + "\n\n" +
             "Der Link ist etwa 15 Minuten gültig und nur einmal verwendbar.",
     });
@@ -325,7 +325,7 @@ async function route(request, env) {
       try {
         await makeMailer(env).sendMail({
           to: String(email).trim(),
-          subject: "Dein Zugang zur Paarbegleitung",
+          subject: "Dein Zugang zu raumzuzweit",
           text: "Hier ist dein neuer persönlicher Zugangslink:\n\n" + link +
                 "\n\nEr ist etwa 15 Minuten gültig und nur einmal verwendbar. " +
                 "Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
@@ -417,7 +417,7 @@ async function route(request, env) {
       await makeMailer(env).sendMail({
         to: clean,
         subject: "Dein Bestätigungscode",
-        text: "Dein Bestätigungscode für die Paarbegleitung lautet:\n\n" + pin +
+        text: "Dein Bestätigungscode für raumzuzweit lautet:\n\n" + pin +
               "\n\nEr ist etwa 15 Minuten gültig. Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
       });
       return json({ ok: true });
