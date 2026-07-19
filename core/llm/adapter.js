@@ -255,13 +255,17 @@ export const LLM_PROVIDERS = {
       let system = systemPrompt;
       const msgs = messages.map(m => ({ role: m.role, content: m.content }));
       if (cfg.cache) {
-        // System-Prompt als cachebarer Block (größter, je Turn identischer Teil)
-        system = [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }];
+        // System-Prompt als cachebarer Block (größter, je Turn identischer Teil).
+        // S82: cfg.cacheTtl (z. B. "1h") für Aufrufer, deren Turns Minuten
+        // auseinanderliegen (Batch-Lockstep, S65) — sonst Standard-TTL.
+        system = [{ type: "text", text: systemPrompt,
+          cache_control: { type: "ephemeral", ...(cfg.cacheTtl ? { ttl: cfg.cacheTtl } : {}) } }];
         // Rolling-Cache: letzten Turn markieren → der wachsende Prefix wird
         // beim nächsten Aufruf ein Treffer
         if (msgs.length) {
           const last = msgs[msgs.length - 1];
-          last.content = [{ type: "text", text: last.content, cache_control: { type: "ephemeral" } }];
+          last.content = [{ type: "text", text: last.content,
+            cache_control: { type: "ephemeral", ...(cfg.cacheTtl ? { ttl: cfg.cacheTtl } : {}) } }];
         }
       }
       const body = { model: cfg.models.anthropic, max_tokens: cfg.maxTokens, system, messages: msgs };

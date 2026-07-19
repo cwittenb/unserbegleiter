@@ -20,8 +20,16 @@ function addTok(ziel, quelle) {
   for (const k of ["in", "out", "cacheRead", "cacheWrite", "calls"]) ziel[k] += quelle[k] || 0;
 }
 
-const MAX_TOKENS = 4096;   // wie der synchrone Pfad (LLM_DEFAULTS.maxTokens, S77:
-                           // Denkbudget + neuer Tokenizer machten 1024 zu knapp)
+const MAX_TOKENS = 4096;   // wie der synchrone Pfad (LLM_DEFAULTS.maxTokens, S77)
+
+// S82 · EINE Request-Quelle: Die Batch-params kommen aus denselben Fassaden-
+// Bausteinen (P.body / P.structuredBody) wie der synchrone Pfad. Damit erreichen
+// künftige Fassaden-Änderungen den Batch automatisch — die Lücken aus S76
+// (structured fehlte) und S77 (thinking fehlte) sind konstruktiv ausgeschlossen.
+// Rollenverteilung unverändert: Begleitung denkt nicht, Judge adaptiv (D1/D4);
+// Pipeline-Caching 1h-TTL (S65) jetzt inkl. Rolling-Prefix über Turn-Batches.
+const PIPE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_TOKENS, cache: true, cacheTtl: "1h", thinking: "disabled" });
+const JUDGE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_TOKENS, cache: false, thinking: "adaptiv" });   // Judge-Caching AUS (S56)
 
 export async function laufeAlleBatch(szenarien, deps) {
   const { pipelineModell, judgeModell, stand, melde, batch } = deps;
@@ -51,19 +59,7 @@ export async function laufeAlleBatch(szenarien, deps) {
       idx.set(cid, k);
       requests.push({
         custom_id: cid,
-        params: {
-          model: pipelineModell,
-          max_tokens: MAX_TOKENS,
-          // Pipeline-Caching mit 1h-TTL (S65): die Turn-Batches liegen Minuten auseinander,
-          // der 5-Min-Cache würde zwischen den Turns ablaufen. 1h hält den System-Prompt über
-          // alle Turn-Batches → gelesen statt je Turn neu geschrieben (höhere Cache-Quote).
-          system: [{ type: "text", text: k.system, cache_control: { type: "ephemeral", ttl: "1h" } }],
-          messages: k.messages.map(m => ({ role: m.role, content: m.content })),
-          // S81: Der Batch baut seine Requests selbst und lief damit an der
-          // S77-Rollenverteilung vorbei — die Begleitung denkt NICHT (der Judge
-          // unten bleibt adaptiv, dort fehlt das Feld bewusst).
-          thinking: { type: "disabled" },
-        },
+        params: LLM_PROVIDERS.anthropic.body(PIPE_CFG(pipelineModell), k.system, k.messages),
       });
     }
     if (!requests.length) continue;
@@ -96,16 +92,12 @@ export async function laufeAlleBatch(szenarien, deps) {
     jidx.set(cid, k);
     jreq.push({
       custom_id: cid,
-      params: {
-        model: judgeModell,
-        max_tokens: MAX_TOKENS,
-        system: baueJudgePrompt(szenarioSprache(k.sz)),   // Judge-Caching AUS (S56): kein cache_control
-        messages: [{ role: "user", content: baueJudgeUser(k.sz, k.messages) }],
-        // S78: auch der Batch-Judge läuft strukturiert — erzwungener Tool-Use,
-        // identisch zur synchronen Form (Migrationslücke aus S76 geschlossen).
-        tools: [{ name: JUDGE_SCHEMA.name, description: JUDGE_SCHEMA.description, input_schema: JUDGE_SCHEMA.schema }],
-        tool_choice: { type: "tool", name: JUDGE_SCHEMA.name },
-      },
+      params: LLM_PROVIDERS.anthropic.structuredBody(
+        JUDGE_CFG(judgeModell),
+        baueJudgePrompt(szenarioSprache(k.sz)),
+        [{ role: "user", content: baueJudgeUser(k.sz, k.messages) }],
+        JUDGE_SCHEMA
+      ),
     });
   }
   if (jreq.length) {
