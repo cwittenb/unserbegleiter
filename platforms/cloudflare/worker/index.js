@@ -12,6 +12,7 @@ import { freigebeUebergabe } from "../../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
 import { makeAdapter, LLM_PROVIDERS } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
+import { istAppOrigin, preflightAntwort, mitAppCors, aasaNutzlast, assetlinksNutzlast } from "./app-origins.js";
 import { pruefeUndZaehle, quotaCfg } from "./quota.js";
 import { erfasseUsage, leseTokenStand, leseTokenHistorie, leseTokenExport, monatsTag } from "./tokenstat.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
@@ -36,10 +37,14 @@ const PSTATE_FELDER = new Set(["timeline", "selfDisclosures"]);
 
 export default {
   async fetch(request, env, ctx) {
+    // App-Anbindung (M5): Preflight der nativen Hülle vorab beantworten; jede
+    // Antwort (auch Fehler) trägt für App-Origins die CORS-Köpfe.
+    const vorab = preflightAntwort(request);
+    if (vorab) return vorab;
     try {
-      return await route(request, env);
+      return mitAppCors(request, await route(request, env));
     } catch (e) {
-      return fehler(e.message || "Interner Fehler", e.status || 500, e.code);
+      return mitAppCors(request, fehler(e.message || "Interner Fehler", e.status || 500, e.code));
     }
   },
 };
@@ -51,6 +56,19 @@ async function route(request, env) {
   const now = Date.now;
 
   if (p === "/api/health") return json({ app: APP_NAME, core: CORE_VERSION, kv: !!kv });
+
+  /* ---- App-Verknüpfung (M5): Universal Links (iOS) / App Links (Android).
+   *  Beide Werte sind Deployment-Angaben ([vars] in wrangler.toml), erst nach
+   *  Team-Beitritt bzw. Signatur-Schlüssel bekannt — fehlen sie, antwortet die
+   *  Route fail-closed mit klarer Ansage (kein stiller Fallback). ---- */
+  if (p === "/.well-known/apple-app-site-association" && request.method === "GET") {
+    if (!env.APPLE_TEAM_ID) return fehler("APPLE_TEAM_ID fehlt — als [vars] setzen (Apple Developer \u2192 Membership).", 503, "config_missing");
+    return json(aasaNutzlast(String(env.APPLE_TEAM_ID).trim()));
+  }
+  if (p === "/.well-known/assetlinks.json" && request.method === "GET") {
+    if (!env.ANDROID_CERT_SHA256) return fehler("ANDROID_CERT_SHA256 fehlt — als [vars] setzen (keytool -list -v, SHA-256-Fingerprint).", 503, "config_missing");
+    return json(assetlinksNutzlast(String(env.ANDROID_CERT_SHA256).trim().toUpperCase()));
+  }
   if (!kv) return fehler("KV-Bindung PAARE fehlt", 500);
 
   /* ---- Öffentliche Auth-Endpunkte ---- */
@@ -62,14 +80,17 @@ async function route(request, env) {
   if (p === "/api/enroll" && request.method === "POST") {
     const { token } = await request.json();
     const r = await enroll(kv, token, now);
+    // App-Anfragen (M5) laufen cross-origin — nur dort SameSite=None.
+    const sameSite = istAppOrigin(request.headers.get("Origin")) ? "None" : undefined;
     const headers = new Headers({ "content-type": "application/json; charset=utf-8" });
-    headers.append("Set-Cookie", cookieHeader("pb_cred", r.cred, { maxAge: 60 * 60 * 24 * 180 }));
-    headers.append("Set-Cookie", cookieHeader("pb_sid", r.session));
+    headers.append("Set-Cookie", cookieHeader("pb_cred", r.cred, { maxAge: 60 * 60 * 24 * 180, sameSite }));
+    headers.append("Set-Cookie", cookieHeader("pb_sid", r.session, { sameSite }));
     return new Response(JSON.stringify({ role: r.role, name: r.name }), { status: 200, headers });
   }
   if (p === "/api/session" && request.method === "POST") {
     const sid = await loginWithCred(kv, parseCookies(request).pb_cred, now);
-    return json({ ok: true }, 200, { "Set-Cookie": cookieHeader("pb_sid", sid) });
+    const ssSession = istAppOrigin(request.headers.get("Origin")) ? "None" : undefined;
+    return json({ ok: true }, 200, { "Set-Cookie": cookieHeader("pb_sid", sid, { sameSite: ssSession }) });
   }
   /* ---- Betreiber-Liste: alle Paare mit Adress-Status (admin-gated, S45).
    *  Zweck: Der Paar-Code ist der Unique Key (Namen sind reine Anzeige-Labels);

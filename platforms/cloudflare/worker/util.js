@@ -21,8 +21,10 @@ export function parseCookies(request) {
   return out;
 }
 
-export function cookieHeader(name, value, { maxAge } = {}) {
-  let c = `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Secure`;
+// sameSite: Default Lax (Web, same-origin). Die native Hülle (M5) spricht die
+// API cross-origin — NUR dort setzt index.js "None" (Secure ist ohnehin immer an).
+export function cookieHeader(name, value, { maxAge, sameSite = "Lax" } = {}) {
+  let c = `${name}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=${sameSite}; Secure`;
   if (maxAge !== undefined) c += `; Max-Age=${maxAge}`;
   return c;
 }

@@ -8,6 +8,7 @@ import { createApp } from "../../../core/ui/app.js";
 import { applyDesign } from "../../../core/ui/design.js";
 import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../../core/i18n/index.js";
 import { apiBasis, istNativeShell } from "./api-basis.js";
+import { lauscheAppLinks } from "./deep-link.js";
 
 const doc = document;
 const app = doc.getElementById("app");
@@ -63,7 +64,14 @@ export function remoteBackend() {
 
 export async function boot() {
   applyDesign(doc);
-  registriereServiceWorker();   // Design ab Start — auch Wiedereinstieg/Fehler-Screens
+  registriereServiceWorker();
+  // Native Hülle (M5): Universal/App Link liefert das Magic-Token als Ereignis —
+  // wir speisen es in den bestehenden Boot-Pfad (#t=…) ein und starten neu.
+  if (istNativeShell())
+    lauscheAppLinks((token) => {
+      location.hash = "#t=" + encodeURIComponent(token);
+      location.reload();
+    });   // Design ab Start — auch Wiedereinstieg/Fehler-Screens
   // Vor-Session-Sprache (Stufe D): vor Anmeldung gibt es kein pstate —
   // gespeicherte Wahl → Browser-Sprache → de. Nach der Anmeldung bleibt
   // pstate maßgeblich (app.js) und spiegelt sich hierher zurück.

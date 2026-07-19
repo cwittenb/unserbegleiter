@@ -65,6 +65,14 @@ export async function buildCapacitor({ outDir = path.join(ROOT, "dist/capacitor"
     appName: de["pwa.name"],
     webDir: "www",
     server: { androidScheme: "https" },
+    // M5: CapacitorHttp/-Cookies heben fetch auf die native Netzwerkschicht —
+    // Cookie-Persistenz in WKWebView (ITP) wird damit robust; der Worker-CORS
+    // bleibt als Rückfallebene für den reinen WebView-Pfad bestehen.
+    plugins: {
+      CapacitorHttp: { enabled: true },
+      CapacitorCookies: { enabled: true },
+      SplashScreen: { backgroundColor: "#f7f4ea", launchShowDuration: 0 },
+    },
   };
   await writeFile(path.join(outDir, "capacitor.config.json"), JSON.stringify(config, null, 2) + "\n");
 
