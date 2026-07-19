@@ -2,7 +2,7 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j5";   // j5 (S76): Strukturausgabe — die JSON-Formatregeln und das Verbot gerader Anführungszeichen entfallen im strukturierten Pfad (der Provider erzwingt die Form). Zurechnungs-Härtung aus j4 unverändert.
+export const JUDGE_PROMPT_VERSION = "j6";   // j6 (S85): EINE Reinform-Zeile als Absicherung für Umgebungen ohne Tool-Erzwingung (keyless Artefakt: 15/15 Samples unbewertet, weil valide Verdikte als Freitext kamen). j5 (S76): Strukturausgabe — die JSON-Formatregeln entfallen im strukturierten Pfad. Zurechnungs-Härtung aus j4 unverändert.
 
 /* S76 · Wire-Schema des Judges. Feldnamen ENGLISCH (verdict/evidence) —
    neue Schemas entstehen gleich anglisiert, damit die spätere Wire-Anglisierung
@@ -45,10 +45,18 @@ export function baueJudgePrompt(sprache) {
   const strukturDe = [
     "Fülle für JEDE Prüffrage einen Eintrag: id (die Kennung der Frage),",
     "verdict (yes = ja, no = nein) und evidence (wörtliches Kurzzitat oder «kein Beleg»).",
+    // j6 (S85): Reinform-Absicherung für Umgebungen ohne Tool-Erzwingung.
+    "Antworte ausschließlich über das bereitgestellte Struktur-Werkzeug. Steht keines zur",
+    "Verfügung, antworte mit GENAU EINEM reinen JSON-Objekt der Form {\"checks\":[…]} —",
+    "ohne einleitenden oder nachgestellten Text und ohne Code-Zäune.",
   ];
   const strukturEn = [
     "Fill one entry for EVERY audit question: id (the question's key),",
     "verdict (yes/no) and evidence (short verbatim quote or «kein Beleg»).",
+    // j6 (S85): pure-form safeguard for environments without tool forcing.
+    "Answer exclusively via the provided structure tool. If none is available, answer with",
+    "EXACTLY ONE plain JSON object of the form {\"checks\":[…]} —",
+    "no leading or trailing text and no code fences.",
   ];
   if (sprache === "en") return [
     "You are a strict, independent examiner of transcripts from an LLM-assisted couples companion.",
@@ -99,6 +107,10 @@ export function baueJudgeUser(szenario, transkript) {
  * Gültigkeit). yes/no wird auf die interne ja/nein-Wahrheit zurückgemappt.
  */
 export function pruefeJudgeDaten(daten, szenario) {
+  // S85: Der Text-Rettungspfad liefert mitunter das checks-Array NACKT
+  // (real beobachtete Form im keyless-Lauf: ```json [ {id,verdict,…} ]```) —
+  // fachlich ist das dieselbe Aussage, also normalisieren statt verwerfen.
+  if (Array.isArray(daten)) daten = { checks: daten };
   if (!daten || typeof daten !== "object" || !Array.isArray(daten.checks))
     return { ok: false, fehler: "checks fehlt" };
   const map = {};
@@ -127,9 +139,11 @@ export async function richte(judgeCall, szenario, transkript, { versuche = 3, ba
       // Provider, die FACHLICHE Gültigkeit prüft pruefeJudgeDaten. Retry bleibt
       // (Auslastung, exceeded_limit); Korrektur-Runden über die Form sind
       // gegenstandslos geworden (D5-Gate: voller Zyklus, 0 Transport-Ausfälle).
-      const { data } = await judgeCall(system, [erste], { structured: JUDGE_SCHEMA });
-      const p = pruefeJudgeDaten(data, szenario);
-      if (p.ok) return { bewertet: true, antworten: p.antworten };
+      const r = await judgeCall(system, [erste], { structured: JUDGE_SCHEMA });
+      const p = pruefeJudgeDaten(r.data, szenario);
+      // S85: Die Struktur-Quelle ("tool" | "text"-Rettung) wandert sichtbar
+      // mit ins Urteil — deklarierter Pfad, keine stille Degradation.
+      if (p.ok) return { bewertet: true, antworten: p.antworten, strukturQuelle: r.strukturQuelle || "tool" };
       letzterFehler = p.fehler;
     } catch (e) {
       letzterFehler = e.message;

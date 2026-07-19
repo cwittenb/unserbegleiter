@@ -107,6 +107,29 @@ function strukturAuszug(roh) {
   return t ? " — Anfang: «" + t + (String(roh).length > 160 ? "…" : "") + "»" : "";
 }
 
+/** S85 · Deklarierter Rettungspfad: GENAU EIN JSON-Objekt aus einer Textantwort
+ *  schälen (Code-Zäune strippen, äußere Klammern von erster { bis letzter }).
+ *  Liefert das geparste Objekt oder null — er RÄT nie: parst der Kandidat
+ *  nicht oder ist kein Objekt, gibt es nichts zu retten. Anlass: Umgebungen
+ *  ohne Tool-Erzwingung (keyless Artefakt) — der Judge lieferte dort valide
+ *  Verdikte als Freitext/```json, und 15/15 Samples blieben unbewertet. */
+export function extrahiereStrukturAusText(text) {
+  const t = String(text == null ? "" : text);
+  const zaun = t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const kandidaten = [];
+  if (zaun) kandidaten.push(zaun[1]);
+  const von = t.indexOf("{"), bis = t.lastIndexOf("}");
+  if (von >= 0 && bis > von) kandidaten.push(t.slice(von, bis + 1));
+  for (const k of kandidaten) {
+    try {
+      const d = JSON.parse(k.trim());
+      if (d && typeof d === "object" && !Array.isArray(d)) return d;
+      if (Array.isArray(d)) return d;   // manche Modelle liefern das checks-Array nackt
+    } catch { /* nächster Kandidat */ }
+  }
+  return null;
+}
+
 /** Abgeschnittene Strukturausgabe ist ein HARTER Fehler: halbes JSON ist keine
  *  halbe Antwort, sondern gar keine (anthropic: max_tokens, openai/mistral: length). */
 function pruefeAbschnitt(stop, roh) {
@@ -326,16 +349,24 @@ export const LLM_PROVIDERS = {
       const text = bloecke.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
       pruefeAbschnitt(data.stop_reason, text);
       const tu = bloecke.find(b => b.type === "tool_use" && (!name || b.name === name));
-      if (!tu || !tu.input || typeof tu.input !== "object")
-        throw new Error("Strukturausgabe fehlt: kein tool_use-Block (stop_reason=" + data.stop_reason + ")" + strukturAuszug(text));
       const u = data.usage || {};
-      return {
-        text, data: tu.input, stop: data.stop_reason,
-        usage: {
-          in: u.input_tokens, out: u.output_tokens,
-          cacheWrite: u.cache_creation_input_tokens, cacheRead: u.cache_read_input_tokens,
-        },
+      const usage = {
+        in: u.input_tokens, out: u.output_tokens,
+        cacheWrite: u.cache_creation_input_tokens, cacheRead: u.cache_read_input_tokens,
       };
+      if (!tu || !tu.input || typeof tu.input !== "object") {
+        // S85 · Deklarierter Rettungspfad (KEIN stiller Fallback): In Umgebungen
+        // ohne Tool-Erzwingung (keyless Artefakt) antwortet das Modell mitunter
+        // als Freitext/```json. Lässt sich daraus GENAU EIN JSON-Wert schälen,
+        // wird er regulär zurückgegeben — sichtbar markiert mit
+        // strukturQuelle:"text", die Aufrufer reichen die Quelle bis in
+        // Sample, Telemetrie und Bericht durch. Sonst unverändert harter Fehler.
+        const gerettet = extrahiereStrukturAusText(text);
+        if (gerettet != null)
+          return { text, data: gerettet, stop: data.stop_reason, usage, strukturQuelle: "text" };
+        throw new Error("Strukturausgabe fehlt: kein tool_use-Block (stop_reason=" + data.stop_reason + ")" + strukturAuszug(text));
+      }
+      return { text, data: tu.input, stop: data.stop_reason, usage, strukturQuelle: "tool" };
     },
     parse(data) {
       if (data.error) throw new Error(data.error.message || "Anthropic-Fehler");

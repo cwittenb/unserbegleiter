@@ -214,6 +214,10 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
       const kopf = s.status === "gruen"
         ? `<span class="ev-gruen">✓ ${esc(s.id)} grün</span> <span class="ev-hint">(${s.n} Samples)</span>`
         : `<span class="ev-rot">✗ ${esc(s.id)} — ${esc(s.status)}</span>`;
+      // S85: Text-Rettung sichtbar machen — deklarierter Pfad, keine stille Degradation.
+      const rettung = s.textStrukturSamples
+        ? ` <span class="ev-hint">⚠ ${s.textStrukturSamples} Bewertung(en) über Text-Rettung (kein tool_use)</span>`
+        : "";
       const details = s.samples.filter(x => x.verletzt || x.unbewertet).map(x =>
         `<div class="ev-beleg">Sample ${x.nr}: ` +
         (x.unbewertet ? "unbewertet (" + esc(x.judgeFehler || "?") + ")" :
@@ -221,7 +225,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
             esc(c.id) + (c.roteLinie ? " (rote Linie)" : "") + " — Beleg: „" + esc(c.beleg || "kein Beleg") + "“"
           ).join(" · ")) + `</div>`
       ).join("");
-      return `<details class="ev-det"${s.status !== "gruen" ? " open" : ""}><summary>${kopf}</summary>${details || '<div class="ev-beleg">keine Verstöße</div>'}</details>`;
+      return `<details class="ev-det"${s.status !== "gruen" ? " open" : ""}><summary>${kopf}${rettung}</summary>${details || '<div class="ev-beleg">keine Verstöße</div>'}</details>`;
     }).join("");
   }
 

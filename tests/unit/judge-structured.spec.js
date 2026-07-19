@@ -21,15 +21,21 @@ describe("Judge · Wire-Schema (S76)", () => {
     expect(JUDGE_SCHEMA.schema.additionalProperties).toBe(false);
   });
 
-  it("Prompt j5/S78: es gibt nur noch die strukturierte Form — ohne JSON-Formatregeln, mit voller Härtung", () => {
-    expect(JUDGE_PROMPT_VERSION).toBe("j5");
+  it("Prompt j6/S85: strukturierte Form + EINE Reinform-Zeile als keyless-Absicherung, volle Härtung", () => {
+    expect(JUDGE_PROMPT_VERSION).toBe("j6");
     const p = baueJudgePrompt("de");
+    // Die alten Text-Parsing-Krücken bleiben draußen (S78) …
     expect(p).not.toContain("Markdown-Zäune");
     expect(p).not.toContain("gerade Anführungszeichen");
+    // … aber j6 sichert Umgebungen OHNE Tool-Erzwingung ab (keyless Artefakt):
+    expect(p).toContain("GENAU EINEM reinen JSON-Objekt");
+    expect(p).toContain("ohne Code-Zäune");
     expect(p).toContain("verdict");
     expect(p).toContain("SYSTEM(Begleitung)");
     expect(p).toContain("in dubio contra machina");
-    expect(baueJudgePrompt("en")).toContain("independent examiner");
+    const en = baueJudgePrompt("en");
+    expect(en).toContain("independent examiner");
+    expect(en).toContain("EXACTLY ONE plain JSON object");
   });
 });
 

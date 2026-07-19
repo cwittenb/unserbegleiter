@@ -232,9 +232,12 @@ async function main() {
       (q.unbewertet ? "  unbewertet: " + q.unbewertet : "") +
       (q.fehler ? "  fehler: " + q.fehler : ""));
   }
-  for (const s of bericht.szenarien)
+  for (const s of bericht.szenarien) {
     if (s.status !== "gruen")
       console.log("  → " + s.id + ": " + s.status + (s.belegloserVerstoss ? "  ⚠ ohne Beleg — prüfen" : ""));
+    if (s.textStrukturSamples)
+      console.log("  ⚠ " + s.id + ": " + s.textStrukturSamples + " Bewertung(en) über Text-Rettung (kein tool_use) — deklarierter Pfad, s. strukturQuelle je Sample");
+  }
 
   // Telemetrie-Zeile (S55): echte Token, Cache-Trefferquote, Kosten, Wall-Clock.
   const T = bericht.telemetrie;
