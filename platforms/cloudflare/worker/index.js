@@ -476,8 +476,14 @@ async function route(request, env) {
     // Werte sind Robustheits-Tuning (kein Provider-Wissen) und per env
     // übersteuerbar: LLM_VERSUCHE / LLM_BACKOFF_MS / LLM_MAX_BACKOFF_MS.
     const zahl = (roh, sonst) => { const n = Number(roh); return Number.isFinite(n) && n > 0 ? n : sonst; };
+    // S77 · Denkmodus: die Begleitung läuft ohne Thinking (deterministisches
+    // Ausgabe-Budget; adaptives Thinking verbrauchte gemessen ganze Antworten,
+    // bevor Text begann). Per LLM_THINKING="adaptiv" umstellbar, ohne Deploy-
+    // Zwang: Robustheits-Tuning, kein Provider-/Modellwissen.
     const llmCfg = {
       provider: env.LLM_PROVIDER, mode: "direct", apiKey, models: { [env.LLM_PROVIDER]: modell },
+      thinking: env.LLM_THINKING === "adaptiv" ? "adaptiv" : "disabled",
+      maxTokens: zahl(env.LLM_MAX_TOKENS, 4096),
       versuche: zahl(env.LLM_VERSUCHE, 4),
       backoffMs: zahl(env.LLM_BACKOFF_MS, 1500),
       maxBackoffMs: zahl(env.LLM_MAX_BACKOFF_MS, 6000),

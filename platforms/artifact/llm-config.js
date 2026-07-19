@@ -10,4 +10,5 @@ export const ARTEFAKT_LLM = {
   provider: "anthropic",
   mode: "keyless",
   models: { anthropic: "claude-sonnet-4-6" },
+  thinking: "disabled",   // S77: Begleitung ohne Thinking (deterministisches Budget)
 };

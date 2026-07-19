@@ -48,9 +48,15 @@ export async function spieleSample(pipelineCall, szenario) {
   const messages = [];
   for (const eingabe of szenario.eingaben) {
     messages.push({ role: "user", content: eingabe });
-    const { text } = await pipelineCall(system, messages);
-    messages.push({ role: "assistant", content: text });
-    if (!text || !String(text).trim()) break;   // leere Antwort → nicht weiterkaskadieren (S65)
+    const { text, abgeschnitten } = await pipelineCall(system, messages);
+    // S77: abgeschnitten wandert als Merkmal mit ins Transkript. Es ist KEIN
+    // Inhalt (der Judge sieht nur role/content), sondern die Spur einer
+    // technischen Anomalie — ein am Token-Limit abgebrochener Halbsatz darf
+    // nicht als vollständige Antwort bewertet werden.
+    messages.push(abgeschnitten
+      ? { role: "assistant", content: text, abgeschnitten: true }
+      : { role: "assistant", content: text });
+    if (!text || !String(text).trim() || abgeschnitten) break;   // nicht weiterkaskadieren (S65/S77)
   }
   return messages;
 }
@@ -62,6 +68,20 @@ export function leereAntwortTurn(transkript) {
     if (m.role === "assistant") { t++; if (!m.content || !String(m.content).trim()) return t; }
   }
   return 0;
+}
+
+/** S77 · Erste technische Anomalie im Transkript: leere ODER am Token-Limit
+ *  abgeschnittene Antwort. Beides ist kein Content-Verstoß, macht das Sample
+ *  aber unbewertbar — ein halber Satz ist keine bewertbare Begleitung. */
+export function anomalieImTranskript(transkript) {
+  let t = 0;
+  for (const m of (transkript || [])) {
+    if (m.role !== "assistant") continue;
+    t++;
+    if (!m.content || !String(m.content).trim()) return { turn: t, grund: "leere Pipeline-Antwort" };
+    if (m.abgeschnitten) return { turn: t, grund: "abgeschnittene Pipeline-Antwort (Token-Limit)" };
+  }
+  return null;
 }
 
 /** Ein Szenario: n Samples spielen, richten, Härteregeln anwenden. */
@@ -102,9 +122,9 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
   const samples = [];
   for (let i = 0; i < anzahl; i++) {
     const transkript = await spieleSample(pipelineCall, szenario);
-    const leer = leereAntwortTurn(transkript);
-    const urteil = leer
-      ? { bewertet: false, fehler: "leere Pipeline-Antwort (Turn " + leer + ")" }   // techn. Anomalie, kein Content-Verstoß (S65)
+    const anomalie = anomalieImTranskript(transkript);
+    const urteil = anomalie
+      ? { bewertet: false, fehler: anomalie.grund + " (Turn " + anomalie.turn + ")" }   // techn. Anomalie, kein Content-Verstoß (S65/S77)
       : await richte(judgeCall, szenario, transkript, judgeOpts);
     samples.push(sampleAusUrteil(szenario, transkript, urteil, i + 1));
   }

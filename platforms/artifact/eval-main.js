@@ -7,8 +7,11 @@ import { makeAdapter } from "../../core/llm/adapter.js";
 import { ARTEFAKT_LLM } from "./llm-config.js";
 import { createEvalApp } from "./eval-app.js";
 
-const machAdapter = modell =>
-  makeAdapter({ ...ARTEFAKT_LLM, models: { anthropic: modell || ARTEFAKT_LLM.models.anthropic } });
+// S77: Der Eval-Judge darf adaptiv denken (Richten profitiert davon); die
+// Pipeline-Rolle bleibt beim Vorgabe-Denkmodus der Artefakt-Konfiguration.
+const machAdapter = (modell, thinking) =>
+  makeAdapter({ ...ARTEFAKT_LLM, models: { anthropic: modell || ARTEFAKT_LLM.models.anthropic },
+                ...(thinking ? { thinking } : {}) });
 
 createEvalApp({
   doc: document,

@@ -124,7 +124,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
     // Fortschritt über Aufruf-Zähler — der Eval-Kern bleibt unangetastet.
     let pCalls = 0, jCalls = 0, aktuell = "";
     const zeige = () => status("Läuft … " + aktuell + " · Pipeline-Aufrufe: " + pCalls + " · Judge-Aufrufe: " + jCalls);
-    const roh = { p: machAdapter(pm), j: machAdapter(jm) };
+    const roh = { p: machAdapter(pm), j: machAdapter(jm, "adaptiv") };
     // ALLE Argumente durchreichen (…rest): seit S76 trägt das dritte Argument
     // die Aufruf-Optionen (u. a. { structured }). Eine feste Stelligkeit hier
     // verschluckt sie lautlos — der Judge fiele auf den Textpfad zurück und

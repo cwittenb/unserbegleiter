@@ -106,9 +106,12 @@ async function main() {
   const drosselPipeline = baueDrossel({ rpm });
   const drosselJudge = crossProvider ? baueDrossel({ rpm: 0 }) : drosselPipeline;
 
-  const cfgFuer = (prov, key, modell, dr, cache) => prov === "mistral"
+  // S77 · Denkmodus je Rolle: die Begleitung läuft OHNE Thinking (deterministisches
+  // Budget; gemessen: adaptives Thinking fraß bei großem System-Prompt ganze
+  // Antworten auf), der Judge MIT adaptivem Thinking (Richten profitiert davon).
+  const cfgFuer = (prov, key, modell, dr, cache, thinking) => prov === "mistral"
     ? { provider: "mistral", mode: "direct", apiKey: key, models: { mistral: modell }, drossel: dr }
-    : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr, cache };
+    : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr, cache, thinking };
 
   // Token-Erfassung (S55): zählender Wrapper um beide Adapter — je Aufruf die echten
   // usage-Token (in/out/cacheRead/cacheWrite) aufsummieren und das Ergebnis unverändert
@@ -127,8 +130,8 @@ async function main() {
   // Cache-Treffer). Judge AUS (S56): bei n>1 hat jedes Sample ein anderes Transkript →
   // kein Wiederlesen; der Cache wäre reiner Write-Overhead (2,5× Write-Kosten, zählt
   // zudem gegen das Rate-Limit). Telemetrie-belegt: Judge cacheRead=0, cacheWrite>0.
-  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true)), tPipe);
-  const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false)), tJudge);
+  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true, "disabled")), tPipe);
+  const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false, "adaptiv")), tJudge);
   const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
   const laufKosten = (pipeTok, judgeTok, faktor = 1, langlebig = false) => {
     // langlebig=true: Pipeline-Cache-Writes zum 1h-Tarif (S65, Batch); der Judge cacht nicht.
@@ -161,7 +164,7 @@ async function main() {
     process.stdout.write("Judge-Selbsttest (Golden Transcripts) … ");
     // Eigener, ungezählter Judge-Adapter: die Lauf-Telemetrie (S55) bleibt sauber;
     // die geteilte Drossel gilt trotzdem (gleicher Workspace).
-    const kal = await pruefeJudge(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false)));
+    const kal = await pruefeJudge(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false, "adaptiv")));
     if (!kal.ok) {
       console.error("FEHLGESCHLAGEN.\nDer Judge weicht vom Soll-Urteil ab — Lauf abgebrochen (kein Pipeline-Verbrauch):");
       for (const a of kal.abweichungen)

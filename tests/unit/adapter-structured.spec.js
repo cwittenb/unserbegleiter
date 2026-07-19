@@ -163,6 +163,7 @@ describe("Adapter · Optionen-Fassade", () => {
     expect(body.tools).toBeUndefined();
     expect(body.tool_choice).toBeUndefined();
     expect(body.response_format).toBeUndefined();
-    expect(Object.keys(body).sort()).toEqual(["max_tokens", "messages", "model", "system"]);
+    // S77: thinking gehört seit dem Denkmodus zum normalen Körper — sonst nichts Neues.
+    expect(Object.keys(body).sort()).toEqual(["max_tokens", "messages", "model", "system", "thinking"]);
   });
 });

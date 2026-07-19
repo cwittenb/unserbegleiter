@@ -43,9 +43,22 @@
 export const LLM_DEFAULTS = {
   apiKey: "",
   proxyUrl: "/api/llm",
-  maxTokens: 1024,
+  // S77: 1024 war zu knapp bemessen. Zwei Gründe: (a) neuere Anthropic-Modelle
+  // denken adaptiv von sich aus, und max_tokens deckelt die GESAMTE Ausgabe —
+  // Thinking PLUS Text; (b) der neue Tokenizer erzeugt für denselben Text rund
+  // 30 % mehr Token. Messung: 4 von 11 Turns verbrauchten das ganze 1024er
+  // Budget im Thinking und lieferten gar keinen Text.
+  maxTokens: 4096,
   cache: true,                  // Prompt-Caching (nur Anthropic wirksam)
   stream: true,                 // SSE nutzen, WENN der Aufrufer onDelta übergibt
+  // S77 · Denkmodus (nur Anthropic wirksam):
+  //   "disabled" — thinking:{type:"disabled"} wird MITGESENDET; deterministisches
+  //                Budget, keine unsichtbaren Kosten. Vorgabe für die Begleitung.
+  //   "adaptiv"  — kein thinking-Feld; das Modell entscheidet selbst (API-Vorgabe).
+  //                Für Prüf-/Richtaufgaben sinnvoll (Judge).
+  // Bewusst eine Vorgabe und keine Pflichtangabe: es ist Robustheits-Tuning wie
+  // maxTokens, kein Provider-/Modellwissen (S35d bleibt unberührt).
+  thinking: "disabled",
 };
 
 /* ---- SSE-Werkzeug (transportneutral) ---- */
@@ -97,6 +110,26 @@ function strukturAuszug(roh) {
 function pruefeAbschnitt(stop, roh) {
   if (stop === "max_tokens" || stop === "length")
     throw new Error("Strukturausgabe abgeschnitten (stop=" + stop + ") — max_tokens erhöhen." + strukturAuszug(roh));
+}
+
+/** War die Ausgabe am Token-Limit abgeschnitten? (anthropic: max_tokens,
+ *  openai/mistral: length) */
+export function istAbgeschnitten(stop) {
+  return stop === "max_tokens" || stop === "length";
+}
+
+/** S77 · Einheitliche Behandlung abgeschnittener Antworten für den NORMALEN
+ *  Textpfad. Leerer Text ⇒ harter Wurf: es gibt nichts zu zeigen, und still
+ *  ein "" durchzureichen hat im Eval ganze Läufe entwertet und würde in der
+ *  Begleitung jemandem eine leere Antwort vorsetzen. Text vorhanden ⇒ die
+ *  Fassade trägt abgeschnitten:true; das Empfangene bleibt die beste Antwort
+ *  (Streaming-Prinzip), die Abschneidung ist aber nicht mehr unsichtbar. */
+export function markiereAbschnitt(ergebnis) {
+  if (!istAbgeschnitten(ergebnis.stop)) return ergebnis;
+  if (!ergebnis.text || !String(ergebnis.text).trim())
+    throw new Error("Antwort abgeschnitten, bevor Text begann (stop=" + ergebnis.stop +
+      ") — maxTokens erhöhen oder Denkmodus abschalten (cfg.thinking).");
+  return { ...ergebnis, abgeschnitten: true };
 }
 
 /** Prüft die structured-Option des Aufrufers (Konfigurationspflicht-Muster). */
@@ -154,11 +187,11 @@ function openaiCompat(baseUrl, modelKey) {
       if (data.error) throw new Error(data.error.message || "API-Fehler");
       const ch = (data.choices || [])[0] || {};
       const u = data.usage || {};
-      return {
+      return markiereAbschnitt({
         text: ((ch.message && ch.message.content) || "").trim(),
         stop: ch.finish_reason,
         usage: { in: u.prompt_tokens, out: u.completion_tokens, cacheWrite: null, cacheRead: null },
-      };
+      });
     },
     async streamParse(resp, onDelta) {
       let text = "", stop = null;
@@ -175,7 +208,7 @@ function openaiCompat(baseUrl, modelKey) {
         if (ch.finish_reason) stop = ch.finish_reason;
         if (ev.usage) { usage.in = ev.usage.prompt_tokens; usage.out = ev.usage.completion_tokens; }
       }
-      return { text: text.trim(), stop, usage };
+      return markiereAbschnitt({ text: text.trim(), stop, usage });
     },
   };
 }
@@ -206,7 +239,11 @@ export const LLM_PROVIDERS = {
           last.content = [{ type: "text", text: last.content, cache_control: { type: "ephemeral" } }];
         }
       }
-      return { model: cfg.models.anthropic, max_tokens: cfg.maxTokens, system, messages: msgs };
+      const body = { model: cfg.models.anthropic, max_tokens: cfg.maxTokens, system, messages: msgs };
+      // S77: Denkmodus explizit. "disabled" wird mitgesendet, "adaptiv" lässt das
+      // Feld weg (dann gilt die Vorgabe des Modells).
+      if (cfg.thinking === "disabled") body.thinking = { type: "disabled" };
+      return body;
     },
     streamBody(cfg, systemPrompt, messages) {
       return { ...this.body(cfg, systemPrompt, messages), stream: true };
@@ -246,13 +283,13 @@ export const LLM_PROVIDERS = {
       if (data.error) throw new Error(data.error.message || "Anthropic-Fehler");
       const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
       const u = data.usage || {};
-      return {
+      return markiereAbschnitt({
         text, stop: data.stop_reason,
         usage: {
           in: u.input_tokens, out: u.output_tokens,
           cacheWrite: u.cache_creation_input_tokens, cacheRead: u.cache_read_input_tokens,
         },
-      };
+      });
     },
     async streamParse(resp, onDelta) {
       let text = "", stop = null;
@@ -273,7 +310,7 @@ export const LLM_PROVIDERS = {
           if (ev.usage && ev.usage.output_tokens != null) usage.out = ev.usage.output_tokens;
         }
       }
-      return { text: text.trim(), stop, usage };
+      return markiereAbschnitt({ text: text.trim(), stop, usage });
     },
   },
   mistral: openaiCompat("https://api.mistral.ai/v1/chat/completions", "mistral"),
