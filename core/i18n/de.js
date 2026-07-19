@@ -312,7 +312,9 @@ export const de = {
   "theme.hell": "Hell",
   "theme.dunkel": "Dunkel",
   // PWA (M1): Manifest & Home-Bildschirm
-  "pwa.name": "unserbegleiter",
-  "pwa.kurzname": "Begleiter",
+  "pwa.name": "raumzuzweit",
+  "pwa.kurzname": "raumzuzweit",
   "pwa.beschreibung": "KI-gestützte Paarbegleitung: ein eigener Reflexionsraum für jede und jeden \u2014 geteilt wird nur, was du ausdrücklich freigibst.",
+  "pwa.updateVerfuegbar": "Eine neue Version ist bereit.",
+  "pwa.neuLaden": "Neu laden",
 };

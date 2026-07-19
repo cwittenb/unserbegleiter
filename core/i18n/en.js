@@ -314,7 +314,9 @@ export const en = {
   "theme.hell": "Light",
   "theme.dunkel": "Dark",
   // PWA (M1): manifest & home screen
-  "pwa.name": "unserbegleiter",
-  "pwa.kurzname": "Begleiter",
+  "pwa.name": "roomfortwo",
+  "pwa.kurzname": "roomfortwo",
   "pwa.beschreibung": "AI-assisted couples companion: a private reflection space for each partner \u2014 only what you explicitly choose is shared.",
+  "pwa.updateVerfuegbar": "A new version is ready.",
+  "pwa.neuLaden": "Reload",
 };

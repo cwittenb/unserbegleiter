@@ -61,7 +61,8 @@ export function remoteBackend() {
 }
 
 export async function boot() {
-  applyDesign(doc);   // Design ab Start — auch Wiedereinstieg/Fehler-Screens
+  applyDesign(doc);
+  registriereServiceWorker();   // Design ab Start — auch Wiedereinstieg/Fehler-Screens
   // Vor-Session-Sprache (Stufe D): vor Anmeldung gibt es kein pstate —
   // gespeicherte Wahl → Browser-Sprache → de. Nach der Anmeldung bleibt
   // pstate maßgeblich (app.js) und spiegelt sich hierher zurück.
@@ -145,6 +146,42 @@ export function zeigeWiedereinstieg(enrollFehler) {
     msg.innerHTML = '<span style="color:var(--accent-ink)">' + t("wieder.unterwegs") + '</span>';
     go.textContent = t("wieder.gesendet");
   });
+}
+
+/** Service Worker (M2): registrieren + Update-Fluss. Meldet sich ein neuer
+ *  Worker, während ein alter die Seite kontrolliert, erscheint ein dezenter
+ *  Hinweis mit Neu-laden-Knopf — kein erzwungener Reload mitten im Gespräch. */
+function registriereServiceWorker() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("/sw.js").then((reg) => {
+    reg.addEventListener("updatefound", () => {
+      const neu = reg.installing;
+      if (!neu) return;
+      neu.addEventListener("statechange", () => {
+        if (neu.state === "installed" && navigator.serviceWorker.controller) zeigeUpdateHinweis();
+      });
+    });
+  }).catch(() => { /* SW ist Komfort, nie Voraussetzung */ });
+}
+
+export function zeigeUpdateHinweis() {
+  if (doc.getElementById("swUpdate")) return;
+  const box = doc.createElement("div");
+  box.id = "swUpdate";
+  box.setAttribute("role", "status");
+  box.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99;" +
+    "background:var(--card,#fff);border:1px solid var(--card-bd,#d8dee5);color:var(--ink);border-radius:999px;" +
+    "padding:10px 16px;font:inherit;font-size:14px;display:flex;gap:12px;align-items:center;" +
+    "box-shadow:0 6px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px)";
+  const txt = doc.createElement("span");
+  txt.textContent = t("pwa.updateVerfuegbar");
+  const btn = doc.createElement("button");
+  btn.textContent = t("pwa.neuLaden");
+  btn.style.cssText = "font:inherit;font-size:14px;cursor:pointer;border:0;border-radius:999px;" +
+    "padding:6px 14px;background:var(--accent);color:var(--me-ink,#fff)";
+  btn.addEventListener("click", () => location.reload());
+  box.append(txt, btn);
+  doc.body.appendChild(box);
 }
 
 window.PAARBEGLEITUNG = { core: CORE_VERSION, coreHash: "__CORE_HASH__" };

@@ -39,6 +39,17 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
     path.join(outDir, "public/app.js"),
     client.outputFiles[0].text.replace(/__CORE_HASH__/g, hash)
   );
+
+  // Service Worker (M2): eigener Bundle-Schritt, Kern-Hash wird zum Cache-Namen —
+  // jeder Deploy invalidiert die Shell von selbst (activate räumt Altstände weg).
+  const sw = await build({
+    entryPoints: [path.join(ROOT, "platforms/cloudflare/pages/sw.js")],
+    bundle: true, format: "iife", write: false, target: "es2021",
+  });
+  await writeFile(
+    path.join(outDir, "public/sw.js"),
+    sw.outputFiles[0].text.replace(/__CORE_HASH__/g, hash)
+  );
   // PWA (M1): Manifest + Icon-Satz. Icons sind eingecheckte Assets
   // (platforms/cloudflare/pages/icons/), das Manifest wird generiert.
   const manifest = erzeugeManifest();
