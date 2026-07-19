@@ -7,6 +7,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "build": "node scripts/build-artifact.js && node scripts/build-pages.js && node scripts/build-eval-artifact.js",
+    "build:capacitor": "node scripts/build-capacitor.js",
     "eval": "node evals/runner.js",
     "eval:voll": "node evals/runner.js --batch",
     "eval:matrix": "node scripts/eval-matrix.js"

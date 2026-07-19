@@ -7,12 +7,13 @@ import { makeAdapter } from "../../../core/llm/adapter.js";
 import { createApp } from "../../../core/ui/app.js";
 import { applyDesign } from "../../../core/ui/design.js";
 import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../../core/i18n/index.js";
+import { apiBasis, istNativeShell } from "./api-basis.js";
 
 const doc = document;
 const app = doc.getElementById("app");
 
 export async function api(method, pfad, body) {
-  const r = await fetch(pfad, {
+  const r = await fetch(apiBasis() + pfad, {
     method,
     credentials: "include",
     headers: body !== undefined ? { "content-type": "application/json" } : undefined,
@@ -152,6 +153,7 @@ export function zeigeWiedereinstieg(enrollFehler) {
  *  Worker, während ein alter die Seite kontrolliert, erscheint ein dezenter
  *  Hinweis mit Neu-laden-Knopf — kein erzwungener Reload mitten im Gespräch. */
 function registriereServiceWorker() {
+  if (istNativeShell()) return;   // native Hülle: Assets lokal, SW überflüssig
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
   navigator.serviceWorker.register("/sw.js").then((reg) => {
     reg.addEventListener("updatefound", () => {
