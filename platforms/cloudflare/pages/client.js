@@ -9,6 +9,7 @@ import { applyDesign } from "../../../core/ui/design.js";
 import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../../core/i18n/index.js";
 import { apiBasis, istNativeShell } from "./api-basis.js";
 import { lauscheAppLinks } from "./deep-link.js";
+import { istPushMoeglich, aktivierePush, deaktivierePush, hatPushAbo } from "./push.js";
 
 const doc = document;
 const app = doc.getElementById("app");
@@ -109,6 +110,7 @@ export async function boot() {
   }
   const ui = createApp({ doc, backend: remoteBackend(), root: app });
   await ui.boot();
+  ergaenzePushGlocke().catch(() => { /* Push ist Komfort, nie Voraussetzung */ });
 }
 
 function fehlerBox(text) {
@@ -155,6 +157,33 @@ export function zeigeWiedereinstieg(enrollFehler) {
     msg.innerHTML = '<span style="color:var(--accent-ink)">' + t("wieder.unterwegs") + '</span>';
     go.textContent = t("wieder.gesendet");
   });
+}
+
+/** Push-Glocke (M7a): kleiner Umschalter im Theme-Chrome — nur wenn Web Push
+ *  hier möglich ist und der Worker konfiguriert ist (sonst bleibt er weg;
+ *  /api/push/key antwortet dann 503). Aktiv = gefüllte Glocke. */
+async function ergaenzePushGlocke() {
+  if (!istPushMoeglich()) return;
+  const gruppe = doc.querySelector(".pb-theme");
+  if (!gruppe || doc.getElementById("pbPush")) return;
+  try { await api("GET", "/api/push/key"); } catch { return; }   // Feature serverseitig aus
+  const reg = await navigator.serviceWorker.ready;
+  const knopf = doc.createElement("button");
+  knopf.id = "pbPush";
+  knopf.type = "button";
+  knopf.title = t("pwa.push");
+  knopf.setAttribute("aria-label", t("pwa.push"));
+  const zeichne = (an) => { knopf.textContent = an ? "\u{1F514}" : "\u{1F515}"; knopf.classList.toggle("an", an); };
+  zeichne(await hatPushAbo(reg));
+  knopf.addEventListener("click", async () => {
+    knopf.disabled = true;
+    try {
+      if (await hatPushAbo(reg)) { await deaktivierePush(api, reg); zeichne(false); }
+      else zeichne(await aktivierePush(api, reg));
+    } catch { /* z. B. Erlaubnis verweigert — Zustand unverändert */ }
+    knopf.disabled = false;
+  });
+  gruppe.appendChild(knopf);
 }
 
 /** Service Worker (M2): registrieren + Update-Fluss. Meldet sich ein neuer

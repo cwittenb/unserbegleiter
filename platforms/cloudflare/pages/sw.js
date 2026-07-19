@@ -50,3 +50,25 @@ self.addEventListener("fetch", (e) => {
     }).catch(() => caches.match(req).then((tref) => tref || caches.match("/")))
   );
 });
+
+/* ---- Web Push (M7a): Anzeige des inhaltsfreien Hinweises + Klick öffnet die App. */
+self.addEventListener("push", (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { /* leere/fremde Nutzlast */ }
+  if (!d.titel || !d.text) return;                     // nur unser eigenes Format anzeigen
+  e.waitUntil(self.registration.showNotification(d.titel, {
+    body: d.text,
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    data: { url: d.url || "/" },
+  }));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const ziel = (e.notification.data && e.notification.data.url) || "/";
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((fenster) => {
+    for (const f of fenster) if ("focus" in f) return f.focus();
+    return self.clients.openWindow(ziel);
+  }));
+});

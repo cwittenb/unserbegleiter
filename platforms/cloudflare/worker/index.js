@@ -13,6 +13,9 @@ import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
 import { makeAdapter, LLM_PROVIDERS } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { istAppOrigin, preflightAntwort, mitAppCors, aasaNutzlast, assetlinksNutzlast } from "./app-origins.js";
+import { vapidKonfig, sendePush } from "./web-push.js";
+import { de as woerterbuchDe } from "../../../core/i18n/de.js";
+import { en as woerterbuchEn } from "../../../core/i18n/en.js";
 import { pruefeUndZaehle, quotaCfg } from "./quota.js";
 import { erfasseUsage, leseTokenStand, leseTokenHistorie, leseTokenExport, monatsTag } from "./tokenstat.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
@@ -34,6 +37,38 @@ const leseEmailFor = (kv, code, role) =>
 
 const BSTATE_FELDER = new Set(Bstate.FIELDS);
 const PSTATE_FELDER = new Set(["timeline", "selfDisclosures"]);
+
+/* ---- Web Push (M7a): Abo-Ablage & inhaltsfreier Freigabe-Hinweis ----
+ *  KV: push/<code>/<Rolle> → Array von Browser-Subscriptions (max. 5, dedupliziert
+ *  über den Endpoint). Nutzlast IMMER inhaltsfrei: generischer, nach Paarsprache
+ *  lokalisierter Hinweis — nie Gesprächs- oder Freigabe-Inhalte. Fehlt die
+ *  VAPID-Konfiguration, ist das Feature aus: Endpunkte fail-closed, Trigger no-op. */
+const pushKey = (code, role) => "push/" + code + "/" + role;
+
+async function lesePushAbos(kv, code, role) {
+  return kv.get(pushKey(code, role)).then(v => (v ? JSON.parse(v) : []));
+}
+
+function gueltigesAbo(sub) {
+  return sub && typeof sub.endpoint === "string" && sub.endpoint.startsWith("https://")
+    && sub.keys && typeof sub.keys.p256dh === "string" && typeof sub.keys.auth === "string";
+}
+
+async function benachrichtigePartner(kv, env, code, empfaengerRolle) {
+  const vapid = vapidKonfig(env);
+  if (!vapid) return;                                    // Feature aus — Freigabe läuft normal weiter
+  const abos = await lesePushAbos(kv, code, empfaengerRolle);
+  if (!abos.length) return;
+  const paar = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+  const dict = (paar?.locale === "en") ? woerterbuchEn : woerterbuchDe;
+  const nutzlast = { titel: dict["pwa.pushTitel"], text: dict["pwa.pushText"], url: "/" };
+  const bleiben = [];
+  for (const abo of abos) {
+    const status = await sendePush(abo, nutzlast, vapid);
+    if (status !== 404 && status !== 410) bleiben.push(abo);   // erloschene Abos aufräumen
+  }
+  if (bleiben.length !== abos.length) await kv.put(pushKey(code, empfaengerRolle), JSON.stringify(bleiben));
+}
 
 export default {
   async fetch(request, env, ctx) {
@@ -64,6 +99,11 @@ async function route(request, env) {
   if (p === "/.well-known/apple-app-site-association" && request.method === "GET") {
     if (!env.APPLE_TEAM_ID) return fehler("APPLE_TEAM_ID fehlt — als [vars] setzen (Apple Developer \u2192 Membership).", 503, "config_missing");
     return json(aasaNutzlast(String(env.APPLE_TEAM_ID).trim()));
+  }
+  if (p === "/api/push/key" && request.method === "GET") {
+    const vapid = vapidKonfig(env);
+    if (!vapid) return fehler("Push ist nicht konfiguriert — VAPID_PUBLIC_KEY/-PRIVATE_KEY/-SUBJECT als Secrets setzen (scripts/vapid-schluessel.mjs).", 503, "config_missing");
+    return json({ key: vapid.publicKey });
   }
   if (p === "/.well-known/assetlinks.json" && request.method === "GET") {
     if (!env.ANDROID_CERT_SHA256) return fehler("ANDROID_CERT_SHA256 fehlt — als [vars] setzen (keytool -list -v, SHA-256-Fingerprint).", 503, "config_missing");
@@ -437,10 +477,31 @@ async function route(request, env) {
     }
   }
 
+  /* ---- Web Push: Abo an-/abmelden (Session-pflichtig, je Rolle) ---- */
+  if (p === "/api/push/subscribe" && request.method === "POST") {
+    if (!vapidKonfig(env)) return fehler("Push ist nicht konfiguriert.", 503, "config_missing");
+    const { subscription } = await request.json();
+    if (!gueltigesAbo(subscription)) return fehler("Ungültige Subscription.", 400, "push_invalid");
+    const abos = (await lesePushAbos(kv, session.code, session.role))
+      .filter(a => a.endpoint !== subscription.endpoint);
+    abos.push({ endpoint: subscription.endpoint, keys: { p256dh: subscription.keys.p256dh, auth: subscription.keys.auth } });
+    await kv.put(pushKey(session.code, session.role), JSON.stringify(abos.slice(-5)));
+    return json({ ok: true });
+  }
+  if (p === "/api/push/subscribe" && request.method === "DELETE") {
+    const { endpoint } = await request.json();
+    const abos = (await lesePushAbos(kv, session.code, session.role)).filter(a => a.endpoint !== endpoint);
+    await kv.put(pushKey(session.code, session.role), JSON.stringify(abos));
+    return json({ ok: true });
+  }
+
   /* ---- Übergabe: Schreiben nur für die eigene Rolle, Lesen geteilt ---- */
   if (p === "/api/handover" && request.method === "POST") {
     const { module, name, items } = await request.json();
     const u = await freigebeUebergabe(repo, session.role, { module, name, items });
+    // Inhaltsfreier Hinweis an die andere Rolle — Fehler dort dürfen die
+    // Freigabe selbst nie brechen.
+    try { await benachrichtigePartner(kv, env, session.code, session.role === "A" ? "B" : "A"); } catch { /* bewusst still */ }
     return json({ ok: true, releasedAt: u.releasedAt });
   }
   m = p.match(/^\/api\/handover\/(A|B)$/);

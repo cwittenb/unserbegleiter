@@ -317,4 +317,7 @@ export const de = {
   "pwa.beschreibung": "KI-gestützte Paarbegleitung: ein eigener Reflexionsraum für jede und jeden \u2014 geteilt wird nur, was du ausdrücklich freigibst.",
   "pwa.updateVerfuegbar": "Eine neue Version ist bereit.",
   "pwa.neuLaden": "Neu laden",
+  "pwa.push": "Benachrichtigungen",
+  "pwa.pushTitel": "raumzuzweit",
+  "pwa.pushText": "Es gibt Neues in eurem gemeinsamen Raum.",
 };

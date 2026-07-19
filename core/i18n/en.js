@@ -319,4 +319,7 @@ export const en = {
   "pwa.beschreibung": "AI-assisted couples companion: a private reflection space for each partner \u2014 only what you explicitly choose is shared.",
   "pwa.updateVerfuegbar": "A new version is ready.",
   "pwa.neuLaden": "Reload",
+  "pwa.push": "Notifications",
+  "pwa.pushTitel": "roomfortwo",
+  "pwa.pushText": "There\u2019s something new in your shared room.",
 };
