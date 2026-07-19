@@ -14,6 +14,14 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const ADMIN = "test-admin-geheim";
 let mf;
 let gesehenerUpstreamBody = null;
+let upstreamStreamen = false;
+
+const TURN_SSE = [
+  '{"type":"message_start","message":{"usage":{"input_tokens":3}}}',
+  '{"type":"content_block_delta","delta":{"partial_json":"{\\"antwort\\":\\"Hal"}}',
+  '{"type":"content_block_delta","delta":{"partial_json":"lo du.\\",\\"marker\\":null,\\"block\\":null}"}}',
+  '{"type":"message_delta","delta":{"stop_reason":"tool_use"},"usage":{"output_tokens":9}}',
+].map(d => "data: " + d + "\n\n").join("");
 
 const SCHEMA = {
   name: "bewertung",
@@ -59,6 +67,8 @@ beforeAll(async () => {
     serviceBindings: {
       async UPSTREAM(request) {
         gesehenerUpstreamBody = await request.json();
+        if (upstreamStreamen)
+          return new Response(TURN_SSE, { headers: { "content-type": "text/event-stream" } });
         return new Response(JSON.stringify({
           content: [{ type: "tool_use", name: "bewertung", input: { checks: ["a", "b"] } }],
           stop_reason: "tool_use",
@@ -124,11 +134,24 @@ describe("Worker · /api/llm mit structured", () => {
     expect(gesehenerUpstreamBody).toBeNull();
   });
 
-  it("structured + stream ⇒ 400 mit Verweis auf S77 (kein halbgares Verhalten)", async () => {
+  it("structured + stream: {delta}-Events sind extrahierter antwort-Text, done trägt data (S79)", async () => {
+    upstreamStreamen = true;
     const anna = await angemeldeteAnna();
-    const res = await anna.call("POST", "/api/llm", { system: "S", messages: [], structured: SCHEMA, stream: true });
-    expect(res.status).toBe(400);
-    expect((await res.json()).error).toContain("S77");
+    const res = await anna.call("POST", "/api/llm", {
+      system: "S", messages: [{ role: "user", content: "hi" }], structured: SCHEMA, stream: true,
+    });
+    upstreamStreamen = false;
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+    const roh = await res.text();
+    const events = roh.split("\n\n").filter(Boolean)
+      .map(b => b.split("\n").filter(z => z.startsWith("data:")).map(z => z.slice(5).trim()).join(""))
+      .filter(Boolean).map(d => JSON.parse(d));
+    const deltas = events.filter(e => typeof e.delta === "string").map(e => e.delta);
+    const done = events.find(e => e.done);
+    expect(deltas.join("")).toBe("Hallo du.");
+    expect(deltas.join("")).not.toContain("{");
+    expect(done.done.data).toEqual({ antwort: "Hallo du.", marker: null, block: null });
   });
 
   it("unangemeldet bleibt es beim 401 — auch mit structured", async () => {

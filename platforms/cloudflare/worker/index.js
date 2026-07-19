@@ -444,8 +444,8 @@ async function route(request, env) {
         return fehler("structured unvollständig: { name, schema } sind Pflicht", 400);
       if (JSON.stringify(structured).length > 20000)
         return fehler("structured zu groß (max. 20000 Zeichen)", 400);
-      if (stream === true)
-        return fehler("structured mit stream wird noch nicht unterstützt (S77)", 400);
+      // S79: structured + stream ist unterstützt — die {delta}-Events tragen den
+      // EXTRAHIERTEN Begleitertext (antwort-Feld), data reist im done-Event.
     }
     const letzte = [...messages].reverse().find(x => x.role === "user");
     const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
@@ -505,7 +505,9 @@ async function route(request, env) {
       const call = makeAdapter({ ...llmCfg, onRetry: () => { sende({ retry: true }); } }, fetchFn);
       (async () => {
         try {
-          const antwort = await call(system, messages, d => { sende({ delta: d }); });
+          const antwort = await call(system, messages,
+            structured ? { structured, onDelta: d => { sende({ delta: d }); } }
+                       : d => { sende({ delta: d }); });
           if (q.hinweis) antwort.kontingent = { hinweis: q.hinweis, rest: q.rest };
           await sende({ done: antwort });
           // S61: erst NACH dem done-Event zählen — die Statistik verzögert

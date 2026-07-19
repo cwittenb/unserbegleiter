@@ -146,8 +146,10 @@ describe("Adapter · Optionen-Fassade", () => {
     expect(leseAufrufOptionen(undefined, undefined).structured).toBeNull();
   });
 
-  it("structured + Streaming wirft bewusst (Worker-Extraktor folgt mit S77)", () => {
-    expect(() => leseAufrufOptionen({ structured: SCHEMA, onDelta: () => {} })).toThrow(/S77/);
+  it("structured + Streaming ist seit S79 erlaubt (Deltas = extrahierter antwort-Text)", () => {
+    const o = leseAufrufOptionen({ structured: SCHEMA, onDelta: () => {} });
+    expect(o.structured).toBe(SCHEMA);
+    expect(typeof o.onDelta).toBe("function");
   });
 
   it("unvollständiges structured wird abgewiesen (kein Raten)", () => {

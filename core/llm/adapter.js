@@ -61,6 +61,8 @@ export const LLM_DEFAULTS = {
   thinking: "disabled",
 };
 
+import { baueAntwortExtraktor } from "./antwort-extraktor.js";
+
 /* ---- SSE-Werkzeug (transportneutral) ---- */
 
 /** Ist die Antwort ein lesbarer Event-Stream? (Mocks ohne headers → nein) */
@@ -175,6 +177,29 @@ function openaiCompat(baseUrl, modelKey) {
         },
       };
     },
+    async streamStructuredParse(resp, onDelta) {
+      const ex = baueAntwortExtraktor();
+      let roh = "", stop = null;
+      const usage = { in: undefined, out: undefined, cacheWrite: null, cacheRead: null };
+      for await (const d of sseDaten(resp)) {
+        if (d === "[DONE]") break;
+        let ev; try { ev = JSON.parse(d); } catch { continue; }
+        if (ev.error) throw new Error(ev.error.message || "API-Fehler");
+        const ch = (ev.choices || [])[0] || {};
+        if (ch.delta && typeof ch.delta.content === "string" && ch.delta.content) {
+          roh += ch.delta.content;
+          const stueck = ex.speise(ch.delta.content);
+          if (stueck) onDelta(stueck);
+        }
+        if (ch.finish_reason) stop = ch.finish_reason;
+        if (ev.usage) { usage.in = ev.usage.prompt_tokens; usage.out = ev.usage.completion_tokens; }
+      }
+      pruefeAbschnitt(stop, ex.text);
+      let daten;
+      try { daten = JSON.parse(roh); }
+      catch (e) { throw new Error("Strukturausgabe ist kein JSON: " + e.message + strukturAuszug(roh)); }
+      return { text: ex.text, data: daten, stop, usage };
+    },
     parseStructured(data) {
       const r = this.parse(data);
       pruefeAbschnitt(r.stop, r.text);
@@ -261,6 +286,35 @@ export const LLM_PROVIDERS = {
         }],
         tool_choice: { type: "tool", name: structured.name },
       };
+    },
+    // S79 · Streaming der Strukturausgabe: die Tool-Argumente kommen als
+    // input_json_delta-Fragmente. Der Extraktor schält daraus live das
+    // antwort-Feld für onDelta; am Ende wird das VOLLSTÄNDIGE JSON geparst
+    // (data ist die Wahrheit, der Extraktor nur die Anzeige-Spur).
+    async streamStructuredParse(resp, onDelta) {
+      const ex = baueAntwortExtraktor();
+      let roh = "", stop = null;
+      const usage = { in: undefined, out: undefined, cacheWrite: undefined, cacheRead: undefined };
+      for await (const d of sseDaten(resp)) {
+        let ev; try { ev = JSON.parse(d); } catch { continue; }
+        if (ev.type === "error" || ev.error) throw new Error((ev.error && ev.error.message) || "Anthropic-Fehler");
+        if (ev.type === "message_start" && ev.message && ev.message.usage) {
+          const u = ev.message.usage;
+          usage.in = u.input_tokens; usage.cacheWrite = u.cache_creation_input_tokens; usage.cacheRead = u.cache_read_input_tokens;
+        } else if (ev.type === "content_block_delta" && ev.delta && typeof ev.delta.partial_json === "string") {
+          roh += ev.delta.partial_json;
+          const stueck = ex.speise(ev.delta.partial_json);
+          if (stueck) onDelta(stueck);
+        } else if (ev.type === "message_delta") {
+          if (ev.delta && ev.delta.stop_reason) stop = ev.delta.stop_reason;
+          if (ev.usage && ev.usage.output_tokens != null) usage.out = ev.usage.output_tokens;
+        }
+      }
+      pruefeAbschnitt(stop, ex.text);
+      let daten;
+      try { daten = JSON.parse(roh); }
+      catch (e) { throw new Error("Strukturausgabe ist kein JSON: " + e.message + strukturAuszug(roh)); }
+      return { text: ex.text, data: daten, stop, usage };
     },
     parseStructured(data, name) {
       if (data.error) throw new Error(data.error.message || "Anthropic-Fehler");
@@ -417,8 +471,8 @@ export function leseAufrufOptionen(drittes, viertes) {
   if (drittes && typeof drittes === "object") {
     const structured = drittes.structured ? pruefeStructured(drittes.structured) : null;
     const onDelta = typeof drittes.onDelta === "function" ? drittes.onDelta : null;
-    if (structured && onDelta)
-      throw new Error("structured + Streaming ist noch nicht unterstützt (Worker-Extraktor folgt mit S77).");
+    // S79: structured + Streaming ist jetzt unterstützt — die Deltas sind der
+    // EXTRAHIERTE Begleitertext (antwort-Feld), nie rohes JSON (D1/O3).
     return {
       onDelta,
       onStatus: typeof drittes.onStatus === "function" ? drittes.onStatus : viertes,
@@ -521,7 +575,7 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
     const streamen = typeof onDelta === "function" && cfg.stream !== false;
     const body = structured
-      ? P.structuredBody(cfg, systemPrompt, messages, structured)
+      ? { ...P.structuredBody(cfg, systemPrompt, messages, structured), ...(streamen ? { stream: true } : {}) }
       : streamen ? P.streamBody(cfg, systemPrompt, messages) : P.body(cfg, systemPrompt, messages);
     // S70: per-Aufruf-Statuskanal — direct/keyless melden lokale Retries direkt
     // an onStatus, symmetrisch zum {retry}-Event des Proxy-Modus. Beide Hooks
@@ -546,7 +600,8 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
       if (typeof resp.status === "number" && resp.status >= 400) {
         throw new LlmHttpError(resp.status, parseRetryAfter(resp), await leseFehlerkoerper(resp));
       }
-      if (streamen && istEventStream(resp)) return P.streamParse(resp, onDelta);
+      if (streamen && istEventStream(resp))
+        return structured ? P.streamStructuredParse(resp, onDelta) : P.streamParse(resp, onDelta);
       const data = await resp.json();
       return structured ? P.parseStructured(data, structured.name) : P.parse(data);
     }, lokal);
