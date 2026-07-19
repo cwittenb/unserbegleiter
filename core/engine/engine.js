@@ -135,13 +135,19 @@ export class Engine {
     const f = findeBlock(text, this._blocks());
     if (!f) return;
     const { block, match } = f;
-    if (!block.schema) { block.handle(match, this); return; }
+    // S76 · Handler ABWARTEN und danach speichern: Handler ändern Chat-Zustand
+    // (z. B. status "finished" beim MOMENT-BLOCK) — ohne das zweite Save ging
+    // dieser Wechsel verloren, die Session blieb im Speicher "running" und
+    // wurde beim Wiederbetreten erneut dispatcht (Doppel-Protokoll, kein
+    // Neustart möglich).
+    if (!block.schema) { await block.handle(match, this); await this._save(); return; }
 
     const r = parseBlock(block, match);
     if (r.ok) {
       this.chat.blockFix = false;
       await this._save();
-      block.handle(r.data, this);
+      await block.handle(r.data, this);
+      await this._save();
       return;
     }
     await this._blockCorrection(block, r.errors);

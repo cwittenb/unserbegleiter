@@ -102,8 +102,8 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
   });
 });
 
-describe("S41/S44 · Badges für ungelesene Freigaben (je Partner)", () => {
-  it("zwei Badges: je Partner das Kürzel + Zähler der für sie bestimmten offenen Freigaben", async () => {
+describe("S41/S44/S76 · Lesezeichen für ungelesene Freigaben (je Partner)", () => {
+  it("zwei Lesezeichen am Regal-Knopf: je Partner NUR das Kürzel (kein Zähler); Startscreen trägt keins", async () => {
     const backend = memoryBackend(null);
     await backend.bstate.set("shelf", {
       items: [
@@ -114,19 +114,21 @@ describe("S41/S44 · Badges für ungelesene Freigaben (je Partner)", () => {
       ],
     });
     await bootApp(backend);
-    const b1 = root.querySelector("#badgeTeil");
-    expect(b1.classList.contains("pb-hidden")).toBe(false);
-    const pillen1 = [...b1.querySelectorAll(".pb-badge")].map(p => p.textContent);
-    expect(pillen1).toEqual(["A 2", "B 1"]);                  // Anna: 2 offen, Bernd: 1 offen
+    // S76 · Der Knopf "Gemeinsamer Raum" trägt KEIN Lesezeichen mehr.
+    expect(root.querySelector("#badgeTeil")).toBeNull();
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
-    const pillen2 = [...root.querySelector("#badgeRegal").querySelectorAll(".pb-badge")].map(p => p.textContent);
-    expect(pillen2).toEqual(["A 2", "B 1"]);
+    const leiste = root.querySelector("#lzRegal");
+    expect(leiste.classList.contains("pb-hidden")).toBe(false);
+    const marken = [...leiste.querySelectorAll(".pb-lz")].map(p => p.textContent);
+    expect(marken).toEqual(["A", "B"]);                       // nur Kürzel, keine Zähler
   });
 
   it("verschwindet bei null", async () => {
     await bootApp(memoryBackend(null));
-    expect(root.querySelector("#badgeTeil").classList.contains("pb-hidden")).toBe(true);
+    await klick(root.querySelector("#btnSharedRoom"));
+    await ruhe();
+    expect(root.querySelector("#lzRegal").classList.contains("pb-hidden")).toBe(true);
   });
 });
 

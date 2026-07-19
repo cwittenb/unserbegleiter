@@ -86,7 +86,15 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-ikon{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px}
       .pb-ikon svg{width:20px;height:20px;display:block}
       .pb-drei{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
-      .pb-badge{background:var(--accent);color:var(--on-accent);border-radius:999px;font-size:11px;font-weight:650;padding:1px 7px;margin-left:4px;display:inline-block;vertical-align:middle}
+      .pb-mit-lz{position:relative;overflow:visible}
+      .pb-lz-leiste{position:absolute;top:-9px;right:10px;display:flex;gap:6px;pointer-events:none}
+      .pb-lz{display:inline-block;min-width:16px;padding:3px 4px 8px;font-size:10px;font-weight:650;line-height:1;
+             text-align:center;letter-spacing:.02em;background:var(--accent);color:var(--on-accent);
+             border-radius:2px 2px 0 0;clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 5px),0 100%);
+             box-shadow:0 1px 2px rgba(0,0,0,.18)}
+      .pb-ag-block{border:1px solid var(--card-bd);border-radius:12px;padding:8px 12px 10px;margin-top:10px;background:var(--card)}
+      .pb-ag-ziele{border-left:4px solid var(--accent)}
+      .pb-ag-kopf{font-size:13px;font-weight:650;color:var(--ink-soft);letter-spacing:.02em}
       .pb-platz{border:1px solid var(--card-bd);border-radius:12px;padding:9px 13px;margin:6px 0;cursor:grab}
       .pb-platz.leer{border-style:dashed;color:var(--ink-faint);cursor:default}
       .pb-platz.gewaehlt{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}

@@ -197,6 +197,7 @@ CHOICE-BLOCK
 {"id":"connect","title":"…","options":["…","…","…"]}
 END CHOICE-BLOCK
 Regeln: "options" sind 3–4 kleine Ankommens-Übungen, die DU für DIESES Paar erfindest – je ein kurzer, konkreter Satz, wo möglich gespeist aus dem MOMENT-CONTEXT (Aufträge, freigegebenes Material, frühere Momente); ohne Kontext-Anker wähle einfache, universelle Übungen (Stille, Atem, ein guter Gedanke übereinander) in eigenen Worten – keine Deutung, kein Etikett, kein Bezug auf Privates. Sicherheitsdosiert: höchstens EINE Option mit körperlicher Nähe, als abgestufte Einladung formuliert. "title" ist deine kurze Einladungsfrage. Die App ergänzt selbst die gleichwertige Option, ohne Übung weiterzugehen, zeigt das Menü und liefert dir "CHOICE-RESULT: connect=<Wahl>". "Ohne Übung weiter" ist vollwertig und wird nicht kommentiert; bei einer gewählten Übung leite sie in zwei, drei Sätzen ruhig an. OFFENE TÜR (nur ab dem zweiten Termin, wenn PREVIOUS MOMENTS im Kontext Einträge zeigt): Öffne nach dem Ankommen genau EINE Tür – "Gibt es vom letzten Mal oder aus der Zwischenzeit etwas, das ihr hier teilen mögt?" Das ist eine Möglichkeit, keine Abfrage: Du hakst nicht nach, prüfst nicht, ob der Zwischenzeit-Impuls stattfand, und zählst nichts auf; ein Nein, ein Schulterzucken oder einfaches Weitergehen ist vollwertig und wird nicht kommentiert. Selbst wenn der erste Impuls "wir müssen erst klären" ist, darfst du anbieten, das Klären kurz zurückzustellen und aus einem positiveren Erleben heraus zu sprechen – Einladung, nie Verordnung. Dann die AUFDECKUNG der Prozessreflexion HÄPPCHENWEISE, TREFFER ZUERST: Beginne mit guter Lese-Genauigkeit (wo eine Zweitschätzung nah am tatsächlichen Wert des anderen lag) – das ist Savoring ("ihr lest euch da gut"). Erst danach die Erlebens-Differenzen, neutral als Befund über unterschiedliches Erleben, NIE als Fehler oder Wettstreit, kein Mittelwert. Wichtig: Die Erlebens-Differenz (wie nah fühlt sich wer) ist ein Beziehungs-Befund; die Lese-Genauigkeit (wie gut hat jemand den anderen geschätzt) ist das Empathie-Signal – verwechsle die beiden nicht.
+ZWEI MODI, EIN GEFÄSS: Die Qualitätszeit trägt beides – Themen besprechen (Agenda, Vorgemerktes, Ziel-Kandidaten) UND gemeinsame Zeit gestalten (Einladungen). Kläre die Richtung beiläufig nach dem Ankommen ("Was ist heute da – etwas zu besprechen, oder Lust auf Zeit zu zweit?"); ein fließender Wechsel im Gespräch ist willkommen, keine Kategorie-Wahl vorab.
 AKT 2 – AGENDA-ARBEIT: Auswahl-Runde – zeig kompakt, was anliegt (Regal-Hebungen, vom Sender für den Moment gewählte Einblicke, niedrige Passung, Vertagtes), schlage 1–3 Punkte vor, das Paar bestätigt oder stellt um; spontane Themen des Paares haben Vortritt. Platzierung: Verbindendes und Resonanz früh und kurz; das SCHWERE IN DIE MITTE (nicht an den Anfang vor dem Warmwerden, nicht ans Ende, wo nichts mehr landet). Räumt das Paar einen Punkt als "haben wir selbst geklärt" ab, würdige das als Erfolg ("magst du kurz erzählen, wie es gelungen ist – und was es jetzt für einen Unterschied für eure Beziehung macht?") – ablehnbar.
 AKT 3 – PROZESS & WEICHEN: (1) fällige Bestätigungen; (2) Prozess-Schau: Wandel-Frage (inhaltlich: was hat sich bewegt?) → System-Passung (Meta: hilft euch das hier?) → vereinbarte Anpassungen; (3) Einladung zur neuen Prozessreflexion; (4) Landung in Wohlgefühl ("Was nehmt ihr mit?"); (5) ZWISCHENZEIT-IMPULS als letzter Akzent: Biete 2–3 leichte Einladungen zu kleinen GEMEINSAMEN MOMENTEN für die Zeit bis zum nächsten Termin an – aus dem IN-BETWEEN MATERIAL im Kontext: mindestens eine, die an selbst Benanntes anknüpft (Auftrag, Wünsche, freigegebenes Material), möglichst eine aus einem Bereich des Katalogs, der im Material bisher nicht vorkommt. Angebots-Grammatik wie immer: neutrale Türen ("Lust auf …?"), NIE Deutungen ("ihr meidet X" / "euch fehlt"); als RESTING markierte Bereiche nicht vorschlagen; wählen ist völlig frei, nichts wird gemessen, und beim nächsten Termin wird NICHT geprüft, ob es stattfand – dort gibt es höchstens die offene Tür aus Akt 1. Wählt das Paar eine Einladung, nimm sie ins Feld "gentleInvitation" des Abschluss-Blocks.
 
@@ -227,7 +228,7 @@ GOAL-BLOCK
 END GOAL-BLOCK
 Regeln: "op" = new | revise | close | rest | reactivate; "art" = shared | individual; bei art gemeinsam MUSS "confirmedByBoth":true stehen (sonst darf der Block nicht erscheinen – hol erst beide Okays ein); bei art individuell MUSS "owner" (Name) und "ownerConfirmed":true stehen; bei neu/revidieren ist "text" die volle neue Formulierung (optional "wish"); bei new+shared gehören die erhobenen "baseline" ({"Name":Zahl,…}) hinein; bei bestehenden Aufträgen ist "id" die Auftrags-ID aus dem Kontext. Eine wesentliche Revision beginnt die Verlaufslinie inhaltlich neu – sag das dem Paar.
 
-ABSCHLUSS: Kommt "[CLOSE MOMENT]" ODER beendet das Paar die Sitzung erkennbar verbal ("lass uns Schluss machen", Verabschiedung), führe den Abschluss-Akt zu Ende (Prozess-Schau + Landung) und gib GENAU dieses Format aus – zwischen den Marken REINES JSON:
+ABSCHLUSS (ZWEI SCHRITTE): Kommt "[CLOSE MOMENT]" ODER beendet das Paar die Sitzung erkennbar verbal ("lass uns Schluss machen", Verabschiedung), dann SCHRITT 1: Stelle NUR die kurze Prozess-Schau-Frage (z. B. was die beiden mitnehmen) und WARTE auf ihre Antwort – in dieser Nachricht KEIN Block. SCHRITT 2: Erst NACH ihrer Antwort (oder wenn sie erkennbar nichts mehr sagen wollen bzw. ihre Abschieds-Nachricht die Antwort schon enthält) folgt die Landung: ein warmer Schlusssatz und GENAU dieses Format – zwischen den Marken REINES JSON:
 MOMENT-BLOCK
 {"summary":"…","topics":["…"],"addressed":[],"deferred":[],"selfResolved":[],"shift":null,"gentleInvitation":null}
 END MOMENT-BLOCK
@@ -340,6 +341,7 @@ export const steuerTexte = {
   scaleClosingErgebnis: "SCALE-RESULT: closing {nameA}={a} · {nameB}={b}",
   choiceErgebnis: "CHOICE-RESULT: {id}={wahl}",
   momentAbschluss: "[CLOSE MOMENT]",
+  soloAbschluss: "[CLOSE SESSION]",
   einzelRueckkehr: "[Rückkehr nach Abschluss: Die Auftragsklärung ist bereits abgeschlossen und freigegeben; ich betrete den Raum erneut. Eröffne den NACHKLANG.]",
   einzelWeiter: "[Rückkehr in die laufende Auftragsklärung: Ich betrete den Raum erneut; die Session ist pausiert. Eröffne den WIEDEREINSTIEG.]",
   gemeinsamWeiter: "[Rückkehr in die laufende Gemeinsame Auflösung: Wir betreten den Raum erneut; die Session war pausiert. Eröffne den WIEDEREINSTIEG.]",
@@ -365,7 +367,7 @@ export const korpusTexte = {
   "titel.solo": "Reflexionsgespräch",
   "titel.einzel": "Auftragsklärung",
   "titel.gemeinsam": "Gemeinsame Auflösung",
-  "titel.moment": "Gemeinsame Session",
+  "titel.moment": "Qualitätszeit",
 
   /* Builder-Erklärtexte (S30·C2) — Header-Token bleiben sprachinvariant. */
   "rank.howto": "Du kannst jederzeit umsortieren oder etwas herausnehmen; Antippen genügt. Die Gegensatzpaare stehen als einzelne Pole zur Wahl. Sortiert wird nach Gefühl, nicht nach Perfektion.",
@@ -400,6 +402,8 @@ export const korpusTexte = {
   "mk.vermeidenKopf": "ZU VERMEIDEN (beidseitig bestätigte Ausschluss-Zeilen aus dem Befund – stille Achtsamkeits-Marker für dich: nie abfragen, nie vorlesen; die Ausrichtung des Paars bleibt positiv):",
   "mk.agendaVon": "- von {name}: ",
   "mk.agendaWunsch": " (Wunsch: {wish})",
+  "mk.agendaKandidat": " [ZIEL-KANDIDAT: als gemeinsames Ziel vorgeschlagen — greife das aktiv auf und lade zur Entscheidung zu zweit ein; erst der gemeinsame Beschluss macht daraus ein Ziel (AUFTRAG-BLOCK).]",
+  "mk.agendaVorgemerkt": " [VORGEMERKT: Das Paar will diesen Punkt in der Qualitätszeit besprechen — sprich ihn von dir aus an.]",
   "mk.agendaLeer": "AGENDA: leer.",
   "mk.fruehereKopf": "PREVIOUS MOMENTS (jüngste zuletzt):",
   "mk.fruehereLeer": "PREVIOUS MOMENTS: keine — dies ist der erste Termin (keine offene Tür).",
@@ -442,5 +446,6 @@ export const korpusTexte = {
   "qm.ruhend": "RESTING (nicht vorschlagen): ",
   "qm.ruhendLeer": "RESTING: nichts.",
   "qm.zuletzt": "Zuletzt gewählt: ",
+  "qm.vorgemerkt": "Vorgemerkte Gesprächspunkte: ",
   "qm.katalog": "CATALOG der Lebensbereiche:",
 };

@@ -5,7 +5,7 @@ import { Engine } from "../engine/engine.js";
 import { cleanDisplay, findeBlock } from "../contracts/block.js";
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
-import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb } from "./sessions.js";
+import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor } from "./sessions.js";
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
@@ -17,7 +17,7 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 // Kürzel für die zwei Notifikations-Badges: beide Partner schauen ggf.
 // gemeinsam auf den Screen, deshalb je eine Badge. Das Präfix wächst nur so
 // weit, wie nötig, um die Namen unterscheidbar zu machen (Anna/Andreas → AN/AND).
-function badgeLabels(a, b) {
+function lesezeichenLabels(a, b) {
   a = String(a ?? "").trim(); b = String(b ?? "").trim();
   const up = (s, k) => s.slice(0, k).toLocaleUpperCase();
   let n = 1;
@@ -121,7 +121,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <p class="pb-sub" id="startMeinSub" style="margin:8px 0 0"></p>
         </div>
         <div class="pb-card">
-          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")} <span class="pb-hidden" id="badgeTeil"></span></button>
+          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")}</button>
           <p class="pb-sub" id="startTeilSub" style="margin:8px 0 0"></p>
         </div>
       </div>
@@ -174,7 +174,7 @@ export function createApp({ doc, backend, root, diktat }) {
       </div>
       <div class="pb-card pb-reihe">
         <div class="pb-sub">${t("teil.gruppeRegale")}</div>
-        <button class="pb-btn" id="btnRegal">${t("teil.regal")} <span class="pb-hidden" id="badgeRegal"></span></button>
+        <button class="pb-btn pb-mit-lz" id="btnRegal">${t("teil.regal")} <span class="pb-lz-leiste pb-hidden" id="lzRegal"></span></button>
         <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
         <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
       </div>
@@ -319,7 +319,9 @@ export function createApp({ doc, backend, root, diktat }) {
       zeile(2, "gemeinsam", lage.handBeide && !lage.aufloesungGelaufen && !lage.aufloesungOffen && aufloesungAktion());
       zeile(3, "gemeinsam", lage.regalNeu > 0 && t("weg.regalNeu", { n: lage.regalNeu }));
       zeile(3, "mein", lage.messOffen && t("weg.messOffen"));
-      zeile(4, "mein", t("weg.startSolo"));
+      // S76 · Vor der Aufdeckung lautet die Einladung "erstmal", danach
+      // "jederzeit" — der Reflexionsraum bleibt dauerhaft offen.
+      zeile(4, "mein", t(lage.aufdeckGelaufen ? "weg.startSoloJederzeit" : "weg.startSolo"));
       zeile(4, "gemeinsam", t("weg.optQz"));
     }
     if (screenId === "scrMyRoom") {
@@ -370,16 +372,16 @@ export function createApp({ doc, backend, root, diktat }) {
      Ausgrauen gesperrter Sessions MIT stets sichtbarem Hinweis unter dem
      Knopf (Touch-tauglich, kein Hover, kein Fehler-Popup). */
   function wendeLageAn(lage, screenId) {
-    // Zwei Badges möglich: beide Partner schauen ggf. gemeinsam auf den Screen,
-    // jede Badge zeigt das (unterscheidbare) Kürzel der Person, DIE LESEN SOLL,
-    // plus Zähler. Eine Badge mit Zähler 0 wird weggelassen.
-    const [kA, kB] = badgeLabels(state.info.nameA, state.info.nameB);
-    const badges = (id) => {
+    // S76 · Lesezeichen statt Badges: je Partner mit Ungelesenem EIN Lesezeichen
+    // mit dem (unterscheidbaren) Kürzel der Person, DIE LESEN SOLL — ohne
+    // Zähler; die Marke ragt oben rechts aus dem Regal-Knopf (angeheftet).
+    const [kA, kB] = lesezeichenLabels(state.info.nameA, state.info.nameB);
+    const lesezeichen = (id) => {
       const b = wurzel.querySelector("#" + id);
       if (!b) return;
-      const pillen = [{ k: kA, n: lage.regalNeuA }, { k: kB, n: lage.regalNeuB }].filter(p => p.n > 0);
-      b.innerHTML = pillen.map(p => `<span class="pb-badge">${esc(p.k)} ${p.n}</span>`).join("");
-      b.classList.toggle("pb-hidden", !pillen.length);
+      const marken = [{ k: kA, n: lage.regalNeuA }, { k: kB, n: lage.regalNeuB }].filter(p => p.n > 0);
+      b.innerHTML = marken.map(p => `<span class="pb-lz">${esc(p.k)}</span>`).join("");
+      b.classList.toggle("pb-hidden", !marken.length);
     };
     if (screenId === "scrMyRoom") {
       // S44 · Prozessreflexion erscheint erst, wenn die Gemeinsame Auflösung
@@ -395,9 +397,8 @@ export function createApp({ doc, backend, root, diktat }) {
       tog("btnMess", !auf); tog("messSubP", !auf);
       return;
     }
-    if (screenId === "scrStart") badges("badgeTeil");
     if (screenId !== "scrShared") return;
-    badges("badgeRegal");
+    lesezeichen("lzRegal");
     const sperre = (btnId, hinweisId, zu, text) => {
       const b = $(btnId), h = $(hinweisId);
       if (!b) return;
@@ -880,7 +881,10 @@ export function createApp({ doc, backend, root, diktat }) {
       onScale: (art, e2) => scalePanel(art, e2),
       onChoice: (art, e2, daten) => choicePanel(art, e2, daten),
       onAufdecken: (e2, richtung) => aufdeckTafel(e2, richtung),
-      onMomentEnde: () => { markiereAufgedeckt(backend).catch(() => {}); aktualisiereChatEnde(); },
+      onMomentEnde: () => { markiereAufgedeckt(backend).catch(() => {}); aktualisiereChatEnde(); aktualisiereComposer(); },
+      // S76 · Solo-Abschluss (TIMELINE-BLOCK nach [CLOSE SESSION]) beendet die
+      // Session — Knopf und Composer ziehen sichtbar nach.
+      onZeitleiste: () => { aktualisiereChatEnde(); aktualisiereComposer(); },
     };
     const def =
       art === "solo" ? soloDef(backend, hooks) :
@@ -902,9 +906,22 @@ export function createApp({ doc, backend, root, diktat }) {
       ]);
       if (!hA || !hB) throw new Error(t("fehler.aufloesungFehlt"));
     }
-    // S42 · Eine abgeschlossene Qualitätszeit wird nicht wieder aufgemacht —
-    // ihr Protokoll liegt in "Gemeinsame Momente"; der nächste Klick beginnt frisch.
-    if (art === "moment" && gespeichert && gespeichert.status !== "running") gespeichert = null;
+    // S42/S76 · Eine abgeschlossene Qualitätszeit oder ein abgeschlossenes
+    // Reflexionsgespräch wird nicht wieder aufgemacht — das Protokoll liegt in
+    // "Gemeinsame Momente" bzw. der Zeitleiste; der nächste Klick beginnt frisch.
+    if ((art === "moment" || art === "solo") && gespeichert && gespeichert.status !== "running") gespeichert = null;
+    // S76 · Heilung: Vor dem Engine-Fix (Handler abwarten + speichern) konnten
+    // Qualitätszeiten mit erzeugtem MOMENT-BLOCK als "running" hängen bleiben —
+    // Fortsetzen-Schleife ohne Neustart-Möglichkeit. Steht der Block in der
+    // letzten Assistant-Nachricht, gilt die Session als abgeschlossen.
+    if (art === "moment" && gespeichert && gespeichert.status === "running") {
+      const letzte = (gespeichert.messages || [])[gespeichert.messages.length - 1];
+      if (letzte && letzte.role === "assistant" && /\bMOMENT-BLOCK\b/.test(letzte.content || "")) {
+        gespeichert.status = "finished";
+        await backend.chat.save("shared", art, gespeichert).catch(() => {});
+        gespeichert = null;
+      }
+    }
     const chat = gespeichert || { messages: [], status: "running" };
     // S59 · Linearer Pfad (Klärung → Auflösung → Prozessreflexion): nach der
     // Freigabe existiert kein Neustart. Das eigene Handover schlägt den
@@ -1068,9 +1085,10 @@ export function createApp({ doc, backend, root, diktat }) {
           const fremd = i.by !== state.info.name;
           return `<div class="pb-item">${esc(i.text)}` +
             (i.wish ? `<br><span class="pb-sub">${t("gate.wish")}${esc(i.wish)}</span>` : "") +
-            `<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })}${i.read ? " · " + t("regal.stGelesen") : ""}${i.gehoben ? " · " + t("regal.stInAgenda") : ""}</span>` +
+            `<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })}${i.read ? " · " + t("regal.stGelesen") : ""}${i.gehoben ? " · " + t(i.alsZiel ? "regal.stZielVorschlag" : "regal.stInAgenda") : ""}</span>` +
             (fremd && !i.read ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
-            (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnHeben")}</button>` : "") +
+            (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnBesprechen")}</button>` +
+              ` <button class="pb-btn" data-ziel="${i.id}" style="padding:3px 10px">${t("regal.btnZiel")}</button>` : "") +
             `</div>`;
         }).join("")
       : `<div class="pb-item">${t("regal.leer")}</div>`;
@@ -1078,6 +1096,8 @@ export function createApp({ doc, backend, root, diktat }) {
       b.addEventListener("click", async () => { await markiereGelesen(backend, b.getAttribute("data-gelesen")); zeigeRegal(); });
     for (const b of $("regalItems").querySelectorAll("[data-heben]"))
       b.addEventListener("click", async () => { await hebeInAgenda(backend, b.getAttribute("data-heben")); zeigeRegal(); });
+    for (const b of $("regalItems").querySelectorAll("[data-ziel]"))
+      b.addEventListener("click", async () => { await hebeInAgenda(backend, b.getAttribute("data-ziel"), { alsZiel: true }); zeigeRegal(); });
   }
 
   /* S43 · Agenda-Regal v2: EIN Regal, zwei Konzepte getrennt — die
@@ -1100,23 +1120,34 @@ export function createApp({ doc, backend, root, diktat }) {
     const auftragZeile = a =>
       `<div class="pb-item">${esc(a.text)}<br><span class="pb-sub">${esc(a.id)} · ${t(a.art === "shared" ? "agenda.artGemeinsam" : "agenda.artIndividuell")}${a.owner ? " · " + esc(a.owner) : ""}</span></div>`;
     const punktZeile = i =>
-      `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })} · ${t("agenda.st." + i.state)}</span>` +
+      `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })} · ${t("agenda.st." + i.state)}` +
+      `${i.zielKandidat ? " · " + t("agenda.stKandidat") : ""}${i.vormerkung ? " · " + t("agenda.stVor") : ""}</span>` +
       (i.state === "open"
-        ? ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">${t("agenda.btnAbr")}</button>`
+        ? (i.vormerkung ? "" : ` <button class="pb-btn" data-vor="${i.id}" style="padding:3px 10px">${t("agenda.btnVor")}</button>`) +
+          ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">${t("agenda.btnAbr")}</button>`
         : "") + `</div>`;
+    // S76 · Ziele und Gesprächspunkte deutlich getrennt: je Gruppe ein eigener
+    // Kartenblock (Ziele mit Akzentleiste, Punkte neutral); das Backlog ruht
+    // als Untergruppe im Ziele-Block.
     $("agendaItems").innerHTML =
-      `<div class="pb-sub" style="margin-top:6px">${t("agenda.gruppeAuftraege")}</div>` +
+      `<div class="pb-ag-block pb-ag-ziele">` +
+      `<div class="pb-ag-kopf">${t("agenda.gruppeAuftraege")}</div>` +
       (aktiv.length ? aktiv.map(auftragZeile).join("") : `<div class="pb-item">${t("agenda.auftraegeLeer")}</div>`) +
-      `<div class="pb-sub" style="margin-top:10px">${t("agenda.gruppePunkte")}</div>` +
-      (items.length ? items.map(punktZeile).join("") : `<div class="pb-item">${t("agenda.leer")}</div>`) +
       (ruht.length
-        ? `<div class="pb-sub" style="margin-top:10px">${t("agenda.gruppeBacklog")}</div>` +
+        ? `<div class="pb-ag-kopf" style="margin-top:10px">${t("agenda.gruppeBacklog")}</div>` +
           `<p class="pb-sub" style="margin:2px 0 4px">${t("agenda.backlogHinweis")}</p>` +
           ruht.map(auftragZeile).join("")
         : "") +
+      `</div>` +
+      `<div class="pb-ag-block pb-ag-punkte">` +
+      `<div class="pb-ag-kopf">${t("agenda.gruppePunkte")}</div>` +
+      (items.length ? items.map(punktZeile).join("") : `<div class="pb-item">${t("agenda.leer")}</div>`) +
+      `</div>` +
       `<div id="agendaAbsprachen"></div>`;
     for (const b of $("agendaItems").querySelectorAll("[data-abr]"))
       b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selfResolved"); zeigeAgenda(); });
+    for (const b of $("agendaItems").querySelectorAll("[data-vor]"))
+      b.addEventListener("click", async () => { await merkeVor(backend, b.getAttribute("data-vor")); zeigeAgenda(); });
     // S44 · "Weitere Absprachen": Prozessreflexions-Rhythmus lebt jetzt hier.
     await rhythmusSektion($("agendaAbsprachen"));
   }
@@ -1328,8 +1359,10 @@ export function createApp({ doc, backend, root, diktat }) {
   // legt es in "Gemeinsame Momente" ab und schließt die Session wirklich.
   $("btnChatEnde").addEventListener("click", async () => {
     if (!state.engine || state.engine.chat.status !== "running") return;
-    await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.momentAbschluss, { hidden: true }));
+    const text = state.engine.def.id === "solo" ? K().steuerTexte.soloAbschluss : K().steuerTexte.momentAbschluss;
+    await warteAntwort(() => state.engine.submitToolResult(text, { hidden: true }));
     aktualisiereChatEnde();
+    aktualisiereComposer();
   });
   $("btnSolo").addEventListener("click", () => startChat("solo").catch(e => err(e.message)));
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
@@ -1440,11 +1473,16 @@ export function createApp({ doc, backend, root, diktat }) {
       ).join("") : `<p style="font-size:14px">${t("momente.leer")}</p>`);
   }
 
-  /* S42 · Abschluss-Knopf nur in einer LAUFENDEN Qualitätszeit anbieten. */
+  /* S42/S76 · Abschluss-Knopf ("Session abschließen") in laufenden Sessions
+     MIT eigenem Abschluss-Akt: Qualitätszeit (MOMENT-BLOCK) und Reflexions-
+     gespräch (TIMELINE-BLOCK). Auftragsklärung und Gemeinsame Auflösung
+     schließen über ihre eigenen Rituale (Freigabe bzw. Befund) — dort bleibt
+     nur "Raum verlassen". */
   function aktualisiereChatEnde() {
     const b = $("btnChatEnde");
+    const id = state.engine && state.engine.def && state.engine.def.id;
     if (b) b.classList.toggle("pb-hidden",
-      !(state.engine && state.engine.def && state.engine.def.id === "moment" && state.engine.chat.status === "running"));
+      !((id === "moment" || id === "solo") && state.engine.chat.status === "running"));
   }
 
   /* S38 · Persönliche Zeitleiste fortschreiben (Auftragsklärung, Prozess-

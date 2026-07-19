@@ -139,7 +139,7 @@ describe("S43 · Vorraum & Wegweiser", () => {
 });
 
 describe("S43 · Agenda-Regal v2", () => {
-  it("trennt laufende Aufträge, Gesprächspunkte und Backlog", async () => {
+  it("trennt Ziele-Block (mit Backlog) und Gesprächspunkte-Block", async () => {
     const backend = memoryBackend(null);
     await backend.bstate.set("goals", { items: [
       { id: "AG1", art: "shared", status: "active", text: "Mehr echte Zeit zu zweit" },
@@ -153,13 +153,23 @@ describe("S43 · Agenda-Regal v2", () => {
     await klick(root.querySelector("#btnAgenda"));
     await ruhe();
     const txt = root.querySelector("#boxAgenda").textContent;
-    expect(txt).toContain("Laufende Aufträge");
+    // S76 · Gruppen heißen "Entwicklungsthemen / Ziele" und "Gesprächspunkte"
+    // und leben in eigenen, visuell getrennten Kartenblöcken.
+    expect(txt).toContain("Entwicklungsthemen / Ziele");
     expect(txt).toContain("Mehr echte Zeit zu zweit");
     expect(txt).toContain("Gesprächspunkte");
     expect(txt).toContain("Wochenend-Planung");
     expect(txt).toContain("Backlog");
     expect(txt).toContain("Eigene Abende pflegen");
-    expect(txt.indexOf("Laufende Aufträge")).toBeLessThan(txt.indexOf("Gesprächspunkte"));
+    const ziele = root.querySelector("#boxAgenda .pb-ag-ziele");
+    const punkte = root.querySelector("#boxAgenda .pb-ag-punkte");
+    expect(ziele).toBeTruthy();
+    expect(punkte).toBeTruthy();
+    expect(ziele.textContent).toContain("Mehr echte Zeit zu zweit");
+    expect(ziele.textContent).toContain("Eigene Abende pflegen");   // Backlog ruht IM Ziele-Block
+    expect(punkte.textContent).toContain("Wochenend-Planung");
+    expect(punkte.textContent).not.toContain("Backlog");
+    expect(txt.indexOf("Entwicklungsthemen / Ziele")).toBeLessThan(txt.indexOf("Gesprächspunkte"));
   });
 
   it("ohne Aufträge: freundliche Leere je Abschnitt, kein Backlog-Abschnitt", async () => {
@@ -169,7 +179,7 @@ describe("S43 · Agenda-Regal v2", () => {
     await klick(root.querySelector("#btnAgenda"));
     await ruhe();
     const txt = root.querySelector("#boxAgenda").textContent;
-    expect(txt).toContain("Noch keine Aufträge");
+    expect(txt).toContain("Noch keine Ziele");
     expect(txt).toContain("Die Agenda ist leer");
     expect(txt).not.toContain("Backlog");
   });

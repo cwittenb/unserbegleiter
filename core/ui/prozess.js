@@ -127,7 +127,7 @@ export function qzStufe(qz, now = Date.now) {
 export { QZ_STUFEN_TEXT } from "../prompts/prompts.js";   // Inhalt lebt im Korpus (Sprachfassung)
 
 /** Material-Nachricht für den Menü-Generator (qzMenuePrompt arbeitet NUR damit). */
-export function baueQzMaterial({ goals, sharings, qualitytime }) {
+export function baueQzMaterial({ goals, sharings, qualitytime, agenda }) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("qm.kopf")];
   const aktive = ((goals && goals.items) || []).filter(a => a.status === "active");
@@ -136,6 +136,11 @@ export function baueQzMaterial({ goals, sharings, qualitytime }) {
     : KT("qm.auftraegeLeer"));
   const frei = (sharings || []).flatMap(f => f.items.map(i => i.text));
   teile.push(frei.length ? KT("qm.material") + frei.join(" · ") : KT("qm.materialLeer"));
+  // S76 · Vorgemerkte Gesprächspunkte fließen in den Menü-Generator ein
+  // (Qualitätszeit hat EIGENE Leitprinzipien — Verdrahtung hier bewusst
+  // explizit, kein stilles Erben aus dem Momentkontext).
+  const vor = ((agenda && agenda.items) || []).filter(i => i.state === "open" && i.vormerkung);
+  if (vor.length) teile.push(KT("qm.vorgemerkt") + vor.map(i => i.text).join(" · "));
   const ruht = Object.keys((qualitytime && qualitytime.resting) || {}).filter(k => qualitytime.resting[k]);
   teile.push(ruht.length ? KT("qm.ruhend") + ruht.join(" · ") : KT("qm.ruhendLeer"));
   const letzte = ((qualitytime && qualitytime.choices) || []).slice(-3).map(w => w.text);

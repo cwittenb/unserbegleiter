@@ -225,7 +225,11 @@ export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharing
 
   const offen = ((agenda && agenda.items) || []).filter(i => i.state === "open");
   teile.push(offen.length
-    ? KT("mk.agendaKopf") + "\n" + offen.map(i => fuelle(KT("mk.agendaVon"), { name: i.by }) + i.text + (i.wish ? fuelle(KT("mk.agendaWunsch"), { wish: i.wish }) : "")).join("\n")
+    ? KT("mk.agendaKopf") + "\n" + offen.map(i =>
+        fuelle(KT("mk.agendaVon"), { name: i.by }) + i.text +
+        (i.wish ? fuelle(KT("mk.agendaWunsch"), { wish: i.wish }) : "") +
+        (i.zielKandidat ? KT("mk.agendaKandidat") : "") +
+        (i.vormerkung ? KT("mk.agendaVorgemerkt") : "")).join("\n")
     : KT("mk.agendaLeer"));
 
   const fruehere = ((momentLog && momentLog.entries) || []).slice(-3);
@@ -265,21 +269,43 @@ export async function markiereGelesen(backend, itemId) {
   await backend.bstate.set("shelf", regal);
 }
 
-/** Regal-Item in die gemeinsame Agenda heben (Herkunft bleibt sichtbar). */
-export async function hebeInAgenda(backend, itemId) {
+/** Regal-Item in die gemeinsame Agenda übernehmen (Herkunft bleibt sichtbar).
+    S76 · Zwei Wege: „besprechen" (Gesprächspunkt) oder „als Ziel vorschlagen"
+    (Gesprächspunkt MIT Kandidat-Marke). Aus dem Regal wird NIE direkt ein Ziel —
+    Ziele entstehen ausschließlich per gemeinsamem Beschluss in Sessions
+    (AUFTRAG-BLOCK); die Marke lädt die Begleitung ein, die Entscheidung zu
+    zweit aktiv anzubieten. */
+export async function hebeInAgenda(backend, itemId, opts = {}) {
   const regal = (await backend.bstate.get("shelf")) || { items: [] };
   const it = regal.items.find(x => x.id === itemId);
   if (!it || it.gehoben) return;
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
-  agenda.items.push({
+  const eintrag = {
     id: "AGD" + (agenda.items.length + 1),
     text: it.text, wish: it.wish || null,
     by: it.by, herkunft: "shelf",
     at: new Date().toISOString(), state: "open",
-  });
+  };
+  if (opts.alsZiel) eintrag.zielKandidat = true;
+  else eintrag.vormerkung = true;   // „besprechen" heißt: fürs nächste Mal vorgemerkt
+  agenda.items.push(eintrag);
   it.gehoben = true;
+  if (opts.alsZiel) it.alsZiel = true;
   await backend.bstate.set("agenda", agenda);
   await backend.bstate.set("shelf", regal);
+}
+
+/** S76 · Offenen Gesprächspunkt für die Qualitätszeit vormerken. Der Punkt
+    bleibt OFFEN — die Vormerkung ist Richtung, kein Abräumen; abgeräumt wird
+    weiterhin durchs Protokoll der Qualitätszeit oder manuell („selbst geklärt").
+    Nutzerseitig gibt es EIN Gefäß (Qualitätszeit) mit zwei Modi (besprechen /
+    gemeinsame Zeit gestalten) — die Vormerkung steuert nur den Besprechen-Modus. */
+export async function merkeVor(backend, itemId) {
+  const agenda = (await backend.bstate.get("agenda")) || { items: [] };
+  const it = agenda.items.find(x => x.id === itemId);
+  if (!it || it.state !== "open") return;
+  it.vormerkung = true;
+  await backend.bstate.set("agenda", agenda);
 }
 
 /** Agenda-Punkt abräumen — beides ist legitim und wird nicht gewertet. */

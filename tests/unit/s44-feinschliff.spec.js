@@ -306,21 +306,25 @@ describe("S44 · Beschriftungen & personalisiertes Regal", () => {
 
 /* ─────────────── zwei Badges (shared screen, D5) ─────────────── */
 
-describe("S44 · Zwei Badges für ungelesene Freigaben", () => {
-  it("nur ein Partner hat Offenes → genau eine Badge mit dessen Kürzel", async () => {
+describe("S44/S76 · Lesezeichen für ungelesene Freigaben", () => {
+  it("nur ein Partner hat Offenes → genau ein Lesezeichen mit dessen Kürzel (ohne Zähler)", async () => {
     const backend = memoryBackend(null);
     await backend.bstate.set("shelf", { items: [
       { id: "x1", by: "Bernd", text: "…", read: false },   // nur für Anna offen
     ] });
     await bootApp(backend);
-    const pillen = [...root.querySelector("#badgeTeil").querySelectorAll(".pb-badge")].map(p => p.textContent);
-    expect(pillen).toEqual(["A 1"]);
+    await klick(root.querySelector("#btnSharedRoom"));
+    await ruhe();
+    const marken = [...root.querySelector("#lzRegal").querySelectorAll(".pb-lz")].map(p => p.textContent);
+    expect(marken).toEqual(["A"]);
   });
 
-  it("nichts offen → keine Badge", async () => {
+  it("nichts offen → kein Lesezeichen", async () => {
     await bootApp(memoryBackend(null));
-    expect(root.querySelector("#badgeTeil").classList.contains("pb-hidden")).toBe(true);
-    expect(root.querySelector("#badgeTeil").querySelectorAll(".pb-badge").length).toBe(0);
+    await klick(root.querySelector("#btnSharedRoom"));
+    await ruhe();
+    expect(root.querySelector("#lzRegal").classList.contains("pb-hidden")).toBe(true);
+    expect(root.querySelector("#lzRegal").querySelectorAll(".pb-lz").length).toBe(0);
   });
 });
 
