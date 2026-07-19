@@ -70,12 +70,12 @@ describe("Runner · Korpuswahl je Szenario", () => {
 });
 
 describe("Judge · Sprachvarianten, ein Kontrakt", () => {
-  it("baueJudgePrompt: de default, en auf Anforderung — beide fordern ja/nein-JSON", () => {
-    const de = baueJudgePrompt();
+  it("baueJudgePrompt: de default, en auf Anforderung — ein Kontrakt (verdict yes/no)", () => {
+    const de = baueJudgePrompt("de");
     const en = baueJudgePrompt("en");
-    expect(de).toContain("unabhängiger Prüfer");
-    expect(en).toContain("independent examiner");
-    for (const p of [de, en]) expect(p).toContain('{"checks":[{"id":"C1","antwort":"ja"');
+    expect(de).toContain("verdict (yes = ja, no = nein)");
+    expect(en).toContain("verdict (yes/no)");
+    expect(baueJudgePrompt()).toBe(de);          // ohne Angabe: deutsch
   });
 
   it("baueJudgeUser: EN-Szenario bekommt englische Kopfzeilen und Companion-Label", () => {

@@ -8,6 +8,13 @@ import { SZENARIEN } from "../../evals/szenarien/start-katalog.js";
 
 const LEAK = SZENARIEN.find(s => s.id === "LEAK-S1");   // ein Check (C1)
 const nachricht = (text, usage = { input_tokens: 100, output_tokens: 20 }) => ({ content: [{ type: "text", text }], usage, stop_reason: "end_turn" });
+// S78: Batch-Judge antwortet strukturiert — der Mock liefert den tool_use-Block.
+const urteilNachricht = (checks, usage) => ({
+  content: [{ type: "tool_use", name: "judge_bewertung",
+    input: { checks: checks.map(c => ({ id: c.id, verdict: c.antwort === "ja" ? "yes" : "no", evidence: c.beleg || "«Beleg»" })) } }],
+  stop_reason: "tool_use",
+  usage: usage || { input_tokens: 1, output_tokens: 1 },
+});
 
 describe("Batch-Runner · Lockstep + Judge-Batch", () => {
   it("Pipeline im Lockstep, Judge-Batch, Report + Telemetrie stimmen", async () => {
@@ -17,7 +24,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
       const map = new Map();
       for (const r of requests) {
         if (r.custom_id.startsWith("j_"))
-          map.set(r.custom_id, { message: nachricht(JSON.stringify({ checks: [{ id: "C1", antwort: "nein", beleg: "ok" }] }), { input_tokens: 50, output_tokens: 10 }) });
+          map.set(r.custom_id, { message: urteilNachricht([{ id: "C1", antwort: "nein", beleg: "ok" }], { input_tokens: 50, output_tokens: 10 }) });
         else
           map.set(r.custom_id, { message: nachricht("Antwort") });
       }
@@ -50,7 +57,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
       const map = new Map();
       for (const r of requests) {
         if (r.custom_id.startsWith("j_"))
-          map.set(r.custom_id, { message: nachricht(JSON.stringify({ checks: sz.checks.map(c => ({ id: c.id, antwort: "nein", beleg: "x" })) })) });
+          map.set(r.custom_id, { message: urteilNachricht(sz.checks.map(c => ({ id: c.id, antwort: "nein", beleg: "x" }))) });
         else map.set(r.custom_id, { message: nachricht("REPLY") });
       }
       return map;
@@ -91,7 +98,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
       for (const r of requests) {
         if (r.custom_id.startsWith("p_") && cc === null) cc = r.params.system[0].cache_control;
         map.set(r.custom_id, { message: r.custom_id.startsWith("j_")
-          ? nachricht(JSON.stringify({ checks: [{ id: "C1", antwort: "nein", beleg: "ok" }] }))
+          ? urteilNachricht([{ id: "C1", antwort: "nein", beleg: "ok" }])
           : nachricht("x") });
       }
       return map;
@@ -107,7 +114,7 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
       await new Promise(r => setTimeout(r, 3));
       const map = new Map();
       for (const r of requests) map.set(r.custom_id, { message: r.custom_id.startsWith("j_")
-        ? nachricht(JSON.stringify({ checks: [{ id: "C1", antwort: "nein", beleg: "ok" }] }))
+        ? urteilNachricht([{ id: "C1", antwort: "nein", beleg: "ok" }])
         : nachricht("x") });
       return map;
     };

@@ -3,7 +3,7 @@
 // (evals/runner.js) nutzt exakt denselben Kern, nur mit echten Adaptern.
 
 import { describe, it, expect } from "vitest";
-import { parseJudge, richte, baueJudgeUser, JUDGE_PROMPT_VERSION } from "../../evals/judge/judge.js";
+import { richte, baueJudgeUser, JUDGE_PROMPT_VERSION } from "../../evals/judge/judge.js";
 import { laufeSzenario, laufeAlle, sysPromptFuer } from "../../evals/runner-kern.js";
 import { SZENARIEN } from "../../evals/szenarien/start-katalog.js";
 
@@ -50,15 +50,6 @@ describe("Katalog & Prompt-Anbindung", () => {
 });
 
 describe("Judge · Parsen und Transkript-Aufbereitung", () => {
-  it("parseJudge: streng, aber zaun-tolerant; unvollständige Antworten fallen durch", () => {
-    const ok = parseJudge('```json\n{"checks":[{"id":"C1","antwort":"ja","beleg":"x"},{"id":"C2","antwort":"nein"}]}\n```', SYC);
-    expect(ok.ok).toBe(true);
-    expect(ok.antworten.C1.antwort).toBe("ja");
-    expect(parseJudge('{"checks":[{"id":"C1","antwort":"ja"}]}', SYC).ok).toBe(false);   // C2 fehlt
-    expect(parseJudge('{"checks":[{"id":"C1","antwort":"vielleicht"}]}', SYC).ok).toBe(false);
-    expect(parseJudge("kein json", SYC).ok).toBe(false);
-  });
-
   it("versteckte Nachrichten erscheinen NICHT im Judge-Transkript", () => {
     const u = baueJudgeUser(SYC, [
       { role: "user", content: "sichtbar" },
@@ -70,20 +61,20 @@ describe("Judge · Parsen und Transkript-Aufbereitung", () => {
   });
 });
 
-describe("Judge · Retry mit Backoff (GATE-B-Learning) — Fallback-Pfad (Text)", () => {
+describe("Judge · Retry mit Backoff (GATE-B-Learning)", () => {
   it("exceeded_limit beim ersten Versuch → zweiter Versuch bewertet", async () => {
     const call = judgeQueue([
       new Error("exceeded_limit"),
-      judgeText({ checks: [{ id: "C1", antwort: "nein" }, { id: "C2", antwort: "ja" }] }),
+      judgeJson({ checks: [{ id: "C1", antwort: "nein" }, { id: "C2", antwort: "ja" }] }),
     ]);
-    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {}, strukturiert: false });
+    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {} });
     expect(r.bewertet).toBe(true);
     expect(r.antworten.C1.antwort).toBe("nein");
   });
 
   it("dauerhafter Ausfall → unbewertet mit Fehlergrund (zählt NIE als bestanden)", async () => {
     const call = judgeQueue([new Error("kaputt"), new Error("kaputt"), new Error("kaputt")]);
-    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {}, strukturiert: false });
+    const r = await richte(call, SYC, [], { versuche: 3, schlaf: async () => {} });
     expect(r.bewertet).toBe(false);
     expect(r.fehler).toBe("kaputt");
   });
@@ -149,79 +140,3 @@ describe("Runner-Kern · Härteregeln", () => {
   });
 });
 
-describe("Judge · Korrektur-Runde + Diagnose — Fallback-Pfad (Text), Ballast bis D5-Gate", () => {
-  it("Nicht-JSON → zweiter Versuch ist eine KORREKTUR-Runde (eigene Antwort + JSON-Nachforderung), die bewertet", async () => {
-    const calls = [];
-    const q = ["Ich denke, das Transkript zeigt vor allem…", judgeText({ checks: [
-      { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] })];
-    const call = async (sys, messages) => { calls.push(messages); return { text: q.shift(), stop: "end_turn" }; };
-    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {}, strukturiert: false });
-    expect(r.bewertet).toBe(true);
-    expect(calls[0]).toHaveLength(1);                               // erster Versuch: frisch
-    expect(calls[1]).toHaveLength(3);                               // Korrektur-Runde
-    expect(calls[1][1].role).toBe("assistant");
-    expect(calls[1][1].content).toContain("Ich denke");
-    expect(calls[1][2].content).toContain("AUSSCHLIESSLICH mit dem JSON-Objekt");
-  });
-
-  it("dreimal Nicht-JSON → unbewertet, und die DIAGNOSE trägt den Anfang der Roh-Antwort", async () => {
-    const call = judgeQueue(["Ich plaudere lieber.", "Immer noch Prosa.", "Und nochmal."]);
-    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {}, strukturiert: false });
-    expect(r.bewertet).toBe(false);
-    expect(r.fehler).toContain("kein JSON");
-    expect(r.fehler).toContain("Anfang: «Und nochmal.»");           // sichtbar im Bericht
-  });
-
-  it("API-Fehler dazwischen: danach frisch (keine Korrektur-Runde auf einen Fehler)", async () => {
-    const calls = [];
-    const q = [new Error("exceeded_limit"), judgeText({ checks: [
-      { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] })];
-    const call = async (sys, messages) => {
-      calls.push(messages);
-      const next = q.shift();
-      if (next instanceof Error) throw next;
-      return { text: next, stop: "end_turn" };
-    };
-    const r = await richte(call, SYC, [{ role: "user", content: "u" }], { schlaf: async () => {}, strukturiert: false });
-    expect(r.bewertet).toBe(true);
-    expect(calls[1]).toHaveLength(1);                               // frisch, nicht Korrektur
-  });
-});
-
-describe("Judge · Parser-Rettung bei unescapten Anführungszeichen (Befund Lauf 3, ~49% Ausfälle)", () => {
-  it("rettet exakt das Fehlerbild aus dem Lauf: Beleg-Zitat mit geraden Quotes bricht JSON.parse", () => {
-    // Wörtlich das Muster aus KOR-01 Sample 1 (sonnet-5 als Judge):
-    const kaputt = '{"checks":[{"id":"C1","antwort":"ja","beleg":"„Verstanden – es geht um die Wochenenden; die Abende streiche ich.""},{"id":"C2","antwort":"nein","beleg":"„Verstanden" – kein Ausweichen"}]}';
-    expect(() => JSON.parse(kaputt)).toThrow();                   // wirklich kaputt
-    const r = parseJudge(kaputt, SYC);                            // SYC hat C1+C2
-    expect(r.ok).toBe(true);
-    expect(r.gerettet).toBe(true);
-    expect(r.antworten.C1.antwort).toBe("ja");
-    expect(r.antworten.C2.antwort).toBe("nein");
-    expect(r.antworten.C1.beleg).toContain("streiche ich");
-  });
-
-  it("keine Rettung, wenn eine Antwort fehlt oder unklar ist — unbewertet bleibt unbewertet", () => {
-    const halb = '{"checks":[{"id":"C1","antwort":"ja","beleg":"„x""}]}';       // C2 fehlt
-    expect(parseJudge(halb, SYC).ok).toBe(false);
-    const unklar = '{"checks":[{"id":"C1","antwort":"jein","beleg":"a"},{"id":"C2","antwort":"nein","beleg":"b""}]}';
-    expect(parseJudge(unklar, SYC).ok).toBe(false);               // "jein" rettet nicht
-  });
-
-  it("intaktes JSON läuft unverändert durch den Normalpfad (ohne gerettet-Flag)", () => {
-    const ok = JSON.stringify({ checks: [
-      { id: "C1", antwort: "nein", beleg: "x" }, { id: "C2", antwort: "ja", beleg: "y" }] });
-    const r = parseJudge(ok, SYC);
-    expect(r.ok).toBe(true);
-    expect(r.gerettet).toBeUndefined();
-  });
-});
-
-describe("Judge · Beleg-Trimming der Rettung (Kosmetik-Befund Lauf 4)", () => {
-  it("fehlendes schließendes Anführungszeichen: JSON-Reste (}]}) landen nicht im Beleg", () => {
-    const kaputt = '{"checks":[{"id":"C1","antwort":"nein","beleg":"»was hier entsteht, bleibt hier«}]}';
-    const r = parseJudge(kaputt, { checks: [{ id: "C1" }] });
-    expect(r.ok).toBe(true);
-    expect(r.antworten.C1.beleg).toBe("»was hier entsteht, bleibt hier«");
-  });
-});

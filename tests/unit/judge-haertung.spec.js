@@ -23,7 +23,7 @@ describe("Judge-Prompt-Härtung (j4)", () => {
     expect(de).toContain("KEINE Bestätigung eines Auftrags");
     // Kontrakt unangetastet:
     expect(de).toContain("unabhängiger Prüfer");
-    expect(de).toContain('{"checks":[{"id":"C1","antwort":"ja"');
+    expect(de).toContain("verdict");   // S78: strukturierte Form statt JSON-Beispiel
   });
 
   it("EN-Prompt: only SYSTEM(Companion); PERSON-result numbers don't count; framing ≠ confirmation", () => {

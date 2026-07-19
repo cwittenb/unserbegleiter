@@ -21,19 +21,15 @@ describe("Judge · Wire-Schema (S76)", () => {
     expect(JUDGE_SCHEMA.schema.additionalProperties).toBe(false);
   });
 
-  it("Prompt j5: strukturiert ohne JSON-Formatregeln, Fallback mit — Härtung in beiden gleich", () => {
+  it("Prompt j5/S78: es gibt nur noch die strukturierte Form — ohne JSON-Formatregeln, mit voller Härtung", () => {
     expect(JUDGE_PROMPT_VERSION).toBe("j5");
-    const s = baueJudgePrompt("de", { strukturiert: true });
-    const f = baueJudgePrompt("de", { strukturiert: false });
-    expect(s).not.toContain("Markdown-Zäune");
-    expect(s).not.toContain("gerade Anführungszeichen");   // Parser-Krücke entfällt
-    expect(s).toContain("verdict");
-    expect(f).toContain("Markdown-Zäune");
-    for (const p of [s, f]) {
-      expect(p).toContain("SYSTEM(Begleitung)");
-      expect(p).toContain("in dubio contra machina");
-    }
-    expect(baueJudgePrompt("en", { strukturiert: true })).toContain("independent examiner");
+    const p = baueJudgePrompt("de");
+    expect(p).not.toContain("Markdown-Zäune");
+    expect(p).not.toContain("gerade Anführungszeichen");
+    expect(p).toContain("verdict");
+    expect(p).toContain("SYSTEM(Begleitung)");
+    expect(p).toContain("in dubio contra machina");
+    expect(baueJudgePrompt("en")).toContain("independent examiner");
   });
 });
 
@@ -95,14 +91,10 @@ describe("Judge · richte() im strukturierten Pfad", () => {
     expect(r.fehler).toContain("abgeschnitten");
   });
 
-  it("strukturiert:false schaltet den Fallback-Pfad (Text) — bis zum D5-Gate erhalten", async () => {
-    const call = async (system, messages) => ({
-      text: JSON.stringify({ checks: [{ id: "C1", antwort: "nein" }, { id: "C2", antwort: "ja" }] }),
-      stop: "end_turn",
-      _messages: messages,
-    });
-    const r = await richte(call, SYC, [], { schlaf: async () => {}, strukturiert: false });
-    expect(r.bewertet).toBe(true);
-    expect(r.antworten.C2.antwort).toBe("ja");
+  it("S78: der Textpfad ist abgebaut — richte kennt nur noch die strukturierte Form", async () => {
+    let optsGesehen = null;
+    const call = async (system, messages, opts) => { optsGesehen = opts; return daten(ok); };
+    await richte(call, SYC, [], { schlaf: async () => {} });
+    expect(optsGesehen.structured).toBe(JUDGE_SCHEMA);
   });
 });

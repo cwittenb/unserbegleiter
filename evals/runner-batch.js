@@ -6,7 +6,7 @@
 // Nur Anthropic (D1); der Aufrufer erzwingt das.
 
 import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht } from "./runner-kern.js";
-import { baueJudgePrompt, baueJudgeUser, parseJudge } from "./judge/judge.js";
+import { baueJudgePrompt, baueJudgeUser, pruefeJudgeDaten, JUDGE_SCHEMA } from "./judge/judge.js";
 import { LLM_PROVIDERS } from "../core/llm/adapter.js";
 import { fuehreBatchAus } from "./batch-anthropic.js";
 
@@ -89,6 +89,10 @@ export async function laufeAlleBatch(szenarien, deps) {
         max_tokens: MAX_TOKENS,
         system: baueJudgePrompt(szenarioSprache(k.sz)),   // Judge-Caching AUS (S56): kein cache_control
         messages: [{ role: "user", content: baueJudgeUser(k.sz, k.messages) }],
+        // S78: auch der Batch-Judge läuft strukturiert — erzwungener Tool-Use,
+        // identisch zur synchronen Form (Migrationslücke aus S76 geschlossen).
+        tools: [{ name: JUDGE_SCHEMA.name, description: JUDGE_SCHEMA.description, input_schema: JUDGE_SCHEMA.schema }],
+        tool_choice: { type: "tool", name: JUDGE_SCHEMA.name },
       },
     });
   }
@@ -99,9 +103,15 @@ export async function laufeAlleBatch(szenarien, deps) {
     for (const [cid, k] of jidx) {
       const r = jerg.get(cid);
       if (!r || r.fehler) { k.urteil = { bewertet: false, fehler: "Batch-Fehler (Judge): " + (r ? r.fehler : "kein Ergebnis") }; continue; }
-      const { text, usage } = LLM_PROVIDERS.anthropic.parse(r.message);
+      let daten, usage;
+      try {
+        ({ data: daten, usage } = LLM_PROVIDERS.anthropic.parseStructured(r.message, JUDGE_SCHEMA.name));
+      } catch (e) {
+        k.urteil = { bewertet: false, fehler: e.message };
+        continue;
+      }
       addUsage(k.judge, usage);
-      const p = parseJudge(text, k.sz);
+      const p = pruefeJudgeDaten(daten, k.sz);
       k.urteil = p.ok ? { bewertet: true, antworten: p.antworten } : { bewertet: false, fehler: p.fehler };
     }
   }
