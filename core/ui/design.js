@@ -2,6 +2,10 @@ import { t as uiText } from "../i18n/index.js";
 // Design auf Dokument-Ebene: <style> + Kulisse + Theme-Umschalter, einmalig
 // beim Booten angewendet (idempotent), damit ALLE Screens dasselbe Theme tragen.
 
+// Mobile-Härtung (M3), im CSS bewusst unkommentiert (i18n-Kanarie scannt das
+// Literal): Textfelder nie unter 16px (iOS-Fokus-Zoom), Composer hält per
+// scroll-margin Abstand zur Tastatur, Haupt-Aktionen min. 44px Touch-Höhe,
+// Safe-Area-Insets an #app und fixiertem Chrome (Theme/Busy).
 export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&display=swap');
       :root{
         --bg1:#f7f4ea;--bg2:#edf1e2;--ink:#313c31;--ink-soft:#64705c;--ink-faint:#909a86;
@@ -19,7 +23,9 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       }
       body{margin:0;background:linear-gradient(172deg,var(--bg1),var(--bg2));background-attachment:fixed;transition:background .5s}
       #app{max-width:660px;position:relative;z-index:1;font-family:"Newsreader",Georgia,'Times New Roman',serif;
-           color:var(--ink);font-size:18px;line-height:1.72;padding:46px 22px 34vh}
+           color:var(--ink);font-size:18px;line-height:1.72;
+           padding:calc(46px + env(safe-area-inset-top,0px)) calc(22px + env(safe-area-inset-right,0px))
+                   calc(34vh + env(safe-area-inset-bottom,0px)) calc(22px + env(safe-area-inset-left,0px))}
       .pb-kulisse{position:fixed;inset:auto 0 0 0;height:84vh;z-index:0;pointer-events:none;overflow:hidden}
       .pb-kulisse svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
       .pb-baeume{display:block} html[data-theme=dark] .pb-baeume{display:none}
@@ -47,6 +53,10 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-composer{display:flex;gap:8px;margin-top:6px}
       .pb-composer textarea{flex:1;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);
               border-radius:14px;padding:12px 14px;font:inherit;font-size:17px;min-height:46px}
+      input,select,textarea{font-size:max(16px,1em)}
+      .pb-composer textarea{scroll-margin-block:80px 40vh}
+      .pb-btn{min-height:44px;box-sizing:border-box}
+      .pb-theme button{min-height:36px}
       .pb-typing{display:inline-flex;gap:5px;align-items:center;min-height:14px}
       .pb-typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
       .pb-typing span:nth-child(2){animation-delay:.2s}.pb-typing span:nth-child(3){animation-delay:.4s}
@@ -60,7 +70,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-msg.ai code{background:var(--ai-bd);border-radius:4px;padding:0 4px;font-family:ui-monospace,Menlo,monospace;font-size:14px}
       .pb-err{background:rgba(188,74,74,.12);border:1px solid rgba(188,74,74,.34);border-radius:12px;padding:11px 15px;font-size:15px;margin:12px 0}
       .pb-item{border-bottom:1px solid var(--card-bd);padding:11px 0;font-size:16px}
-      .pb-theme{position:fixed;top:18px;right:16px;z-index:6;display:flex;gap:3px;background:var(--card);
+      .pb-theme{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));right:calc(16px + env(safe-area-inset-right,0px));z-index:6;display:flex;gap:3px;background:var(--card);
                 border:1px solid var(--card-bd);border-radius:999px;padding:4px;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
       .pb-theme button{font-family:inherit;font-size:14px;border:0;background:transparent;color:var(--ink-soft);
                 border-radius:999px;padding:6px 14px;cursor:pointer;transition:.2s}
@@ -68,7 +78,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-busydots{display:inline-flex;gap:4px;align-items:center}
       .pb-busydots span{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
       .pb-busydots span:nth-child(2){animation-delay:.2s}.pb-busydots span:nth-child(3){animation-delay:.4s}
-      .pb-busy{position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:9px;align-items:center;
+      .pb-busy{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:9px;align-items:center;
                background:var(--card);border:1px solid var(--card-bd);border-radius:999px;padding:7px 16px;font-size:13px;
                color:var(--ink-soft);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
       .pb-zwei{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:stretch}
@@ -121,8 +131,22 @@ export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true
       <button id="pbDunkel" type="button">Dunkel</button>
     </div>`;
 
+/** Läuft die App als installierte PWA (eigenes Fenster statt Browser-Tab)?
+ *  Reine Funktion über dem window-Objekt: display-mode aus dem Manifest
+ *  (standalone) oder das ältere iOS-Signal navigator.standalone. */
+export function istStandalone(win) {
+  if (!win) return false;
+  try {
+    if (typeof win.matchMedia === "function" && win.matchMedia("(display-mode: standalone)").matches) return true;
+  } catch { /* z. B. sehr alte Engines */ }
+  return win.navigator ? win.navigator.standalone === true : false;
+}
+
 export function applyDesign(doc) {
   if (doc.getElementById("pbDesign")) return;
+  // Standalone-Haken (M3): CSS kann per html[data-standalone] reagieren —
+  // z. B. künftige Installations-Hinweise ausblenden, wenn schon installiert.
+  if (istStandalone(doc.defaultView)) doc.documentElement.setAttribute("data-standalone", "1");
   const st = doc.createElement("style");
   st.id = "pbDesign";
   st.textContent = DESIGN_CSS;

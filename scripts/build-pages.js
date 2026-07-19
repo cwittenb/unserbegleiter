@@ -60,7 +60,7 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
     if (f.endsWith(".png")) await copyFile(path.join(iconsQuelle, f), path.join(outDir, "public/icons", f));
 
   await writeFile(path.join(outDir, "public/index.html"), `<!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Paarbegleitung</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="${THEME_COLOR}">

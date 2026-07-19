@@ -169,7 +169,7 @@ export function zeigeUpdateHinweis() {
   const box = doc.createElement("div");
   box.id = "swUpdate";
   box.setAttribute("role", "status");
-  box.style.cssText = "position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99;" +
+  box.style.cssText = "position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:99;" +
     "background:var(--card,#fff);border:1px solid var(--card-bd,#d8dee5);color:var(--ink);border-radius:999px;" +
     "padding:10px 16px;font:inherit;font-size:14px;display:flex;gap:12px;align-items:center;" +
     "box-shadow:0 6px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px)";
