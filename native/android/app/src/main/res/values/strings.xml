@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">raumzuzweit</string>
+    <string name="title_activity_main">raumzuzweit</string>
+    <string name="package_name">app.roomfortwo</string>
+    <string name="custom_url_scheme">app.roomfortwo</string>
+</resources>
