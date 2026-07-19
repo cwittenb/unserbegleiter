@@ -1,0 +1,19 @@
+{
+  "name": "raumzuzweit-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native Hülle (Capacitor) für raumzuzweit / roomfortwo. Der Web-Client wird von scripts/build-capacitor.js nach www/ erzeugt — hier leben nur die nativen Projekte.",
+  "scripts": {
+    "sync": "cap sync",
+    "ios": "cap open ios",
+    "android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
+    "@capacitor/ios": "^8.4.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.4.2"
+  }
+}

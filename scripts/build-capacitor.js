@@ -1,9 +1,15 @@
-// Erzeugt dist/capacitor/ — die native Hülle (M4): www/ aus dem Pages-Client
-// plus capacitor.config.json. Die nativen Projekte (ios/, android/) werden
-// bewusst NICHT erzeugt oder eingecheckt — das bleibt ein lokaler Schritt beim
-// Betreiber (`npx cap add ios|android` in dist/capacitor/, siehe Protokoll M4).
+// Erzeugt native/ — die native Hülle: www/ aus dem Pages-Client plus
+// capacitor.config.json, NEBEN den nativen Projekten (ios/, android/).
+//
+// Warum native/ und nicht dist/ (Sprint NA): dist/ ist Wegwerf-Territorium und
+// nicht versioniert. Die nativen Projekte tragen aber Konfiguration, die von
+// Hand entsteht und nicht reproduzierbar ist — Signing-Team, Associated
+// Domains, Intent-Filter. Sie gehören an einen dauerhaften, versionierten Ort.
+// Dieses Skript schreibt daher NUR die generierten Teile (www/, config) und
+// fasst ios/ und android/ nie an; `npx cap sync` trägt die Änderungen hinein.
 //
 // Prinzipien:
+//   • ios/ und android/ bleiben unangetastet (Regressionstest sichert das ab).
 //   • Der Web-Client bleibt die einzige Quelle: www/ ist der Pages-Build,
 //     lokal gebündelt (D3a) — die App startet auch bei schlechtem Netz sofort.
 //   • admin.html wird NICHT mit ausgeliefert (Betreiber-Werkzeug, gehört nicht
@@ -30,7 +36,7 @@ function ermittleApiBasis() {
   return basis;
 }
 
-export async function buildCapacitor({ outDir = path.join(ROOT, "dist/capacitor") } = {}) {
+export async function buildCapacitor({ outDir = path.join(ROOT, "native") } = {}) {
   const apiBasis = ermittleApiBasis();
 
   // 1) Pages-Client in ein Unterverzeichnis bauen und www/ daraus ableiten.
@@ -76,12 +82,23 @@ export async function buildCapacitor({ outDir = path.join(ROOT, "dist/capacitor"
   };
   await writeFile(path.join(outDir, "capacitor.config.json"), JSON.stringify(config, null, 2) + "\n");
 
-  return { outDir, hash, apiBasis, appId: APP_ID };
+  // Ist die Hülle schon initialisiert? (Reiner Hinweis, kein Fehler — der
+  // Build selbst ist auch ohne native Projekte sinnvoll.)
+  let initialisiert = true;
+  try { await stat(path.join(outDir, "node_modules/@capacitor/cli")); } catch { initialisiert = false; }
+
+  return { outDir, hash, apiBasis, appId: APP_ID, initialisiert };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   buildCapacitor().then(
-    r => console.log(`Capacitor-Build: ${r.outDir} (Kern ${r.hash}, API ${r.apiBasis}, App-ID ${r.appId})`),
+    r => {
+      console.log(`Capacitor-Build: ${r.outDir} (Kern ${r.hash}, API ${r.apiBasis}, App-ID ${r.appId})`);
+      if (!r.initialisiert)
+        console.log("Hülle noch nicht initialisiert — einmalig:  cd native && npm install && npx cap add ios && npx cap add android");
+      else
+        console.log("Weiter mit:  cd native && npx cap sync");
+    },
     e => { console.error("Capacitor-Build fehlgeschlagen:", e.message); process.exit(1); }
   );
 }

@@ -20,3 +20,40 @@ push_patch.sh
 # for security: do not commit patch files in root
 /*.mjs
 /*.patch
+
+# ---- Native Hülle (Sprint NA) ----
+# Grundsatz: die nativen Projekte native/ios und native/android SIND versioniert
+# (dort leben Signing-Team, Associated Domains, Intent-Filter — von Hand erzeugt,
+# nicht reproduzierbar). Ignoriert wird nur, was Werkzeuge generieren.
+
+# Generate aus `npm run build:capacitor`
+native/www/
+native/pages-build/
+native/capacitor.config.json
+
+# Kopien des Web-Builds, die `npx cap sync` in die nativen Projekte legt
+native/ios/App/App/public/
+native/android/app/src/main/assets/public/
+
+# iOS-Werkzeugkram
+native/ios/App/Pods/
+native/ios/App/output/
+native/ios/App/build/
+**/xcuserdata/
+**/DerivedData/
+
+# Android-Werkzeugkram
+native/android/.gradle/
+native/android/.idea/
+native/android/build/
+native/android/app/build/
+native/android/captures/
+native/android/local.properties
+
+# Signaturmaterial — NIEMALS einchecken
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+key.properties
