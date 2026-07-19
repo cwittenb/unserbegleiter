@@ -20,7 +20,8 @@ function addTok(ziel, quelle) {
   for (const k of ["in", "out", "cacheRead", "cacheWrite", "calls"]) ziel[k] += quelle[k] || 0;
 }
 
-const MAX_TOKENS = 1024;   // wie der synchrone Pfad (LLM_DEFAULTS.maxTokens)
+const MAX_TOKENS = 4096;   // wie der synchrone Pfad (LLM_DEFAULTS.maxTokens, S77:
+                           // Denkbudget + neuer Tokenizer machten 1024 zu knapp)
 
 export async function laufeAlleBatch(szenarien, deps) {
   const { pipelineModell, judgeModell, stand, melde, batch } = deps;
@@ -58,6 +59,10 @@ export async function laufeAlleBatch(szenarien, deps) {
           // alle Turn-Batches → gelesen statt je Turn neu geschrieben (höhere Cache-Quote).
           system: [{ type: "text", text: k.system, cache_control: { type: "ephemeral", ttl: "1h" } }],
           messages: k.messages.map(m => ({ role: m.role, content: m.content })),
+          // S81: Der Batch baut seine Requests selbst und lief damit an der
+          // S77-Rollenverteilung vorbei — die Begleitung denkt NICHT (der Judge
+          // unten bleibt adaptiv, dort fehlt das Feld bewusst).
+          thinking: { type: "disabled" },
         },
       });
     }
@@ -68,10 +73,17 @@ export async function laufeAlleBatch(szenarien, deps) {
     for (const [cid, k] of idx) {
       const r = ergebnis.get(cid);
       if (!r || r.fehler) { k.fehler = "Batch-Fehler (Pipeline Turn " + (d + 1) + "): " + (r ? r.fehler : "kein Ergebnis"); continue; }
-      const { text, usage } = LLM_PROVIDERS.anthropic.parse(r.message);
+      // S81: markiereAbschnitt (S77) wirft bei "abgeschnitten, bevor Text begann".
+      // Im Batch ist das die Anomalie EINES Samples — nie der Tod des Gesamtlaufs.
+      let text, usage, abgeschnitten;
+      try { ({ text, usage, abgeschnitten } = LLM_PROVIDERS.anthropic.parse(r.message)); }
+      catch (e) { k.leer = e.message + " (Turn " + (d + 1) + ")"; continue; }
       addUsage(k.pipe, usage);
-      k.messages.push({ role: "assistant", content: text });
+      k.messages.push(abgeschnitten
+        ? { role: "assistant", content: text, abgeschnitten: true }
+        : { role: "assistant", content: text });
       if (!text || !String(text).trim()) k.leer = "leere Pipeline-Antwort (Turn " + (d + 1) + ")";   // Anomalie → nicht weiter (S65)
+      else if (abgeschnitten) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Turn " + (d + 1) + ")";   // S77-Regel: Halbsätze werden nicht gerichtet
     }
   }
 

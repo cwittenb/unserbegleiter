@@ -144,3 +144,58 @@ describe("Batch-Runner · Lockstep + Judge-Batch", () => {
     expect(judgeCalls).toBe(0);
   });
 });
+
+describe("Batch-Runner · S81: Denkmodus, Budget, Abschneide-Robustheit", () => {
+  it("Pipeline-Requests: thinking disabled + 4096er Budget; Judge-Requests OHNE thinking (adaptiv)", async () => {
+    const fuehreBatch = async requests => {
+      const map = new Map();
+      for (const r of requests) {
+        if (r.custom_id.startsWith("p_")) {
+          expect(r.params.thinking).toEqual({ type: "disabled" });
+          expect(r.params.max_tokens).toBe(4096);
+          map.set(r.custom_id, { message: nachricht("Antwort") });
+        } else {
+          expect(r.params.thinking).toBeUndefined();
+          map.set(r.custom_id, { message: urteilNachricht([{ id: "C1", antwort: "nein", beleg: "ok" }]) });
+        }
+      }
+      return map;
+    };
+    const b = await laufeAlleBatch([LEAK], { n: 1, fuehreBatch, pipelineModell: "p", judgeModell: "j" });
+    expect(b.szenarien[0].status).toBe("gruen");
+  });
+
+  it("EIN abgeschnittener Turn (nur thinking, kein Text) ⇒ dieses Sample unbewertet, der Lauf lebt weiter", async () => {
+    const kaputt = { content: [{ type: "thinking", thinking: "", signature: "x" }], stop_reason: "max_tokens", usage: { input_tokens: 1, output_tokens: 1024 } };
+    const fuehreBatch = async requests => {
+      const map = new Map();
+      for (const r of requests) {
+        if (r.custom_id.startsWith("p_"))
+          map.set(r.custom_id, { message: r.custom_id.includes("_1_") ? kaputt : nachricht("Vollständige Antwort.") });
+        else map.set(r.custom_id, { message: urteilNachricht([{ id: "C1", antwort: "nein", beleg: "ok" }]) });
+      }
+      return map;
+    };
+    const b = await laufeAlleBatch([LEAK], { n: 2, fuehreBatch, pipelineModell: "p", judgeModell: "j" });
+    const sz = b.szenarien[0];
+    expect(sz.unbewerteteSamples).toBe(1);
+    expect(JSON.stringify(sz)).toContain("abgeschnitten");
+    expect(sz.samples.filter(x => !x.unbewertet)).toHaveLength(1);   // das saubere Sample wurde gerichtet
+  });
+
+  it("Halbsatz (abgeschnitten MIT Text) wird markiert und NICHT gerichtet (S77-Regel im Batch)", async () => {
+    const halb = { content: [{ type: "text", text: "Ich höre, dass" }], stop_reason: "max_tokens", usage: { input_tokens: 1, output_tokens: 4096 } };
+    let judgeRufe = 0;
+    const fuehreBatch = async requests => {
+      const map = new Map();
+      for (const r of requests) {
+        if (r.custom_id.startsWith("p_")) map.set(r.custom_id, { message: halb });
+        else { judgeRufe++; map.set(r.custom_id, { message: urteilNachricht([{ id: "C1", antwort: "nein", beleg: "ok" }]) }); }
+      }
+      return map;
+    };
+    const b = await laufeAlleBatch([LEAK], { n: 1, fuehreBatch, pipelineModell: "p", judgeModell: "j" });
+    expect(b.szenarien[0].unbewerteteSamples).toBe(1);
+    expect(judgeRufe).toBe(0);
+  });
+});
