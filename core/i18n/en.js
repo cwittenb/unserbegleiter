@@ -313,4 +313,8 @@ export const en = {
   // Theme toggle
   "theme.hell": "Light",
   "theme.dunkel": "Dark",
+  // PWA (M1): manifest & home screen
+  "pwa.name": "unserbegleiter",
+  "pwa.kurzname": "Begleiter",
+  "pwa.beschreibung": "AI-assisted couples companion: a private reflection space for each partner \u2014 only what you explicitly choose is shared.",
 };

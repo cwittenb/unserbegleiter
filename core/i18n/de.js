@@ -311,4 +311,8 @@ export const de = {
   // Theme-Umschalter
   "theme.hell": "Hell",
   "theme.dunkel": "Dunkel",
+  // PWA (M1): Manifest & Home-Bildschirm
+  "pwa.name": "unserbegleiter",
+  "pwa.kurzname": "Begleiter",
+  "pwa.beschreibung": "KI-gestützte Paarbegleitung: ein eigener Reflexionsraum für jede und jeden \u2014 geteilt wird nur, was du ausdrücklich freigibst.",
 };

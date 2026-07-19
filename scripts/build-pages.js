@@ -1,10 +1,11 @@
 // Erzeugt dist/cloudflare/ — Worker-Bundle, Pages-Client, wrangler.toml.
 import { build } from "esbuild";
-import { writeFile, mkdir, readFile } from "node:fs/promises";
+import { writeFile, mkdir, readFile, readdir, copyFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { coreHash } from "./core-hash.js";
 import { PAARE_KV_ID as KV_ID_KONFIG } from "../platforms/cloudflare/deploy.config.js";
+import { manifestJson, erzeugeManifest, THEME_COLOR } from "../platforms/cloudflare/pages/manifest.js";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
@@ -38,9 +39,26 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
     path.join(outDir, "public/app.js"),
     client.outputFiles[0].text.replace(/__CORE_HASH__/g, hash)
   );
+  // PWA (M1): Manifest + Icon-Satz. Icons sind eingecheckte Assets
+  // (platforms/cloudflare/pages/icons/), das Manifest wird generiert.
+  const manifest = erzeugeManifest();
+  await writeFile(path.join(outDir, "public/manifest.webmanifest"), manifestJson());
+  const iconsQuelle = path.join(ROOT, "platforms/cloudflare/pages/icons");
+  await mkdir(path.join(outDir, "public/icons"), { recursive: true });
+  for (const f of await readdir(iconsQuelle))
+    if (f.endsWith(".png")) await copyFile(path.join(iconsQuelle, f), path.join(outDir, "public/icons", f));
+
   await writeFile(path.join(outDir, "public/index.html"), `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Paarbegleitung</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="${THEME_COLOR}">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="${manifest.short_name}">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <style>:root{--bg:#f5f7f9;--ink:#1b2430;--ink-soft:#5a6675;--accent:#0f766e}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 #app{max-width:760px;margin:0 auto;padding:24px 18px}</style></head>
