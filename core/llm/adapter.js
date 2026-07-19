@@ -112,22 +112,55 @@ function strukturAuszug(roh) {
  *  Liefert das geparste Objekt oder null — er RÄT nie: parst der Kandidat
  *  nicht oder ist kein Objekt, gibt es nichts zu retten. Anlass: Umgebungen
  *  ohne Tool-Erzwingung (keyless Artefakt) — der Judge lieferte dort valide
- *  Verdikte als Freitext/```json, und 15/15 Samples blieben unbewertet. */
+ *  Verdikte als Freitext/```json, und 15/15 Samples blieben unbewertet.
+ *  S86: (a) UNVERSCHLOSSENE Zäune zählen (real beobachtet: ```json … ohne
+ *  schließenden Zaun bei stop=end_turn); (b) zweite Parse-Runde mit
+ *  deterministisch escapten Steuerzeichen in String-Literalen — Standard-
+ *  JSON-Tracking, bei anderweitig kaputten Strings scheitert der Parse
+ *  weiterhin (es wird nie geraten). */
 export function extrahiereStrukturAusText(text) {
   const t = String(text == null ? "" : text);
-  const zaun = t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const zaun = t.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);
   const kandidaten = [];
-  if (zaun) kandidaten.push(zaun[1]);
+  if (zaun && zaun[1].trim()) kandidaten.push(zaun[1]);
   const von = t.indexOf("{"), bis = t.lastIndexOf("}");
   if (von >= 0 && bis > von) kandidaten.push(t.slice(von, bis + 1));
-  for (const k of kandidaten) {
-    try {
-      const d = JSON.parse(k.trim());
-      if (d && typeof d === "object" && !Array.isArray(d)) return d;
-      if (Array.isArray(d)) return d;   // manche Modelle liefern das checks-Array nackt
-    } catch { /* nächster Kandidat */ }
+  const eckigVon = t.indexOf("["), eckigBis = t.lastIndexOf("]");
+  if (eckigVon >= 0 && eckigBis > eckigVon) kandidaten.push(t.slice(eckigVon, eckigBis + 1));
+  for (const roh of kandidaten) {
+    for (const k of [roh.trim(), escapeSteuerzeichenInStrings(roh.trim())]) {
+      try {
+        const d = JSON.parse(k);
+        if (d && typeof d === "object" && !Array.isArray(d)) return d;
+        if (Array.isArray(d)) return d;   // manche Modelle liefern das checks-Array nackt
+      } catch { /* nächster Kandidat */ }
+    }
   }
   return null;
+}
+
+/** S86 · Literale Steuerzeichen (Zeilenumbruch, Tab, CR) INNERHALB von
+ *  JSON-String-Literalen escapen — außerhalb bleiben sie unangetastet
+ *  (dort sind sie gültiger Zwischenraum). Deterministisch nach Standard-
+ *  JSON-Semantik (Backslash-bewusstes Quote-Tracking); repariert NICHT
+ *  unescapte Anführungszeichen — das bleibt Aufgabe des Judge-Prompts (j7). */
+export function escapeSteuerzeichenInStrings(s) {
+  let aus = "", inString = false, escaped = false;
+  for (const z of s) {
+    if (inString) {
+      if (escaped) { aus += z; escaped = false; continue; }
+      if (z === "\\") { aus += z; escaped = true; continue; }
+      if (z === '"') { aus += z; inString = false; continue; }
+      if (z === "\n") { aus += "\\n"; continue; }
+      if (z === "\r") { aus += "\\r"; continue; }
+      if (z === "\t") { aus += "\\t"; continue; }
+      aus += z;
+    } else {
+      if (z === '"') inString = true;
+      aus += z;
+    }
+  }
+  return aus;
 }
 
 /** Abgeschnittene Strukturausgabe ist ein HARTER Fehler: halbes JSON ist keine

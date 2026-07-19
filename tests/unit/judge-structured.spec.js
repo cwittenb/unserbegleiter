@@ -21,21 +21,25 @@ describe("Judge · Wire-Schema (S76)", () => {
     expect(JUDGE_SCHEMA.schema.additionalProperties).toBe(false);
   });
 
-  it("Prompt j6/S85: strukturierte Form + EINE Reinform-Zeile als keyless-Absicherung, volle Härtung", () => {
-    expect(JUDGE_PROMPT_VERSION).toBe("j6");
+  it("Prompt j7/S86: strukturierte Form + keyless-Absicherung (Reinform j6, Beleg-Stil j7), volle Härtung", () => {
+    expect(JUDGE_PROMPT_VERSION).toBe("j7");
     const p = baueJudgePrompt("de");
-    // Die alten Text-Parsing-Krücken bleiben draußen (S78) …
-    expect(p).not.toContain("Markdown-Zäune");
-    expect(p).not.toContain("gerade Anführungszeichen");
-    // … aber j6 sichert Umgebungen OHNE Tool-Erzwingung ab (keyless Artefakt):
+    // j6 sichert Umgebungen OHNE Tool-Erzwingung ab (keyless Artefakt):
     expect(p).toContain("GENAU EINEM reinen JSON-Objekt");
     expect(p).toContain("ohne Code-Zäune");
+    // j7: Beleg-Stil — ohne Formgarantie zerbrechen gerade Anführungszeichen
+    // und Zeilenumbrüche im Zitat das JSON (dokumentierte Teilrücknahme S78;
+    // 4 unrettbare Samples am 2026-07-19):
+    expect(p).toContain("«…»");
+    expect(p).toContain("keine geraden");
+    expect(p).toContain("keine Zeilenumbrüche");
     expect(p).toContain("verdict");
     expect(p).toContain("SYSTEM(Begleitung)");
     expect(p).toContain("in dubio contra machina");
     const en = baueJudgePrompt("en");
     expect(en).toContain("independent examiner");
     expect(en).toContain("EXACTLY ONE plain JSON object");
+    expect(en).toContain("no straight double quotes");
   });
 });
 

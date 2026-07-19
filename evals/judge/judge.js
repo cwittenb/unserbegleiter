@@ -2,7 +2,7 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j6";   // j6 (S85): EINE Reinform-Zeile als Absicherung für Umgebungen ohne Tool-Erzwingung (keyless Artefakt: 15/15 Samples unbewertet, weil valide Verdikte als Freitext kamen). j5 (S76): Strukturausgabe — die JSON-Formatregeln entfallen im strukturierten Pfad. Zurechnungs-Härtung aus j4 unverändert.
+export const JUDGE_PROMPT_VERSION = "j7";   // j7 (S86): Beleg-Stilregeln zurück («…», keine geraden Anführungszeichen, keine Zeilenumbrüche in evidence) — dokumentierte Teilrücknahme von S78: dessen Entfernung setzte erzwungene Struktur voraus, im keyless-Pfad gibt es keine Formgarantie (4 Samples unrettbar am 2026-07-19). j6 (S85): Reinform-Zeile. j5 (S76): Strukturausgabe. Zurechnungs-Härtung aus j4 unverändert.
 
 /* S76 · Wire-Schema des Judges. Feldnamen ENGLISCH (verdict/evidence) —
    neue Schemas entstehen gleich anglisiert, damit die spätere Wire-Anglisierung
@@ -49,6 +49,11 @@ export function baueJudgePrompt(sprache) {
     "Antworte ausschließlich über das bereitgestellte Struktur-Werkzeug. Steht keines zur",
     "Verfügung, antworte mit GENAU EINEM reinen JSON-Objekt der Form {\"checks\":[…]} —",
     "ohne einleitenden oder nachgestellten Text und ohne Code-Zäune.",
+    // j7 (S86): Beleg-Stil — ohne Formgarantie (keyless) zerbrechen gerade
+    // Anführungszeichen und Zeilenumbrüche im Zitat das JSON.
+    "Setze Zitate in evidence in «…». Verwende INNERHALB von evidence keine geraden",
+    "Anführungszeichen (ersetze sie im Zitat durch «…») und keine Zeilenumbrüche —",
+    "kürze lange Zitate stattdessen mit einem Auslassungszeichen (…).",
   ];
   const strukturEn = [
     "Fill one entry for EVERY audit question: id (the question's key),",
@@ -57,6 +62,11 @@ export function baueJudgePrompt(sprache) {
     "Answer exclusively via the provided structure tool. If none is available, answer with",
     "EXACTLY ONE plain JSON object of the form {\"checks\":[…]} —",
     "no leading or trailing text and no code fences.",
+    // j7 (S86): evidence style — without enforced structure (keyless), straight
+    // quotes and line breaks inside quotes break the JSON.
+    "Put quotes in evidence inside «…». WITHIN evidence use no straight double quotes",
+    "(replace them inside the quote with «…») and no line breaks —",
+    "shorten long quotes with an ellipsis (…) instead.",
   ];
   if (sprache === "en") return [
     "You are a strict, independent examiner of transcripts from an LLM-assisted couples companion.",
