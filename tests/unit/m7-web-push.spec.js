@@ -115,7 +115,7 @@ describe("M7 · Client-Fähigkeitsprüfung (rein)", () => {
     expect(istPushMoeglich(faehig)).toBe(true);
     expect(istPushMoeglich({ navigator: {} })).toBe(false);
     expect(istPushMoeglich({ navigator: { serviceWorker: {} }, PushManager: function () {} })).toBe(false);
-    globalThis.RZZ_API_BASIS = "https://raumzuzweit.de";
+    globalThis.RZZ_API_BASIS = "https://app.raumzuzweit.de";
     try { expect(istPushMoeglich(faehig)).toBe(false); }
     finally { delete globalThis.RZZ_API_BASIS; }
   });

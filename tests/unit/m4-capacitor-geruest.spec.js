@@ -23,8 +23,8 @@ describe("M4 · API-Basis im Client (rein)", () => {
   });
 
   it("gesetzte Basis wird durchgereicht und markiert die native Hülle", () => {
-    globalThis.RZZ_API_BASIS = "https://raumzuzweit.de";
-    expect(apiBasis()).toBe("https://raumzuzweit.de");
+    globalThis.RZZ_API_BASIS = "https://app.raumzuzweit.de";
+    expect(apiBasis()).toBe("https://app.raumzuzweit.de");
     expect(istNativeShell()).toBe(true);
   });
 });
@@ -34,8 +34,8 @@ describe("M4 · Deploy-Konfiguration", () => {
     expect(APP_ID).toBe("app.roomfortwo");
   });
 
-  it("API-Basis ist die produktive Domain, ohne Pfad", () => {
-    expect(API_BASIS).toBe("https://raumzuzweit.de");
+  it("API-Basis ist die produktive App-Subdomain, ohne Pfad", () => {
+    expect(API_BASIS).toBe("https://app.raumzuzweit.de");
   });
 });
 
@@ -59,7 +59,7 @@ describe("M4 · Capacitor-Build", () => {
   });
 
   it("die API-Basis wird VOR dem App-Skript injiziert", () => {
-    const injektion = `<script>globalThis.RZZ_API_BASIS="https://raumzuzweit.de";</script>`;
+    const injektion = `<script>globalThis.RZZ_API_BASIS="https://app.raumzuzweit.de";</script>`;
     expect(index).toContain(injektion);
     expect(index.indexOf(injektion)).toBeLessThan(index.indexOf('<script src="/app.js">'));
   });

@@ -7,8 +7,9 @@ Datenmodells (Worker/KV). Kein Marketing-Dokument; Store-Texte separat in
 `docs/store-texte.md`.
 
 Identität: App-Name **raumzuzweit** (de) / **roomfortwo** (en) ·
-Bundle-/Application-ID **`app.roomfortwo`** · Domain `raumzuzweit.de` (API +
-Universal/App Links) · englische Domain `roomfortwo.app`.
+Bundle-/Application-ID **`app.roomfortwo`** · Anwendung + API + Universal/App
+Links auf **`app.raumzuzweit.de`**; die Apex `raumzuzweit.de` trägt
+Landing-Page und Rechtstexte · englische Domain `roomfortwo.app`.
 
 ---
 
@@ -17,7 +18,7 @@ Universal/App Links) · englische Domain `roomfortwo.app`.
 | # | Blocker | Warum | Stand |
 |---|---|---|---|
 | B1 | **Produktive Magic-Link-Zustellung per E-Mail** | Reviewer müssen sich anmelden können; der gesamte Zugang läuft über Magic-Links. Merkposten „Cloudflare Email Sending: watch and wait" muss hier aufgelöst sein (SMTP-Secrets produktiv verifiziert, `EMAIL_PFLICHT` erst danach). | offen |
-| B2 | **Datenschutzerklärung öffentlich unter stabiler URL** | Pflichtfeld in beiden Stores (`https://raumzuzweit.de/datenschutz` vorgesehen). Muss LLM-Auftragsverarbeiter (Anthropic/Mistral/OpenAI-kompatibel, je nach Schalter), Cloudflare (Hosting/KV), Zweck, Speicherdauer, Löschweg nennen. | offen |
+| B2 | **Datenschutzerklärung öffentlich unter stabiler URL** | Pflichtfeld in beiden Stores (`https://raumzuzweit.de/datenschutz` vorgesehen — Rechtstexte auf der Apex). Muss LLM-Auftragsverarbeiter (Anthropic/Mistral/OpenAI-kompatibel, je nach Schalter), Cloudflare (Hosting/KV), Zweck, Speicherdauer, Löschweg nennen. | offen |
 | B3 | **Impressum** (DE-Pflicht, § 5 DDG) auf `raumzuzweit.de` und aus der App erreichbar | Deutsche Anbieterkennzeichnung; Play zeigt zusätzlich Entwickler-Adresse an. | offen |
 | B4 | **Support-Kontakt** (URL oder Mail) | Pflichtfeld beide Stores. | offen |
 | B5 | **Apple Developer Program** (99 USD/Jahr) + **Play Console** (25 USD einmalig) | Konten inkl. Identitätsprüfung; D-U-N-S nur bei Firmen-Konto. | offen |
