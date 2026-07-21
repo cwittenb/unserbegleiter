@@ -67,7 +67,7 @@ describe("E2E · gebautes Artefakt-Bundle", () => {
     frischeWelt({ hashFragment: "#selbstfahrt" });
     const bericht = await warteAuf(() => window.__PB_SELBSTFAHRT__, "Selbstfahrt-Bericht liegt vor", { timeoutMs: 15000 });
     expect(bericht.kern).toBe(CORE_VERSION);
-    expect(bericht.journeys.map(j => j.id)).toEqual(["solo-smoke", "aufdeckung"]);
+    expect(bericht.journeys.map(j => j.id)).toEqual(["solo-smoke", "aufdeckung", "raumwechsel"]);
     for (const j of bericht.journeys)
       expect(j.ok, j.id + (j.fehler ? " — " + j.fehler : "") + "\n" +
         j.schritte.filter(s => !s.ok && !s.detail).map(s => "✗ " + s.name).join("\n")).toBe(true);

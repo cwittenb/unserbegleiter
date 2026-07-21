@@ -238,7 +238,57 @@ export const journeyAufdeckung = {
   },
 };
 
-export const JOURNEYS = [journeySolo, journeyAufdeckung];
+/** Journey 3 · Raumwechsel (S87): privat → gemeinsam → privat. Die harte
+ *  Zusicherung — nichts aus dem Einzelraum erscheint im gemeinsamen Raum und
+ *  umgekehrt — gefahren gegen die ECHTE App: offener Entwurf, dann Wechsel,
+ *  Baum-Prüfung auf Abwesenheit, leere Hülle, Rückkehr mit Entwurf. */
+export const journeyRaumwechsel = {
+  id: "raumwechsel",
+  titel: "Raumwechsel: Solo-Entwurf quert nicht → Hülle leer → Qualitätszeit sauber → Entwurf kehrt zurück",
+  drehbuch: [
+    "[SFR1] Willkommen in deinem Reflexionsgespräch, Anna.",
+    "[SFR2] Schön, dass ihr beide da seid — womit mögt ihr ankommen?",
+    "[SFR3] Willkommen zurück in deinem Raum, Anna.",
+  ],
+  async fahre(welt, pruefe) {
+    const { wurzel } = welt;
+    const S = "XRAUMSENTINELX";
+    await welt.ui.boot();
+    await warteAuf(() => wurzel.querySelector("#btnMyRoom"), "Startseite erscheint");
+    klick(wurzel, "btnMyRoom");
+    await warteAuf(() => sichtbar(wurzel, "scrMyRoom"), "Mein Raum erscheint");
+    klick(wurzel, "btnSolo");
+    await warteAuf(() => wurzel.textContent.includes("[SFR1]"), "Solositzung eröffnet");
+    await warteSendbereit(wurzel);
+    tippe(wurzel, "pbInput", S + " halber privater Gedanke");     // Entwurf, NICHT gesendet
+    klick(wurzel, "btnChatZurueck");
+    await warteAuf(() => sichtbar(wurzel, "scrMyRoom"), "zurück im Vorraum");
+    pruefe("Hülle nach dem Verlassen leer (childElementCount 0)",
+      wurzel.querySelector("#scrChat").childElementCount === 0);
+    pruefe("Sentinel-Entwurf nirgends im Baum (Text)", !wurzel.textContent.includes(S));
+    klick(wurzel, "btnZurueck1");
+    await warteAuf(() => sichtbar(wurzel, "scrStart"), "Startseite");
+    klick(wurzel, "btnSharedRoom");
+    await warteAuf(() => sichtbar(wurzel, "scrShared"), "gemeinsamer Raum");
+    klick(wurzel, "btnMoment");
+    await warteAuf(() => wurzel.textContent.includes("[SFR2]"), "Qualitätszeit eröffnet");
+    const felder = [...wurzel.querySelectorAll("input,textarea")].map(f => f.value).join(" ");
+    pruefe("kein privater Entwurf im gemeinsamen Composer", !felder.includes(S));
+    pruefe("kein privater Text im gemeinsamen Baum", !wurzel.textContent.includes(S));
+    klick(wurzel, "btnChatZurueck");
+    await warteAuf(() => sichtbar(wurzel, "scrShared"), "zurück im gemeinsamen Vorraum");
+    klick(wurzel, "btnZurueck2");
+    await warteAuf(() => sichtbar(wurzel, "scrStart"), "Startseite (2)");
+    klick(wurzel, "btnMyRoom");
+    await warteAuf(() => sichtbar(wurzel, "scrMyRoom"), "Mein Raum (2)");
+    klick(wurzel, "btnSolo");
+    await warteAuf(() => wurzel.querySelector("#pbInput"), "Solositzung wieder offen");
+    pruefe("Entwurf beim Wiederbetreten zurück (K3 b, nur Arbeitsspeicher)",
+      wurzel.querySelector("#pbInput").value.includes(S));
+  },
+};
+
+export const JOURNEYS = [journeySolo, journeyAufdeckung, journeyRaumwechsel];
 
 /* ================= Fahrt-Runner ================= */
 

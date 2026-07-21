@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1720 2010" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="pf" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#1a1a1a"/></marker>
+    <marker id="pfd" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#6b7280"/></marker>
+    <marker id="pfa" markerWidth="11" markerHeight="9" refX="10" refY="4.5" orient="auto"><path d="M0,0 L11,4.5 L0,9 z" fill="#0f766e"/></marker>
+  </defs>
+  <style>
+    .kopf { font-size:17px; font-weight:700; text-decoration:underline; }
+    .ll   { stroke:#1a1a1a; stroke-width:1.1; stroke-dasharray:5 5; }
+    .akt  { fill:#ffffff; stroke:#1a1a1a; stroke-width:1.4; }
+    .pfeil{ stroke:#1a1a1a; stroke-width:1.5; fill:none; marker-end:url(#pf); }
+    .rf   { stroke:#6b7280; stroke-width:1.4; fill:none; stroke-dasharray:7 5; marker-end:url(#pfd); }
+    .s89  { stroke:#0f766e; stroke-width:1.8; fill:none; marker-end:url(#pfa); }
+    .s89d { stroke:#0f766e; stroke-width:1.8; fill:none; stroke-dasharray:7 5; marker-end:url(#pfa); }
+    .lbl  { font-size:14.5px; fill:#1a1a1a; text-anchor:middle; }
+    .lblg { font-size:14px; fill:#4b5563; text-anchor:middle; }
+    .lbla { font-size:14.5px; fill:#0f766e; font-weight:600; text-anchor:middle; }
+    .rot  { font-size:13.5px; fill:#1a1a1a; }
+    .note { fill:#f5f5f4; stroke:#9ca3af; stroke-width:1; rx:6; }
+    .notea{ fill:#f0fdfa; stroke:#0f766e; stroke-width:1.2; rx:6; }
+    .nt   { font-size:13.5px; fill:#374151; }
+    .nta  { font-size:13.5px; fill:#0f766e; }
+    .phase{ font-size:13px; fill:#6b7280; letter-spacing:1.5px; font-weight:700; }
+    .sub  { font-size:12.5px; fill:#6b7280; text-anchor:middle; }
+  </style>
+
+  <text x="30" y="34" font-size="20" font-weight="700">unserbegleiter · Datenflüsse — korrigierte Fassung</text>
+  <text x="30" y="56" font-size="13.5" fill="#6b7280">Ist-Stand origin/main @ b1aa856 · in Teal: geplant mit S89 · Vorlage: entityflow.svg (Cars10), Korrekturen D1–D5 unten</text>
+
+  <!-- ===================== Kopfzeilen & Lebenslinien ===================== -->
+  <!-- L1 130 · L2 350 · L3 585 · L4 800 · L5 1010 · L6 1230 · L7 1450 · L8 1640 -->
+  <g text-anchor="middle">
+    <rect x="52"   y="72" width="156" height="30" class="akt"/><text x="130"  y="92"  class="kopf">Einzelsession</text>
+    <rect x="272"  y="72" width="156" height="30" class="akt"/><text x="350"  y="92"  class="kopf">priv. Zeitleiste</text>
+    <rect x="497"  y="72" width="176" height="30" class="akt"/><text x="585"  y="92"  class="kopf">Kernwetten-Ablage</text>
+    <rect x="737"  y="72" width="126" height="30" class="akt"/><text x="800"  y="92"  class="kopf">Regal</text>
+    <rect x="927"  y="72" width="166" height="30" class="akt"/><text x="1010" y="92"  class="kopf">Agenda · Ziele</text>
+    <rect x="1132" y="72" width="196" height="30" class="akt"/><text x="1230" y="92"  class="kopf">Gem. Auflösung</text>
+    <rect x="1372" y="72" width="156" height="30" class="akt"/><text x="1450" y="92"  class="kopf">Qualitätszeit</text>
+    <rect x="1562" y="72" width="146" height="30" class="akt"/><text x="1638" y="92"  class="kopf">gem. Zeitleiste</text>
+    <text x="130"  y="118" class="sub">privater Raum · je Partner</text>
+    <text x="350"  y="118" class="sub">+ Merkposten · Selbstoffenb.</text>
+    <text x="585"  y="118" class="sub">reveal · Freigaben · measurements</text>
+    <text x="800"  y="118" class="sub">Einblicke (Pull)</text>
+    <text x="1010" y="118" class="sub">agenda · goals · Befund</text>
+    <text x="1230" y="118" class="sub">eigene Session, EIN Gerät</text>
+    <text x="1450" y="118" class="sub">eigene Session, EIN Gerät</text>
+    <text x="1638" y="118" class="sub">momentLog · revealLog</text>
+  </g>
+  <line x1="130"  y1="128" x2="130"  y2="1770" class="ll"/>
+  <line x1="350"  y1="128" x2="350"  y2="1770" class="ll"/>
+  <line x1="585"  y1="128" x2="585"  y2="1770" class="ll"/>
+  <line x1="800"  y1="128" x2="800"  y2="1770" class="ll"/>
+  <line x1="1010" y1="128" x2="1010" y2="1770" class="ll"/>
+  <line x1="1230" y1="128" x2="1230" y2="1770" class="ll"/>
+  <line x1="1450" y1="128" x2="1450" y2="1770" class="ll"/>
+  <line x1="1638" y1="128" x2="1638" y2="1770" class="ll"/>
+
+  <!-- ===================== I · Reflexionsgespräch ===================== -->
+  <text x="30" y="152" class="phase">I · REFLEXIONSGESPRÄCH</text>
+  <rect x="121" y="160" width="18" height="270" class="akt"/>
+  <text class="rot" transform="translate(112,415) rotate(-90)">Reflexionsgespräch</text>
+
+  <line x1="341" y1="180" x2="139" y2="180" class="rf"/>
+  <text x="245" y="172" class="lblg">Kontext: letzte 5 Einträge · offene Merkposten</text>
+  <line x1="1629" y1="207" x2="139" y2="207" class="rf"/>
+  <text x="880" y="199" class="lblg">Kontext: letzte 3 gemeinsame Momente (momentLog) — Rückfluss, war in der Vorlage Senke (F4)</text>
+
+  <line x1="139" y1="248" x2="341" y2="248" class="pfeil"/>
+  <text x="240" y="240" class="lbl">Protokoll (ZEITLEISTE-BLOCK)</text>
+  <line x1="139" y1="283" x2="341" y2="283" class="pfeil"/>
+  <text x="240" y="275" class="lbl">Merkposten (NOTE-BLOCK, privat)</text>
+
+  <!-- Gate: eine Querung, drei Ziele (D2) -->
+  <path d="M130,318 L144,332 L130,346 L116,332 z" fill="#fff" stroke="#1a1a1a" stroke-width="1.4"/>
+  <text x="158" y="337" font-size="13px" fill="#374151">Gate (Person wählt Wege)</text>
+  <line x1="144" y1="332" x2="791" y2="332" class="pfeil"/>
+  <text x="470" y="324" class="lbl">Weg „Einblick" → Regal-Item (RG, read:false — merken statt melden)</text>
+  <line x1="139" y1="370" x2="1001" y2="370" class="pfeil"/>
+  <text x="570" y="362" class="lbl">Weg „Thema" → Agenda-Item (AGD, open — deine Kante „Gesprächspunkte")</text>
+  <path d="M139,398 C 200,398 200,420 139,420" class="pfeil"/>
+  <text x="298" y="413" class="lbl">Weg „selbst": Selbstoffenbarung, bleibt privat</text>
+
+  <!-- ===================== II · Auftragsklärung ===================== -->
+  <text x="30" y="474" class="phase">II · AUFTRAGSKLÄRUNG</text>
+  <rect x="121" y="482" width="18" height="150" class="akt"/>
+  <text class="rot" transform="translate(112,622) rotate(-90)">Auftragsklärung</text>
+
+  <line x1="139" y1="510" x2="576" y2="510" class="pfeil"/>
+  <text x="356" y="502" class="lbl">verdeckt: Top-5 + Tipp-3 (reveal) — „Spekulation"</text>
+  <line x1="139" y1="548" x2="576" y2="548" class="pfeil"/>
+  <text x="356" y="540" class="lbl">Freigabe / Handover (je Partner)</text>
+  <line x1="139" y1="586" x2="341" y2="586" class="pfeil"/>
+  <text x="240" y="578" class="lbl">Protokoll (bei Freigabe)</text>
+
+  <!-- ===================== III · Gemeinsame Auflösung (D1) ===================== -->
+  <text x="30" y="668" class="phase">III · GEMEINSAME AUFLÖSUNG — hier liegt die Auftrags-Aufdeckung (D1: eigene Session, nicht in der Qualitätszeit)</text>
+  <rect x="1221" y="682" width="18" height="270" class="akt"/>
+  <text class="rot" transform="translate(1212,940) rotate(-90)">Gem. Auflösung</text>
+
+  <line x1="594" y1="706" x2="1221" y2="706" class="rf"/>
+  <text x="905" y="698" class="lblg">Eintritt erst mit BEIDEN Handovers · Kontext: Selbstangaben + Vermutungen</text>
+
+  <rect x="640" y="726" width="548" height="64" class="note"/>
+  <text x="654" y="746" class="nt" font-weight="700">Auftrags-Aufdeckung — APP-GEFÜHRT:</text>
+  <text x="654" y="764" class="nt">[[REVEAL-A]] / [[REVEAL-B]] → Tafel im Verlauf, zweischrittig, resume-fest ·</text>
+  <text x="654" y="781" class="nt">Aufdeck-Wächter: Stapel-Vorgriff löst SYSTEM-REVISION aus (S72/73)</text>
+
+  <line x1="1239" y1="820" x2="1629" y2="820" class="pfeil"/>
+  <text x="1434" y="812" class="lbl">AUFDECK-BLOCK → revealLog</text>
+  <line x1="1221" y1="858" x2="1019" y2="858" class="pfeil"/>
+  <text x="1120" y="850" class="lbl">BEFUND-BLOCK → Ziele</text>
+  <text x="1120" y="875" class="lblg">geseedet (AG/AI, S74) + Zu-Vermeiden</text>
+  <line x1="1239" y1="922" x2="1441" y2="922" class="rf"/>
+  <text x="1340" y="914" class="lblg">entriegelt die Qualitätszeit</text>
+
+  <!-- ===================== IV · Prozessreflexion (Abgabe) ===================== -->
+  <text x="30" y="988" class="phase">IV · PROZESSREFLEXION — ABGABE (D3: nur einzeln &amp; verdeckt, je Partner, eigenes Gerät; gemeinsam ist erst die Aufdeckung)</text>
+  <rect x="121" y="1000" width="18" height="120" class="akt"/>
+  <text class="rot" transform="translate(112,1112) rotate(-90)">Prozessreflexion</text>
+
+  <line x1="139" y1="1028" x2="576" y2="1028" class="pfeil"/>
+  <text x="356" y="1020" class="lbl">verdeckte Abgabe: Nähe · Zweitschätzung · Themen-Passung</text>
+  <rect x="612" y="1044" width="252" height="26" class="note"/>
+  <text x="624" y="1062" class="nt">beide Beiträge da ⇒ Runde „ready"</text>
+  <line x1="139" y1="1098" x2="341" y2="1098" class="pfeil"/>
+  <text x="240" y="1090" class="lbl">Protokoll („abgegeben")</text>
+
+  <!-- ===================== V · Qualitätszeit ===================== -->
+  <text x="30" y="1160" class="phase">V · QUALITÄTSZEIT — EIN Gespräch, drei Akte im Prompt (D4: keine App-Phasen)</text>
+  <rect x="1441" y="1172" width="18" height="520" class="akt"/>
+  <text class="rot" transform="translate(1432,1688) rotate(-90)">Qualitätszeit</text>
+
+  <rect x="1100" y="1184" width="450" height="26" class="note"/>
+  <text x="1112" y="1202" class="nt" font-weight="700">MOMENTKONTEXT — einmal beim Start, versteckte erste Nachricht</text>
+  <line x1="1019" y1="1238" x2="1441" y2="1238" class="rf"/>
+  <text x="1230" y="1230" class="lblg">GOALS + offene Agenda + Zu-Vermeiden (Befund)</text>
+  <line x1="594" y1="1272" x2="1441" y2="1272" class="rf"/>
+  <text x="1015" y="1264" class="lblg">ready-Runde VERDECKT (sieht nur das Modell) · Freigaben = MATERIAL (an Regal &amp; Agenda vorbei, D2)</text>
+  <line x1="1629" y1="1306" x2="1459" y2="1306" class="rf"/>
+  <text x="1544" y="1298" class="lblg">PREVIOUS MOMENTS (3)</text>
+
+  <rect x="640" y="1328" width="720" height="46" class="note"/>
+  <text x="654" y="1347" class="nt" font-weight="700">AKT 1 · Ankommen + Meta-Aufdeckung — PROMPT-GEFÜHRT:</text>
+  <text x="654" y="1364" class="nt">erzählend, häppchenweise, Treffer zuerst (Savoring) · keine Tafel, keine Zahlen — bewusste Asymmetrie zu III</text>
+
+  <line x1="1441" y1="1404" x2="594" y2="1404" class="s89"/>
+  <text x="1015" y="1396" class="lbla">S89 · [[META-REVEALED]] → Runde „revealed" (ID-genau, resume-fest)</text>
+  <line x1="1459" y1="1436" x2="1629" y2="1436" class="s89"/>
+  <text x="1544" y="1428" class="lbla">S89 · revealLog (art: prozess)</text>
+
+  <line x1="139" y1="1478" x2="576" y2="1478" class="s89"/>
+  <text x="356" y="1470" class="lbla">S89 · Nachzügler: Abgabe auf eigenem Handy WÄHREND der QZ</text>
+  <line x1="594" y1="1510" x2="1441" y2="1510" class="s89d"/>
+  <text x="1015" y="1502" class="lbla">S89 · Lazy-Check vor jedem Zug → einmaliger versteckter Nachtrag (kein Polling)</text>
+
+  <rect x="640" y="1532" width="470" height="26" class="note"/>
+  <text x="654" y="1550" class="nt" font-weight="700">AKT 2 · Themen &amp; Vertiefung — Agenda wird aufgegriffen</text>
+  <line x1="1441" y1="1590" x2="1019" y2="1590" class="pfeil"/>
+  <text x="1230" y="1582" class="lbl">Agenda abräumen (discussed / selfResolved)</text>
+  <line x1="1441" y1="1624" x2="1019" y2="1624" class="pfeil"/>
+  <text x="1230" y="1616" class="lbl">AUFTRAG-BLOCK: Ziele new · revise · close · rest · reactivate</text>
+
+  <rect x="640" y="1646" width="620" height="26" class="note"/>
+  <text x="654" y="1664" class="nt" font-weight="700">AKT 3 · Prozess-Schau („hilft euch das hier?") + Zwischenzeit-Impuls (Leiter, RESTING)</text>
+  <line x1="1459" y1="1700" x2="1629" y2="1700" class="pfeil"/>
+  <text x="1544" y="1692" class="lbl">MOMENT-BLOCK →</text>
+  <text x="1544" y="1717" class="lblg">momentLog + gewählte Einladung</text>
+
+  <rect x="640" y="1730" width="720" height="26" class="notea"/>
+  <text x="654" y="1748" class="nta" font-weight="700">S89 · NICHT MEHR: Verbrennen am Sessionende — nicht Aufgedecktes bleibt „ready" für die nächste QZ liegen</text>
+
+  <!-- ===================== Legende & Korrekturen ===================== -->
+  <rect x="30" y="1790" width="800" height="196" class="note"/>
+  <text x="46" y="1814" class="nt" font-weight="700">Legende</text>
+  <line x1="46" y1="1836" x2="116" y2="1836" class="pfeil"/><text x="128" y="1841" class="nt">Schreibpfad (Block / Marker — App-geführt)</text>
+  <line x1="46" y1="1862" x2="116" y2="1862" class="rf"/><text x="128" y="1867" class="nt">Kontext-Rückfluss (gelesen beim Sessionstart — F4: Zeitleisten sind keine Senken)</text>
+  <line x1="46" y1="1888" x2="116" y2="1888" class="s89"/><text x="128" y="1893" class="nt">neu mit S89 (geplant)</text>
+  <text x="46" y="1922" class="nt">Nicht gezeichnet (der Übersicht halber): Zwischenzeit-Einladungen im Detail (qualitytime/Leiter),</text>
+  <text x="46" y="1940" class="nt">Wiedereinstiegs-Rituale, Solo-Kontext bezieht zusätzlich aktive Ziele + freigegebenes Material.</text>
+
+  <rect x="860" y="1790" width="830" height="196" class="note"/>
+  <text x="876" y="1814" class="nt" font-weight="700">Korrekturen gegenüber der Vorlage</text>
+  <text x="876" y="1840" class="nt">D1 · Auftrags-Aufdeckung liegt in der Gemeinsamen Auflösung (eigene Session), nicht in der QZ — QZ ist dahinter verriegelt.</text>
+  <text x="876" y="1862" class="nt">D2 · „Freigaben" sind zweierlei: Kernwetten-Handover (direkt in Kontexte) und Gate mit drei Zielen (Regal · Agenda · selbst).</text>
+  <text x="876" y="1884" class="nt">D3 · Abgabe der Prozessreflexion nur einzeln &amp; verdeckt („Formular schützt den Wert") — gemeinsam ist die Aufdeckung</text>
+  <text x="876" y="1902" class="nt">        („Erzählung schützt die Beziehung"); die wechselseitige Frage bleibt dem Modell als Gesprächsform frei.</text>
+  <text x="876" y="1924" class="nt">D4 · QZ-Blöcke der Vorlage (Aufdeckung/Prozessreflexion/Session) sind EIN Gespräch mit drei Prompt-Akten.</text>
+  <text x="876" y="1946" class="nt">D5/F4 · Ergänzt: Merkposten, Regal, Befund-Seeding, Rückflüsse beider Zeitleisten, S89-Rückkopplung.</text>
+</svg>

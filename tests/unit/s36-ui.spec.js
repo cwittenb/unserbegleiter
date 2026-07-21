@@ -118,7 +118,12 @@ describe("S36 · Mein Raum (4 Zeilen)", () => {
 
 describe("S36 · Flache Icons", () => {
   it("Senden und Mikrofon tragen flache SVG-Icons statt Emoji/Text", async () => {
-    await bootApp(memoryBackend(null));
+    // S87 · Raumtrennung: Composer und Icons leben auf der Chat-Oberfläche,
+    // die erst beim Betreten eines Raums gebaut wird — der Test betritt also
+    // zuerst die Soloreflexion (semantisch unverändert: geprüft werden die Icons).
+    const app = await bootApp(memoryBackend(new MockLLM(["Hallo Anna."])));
+    await app.startChat("solo");
+    await ruhe();
     const send = root.querySelector("#btnSend"), mic = root.querySelector("#btnMic");
     expect(send.getAttribute("data-icon")).toBe("send");
     expect(send.querySelector("svg")).toBeTruthy();

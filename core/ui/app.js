@@ -96,7 +96,12 @@ export function createApp({ doc, backend, root, diktat }) {
     if (html !== undefined) d.innerHTML = html;
     return d;
   };
-  const state = { info: null, engine: null, chatId: null, screen: null, streamText: null };
+  // S87 · chatGen: Generationsmarke der Chat-Oberfläche — jeder Abbau und
+  // jeder Sessionstart erhöht sie; UI-Hooks alter Sessions prüfen sie und
+  // kehren wortlos um (Nachzügler-Zaun). entwuerfe: ungesendete Composer-
+  // Texte je Session, REINER Arbeitsspeicher (K3 b) — nie persistiert,
+  // stirbt mit der App-Instanz (relaunch/Paarwechsel ⇒ neue Closure).
+  const state = { info: null, engine: null, chatId: null, screen: null, streamText: null, chatGen: 0, entwuerfe: {} };
 
   const wurzel = root || doc.getElementById("app");
   wurzel.innerHTML = `
@@ -183,7 +188,17 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-card pb-hidden" id="boxQz"></div>
       <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck2">${t("allg.zurueck")}</button></div>
     </div>
-    <div id="scrChat" class="pb-hidden">
+    <div id="scrChat" class="pb-hidden"></div>`;
+
+  /* S87 · Raumtrennung: Die Chat-Oberfläche ist eine VORLAGE, kein stehendes
+     DOM. scrChat ist EIN Screen für alle Sessions — Panels, Entwurf,
+     Nachrichten und Titel überlebten bisher den Raumwechsel (sichtbar im
+     fremden Raum und wirksam: Panel-Handler hielten die ALTE Engine). Jetzt
+     wird die Fläche beim Betreten aus dieser Vorlage gebaut und beim
+     Verlassen restlos abgebaut. Funktion statt Konstante: t() liest erst beim
+     Bauen — ein Sprachwechsel greift so auch auf einer bereits einmal
+     gebauten Oberfläche. */
+  const CHAT_HTML = () => `
       <div class="pb-card">
         <div class="pb-sub" id="chatTitel"></div>
         <div class="pb-msgs" id="pbMsgs"></div>
@@ -202,14 +217,89 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <button class="pb-btn pb-hidden" id="btnChatEnde">${t("chat.abschliessen")}</button>
         <button class="pb-btn" id="btnChatZurueck">${t("chat.raumVerlassen")}</button>
-      </div>
-    </div>`;
+      </div>`;
 
   const $ = id => wurzel.querySelector("#" + id);
   const screens = ["scrStart", "scrMyRoom", "scrShared", "scrChat"];
   function show(id) {
+    if (id !== "scrChat") raeumeChatOberflaeche();   // S87: die Fläche gehört zur Session, nicht zum Screen
     state.screen = id;
     for (const s of screens) $(s).classList.toggle("pb-hidden", s !== id);
+  }
+
+  /* S87 · Abbau der Chat-Oberfläche — Reihenfolge ist wesentlich. Ein legitim
+     wartendes Panel geht dabei nicht verloren: resume() dispatcht den letzten
+     Assistant-Zug beim Wiederbetreten erneut. Idempotent (leere Hülle ⇒
+     folgenlos), damit der Aufbau ihn konstruktiv voranstellen kann (G1). */
+  function raeumeChatOberflaeche() {
+    diktatStopp();   // zuerst, solange btnMic noch existiert; nullt die Handler (G2)
+    const e = state.engine;
+    if (e && e.chat && e.chat.status === "running") {
+      // G4 · Die Pausen-Semantik (S71-Fünf-Minuten-Regel) gehört dem Abbau,
+      // nicht allein dem Zurück-Knopf: pausedAt synchron stempeln, Speichern
+      // fire-and-forget — bevor die Engine-Referenz geht. pausiereChat() in
+      // btnChatZurueck bleibt und ist damit harmlos redundant.
+      e.chat.pausedAt = Date.now();
+      const shared = state.chatShared, id = state.chatId;
+      Promise.resolve()
+        .then(() => backend.chat.save(shared ? "shared" : "mine", id, e.chat))
+        .catch(() => { /* Verlassen darf am Speichern nicht scheitern */ });
+    }
+    const eingabe = $("pbInput");
+    if (state.chatId && eingabe)                       // G3-Guard: raeume läuft bei JEDER
+      state.entwuerfe[state.chatId] = eingabe.value;   // Nicht-Chat-Navigation, auch ohne Session
+    const huelle = $("scrChat");
+    if (huelle) huelle.innerHTML = "";
+    err(""); hint(null);
+    state.engine = null; state.chatId = null; state.chatShared = null;
+    state.streamText = null; state.herkunft = null;
+    setzeWarten(false);
+    state.chatGen++;   // Nachzügler-Zaun: alles, was zur alten Session gehört, kehrt fortan wortlos um
+  }
+
+  /* S87 · Aufbau aus der Vorlage. Beginnt SELBST mit dem Abbau (G1): auch ein
+     direkter Chat→Chat-Übergang — heute existiert keiner, aber die Invariante
+     soll Konstruktion sein, nicht Topologie-Zufall — sichert erst Entwurf,
+     Diktat und Pausenstempel der alten Session. */
+  function baueChatOberflaeche() {
+    raeumeChatOberflaeche();
+    $("scrChat").innerHTML = CHAT_HTML();
+    verdrahteChat();
+  }
+
+  /* S87 · Die sieben Bedienelemente der Chat-Oberfläche werden bei jedem
+     Aufbau neu gebunden — die Listener hängen an Knoten, die beim Abbau
+     verschwinden; eine stehengebliebene Closure hat danach kein Ziel mehr. */
+  function verdrahteChat() {
+    $("btnChatZurueck").addEventListener("click", async () => {
+      await pausiereChat();
+      betrete(state.herkunft || "scrStart");
+    });
+    // S42 · Expliziter Abschluss der Qualitätszeit: bittet die Begleitung um den
+    // Abschluss-Akt; das Modell erzeugt das Protokoll (MOMENT-BLOCK), die App
+    // legt es in "Gemeinsame Momente" ab und schließt die Session wirklich.
+    $("btnChatEnde").addEventListener("click", async () => {
+      if (!state.engine || state.engine.chat.status !== "running") return;
+      const text = state.engine.def.id === "solo" ? K().steuerTexte.soloAbschluss : K().steuerTexte.momentAbschluss;
+      await warteAntwort(() => state.engine.submitToolResult(text, { hidden: true }));
+      aktualisiereChatEnde();
+      aktualisiereComposer();
+    });
+    $("btnSend").addEventListener("click", () => {
+      const t2 = $("pbInput").value.trim();
+      if (!t2) return;
+      $("pbInput").value = "";
+      sende(t2);
+    });
+    $("pbInput").addEventListener("keydown", e2 => {
+      if (e2.key === "Enter" && !e2.shiftKey) {       // Enter sendet; Shift+Enter = Zeilenumbruch
+        e2.preventDefault();
+        $("btnSend").click();
+      }
+    });
+    $("pbSkalaRange").addEventListener("input", () => { $("pbSkalaWert").textContent = $("pbSkalaRange").value; });
+    $("pbSkalaSend").addEventListener("click", () => sende($("pbSkalaRange").value));
+    $("btnMic").addEventListener("click", () => { rec ? diktatStopp() : diktatStart(); });
   }
 
   /* S35 · Ein Info-Bereich pro Vorraum: die Regal-Ansichten verdrängen
@@ -492,13 +582,13 @@ export function createApp({ doc, backend, root, diktat }) {
   }
   function hint(msg) {
     const b = $("pbHint");
-    if (!msg) { b.classList.add("pb-hidden"); return; }
+    if (!msg) { b.textContent = ""; b.classList.add("pb-hidden"); return; }   // S87: verborgen UND leer
     b.textContent = msg;
     b.classList.remove("pb-hidden");
   }
   function err(msg) {
     const b = $("pbErr");
-    if (!msg) { b.classList.add("pb-hidden"); return; }
+    if (!msg) { b.textContent = ""; b.classList.add("pb-hidden"); return; }   // S87: verborgen UND leer (R4)
     b.textContent = msg;
     b.classList.remove("pb-hidden");
   }
@@ -618,6 +708,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const nah = scrollErzwingen || nahAmEingabefeld();   // Nähe VOR der DOM-Änderung messen
     state.streamText = null;   // Voll-Rerender ersetzt jede laufende Stream-Blase
     const box = $("pbMsgs");
+    if (!box) return;   // S87: leere Hülle (kein Chat aufgebaut) — folgenlos
     box.innerHTML = "";
     if (state.engine) {
       const msgs = state.engine.chat.messages;
@@ -696,6 +787,7 @@ export function createApp({ doc, backend, root, diktat }) {
   }
 
   async function warteAntwort(lauf, scrollErzwingen = false) {
+    const gen = state.chatGen;   // S87 · Nachzügler-Zaun: nach einem Raumwechsel keine UI-Wirkung mehr
     setzeWarten(true);
     // S70: jeder NEUE Wartevorgang macht ein offenes Retry-Angebot ungültig —
     // ein stehengebliebener Knopf dürfte später keinen falschen resume() feuern.
@@ -706,13 +798,18 @@ export function createApp({ doc, backend, root, diktat }) {
     renderMsgs(scrollErzwingen);
     try { await (typeof lauf === "function" ? lauf() : lauf); }
     catch (e) {
-      if (istUeberlastet(e)) { err(fehlerText(e)); zeigeErneutSenden(); }   // S70
+      if (gen !== state.chatGen) { /* alte Session: Fehler nicht in den neuen Raum tragen */ }
+      else if (istUeberlastet(e)) { err(fehlerText(e)); zeigeErneutSenden(); }   // S70
       else err(e.message);
     }
     finally {
-      setzeWarten(false);
-      if (bs) bs.disabled = false;
-      renderMsgs();
+      // S87: Ein Nachzügler darf die NEUE Session nicht aus dem Warten kippen
+      // oder ihren Verlauf neu rendern — der Zaun gilt auch für das Aufräumen.
+      if (gen === state.chatGen) {
+        setzeWarten(false);
+        if (bs) bs.disabled = false;
+        renderMsgs();
+      }
     }
   }
 
@@ -864,23 +961,37 @@ export function createApp({ doc, backend, root, diktat }) {
   
   const FORTSETZ_PAUSE_MS = 5 * 60 * 1000;   // S71: unter fünf Minuten Abwesenheit machen wir nahtlos weiter, erst danach das Wiedereinstiegs-Ritual
   async function startChat(art) {
-    err("");
+    // S87 · Kopf-Abbau: eine eventuell noch stehende Chat-Oberfläche wird
+    // ZUERST abgebaut (Entwurf unter der ALTEN chatId sichern, Diktat stoppen,
+    // Pausenstempel setzen), bevor unten state.chatId überschrieben wird.
+    // Deckt auch den Abbruchpfad (throw aufloesungFehlt): der Vorraum bleibt sauber.
+    raeumeChatOberflaeche();
     const info = state.info || (state.info = await backend.info());   // Selbstheilung (S67), s. ladeLage
     // Sprach-Schnappschuss: neue Sessions starten in der Paarsprache; laufende
     // und pausierte behalten ihre Sprache (Resume bricht nicht mitten im
     // Gespräch um). Der Schnappschuss steuert ALLE Korpus-Zugriffe via K().
     const paarSprache = info && info.locale === "en" ? "en" : "de";
     setKorpusSprache(paarSprache);
+    // S87 · Nachzügler-Zaun auch für die Def-Hooks: Eine spät eintreffende
+    // Antwort der ALTEN Session dispatcht ihre Blöcke — und würde Panels in
+    // der Oberfläche des NEUEN Raums öffnen (kwPanel/gatePanel existieren
+    // nach dem Neubau wieder). Panel-Öffner kehren deshalb am Zaun um; ein
+    // legitim wartendes Panel geht nicht verloren, resume() dispatcht es beim
+    // Wiederbetreten erneut. Daten-Hooks (onMomentEnde-Buchung, onZeitleiste)
+    // bleiben ungezäunt — die alte Sitzung wird zu Ende gebucht; ihre
+    // Anzeige-Aufrufe rechnen ohnehin aus dem AKTUELLEN state.engine.
+    let gen = -1;   // wird nach dem Aufbau gezogen; bis dahin sind die Zäune zu
+    const lebend = fn => (...a) => { if (gen === state.chatGen) return fn(...a); };
     const hooks = {
-      onGate: (d, e2) => gatePanel(d, e2),
-      onRegler: e2 => reglerPanel(e2),
-      onRanking: (mode, e2) => rankPanel(mode, e2),
-      onStartwerte: e2 => startwertePanel(e2),
-      onFreigabe: (d, e2) => freigabePanel(d, e2),
-      onKapitel: (n, e2) => kapitelPanel(n, e2),
-      onScale: (art, e2) => scalePanel(art, e2),
-      onChoice: (art, e2, daten) => choicePanel(art, e2, daten),
-      onAufdecken: (e2, richtung) => aufdeckTafel(e2, richtung),
+      onGate: lebend((d, e2) => gatePanel(d, e2)),
+      onRegler: lebend(e2 => reglerPanel(e2)),
+      onRanking: lebend((mode, e2) => rankPanel(mode, e2)),
+      onStartwerte: lebend(e2 => startwertePanel(e2)),
+      onFreigabe: lebend((d, e2) => freigabePanel(d, e2)),
+      onKapitel: lebend((n, e2) => kapitelPanel(n, e2)),
+      onScale: lebend((art, e2) => scalePanel(art, e2)),
+      onChoice: lebend((art, e2, daten) => choicePanel(art, e2, daten)),
+      onAufdecken: lebend((e2, richtung) => aufdeckTafel(e2, richtung)),
       onMomentEnde: () => { markiereAufgedeckt(backend).catch(() => {}); aktualisiereChatEnde(); aktualisiereComposer(); },
       // S76 · Solo-Abschluss (TIMELINE-BLOCK nach [CLOSE SESSION]) beendet die
       // Session — Knopf und Composer ziehen sichtbar nach.
@@ -965,16 +1076,29 @@ export function createApp({ doc, backend, root, diktat }) {
     setKorpusSprache(korpusSprache);
     if (!gespeichert) chat.language = korpusSprache;
     const ctx = { me: info.name, partner: info.partner, nameA: info.nameA, nameB: info.nameB };
+    // S87 · Aufbau VOR der Engine: baueChatOberflaeche räumt konstruktiv selbst
+    // (G1) und erhöht dabei chatGen — die Marke dieser Session wird DANACH
+    // gezogen. Hooks alter Sessions (Nachzügler: laufende Antworten, Retries)
+    // kehren am Zaun wortlos um; onSave bleibt bewusst UNGEZÄUNT, damit die
+    // alte Sitzung zu Ende gespeichert wird und beim Wiederbetreten vollständig ist.
+    baueChatOberflaeche();
+    // Der konstruktive Abbau in baueChatOberflaeche hat die Sessionfelder
+    // genullt — für DIESE Session neu setzen (nach dem Abbau, vor der Engine).
+    state.chatId = art;
+    state.chatShared = def.shared;
+    state.herkunft = def.shared ? "scrShared" : "scrMyRoom";
+    gen = ++state.chatGen;
     state.engine = new Engine({
       def, chat, llm: backend.llm, ctx,
       hooks: {
         onSave: c => backend.chat.save(def.shared ? "shared" : "mine", art, c),
-        onPersonError: err,
-        onRender: renderMsgs,
-        onDelta: zeigeStream,
-        onStatus: zeigeAusgelastet,   // S70: zahlenlose Warteanzeige bei Auslastungs-Retries
+        onPersonError: lebend(err),
+        onRender: lebend(renderMsgs),
+        onDelta: lebend(zeigeStream),
+        onStatus: lebend(zeigeAusgelastet),   // S70: zahlenlose Warteanzeige bei Auslastungs-Retries
       },
     });
+    $("pbInput").value = state.entwuerfe[art] || "";   // K3 b: Entwurf zurücklegen (nur Arbeitsspeicher)
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;
     aktualisiereChatEnde();
     show("scrChat");
@@ -1345,25 +1469,12 @@ export function createApp({ doc, backend, root, diktat }) {
 
   /* Verdrahtung — die Zurück-Wege führen in den Vorraum, aus dem man kam:
      Raum verlassen landet nicht mehr auf der Hauptübersicht, sondern im
-     jeweiligen Vorraum (Erwartungs-Kontinuität, S35). */
+     jeweiligen Vorraum (Erwartungs-Kontinuität, S35). Die Bedienelemente der
+     Chat-Oberfläche binden seit S87 in verdrahteChat() bei jedem Aufbau. */
   $("btnMyRoom").addEventListener("click", () => betrete("scrMyRoom"));
   $("btnSharedRoom").addEventListener("click", () => betrete("scrShared"));
   $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));
   $("btnZurueck2").addEventListener("click", () => betrete("scrStart"));
-  $("btnChatZurueck").addEventListener("click", async () => {
-    await pausiereChat();
-    betrete(state.herkunft || "scrStart");
-  });
-  // S42 · Expliziter Abschluss der Qualitätszeit: bittet die Begleitung um den
-  // Abschluss-Akt; das Modell erzeugt das Protokoll (MOMENT-BLOCK), die App
-  // legt es in "Gemeinsame Momente" ab und schließt die Session wirklich.
-  $("btnChatEnde").addEventListener("click", async () => {
-    if (!state.engine || state.engine.chat.status !== "running") return;
-    const text = state.engine.def.id === "solo" ? K().steuerTexte.soloAbschluss : K().steuerTexte.momentAbschluss;
-    await warteAntwort(() => state.engine.submitToolResult(text, { hidden: true }));
-    aktualisiereChatEnde();
-    aktualisiereComposer();
-  });
   $("btnSolo").addEventListener("click", () => startChat("solo").catch(e => err(e.message)));
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
@@ -1373,20 +1484,6 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnRegal").addEventListener("click", () => infoToggle("boxRegal", () => zeigeRegal()).catch(e => err(e.message)));
   $("btnAgenda").addEventListener("click", () => infoToggle("boxAgenda", () => zeigeAgenda()).catch(e => err(e.message)));
   $("btnQz").addEventListener("click", () => infoToggle("boxQz", () => zeigeMomente()).catch(e => err(e.message)));
-  $("btnSend").addEventListener("click", () => {
-    const t = $("pbInput").value.trim();
-    if (!t) return;
-    $("pbInput").value = "";
-    sende(t);
-  });
-  $("pbInput").addEventListener("keydown", e2 => {
-    if (e2.key === "Enter" && !e2.shiftKey) {       // Enter sendet; Shift+Enter = Zeilenumbruch
-      e2.preventDefault();
-      $("btnSend").click();
-    }
-  });
-  $("pbSkalaRange").addEventListener("input", () => { $("pbSkalaWert").textContent = $("pbSkalaRange").value; });
-  $("pbSkalaSend").addEventListener("click", () => sende($("pbSkalaRange").value));
 
   /* ---- Prozessreflexion (Mess-Runde, verdeckt — Aufdeckung im Moment) ---- */
   /* S39 · Sprach-Helfer für den vereinbarten Rhythmus. */
@@ -1787,23 +1884,37 @@ export function createApp({ doc, backend, root, diktat }) {
 
   let rec = null;
   function diktatStopp() {
-    if (rec) { try { rec.stop(); } catch { /* egal */ } rec = null; }
-    $("btnMic").innerHTML = IKON.mic;
-    $("btnMic").setAttribute("data-icon", "mic");
-    $("btnMic").classList.remove("primary");
+    if (rec) {
+      const r = rec;
+      rec = null;
+      // G2 · rec.stop() genügt nicht: Web Speech liefert danach noch gequeute
+      // Events aus, und pbInput EXISTIERT nach einem Neubau wieder — als Feld
+      // des neuen Raums. Handler nullen nimmt dem Nachzügler den Code, nicht
+      // nur das Ziel.
+      r.onresult = r.onend = r.onerror = null;
+      try { r.stop(); } catch { /* egal */ }
+    }
+    const mic = $("btnMic");
+    if (!mic) return;   // S87: Abbau läuft auch ohne Chat-Oberfläche (leere Hülle)
+    mic.innerHTML = IKON.mic;
+    mic.setAttribute("data-icon", "mic");
+    mic.classList.remove("primary");
   }
   function diktatStart() {
     if (!dk.SR) { hint(diktatTipp()); return; }          // keine Erkennung → OS-Tipp
     try { rec = new dk.SR(); } catch { hint(diktatTipp()); return; }
-    rec.lang = t("sprache.diktat");
-    rec.continuous = true;
-    rec.interimResults = true;
+    const r = rec;   // S87/G2 · Selbst-Guard: pbInput existiert nach einem Neubau
+    rec.lang = t("sprache.diktat");                    // wieder — als Feld des NEUEN Raums.
+    rec.continuous = true;                             // Ein Nachzügler-Ereignis eines alten
+    rec.interimResults = true;                         // Diktats darf dort nie hineinschreiben.
     rec.onresult = ev => {
+      if (rec !== r) return;
       let final = "";
       for (let i = ev.resultIndex; i < ev.results.length; i++)
         if (ev.results[i].isFinal) final += ev.results[i][0].transcript;
       if (final) {
         const t = $("pbInput");
+        if (!t) return;
         t.value = (t.value ? t.value.replace(/\s+$/, "") + " " : "") + final.trim();
       }
     };
@@ -1820,7 +1931,7 @@ export function createApp({ doc, backend, root, diktat }) {
     $("btnMic").classList.add("primary");
     hint(t("diktat.laeuft"));
   }
-  $("btnMic").addEventListener("click", () => { rec ? diktatStopp() : diktatStart(); });
+  // S87: btnMic bindet in verdrahteChat() bei jedem Aufbau der Chat-Oberfläche.
 
   /* ── UI-Sprache: pro Person (pstate "language"), jederzeit umstellbar,
      folgenlos für den Partner. Der Wechsel baut die Oberfläche neu auf;
