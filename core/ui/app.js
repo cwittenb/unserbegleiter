@@ -156,7 +156,6 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="pb-btn" id="btnZeitleiste">${t("mein.zeitleiste")}</button>
       </div>
       <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
-      <div class="pb-card pb-hidden" id="boxMess"></div>
       <div class="pb-card pb-hidden" id="boxRecovery"></div>
       <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck1">${t("allg.zurueck")}</button></div>
     </div>
@@ -187,6 +186,14 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
       <div class="pb-card pb-hidden" id="boxQz"></div>
       <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck2">${t("allg.zurueck")}</button></div>
+    </div>
+    <div id="scrProzess" class="pb-hidden">
+      <div class="pb-card" style="padding:18px 26px">
+        <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("prozess.titel")}</div>
+        <p class="pb-sub" style="margin:0">${t("prozess.intro")}</p>
+      </div>
+      <div class="pb-card" id="boxMess"></div>
+      <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck3">${t("allg.zurueck")}</button></div>
     </div>
     <div id="scrChat" class="pb-hidden"></div>`;
 
@@ -220,7 +227,7 @@ export function createApp({ doc, backend, root, diktat }) {
       </div>`;
 
   const $ = id => wurzel.querySelector("#" + id);
-  const screens = ["scrStart", "scrMyRoom", "scrShared", "scrChat"];
+  const screens = ["scrStart", "scrMyRoom", "scrShared", "scrProzess", "scrChat"];
   function show(id) {
     if (id !== "scrChat") raeumeChatOberflaeche();   // S87: die Fläche gehört zur Session, nicht zum Screen
     state.screen = id;
@@ -306,7 +313,7 @@ export function createApp({ doc, backend, root, diktat }) {
      einander, statt sich zu stapeln. zeigeNur blendet die Geschwister aus;
      die zeige*-Funktionen rufen es vor dem Befüllen auf. */
   const INFO_GRUPPEN = {
-    scrMyRoom: ["boxZeitleiste", "boxMess"],
+    scrMyRoom: ["boxZeitleiste"],   // S88: boxMess lebt jetzt im eigenen Raum scrProzess
     scrShared: ["boxRegal", "boxAgenda", "boxQz"],
   };
   function zeigeNur(id) {
@@ -1480,7 +1487,11 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
   $("btnMoment").addEventListener("click", () => startChat("moment").catch(e => err(e.message)));
   $("btnZeitleiste").addEventListener("click", () => infoToggle("boxZeitleiste", () => zeigeZeitleiste()).catch(e => err(e.message)));
-  $("btnMess").addEventListener("click", () => infoToggle("boxMess", () => zeigeMess()).catch(e => err(e.message)));
+  // S88 · Prozessreflexion ist eine HANDLUNG und bekommt wie jede Handlung
+  // einen eigenen Raum (S44 hatte sie bereits an die Stelle der Auftrags-
+  // klärung gesetzt — nur ihr Panel steckte noch als Klappe im Regal-Block).
+  $("btnMess").addEventListener("click", () => { betrete("scrProzess"); zeigeMess().catch(e => err(e.message)); });
+  $("btnZurueck3").addEventListener("click", () => betrete("scrMyRoom"));
   $("btnRegal").addEventListener("click", () => infoToggle("boxRegal", () => zeigeRegal()).catch(e => err(e.message)));
   $("btnAgenda").addEventListener("click", () => infoToggle("boxAgenda", () => zeigeAgenda()).catch(e => err(e.message)));
   $("btnQz").addEventListener("click", () => infoToggle("boxQz", () => zeigeMomente()).catch(e => err(e.message)));
@@ -1500,8 +1511,9 @@ export function createApp({ doc, backend, root, diktat }) {
 
   async function zeigeMess() {
     const box = $("boxMess");
-    zeigeNur("boxMess");
-    box.classList.remove("pb-hidden");
+    if (!box) return;
+    // S88: die Karte lebt im eigenen Raum scrProzess — kein zeigeNur, kein
+    // Auf-/Zuklappen mehr; jedes Betreten rendert frisch.
     const [mr, goals, iv] = await Promise.all([
       backend.bstate.get("measurements"), backend.bstate.get("goals"), holeMessIntervall(backend),
     ]);
@@ -1526,8 +1538,13 @@ export function createApp({ doc, backend, root, diktat }) {
       `<div class="pb-sub">${t("mess.verdeckt", { partner: esc(state.info.partner) })}</div>` +
       `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.closeness", { partner: esc(state.info.partner), zeitraum })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
       `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.guess", { partner: esc(state.info.partner), zeitraum })}<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      // S88 · Themen-Regler: Gruppenzeile sagt die Herkunft (und implizit,
+      // warum individuelle Ziele hier fehlen); die Frage traegt KEINE Wire-ID
+      // mehr — die ID bleibt im data-pass-Attribut und im fit-Objekt (Wire
+      // unberuehrt: formatiereMessrunde/Agenda zeigen sie weiter als Referenz).
+      (aktive.length ? `<div class="pb-sub" style="margin-top:12px">${t("mess.gruppeThemen")}</div>` : "") +
       aktive.map(a =>
-        `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.fit", { text: esc(a.text), id: esc(a.id) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
+        `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.fit", { text: esc(a.text) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
       ).join("") +
       `<button class="pb-btn primary" id="msOk">${t("mess.abgeben")}</button>`;
     box.querySelector("#msOk").addEventListener("click", async () => {

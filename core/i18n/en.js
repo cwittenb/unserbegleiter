@@ -188,6 +188,9 @@ export const en = {
 
   // Process reflection
   "mess.titel": "Process Reflection",
+  "prozess.titel": "Process Reflection",
+  "prozess.intro": "In your shared development, goals and themes sometimes shift along the way. This round looks at where you stand right now — face down; the reveal happens together.",
+  "mess.gruppeThemen": "Your shared themes",
   "mess.gesperrt": "Your rhythm: {rhythmus}. The next process reflection opens on {datum}.",
   "mess.zrWoche": "over the last week",
   "mess.zrWochen": "over the last {w} weeks",
@@ -212,7 +215,7 @@ export const en = {
   "mess.verdeckt": "Process Reflection — face down; {partner} sees your values only at the shared reveal",
   "mess.closeness": "How close did you feel to {partner} {zeitraum}? (1–10)",
   "mess.guess": "And your guess: how close did {partner} feel to you {zeitraum}? (1–10)",
-  "mess.fit": "How well does \u201c{text}\u201d ({id}) fit the two of you right now? (1–10)",
+  "mess.fit": "How closely does the theme \u201c{text}\u201d match your current development focus? (1–10)",
   "mess.abgeben": "Submit Face Down",
   "mess.danke": "Thank you — placed face down.",
   "mess.bereit": " You have both taken your turn: the reveal awaits in the next shared moment.",

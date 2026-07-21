@@ -186,6 +186,9 @@ export const de = {
 
   // Prozessreflexion
   "mess.titel": "Prozessreflexion",
+  "prozess.titel": "Prozessreflexion",
+  "prozess.intro": "In eurer gemeinsamen Entwicklung verschieben sich Ziele und Themen manchmal unterwegs. Diese Runde schaut nach, wo ihr gerade steht — verdeckt; aufgedeckt wird gemeinsam.",
+  "mess.gruppeThemen": "Eure gemeinsamen Themen",
   "mess.gesperrt": "Euer Rhythmus: {rhythmus}. Die nächste Prozessreflexion öffnet am {datum}.",
   "mess.zrWoche": "in der letzten Woche",
   "mess.zrWochen": "in den letzten {w} Wochen",
@@ -210,7 +213,7 @@ export const de = {
   "mess.verdeckt": "Prozessreflexion — verdeckt; {partner} sieht deine Werte erst bei der gemeinsamen Aufdeckung",
   "mess.closeness": "Wie nah hast du dich {partner} {zeitraum} gefühlt? (1–10)",
   "mess.guess": "Und was schätzt du: Wie nah hat sich {partner} dir {zeitraum} gefühlt? (1–10)",
-  "mess.fit": "Wie gut passt „{text}\" ({id}) gerade zu euch? (1–10)",
+  "mess.fit": "Wie genau trifft das Thema „{text}\" euren aktuellen Entwicklungsfokus? (1–10)",
   "mess.abgeben": "Verdeckt abgeben",
   "mess.danke": "Danke — verdeckt abgelegt.",
   "mess.bereit": " Ihr seid beide dran gewesen: Die Aufdeckung wartet im nächsten gemeinsamen Moment.",

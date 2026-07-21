@@ -155,8 +155,8 @@ describe("S39 · Prozessreflexions-Rhythmus (geteilter Vertrag)", () => {
     await klick(root.querySelector("#boxMess").querySelector("#msOk"));
     await ruhe();
     // Runde ist offen und eigener Beitrag da → "abgegeben"-Ansicht
-    await klick(root.querySelector("#btnMess"));   // zu
-    await klick(root.querySelector("#btnMess"));   // wieder auf
+    await klick(root.querySelector("#btnZurueck3"));   // S88: Raum verlassen …
+    await klick(root.querySelector("#btnMess"));       // … und frisch betreten
     await ruhe();
     expect(root.querySelector("#boxMess").textContent).toContain("abgegeben");
   });
