@@ -1,10 +1,13 @@
 // Prozessreflexion (Mess-Runden, Slice 3) und Qualitätszeit-Leiter (Slice 5) —
 // reine Datenlogik über der Backend-Fassade; UI-Verdrahtung in app.js.
 //
-// Ehrliche Grenze (siehe Protokoll): Die verdeckten Mess-Werte liegen im
-// GETEILTEN Bstate (die Aufdeckung braucht beide Beiträge in einem Kontext);
-// „verdeckt" ist eine UI-Zusicherung, keine Speicher-Zusicherung. Serverseitiges
-// Gating je Rolle wäre die härtere Form — als offener Punkt notiert.
+// I12 „Verdeckte Runde" (S91): Auf der Cloudflare-Plattform ist die Verdecktheit
+// eine SPEICHER-Zusicherung — der Worker führt die Messungen (Abgabe/Aufdeckung
+// über eigene Routen, Rolle aus der Session), Lesen ist rollenbewusst redigiert
+// (redigiereMessungenFuerRolle): eine offene Runde ohne eigenen Beitrag ist
+// nicht einmal als existent sichtbar. Ab „ready" liegen die Werte notwendig
+// beim QZ-Client (er baut den Momentkontext) — akzeptierte Restgrenze.
+// Memory-/Artefakt-Plattform (ohne Server) bleibt UI-Zusicherung — dokumentiert.
 
 import { K } from "../prompts/prompts.js";
 import { fuelle } from "../i18n/index.js";
@@ -58,9 +61,24 @@ export function messFenster(mr, role, days, now = Date.now) {
   return { offen: now() >= ab, naechsteAb: new Date(ab).toISOString() };
 }
 
+/** S91 · Rollenbewusste Lese-Redaktion (I12): ready/revealed voll; eine offene
+ *  Runde OHNE eigenen Beitrag entfällt samt Existenz („niemand sieht den Stand
+ *  des anderen"); eine offene MIT eigenem ist unverändert — der Partner-Slot
+ *  ist dort ohnehin null (beide da hieße ready). Reine Funktion, vom Worker
+ *  beim GET verwendet und einzeln getestet. */
+export function redigiereMessungenFuerRolle(mr, role) {
+  const items = ((mr && mr.items) || []).filter(r =>
+    r.status !== "open" || (r.values && r.values[role]));
+  return { ...(mr || {}), items };
+}
+
 /** Eigenen Beitrag ablegen: offene Runde ergänzen oder neue beginnen.
- *  Beide Beiträge da ⇒ Runde „bereit" (aufzudecken im gemeinsamen Moment). */
+ *  Beide Beiträge da ⇒ Runde „bereit" (aufzudecken im gemeinsamen Moment).
+ *  S91: Auf servergeführten Plattformen delegiert die Fassade an den Worker
+ *  (Merge mit VOLLER Sicht dort; der Client sieht redigiert und dürfte nie
+ *  read-modify-write schreiben — der direkte PUT ist serverseitig gesperrt). */
 export async function trageMessbeitragEin(backend, role, beitrag /* {naehe, zweit, fit:{AGx:n}} */) {
+  if (backend.mess && backend.mess.beitrag) return backend.mess.beitrag(beitrag);
   const mr = (await backend.bstate.get("measurements")) || { items: [] };
   let runde = mr.items.find(r => r.status === "open");
   if (!runde) {
@@ -106,6 +124,7 @@ export function formatiereMessrunde(runde, nameA, nameB) {
  *  nicht fälschlich verbrennen. Idempotent über den Status-Check. */
 export async function markiereAufgedeckt(backend, rundeId) {
   if (!rundeId) return;
+  if (backend.mess && backend.mess.aufgedeckt) return backend.mess.aufgedeckt(rundeId);
   const mr = (await backend.bstate.get("measurements")) || { items: [] };
   const r = mr.items.find(x => x.id === rundeId && x.status === "ready");
   if (!r) return;

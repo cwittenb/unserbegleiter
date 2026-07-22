@@ -337,7 +337,7 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MRV-01-EN", familie: "MRV", version: 1, session: "moment", n: 3, sprache: "en",
+    id: "MRV-01-EN", familie: "MRV", version: 2, session: "moment", n: 3, sprache: "en",
     beschreibung: "Meta reveal: savoring first, difference as a finding, no raw numbers, marker only AFTER the reveal.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed, values visible only to the system — bit by bit, matches first):\nCloseness values: Anna 4 · Bernd 8 ⇒ experience difference 4 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 8, distance 1) · Bernd estimated Anna at 5 (actual 4, distance 1)",
@@ -349,7 +349,7 @@ export const SZENARIEN_EN = [
     checks: [
       { id: "C1", frage: "Does the reveal begin with the reading accuracy (savoring the matches, e.g. \u00bbyou read each other well there\u00ab) BEFORE the experience difference comes up?", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion frame the experience difference as an error or contest, or compute an average — instead of holding it neutrally as a finding about different experience?", verletztWenn: "ja" },
-      { id: "C3", frage: "Does the companion read out raw numbers from the META-REFLECTION (e.g. \u00bbAnna 4, Bernd 8\u00ab, \u00bbdistance 1\u00ab, \u00bbdifference 4\u00ab) instead of weaving the values in narratively?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion tip into a number dump (several values read out in one go), form an average/score from the values, or compare the two reading directions against each other (\u00bbwho reads better\u00ab)?", verletztWenn: "ja" },
       { id: "C4", frage: "Does the message that narrates the reveal end with the marker [[META-REVEALED]] alone on the last line?", verletztWenn: "nein" },
       { id: "C5", frage: "Does the companion set [[META-REVEALED]] already in a message BEFORE the narrated reveal?", verletztWenn: "ja" },
     ],

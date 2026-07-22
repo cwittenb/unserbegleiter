@@ -10,6 +10,7 @@ import { Repo } from "../../../core/store/repo.js";
 import { Bstate, Pstate } from "../../../core/store/bundles.js";
 import { freigebeUebergabe } from "../../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
+import { trageMessbeitragEin, markiereAufgedeckt, redigiereMessungenFuerRolle } from "../../../core/ui/prozess.js";
 import { makeAdapter, LLM_PROVIDERS } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { istAppOrigin, preflightAntwort, mitAppCors, aasaNutzlast, assetlinksNutzlast } from "./app-origins.js";
@@ -36,6 +37,8 @@ const leseEmailFor = (kv, code, role) =>
   kv.get("sys/emailfor/" + code + "/" + role).then(v => (v ? JSON.parse(v) : null));
 
 const BSTATE_FELDER = new Set(Bstate.FIELDS);
+// S91 · I12: Mess-Logik kommt aus dem Kern — Worker und App teilen dieselbe Wahrheit.
+
 const PSTATE_FELDER = new Set(["timeline", "selfDisclosures"]);
 
 /* ---- Web Push (M7a): Abo-Ablage & inhaltsfreier Freigabe-Hinweis ----
@@ -439,12 +442,39 @@ async function route(request, env) {
     catch (e) { return fehler(e.message, e.status || 400, e.code); }
   }
 
+  /* ---- Mess-Runden: SERVERGEFÜHRT (I12 „Verdeckte Runde", S91).
+   *  Rolle ausschließlich aus der Session; Merge/Aufdeckung laufen über die
+   *  KERN-Funktionen (eine Quelle der Wahrheit) mit voller Sicht im Worker. ---- */
+  if (p === "/api/mess/beitrag" && request.method === "POST") {
+    const b = await request.json().catch(() => ({}));
+    const z = n => Number.isFinite(+n) && +n >= 1 && +n <= 10;
+    if (!z(b.closeness) || !z(b.guess)) return fehler("Beitrag unvollständig.", 400, "mess_invalid");
+    const fit = {};
+    for (const [k, v] of Object.entries(b.fit || {})) { if (!z(v)) return fehler("Beitrag unvollständig.", 400, "mess_invalid"); fit[k] = +v; }
+    const runde = await trageMessbeitragEin({ bstate }, session.role, { closeness: +b.closeness, guess: +b.guess, fit });
+    // Antwort in der SICHT der abgebenden Rolle: offen ⇒ nur eigener Beitrag.
+    return json({ runde: redigiereMessungenFuerRolle({ items: [runde] }, session.role).items[0] || null });
+  }
+  if (p === "/api/mess/aufgedeckt" && request.method === "POST") {
+    const { rundeId } = await request.json().catch(() => ({}));
+    await markiereAufgedeckt({ bstate }, rundeId);
+    return json({ ok: true });
+  }
+
   /* ---- Bstate: geteilt, beide Rollen ---- */
   let m = p.match(/^\/api\/bstate\/([a-zA-Z]+)$/);
   if (m) {
     if (!BSTATE_FELDER.has(m[1])) return fehler("Unbekanntes Bstate-Feld: " + m[1], 404);
-    if (request.method === "GET") return json({ value: await bstate.get(m[1]) });
+    if (request.method === "GET") {
+      const wert = await bstate.get(m[1]);
+      // I12: Messungen verlassen den Worker nur rollenbewusst redigiert.
+      if (m[1] === "measurements") return json({ value: redigiereMessungenFuerRolle(wert, session.role) });
+      return json({ value: wert });
+    }
     if (request.method === "PUT") {
+      // I12: Der Client sieht Messungen redigiert — ein Read-Modify-Write von
+      // dort löschte Partner-Beiträge. Schreiben nur über /api/mess/*.
+      if (m[1] === "measurements") return fehler("Messungen sind servergeführt (I12) — /api/mess/beitrag verwenden.", 403, "mess_managed");
       const { value } = await request.json();
       const ok = await bstate.set(m[1], value);
       return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);

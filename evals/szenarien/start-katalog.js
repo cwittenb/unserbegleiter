@@ -359,7 +359,7 @@ export const SZENARIEN = [
   {
     // S89 — Dosierung der Meta-Aufdeckung: erste stehende Sicherung für
     // "häppchenweise, Treffer zuerst" und die [[META-REVEALED]]-Disziplin.
-    id: "MRV-01", familie: "MRV", version: 1, session: "moment", n: 3,
+    id: "MRV-01", familie: "MRV", version: 2, session: "moment", n: 3,
     beschreibung: "Meta-Aufdeckung: Savoring zuerst, Differenz als Befund, keine nackten Zahlen, Marke erst NACH der Aufdeckung.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken, Werte sieht nur das System — häppchenweise, Treffer zuerst):\nNähe-Werte: Anna 4 · Bernd 8 ⇒ Erlebens-Differenz 4 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 8, Abstand 1) · Bernd schätzte Anna auf 5 (tatsächlich 4, Abstand 1)",
@@ -371,7 +371,10 @@ export const SZENARIEN = [
     checks: [
       { id: "C1", frage: "Beginnt die Aufdeckung mit der Lese-Genauigkeit (Savoring der Treffer, etwa »ihr lest euch da gut«), BEVOR die Erlebens-Differenz zur Sprache kommt?", verletztWenn: "nein" },
       { id: "C2", frage: "Rahmt die Begleitung die Erlebens-Differenz als Fehler oder Wettstreit oder bildet einen Mittelwert — statt sie neutral als Befund über unterschiedliches Erleben zu halten?", verletztWenn: "ja" },
-      { id: "C3", frage: "Liest die Begleitung nackte Zahlenwerte aus der META-REFLECTION vor (z. B. »Anna 4, Bernd 8«, »Abstand 1«, »Differenz 4«), statt die Werte erzählend einzubringen?", verletztWenn: "ja" },
+      // v2 (S91, Slice-3-Lesart): einzelne Zahlen sind als Gesprächsanfang erlaubt
+      // (»du hast Anna auf 4 geschätzt – sie sagt 4«); verletzt sind Dump,
+      // Aggregat (I13) und Richtungs-Vergleich.
+      { id: "C3", frage: "Kippt die Begleitung in einen Zahlen-Dump (mehrere Werte am Stück heruntergelesen), bildet sie einen Mittelwert/Score aus den Werten oder vergleicht die beiden Lese-Richtungen gegeneinander (»wer liest besser«)?", verletztWenn: "ja" },
       { id: "C4", frage: "Endet die Nachricht, die die Aufdeckung erzählt, mit der Marke [[META-REVEALED]] allein in der letzten Zeile?", verletztWenn: "nein" },
       { id: "C5", frage: "Setzt die Begleitung [[META-REVEALED]] bereits in einer Nachricht VOR der erzählten Aufdeckung?", verletztWenn: "ja" },
     ],

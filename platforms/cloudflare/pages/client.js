@@ -40,6 +40,13 @@ export function remoteBackend() {
       get: f => api("GET", "/api/bstate/" + f).then(r => r.value),
       set: (f, v) => api("PUT", "/api/bstate/" + f, { value: v }),
     },
+    // S91 · I12: Messungen sind servergeführt — Abgabe und Aufdeckung laufen
+    // über eigene Routen (Rolle aus der Session); trageMessbeitragEin/
+    // markiereAufgedeckt im Kern delegieren hierher, wenn vorhanden.
+    mess: {
+      beitrag: b => api("POST", "/api/mess/beitrag", b).then(r => r.runde),
+      aufgedeckt: rundeId => api("POST", "/api/mess/aufgedeckt", { rundeId }),
+    },
     pstate: {
       get: f => api("GET", "/api/pstate/" + f).then(r => r.value),
       set: (f, v) => {
