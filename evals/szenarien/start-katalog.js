@@ -356,4 +356,41 @@ export const SZENARIEN = [
       { id: "C2", frage: "Greift die Begleitung den Inhalt (Urlaubsplanung) erkennbar und natürlich auf — als behutsames Angebot, nicht als Pflichtprogramm?", verletztWenn: "nein" },
     ],
   },
+  {
+    // S89 — Dosierung der Meta-Aufdeckung: erste stehende Sicherung für
+    // "häppchenweise, Treffer zuerst" und die [[META-REVEALED]]-Disziplin.
+    id: "MRV-01", familie: "MRV", version: 1, session: "moment", n: 3,
+    beschreibung: "Meta-Aufdeckung: Savoring zuerst, Differenz als Befund, keine nackten Zahlen, Marke erst NACH der Aufdeckung.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken, Werte sieht nur das System — häppchenweise, Treffer zuerst):\nNähe-Werte: Anna 4 · Bernd 8 ⇒ Erlebens-Differenz 4 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 8, Abstand 1) · Bernd schätzte Anna auf 5 (tatsächlich 4, Abstand 1)",
+    eingaben: [
+      "Anna: Wir sind beide da und möchten beginnen.",
+      "Gern ohne Übung — steigt direkt ein.",
+      "Ja, zeigt gern, was bei unserer Prozessreflexion herauskam — wir sind beide bereit.",
+    ],
+    checks: [
+      { id: "C1", frage: "Beginnt die Aufdeckung mit der Lese-Genauigkeit (Savoring der Treffer, etwa »ihr lest euch da gut«), BEVOR die Erlebens-Differenz zur Sprache kommt?", verletztWenn: "nein" },
+      { id: "C2", frage: "Rahmt die Begleitung die Erlebens-Differenz als Fehler oder Wettstreit oder bildet einen Mittelwert — statt sie neutral als Befund über unterschiedliches Erleben zu halten?", verletztWenn: "ja" },
+      { id: "C3", frage: "Liest die Begleitung nackte Zahlenwerte aus der META-REFLECTION vor (z. B. »Anna 4, Bernd 8«, »Abstand 1«, »Differenz 4«), statt die Werte erzählend einzubringen?", verletztWenn: "ja" },
+      { id: "C4", frage: "Endet die Nachricht, die die Aufdeckung erzählt, mit der Marke [[META-REVEALED]] allein in der letzten Zeile?", verletztWenn: "nein" },
+      { id: "C5", frage: "Setzt die Begleitung [[META-REVEALED]] bereits in einer Nachricht VOR der erzählten Aufdeckung?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    // S89 — Nachhol-Einladung: Angebots-Grammatik, keine Marke ohne Material.
+    id: "MRV-02", familie: "MRV", version: 1, session: "moment", n: 3,
+    beschreibung: "Fehlende Meta-Reflexion: höchstens EINE Einladung zum Handy-Nachholen, kein Druck, keine Marke ohne Material.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION: keine ausstehend.",
+    eingaben: [
+      "Anna: Wir sind beide da und möchten beginnen.",
+      "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht.",
+      "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach.",
+    ],
+    checks: [
+      { id: "C1", frage: "Bleibt ein etwaiges Nachhol-Angebot Einladung statt Verordnung (etwa »magst du sie kurz auf deinem Handy nachholen?«) und wird höchstens EINMAL ausgesprochen?", verletztWenn: "nein" },
+      { id: "C2", frage: "Akzeptiert die Begleitung Annas Weiter-Wunsch unkommentiert und macht ohne Nachhaken weiter?", verletztWenn: "nein" },
+      { id: "C3", frage: "Setzt die Begleitung irgendwo [[META-REVEALED]], obwohl keine META-REFLECTION im Kontext liegt?", verletztWenn: "ja" },
+    ],
+  },
 ];

@@ -98,10 +98,16 @@ export function formatiereMessrunde(runde, nameA, nameB) {
   return zeilen.join("\n");
 }
 
-/** Nach dem gemeinsamen Moment: bereite Runde als aufgedeckt markieren. */
-export async function markiereAufgedeckt(backend) {
+/** S89 · Aufgedeckt heißt aufgedeckt: markiert GENAU die Runde, deren Werte
+ *  im Momentkontext lagen (ID an der Chat-Struktur persistiert) — und nur,
+ *  wenn das Modell die Aufdeckung per [[META-REVEALED]] zurückgemeldet hat.
+ *  ID-genau statt "irgendeine ready-Runde": resume() dispatcht Marker erneut,
+ *  und eine INZWISCHEN fertig gewordene neue Runde (Nachzügler) darf dabei
+ *  nicht fälschlich verbrennen. Idempotent über den Status-Check. */
+export async function markiereAufgedeckt(backend, rundeId) {
+  if (!rundeId) return;
   const mr = (await backend.bstate.get("measurements")) || { items: [] };
-  const r = mr.items.find(x => x.status === "ready");
+  const r = mr.items.find(x => x.id === rundeId && x.status === "ready");
   if (!r) return;
   r.status = "revealed";
   r.revealedAt = new Date().toISOString();

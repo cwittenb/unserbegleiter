@@ -820,9 +820,32 @@ export function createApp({ doc, backend, root, diktat }) {
     }
   }
 
+  /* S89b · Nachzügler-Einspeisung (Lazy-Check, kein Polling): Wird die
+     Messrunde erst WÄHREND der laufenden Qualitätszeit fertig (Abgabe auf dem
+     eigenen Handy des Partners), reicht die App sie EINMAL als versteckten
+     Nachtrag nach — vor der nächsten Nutzernachricht, als eigener User-Zug
+     (das Muster zweier aufeinanderfolgender User-Nachrichten fährt der
+     Sessionstart seit jeher: Kontext + Steuertext). Ein KV-Read pro Zug,
+     nur solange nichts eingespeist ist; chat.messrundeId ist der Duplikat-
+     Schutz UND der Anker für [[META-REVEALED]]. Fehlertolerant — die Session
+     darf am Nachtrag nie scheitern. */
+  async function pruefeMessNachtrag() {
+    const e = state.engine;
+    if (state.chatId !== "moment" || !e || !e.chat || e.chat.status !== "running" || e.chat.messrundeId) return;
+    try {
+      const runde = bereiteRunde(await backend.bstate.get("measurements"));
+      if (!runde) return;
+      e.chat.messrundeId = runde.id;
+      e.chat.messages.push({ role: "user", hidden: true,
+        content: K().korpusTexte["mk.prozessNachtrag"] + "\n" + formatiereMessrunde(runde, state.info.nameA, state.info.nameB) });
+      await e._save();
+    } catch { /* Nachtrag ist Komfort, kein Muss */ }
+  }
+
   /** Zentraler Sendeweg: User-Text SOFORT zeigen, Ladezustand, dann Antwort. */
   async function sende(text) {
     if (!text || !state.engine || state.warten) return;
+    await pruefeMessNachtrag();                   // S89b: Nachzügler VOR der Nutzernachricht
     const laeuft = state.engine.sendUser(text);   // pusht die Nachricht synchron …
     await warteAntwort(async () => {              // … die Blase zeigt sie sofort
       await laeuft;
@@ -999,7 +1022,16 @@ export function createApp({ doc, backend, root, diktat }) {
       onScale: lebend((art, e2) => scalePanel(art, e2)),
       onChoice: lebend((art, e2, daten) => choicePanel(art, e2, daten)),
       onAufdecken: lebend((e2, richtung) => aufdeckTafel(e2, richtung)),
-      onMomentEnde: () => { markiereAufgedeckt(backend).catch(() => {}); aktualisiereChatEnde(); aktualisiereComposer(); },
+      // S89 · Verbrauch der Messrunde hängt an der AUFDECKUNG, nicht am
+      // Sessionende: [[META-REVEALED]] bucht ID-genau; ein MOMENT-BLOCK ohne
+      // Aufdeckung lässt die Runde für die nächste Qualitätszeit liegen.
+      // Daten-Hook — bewusst UNGEZÄUNT (wie onSave): auch ein Nachzügler-
+      // Abschluss der alten Session bucht korrekt.
+      onMetaAufgedeckt: () => {
+        const id = state.engine && state.engine.chat && state.engine.chat.messrundeId;
+        markiereAufgedeckt(backend, id).catch(() => {});
+      },
+      onMomentEnde: () => { aktualisiereChatEnde(); aktualisiereComposer(); },
       // S76 · Solo-Abschluss (TIMELINE-BLOCK nach [CLOSE SESSION]) beendet die
       // Session — Knopf und Composer ziehen sichtbar nach.
       onZeitleiste: () => { aktualisiereChatEnde(); aktualisiereComposer(); },
@@ -1163,7 +1195,10 @@ export function createApp({ doc, backend, root, diktat }) {
             {
               goals, agenda, momentLog, findings,
               qualitytime: await backend.bstate.get("qualitytime").catch(() => null),
-              messrunde: (() => { const r = bereiteRunde(measurements); return r ? formatiereMessrunde(r, info.nameA, info.nameB) : null; })(),
+              // S89: Die verwendete Runde wird per ID an der Chat-Struktur
+              // persistiert (überlebt Reload wie die Tafel-Meta) — Anker für
+              // [[META-REVEALED]] und Duplikat-Schutz des Lazy-Checks.
+              messrunde: (() => { const r = bereiteRunde(measurements); if (r) chat.messrundeId = r.id; return r ? formatiereMessrunde(r, info.nameA, info.nameB) : null; })(),
               sharings: [freiA, freiB].filter(Boolean),
             },
             info.nameA, info.nameB
@@ -1568,11 +1603,18 @@ export function createApp({ doc, backend, root, diktat }) {
     const box = $("boxQz");
     zeigeNur("boxQz");
     box.classList.remove("pb-hidden");
-    const [momentLog, revealLog] = await Promise.all([
+    const [momentLog, revealLog, messungen] = await Promise.all([
       backend.bstate.get("momentLog").catch(() => null),
       backend.bstate.get("revealLog").catch(() => null),
+      backend.bstate.get("measurements").catch(() => null),
     ]);
     const eintraege = [];
+    // S89 · Aufgedeckte Prozessreflexionen erscheinen im Zeitstrahl —
+    // ABGELEITET aus measurements (revealedAt), kein eigener Log nötig
+    // (revealLog ist ein Einzelobjekt der Auftrags-Aufdeckung, kein Verlauf).
+    for (const r of ((messungen && messungen.items) || []))
+      if (r.status === "revealed" && r.revealedAt)
+        eintraege.push({ at: r.revealedAt, art: t("momente.artProzess"), text: t("momente.prozessStandard"), themen: "", impuls: null });
     for (const e2 of ((momentLog && momentLog.entries) || []))
       eintraege.push({ at: e2.at || "", art: t("momente.artQz"), text: e2.summary || "",
         themen: (e2.topics || []).join(" · "), impuls: e2.gentleInvitation || null });

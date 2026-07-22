@@ -71,9 +71,15 @@ export function momentDef(backend, hooks = {}) {
     shared: true,
     titel: "Qualitätszeit",
     sysPrompt: ctx => K().momentPrompt(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
-    markerOrder: ["[[CHOICE-CONNECT]]"],
+    // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
+    // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort
+    // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es
+    // DANACH zurück, ohne Tafel, ohne Zahlen). Erst daran hängt das
+    // Verbrauchen der Runde; MOMENT-BLOCK allein verbrennt nichts mehr.
+    markerOrder: ["[[CHOICE-CONNECT]]", "[[META-REVEALED]]"],
     markers: {
       "[[CHOICE-CONNECT]]": e => hooks.onChoice && hooks.onChoice("connect", e),
+      "[[META-REVEALED]]": e => hooks.onMetaAufgedeckt && hooks.onMetaAufgedeckt(e),
     },
     canAct: c => c.status === "running",
     blocks: [

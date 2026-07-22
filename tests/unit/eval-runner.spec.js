@@ -33,8 +33,8 @@ const judgeJson = obj => ({
 const judgeText = obj => JSON.stringify(obj);
 
 describe("Katalog & Prompt-Anbindung", () => {
-  it("alle 23 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
-    expect(SZENARIEN).toHaveLength(23);   // S66: +11 aus dem Eval-Review (NOT/KRIS/QZ/WDR/TRAU/KOREG/ANT/AUFD/MERK)
+  it("alle 25 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
+    expect(SZENARIEN).toHaveLength(25);   // S66: +11 aus dem Eval-Review (NOT/KRIS/QZ/WDR/TRAU/KOREG/ANT/AUFD/MERK) · S89: +2 MRV (Meta-Aufdeckung)
     for (const s of SZENARIEN) {
       expect(s.id && s.familie && s.version && s.checks.length, s.id).toBeTruthy();
       expect(sysPromptFuer(s).length, s.id).toBeGreaterThan(200);

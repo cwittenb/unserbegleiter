@@ -135,10 +135,14 @@ describe("QZ · Leiter-Logik", () => {
    die Leiter-Logik oben bleibt unverändert in Kraft. */
 
 describe("UI · Aufdeckung im Moment", () => {
-  it("bereite Runde fließt formatiert in den MOMENT-CONTEXT; MOMENT-BLOCK markiert sie aufgedeckt", async () => {
+  it("bereite Runde fließt formatiert in den MOMENT-CONTEXT; [[META-REVEALED]] markiert sie aufgedeckt (S89: nicht mehr der MOMENT-BLOCK)", async () => {
     const moment = JSON.stringify({ summary: "Aufgedeckt und besprochen.", topics: ["Nähe"], gentleInvitation: null });
     const mock = new MockLLM([
       "Schön, dass ihr da seid.",
+      // S89 · Die Aufdeckung meldet sich per Marker zurück; der MOMENT-BLOCK
+      // allein verbrennt die Runde nicht mehr (Kernfall dazu in
+      // s89-aufdeck-rueckkopplung.spec.js).
+      "Ihr lest euch gut.\n[[META-REVEALED]]",
       "MOMENT-BLOCK\n" + moment + "\nEND MOMENT-BLOCK",
     ]);
     const backend = memoryBackend(mock);
@@ -151,9 +155,13 @@ describe("UI · Aufdeckung im Moment", () => {
 
     expect(mock.calls[0].messages[0].content).toContain("Erlebens-Differenz 4");   // verdeckt im Kontext
 
-    root.querySelector("#pbInput").value = "Wir schließen ab.";
+    root.querySelector("#pbInput").value = "Zeigt her.";
     await klick(root.querySelector("#btnSend"));
-    const mr = await backend.bstate.get("measurements");
+    let mr = await backend.bstate.get("measurements");
+    expect(mr.items[0].status).toBe("revealed");                 // Marker hat gebucht …
+    root.querySelector("#pbInput").value = "Wir schließen ab.";
+    await klick(root.querySelector("#btnSend"));                 // … der Abschluss ändert daran nichts
+    mr = await backend.bstate.get("measurements");
     expect(mr.items[0].status).toBe("revealed");
   });
 });

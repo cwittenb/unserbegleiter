@@ -51,6 +51,8 @@ export const en = {
   "momente.artAufdeck": "Reveal round",
   "momente.aufdeckStandard": "You revealed your top 5 and guesses to each other.",
   "momente.impuls": "In-between impulse:",
+  "momente.artProzess": "Process reflection",
+  "momente.prozessStandard": "You revealed your process reflection together.",
   "teil.gateAufloesung": "The shared resolution opens once you have both released your mandate clarification.",
   "teil.gemeinsam": "Start a Shared Resolution",
   "teil.gemeinsamSub": "Together you start by resolving your speculations \u2014 out of this grow the goals for the accompaniment.",
@@ -218,7 +220,7 @@ export const en = {
   "mess.fit": "How closely does the theme \u201c{text}\u201d match your current development focus? (1–10)",
   "mess.abgeben": "Submit Face Down",
   "mess.danke": "Thank you — placed face down.",
-  "mess.bereit": " You have both taken your turn: the reveal awaits in the next shared moment.",
+  "mess.bereit": " You have both taken your turn: the reveal awaits in your next quality time.",
 
   // Quality time
 

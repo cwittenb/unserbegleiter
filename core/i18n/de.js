@@ -49,6 +49,8 @@ export const de = {
   "momente.artAufdeck": "Aufdeck-Runde",
   "momente.aufdeckStandard": "Ihr habt eure Top 5 und Tipps einander aufgedeckt.",
   "momente.impuls": "Zwischenzeit-Impuls:",
+  "momente.artProzess": "Prozessreflexion",
+  "momente.prozessStandard": "Ihr habt eure Prozessreflexion gemeinsam aufgedeckt.",
   "teil.gateAufloesung": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung freigegeben habt.",
   "teil.gemeinsam": "Gemeinsame Auflösung beginnen",
   "teil.gemeinsamSub": "Startet gemeinsam mit der Auflösung eurer Spekulationen, daraus entstehen die Ziele für die Begleitung.",
@@ -216,7 +218,7 @@ export const de = {
   "mess.fit": "Wie genau trifft das Thema „{text}\" euren aktuellen Entwicklungsfokus? (1–10)",
   "mess.abgeben": "Verdeckt abgeben",
   "mess.danke": "Danke — verdeckt abgelegt.",
-  "mess.bereit": " Ihr seid beide dran gewesen: Die Aufdeckung wartet im nächsten gemeinsamen Moment.",
+  "mess.bereit": " Ihr seid beide dran gewesen: Die Aufdeckung wartet in eurer nächsten Qualitätszeit.",
 
   // Qualitätszeit
 
