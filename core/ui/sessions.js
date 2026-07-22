@@ -181,7 +181,7 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
  * freigegebenes Material BEIDER (gemeinsame Schicht), die EIGENE Zeitleiste
  * und die letzten gemeinsamen Sessions. Gibt null zurück, wenn nichts da ist
  * (kalter Start — die Begleitung eröffnet dann bei null). */
-export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkposten }) {
+export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkposten, leseMarker }) {
   const KT = key => K().korpusTexte[key];
   const teile = [];
 
@@ -190,6 +190,11 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkpost
   const offeneMerk = ((merkposten && merkposten.items) || []).filter(m => m.status === "open");
   if (offeneMerk.length)
     teile.push(KT("sk.merkpostenKopf") + "\n" + offeneMerk.map(m => "- " + m.text).join("\n"));
+
+  // S92 · Lese-Marker (merken statt melden): vorformatierter Block inkl.
+  // Umgangsregeln im Kopf — kommt nur EINMAL je Musterlage herein (Schlüssel
+  // in pstate.leseMarker, geprüft vor dem Kontextbau in app.js).
+  if (leseMarker) teile.push(leseMarker);
 
   const aktive = ((goals && goals.items) || []).filter(a => a.status !== "closed");
   if (aktive.length)
@@ -212,7 +217,7 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkpost
   return KT("sk.kopf") + "\n" + teile.join("\n\n");
 }
 
-export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharings, qualitytime, findings }, nameA, nameB) {
+export function baueMomentKontext({ goals, agenda, momentLog, messrunde, messVerlauf, sharings, qualitytime, findings }, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];
 
@@ -243,6 +248,10 @@ export function baueMomentKontext({ goals, agenda, momentLog, messrunde, sharing
     ? KT("mk.fruehereKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.summary + (e.gentleInvitation ? KT("mk.impulsWar") + e.gentleInvitation : "")).join("\n")
     : KT("mk.fruehereLeer"));
 
+  // S92 · MESS-VERLAUF nur ZUSAMMEN mit einer bereiten Runde — die
+  // Trajektorien-Vertiefung gehört zur frischen Aufdeckung; ohne sie wäre
+  // das Material eine Einladung zum kalten Historien-Öffnen.
+  if (messrunde && messVerlauf) teile.push(messVerlauf);
   teile.push(messrunde
     ? KT("mk.prozessKopf") + "\n" + messrunde
     : KT("mk.prozessLeer"));

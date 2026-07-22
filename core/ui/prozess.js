@@ -133,6 +133,61 @@ export async function markiereAufgedeckt(backend, rundeId) {
   await backend.bstate.set("measurements", mr);
 }
 
+/* ============ S92 · Verlaufs-Verbraucher (Slice 3, D-B) ============
+   Die Werte sind drittrangig — der Verlauf dient ausschließlich zwei Dingen:
+   der Trajektorien-Vertiefung (Grammatik 4: Tür, nie Aussage; Eigenleistung
+   gehört dem Paar) und der Marker-Regel „wiederkehrend schwache Lese-
+   Richtung" (Muster statt Schwellenwert; Vorzeichen-Bias ist informativer
+   als Distanz). Leitplanken: I13 kein Aggregat, Richtungen nie ranken. */
+
+export const LESE_MUSTER = { fenster: 3, deutlich: 3 };   // kalibrierbare Startwerte (Slice 3)
+
+/** Letzte k AUFGEDECKTE Runden als kompaktes Kontext-Material — je Zeile beide
+ *  Nähe-Werte und der Lese-Abstand JE RICHTUNG (nie verrechnet). null ohne Verlauf. */
+export function formatiereVerlauf(mr, nameA, nameB, k = 3) {
+  const KT = key => K().korpusTexte[key];
+  const runden = ((mr && mr.items) || [])
+    .filter(r => r.status === "revealed" && r.values && r.values.A && r.values.B)
+    .slice(-k);
+  if (!runden.length) return null;
+  const zeilen = runden.map(r => fuelle(KT("mess.verlaufZeile"), {
+    datum: (r.revealedAt || r.startAt || "").slice(0, 10),
+    nameA, nameB, a: r.values.A.closeness, b: r.values.B.closeness,
+    d1: Math.abs((r.values.A.guess ?? 0) - r.values.B.closeness),
+    d2: Math.abs((r.values.B.guess ?? 0) - r.values.A.closeness),
+  }));
+  return KT("mk.prozessVerlauf") + "\n" + zeilen.map(z => "- " + z).join("\n");
+}
+
+/** Muster in der Richtung role→Partner über die letzten `fenster` aufgedeckten
+ *  Runden: „distanz" (dreimal in Folge deutlich daneben) vor Vorzeichen-Bias
+ *  („ueberschaetzt": Not wird überlesen · „unterschaetzt": Distanz lesen, wo
+ *  keine ist). Rückgabe { muster, schluessel, ids } oder null; der Schlüssel
+ *  macht das Angebot einmalig je Musterlage (merken statt melden). */
+export function pruefeLeserichtung(mr, role, opt = {}) {
+  const fenster = opt.fenster || LESE_MUSTER.fenster;
+  const deutlich = opt.deutlich || LESE_MUSTER.deutlich;
+  const partner = role === "A" ? "B" : "A";
+  const runden = ((mr && mr.items) || [])
+    .filter(r => r.status === "revealed" && r.values && r.values[role] && r.values[partner]);
+  if (runden.length < fenster) return null;
+  const letzte = runden.slice(-fenster);
+  const ds = letzte.map(r => (r.values[role].guess ?? 0) - (r.values[partner].closeness ?? 0));
+  const ids = letzte.map(r => r.id);
+  const mit = m => ({ muster: m, schluessel: m + ":" + ids.join("+"), ids });
+  if (ds.every(d => Math.abs(d) >= deutlich)) return mit("distanz");
+  if (ds.every(d => d > 0)) return mit("ueberschaetzt");
+  if (ds.every(d => d < 0)) return mit("unterschaetzt");
+  return null;
+}
+
+/** Marker-Befund als Solo-Kontext-Block (Kopf trägt die Umgangsregeln). */
+export function formatiereLeseMarker(befund, me, partner) {
+  const KT = key => K().korpusTexte[key];
+  const map = { distanz: "mess.markerDistanz", ueberschaetzt: "mess.markerUeber", unterschaetzt: "mess.markerUnter" };
+  return KT("sk.leseMarkerKopf") + "\n" + fuelle(KT(map[befund.muster]), { me, partner, deutlich: LESE_MUSTER.deutlich });
+}
+
 /* ================= Qualitätszeit-Leiter ================= */
 
 export const QZ_WOCHEN_BIS_GRUENDE = 4;

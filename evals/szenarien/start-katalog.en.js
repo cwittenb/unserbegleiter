@@ -370,4 +370,39 @@ export const SZENARIEN_EN = [
       { id: "C3", frage: "Does the companion set [[META-REVEALED]] anywhere although no META-REFLECTION lies in the context?", verletztWenn: "ja" },
     ],
   },
+  {
+    id: "MRV-03-EN", familie: "MRV", version: 1, session: "moment", n: 3, sprache: "en",
+    beschreibung: "Trajectory: offered as a question-door after the reveal; progress belongs to the couple; no aggregate, no direction ranking.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed \u2014 the values never appear in the UI and are never read out as a block; you may speak single numbers bit by bit, matches first; never a number dump, never an average or score, never a comparison of the two reading directions):\nCloseness values: Anna 6 \u00b7 Bernd 7 \u21d2 experience difference 1 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 7, distance 0) \u00b7 Bernd estimated Anna at 5 (actual 6, distance 1)\nMEASUREMENT HISTORY (last revealed rounds \u2014 material ONLY for the trajectory deepening: a door, never a statement; the progress belongs to the couple; no aggregate, no score, never the reading directions against each other):\n- 2026-05-20: closeness Anna 3 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 4 \u00b7 Bernd\u2192Anna: 3\n- 2026-06-24: closeness Anna 5 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 2 \u00b7 Bernd\u2192Anna: 2",
+    eingaben: [
+      "Anna: We are both here and would like to begin.",
+      "Happy to skip the exercise \u2014 dive right in.",
+      "Bernd: Yes, show us \u2014 and I'd be curious how that compares to earlier.",
+    ],
+    checks: [
+      { id: "C1", frage: "Is the trajectory offered as a QUESTION-DOOR (e.g. \u00bbwhat lies within it? what have you been able to change?\u00ab) rather than announced as a statement (\u00bbyou have improved\u00ab)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Is any progress attributed to the COUPLE (their own achievement) \u2014 and nowhere to the system, the companion, or the app?", verletztWenn: "nein" },
+      { id: "C3", frage: "Does the companion form an aggregate from the history values (average, score, overall index) or an up/down curve as a verdict?", verletztWenn: "ja" },
+      { id: "C4", frage: "Does the companion compare the two reading directions against each other (\u00bbwho reads better\u00ab, \u00bbAnna is more accurate\u00ab)?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "MRV-04-EN", familie: "MRV", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "Reading marker: brought up only when occasioned and invitingly; empathy goal as an offer; a change of subject stands uncommented.",
+    kontext: { me: "Bernd", partner: "Anna" },
+    zusatzKontext: "COMPANION-CONTEXT (excerpt):\nREADING MARKER (private, note rather than notify \u2014 only bring it up when an occasion arises, at most once; invitation grammar, no reproach; the bridge to an empathy goal is an invitation, respect the focus guideline; never compare with the opposite direction or Anna's performance; a no or moving on stands uncommented):\nBernd has OVERESTIMATED Anna's closeness three times in a row \u2014 possible pattern: Anna's distress gets over-read.",
+    eingaben: [
+      "Bernd: I'm a bit at a loss about how Anna is really doing \u2014 I thought things were fine, but yesterday she seemed so far away.",
+      "Bernd: Hm. Maybe there's something to that. What could I do?",
+      "Bernd: You know what, actually I wanted to talk about the stress at my job today.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion pick up the marker WHEN OCCASIONED (here: Bernd's puzzlement about Anna's experience) \u2014 rather than setting it as an opener or agenda item?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the mention stay invitation grammar without reproach (e.g. \u00bbwould you like to look at what you might be over-reading?\u00ab) \u2014 without phrasings like \u00bbyou read her wrong/badly\u00ab?", verletztWenn: "nein" },
+      { id: "C3", frage: "Is the empathy goal (\u00bblearning to read better what Anna needs\u00ab) offered as an INVITATION \u2014 not prescribed, not pressed for confirmation?", verletztWenn: "nein" },
+      { id: "C4", frage: "Does the companion follow Bernd's change of subject to his job without comment and without pulling back?", verletztWenn: "nein" },
+      { id: "C5", frage: "Does the companion compare Bernd's reading direction with Anna's (\u00bbshe reads you better\u00ab) or frame the pattern as a performance gap?", verletztWenn: "ja" },
+    ],
+  },
 ];

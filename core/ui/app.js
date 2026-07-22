@@ -9,7 +9,7 @@ import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, mark
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
-  trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt } from "./prozess.js";
+  trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf, pruefeLeserichtung, formatiereLeseMarker } from "./prozess.js";
 import { applyDesign } from "./design.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
@@ -833,11 +833,14 @@ export function createApp({ doc, backend, root, diktat }) {
     const e = state.engine;
     if (state.chatId !== "moment" || !e || !e.chat || e.chat.status !== "running" || e.chat.messrundeId) return;
     try {
-      const runde = bereiteRunde(await backend.bstate.get("measurements"));
+      const mr = await backend.bstate.get("measurements");
+      const runde = bereiteRunde(mr);
       if (!runde) return;
       e.chat.messrundeId = runde.id;
+      const verlauf = formatiereVerlauf(mr, state.info.nameA, state.info.nameB);   // S92: identisch zum Startkontext
       e.chat.messages.push({ role: "user", hidden: true,
-        content: K().korpusTexte["mk.prozessNachtrag"] + "\n" + formatiereMessrunde(runde, state.info.nameA, state.info.nameB) });
+        content: K().korpusTexte["mk.prozessNachtrag"] + "\n" + formatiereMessrunde(runde, state.info.nameA, state.info.nameB)
+          + (verlauf ? "\n" + verlauf : "") });
       await e._save();
     } catch { /* Nachtrag ist Komfort, kein Muss */ }
   }
@@ -1170,15 +1173,26 @@ export function createApp({ doc, backend, root, diktat }) {
       // Aufträgen, freigegebenem Material beider, EIGENER Zeitleiste und den
       // letzten gemeinsamen Sessions. Ist nichts da → kalter Start (kein Kontext).
       if (art === "solo") {
-        const [goals, freiA, freiB, timeline, momentLog, merkposten] = await Promise.all([
+        const [goals, freiA, freiB, timeline, momentLog, merkposten, messungenSolo, markerAlt] = await Promise.all([
           backend.bstate.get("goals").catch(() => null),
           Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
           Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
           backend.pstate.get("timeline").catch(() => null),
           backend.bstate.get("momentLog").catch(() => null),
           backend.pstate.get("merkposten").catch(() => null),
+          backend.bstate.get("measurements").catch(() => null),
+          backend.pstate.get("leseMarker").catch(() => null),
         ]);
-        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten });
+        // S92 · Marker-Regel (Slice 3): wiederkehrend schwache Lese-Richtung —
+        // je Musterlage EINMAL als Material eingespielt (merken statt melden,
+        // Schlüssel in pstate); das Ansprechen bleibt anlassgebunden beim Modell.
+        let leseMarker = null;
+        const befund = pruefeLeserichtung(messungenSolo, info.role);
+        if (befund && befund.schluessel !== (markerAlt && markerAlt.schluessel)) {
+          leseMarker = formatiereLeseMarker(befund, info.name, info.partner);
+          backend.pstate.set("leseMarker", { schluessel: befund.schluessel, at: new Date().toISOString() }).catch(() => {});
+        }
+        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten, leseMarker });
         if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
       }
       if (art === "moment") {
@@ -1199,6 +1213,8 @@ export function createApp({ doc, backend, root, diktat }) {
               // persistiert (überlebt Reload wie die Tafel-Meta) — Anker für
               // [[META-REVEALED]] und Duplikat-Schutz des Lazy-Checks.
               messrunde: (() => { const r = bereiteRunde(measurements); if (r) chat.messrundeId = r.id; return r ? formatiereMessrunde(r, info.nameA, info.nameB) : null; })(),
+              // S92 · Trajektorien-Material (nur wirksam zusammen mit messrunde, s. sessions.js)
+              messVerlauf: formatiereVerlauf(measurements, info.nameA, info.nameB),
               sharings: [freiA, freiB].filter(Boolean),
             },
             info.nameA, info.nameB

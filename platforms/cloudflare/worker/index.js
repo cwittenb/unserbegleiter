@@ -39,7 +39,11 @@ const leseEmailFor = (kv, code, role) =>
 const BSTATE_FELDER = new Set(Bstate.FIELDS);
 // S91 · I12: Mess-Logik kommt aus dem Kern — Worker und App teilen dieselbe Wahrheit.
 
-const PSTATE_FELDER = new Set(["timeline", "selfDisclosures"]);
+// S92 · T0-Fix: merkposten (S44) und language wurden von der App genutzt,
+// fehlten aber in der Whitelist — auf Pages liefen sie ins 404 (Lesen still
+// null-maskiert: Merkposten und persönliche UI-Sprache funktionierten nur im
+// Artefakt). leseMarker ist das neue S92-Feld (Marker-Regel, je Rolle privat).
+const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "language", "leseMarker"]);
 
 /* ---- Web Push (M7a): Abo-Ablage & inhaltsfreier Freigabe-Hinweis ----
  *  KV: push/<code>/<Rolle> → Array von Browser-Subscriptions (max. 5, dedupliziert
