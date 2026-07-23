@@ -119,10 +119,10 @@ describe("S36 · Mein Raum (4 Zeilen)", () => {
     expect(regale.querySelector("#btnZeitleiste")).toBeTruthy();
     expect(regale.querySelector("#btnMess")).toBeFalsy();     // S44: nicht in der Regal-Zone
     expect(oben.querySelector("#btnMess")).toBeTruthy();      // S44: (verdeckt) im Auftragsklärungs-Slot
-    // Inhaltspanel unter den Regal-Zeilen, Zurück lebt im Kopf der Raum-Zone
-    const zone = regale.parentElement, kinder = [...zone.children];
-    const box = zone.querySelector("#boxZeitleiste");
-    expect(kinder.indexOf(regale)).toBeLessThan(kinder.indexOf(box));
+    // D9: der Inhalt sitzt als Akkordeon DIREKT unter seiner Zeile
+    const reihe = regale.querySelector("#btnZeitleiste");
+    expect(reihe.nextElementSibling.id).toBe("boxZeitleiste");
+    expect(reihe.getAttribute("data-box")).toBe("boxZeitleiste");
     expect(raum.querySelector(".rz-kopf #btnZurueck1")).toBeTruthy();
   });
 });

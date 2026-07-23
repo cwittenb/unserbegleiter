@@ -344,6 +344,54 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-sprachdialog .pb-btn{margin:6px 8px 0 0}
       @media(prefers-reduced-motion:reduce){#boxPaarsprache.rz-sprachdialog{transition:none}}
 
+      /* ============ D9 · Regal-Vollbild: ruhig oeffnen ============
+         Warum es vorher ruckelte: beide Zonen teilen sich den Schirm
+         (flex:1). Kam Inhalt dazu, rechnete das Layout schlagartig neu —
+         Naht, Badge und Kulisse sprangen, das Dokument wuchs, eine
+         Bildlaufleiste erschien und verschwand wieder.
+         Jetzt uebernimmt die Regal-Zone den ganzen Schirm: die obere Zone
+         faltet sich weg (flex-grow 1 -> 0), die Zonen-Ueberschrift faehrt
+         nach oben, und der Inhalt rollt INNERHALB der Zone, statt die Seite
+         wachsen zu lassen. Beim Zuklappen laeuft alles rueckwaerts. */
+      .rz-screen .rz-half:first-child{overflow:hidden}
+      .rz-regal-reihen{display:flex;flex-direction:column;min-height:0}
+      .rz-fuss-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+      .rz-zone-zu{border:0;background:none;padding:2px 0 2px 12px;margin:0;cursor:pointer;
+        font-family:var(--rz-sans);font-size:16px;line-height:1;color:var(--rz-pfeil);
+        opacity:0;pointer-events:none;transition:opacity .2s ease}
+      .rz-regal-dunkel .rz-zone-zu{color:var(--rz-pfeil-auf-gruen)}
+      .rz-regal-offen .rz-zone-zu{opacity:1;pointer-events:auto}
+      /* Die offene Zeile behaelt ihre Linie, verliert aber ihren Pfeil —
+         der Weg nach unten steht jetzt oben an der Zonen-Ueberschrift. */
+      .rz-zeile.rz-auf .rz-pfeil{display:none}
+      .rz-regal-offen{position:relative;height:100dvh;overflow:hidden}
+      /* Der obere Teil bleibt EXAKT stehen: statt ihn vom Flex-Layout neu
+         verteilen zu lassen, wird er auf sein gemessenes Mass festgesetzt.
+         Die Regal-Zone legt sich als Flaeche darueber — von unterhalb des
+         Kopfes ("Raum fuer uns") bis zur Unterkante. */
+      .rz-regal-offen>.rz-half:first-child{position:absolute;top:0;left:0;right:0;height:var(--rz-oben-h,50%)}
+      .rz-regal-offen>.rz-half:last-child{position:absolute;left:0;right:0;bottom:0;
+        top:var(--rz-regal-top,0px);z-index:2}
+      .rz-half{transition:transform .36s cubic-bezier(.2,.8,.2,1)}
+      .rz-regal-offen .rz-weg-badge,.rz-regal-offen .rz-kulisse-fuss{
+        opacity:0;pointer-events:none;transition:opacity .2s ease}
+      .rz-regal-offen>.rz-half:last-child .rz-fuss{order:-1;margin-top:0;margin-bottom:14px;
+        animation:rzEinblenden .28s .08s both}
+      .rz-regal-offen .rz-regal-reihen{flex:1 1 auto}
+      /* Akkordeon: der Inhalt waechst aus dem Trennstrich unter seiner Zeile
+         hervor — freigelegt per clip-path, ohne den Text zu verzerren. */
+      .rz-regal-inhalt:not(.pb-hidden){animation:rzAufklappen .32s cubic-bezier(.2,.8,.2,1) both}
+      .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){
+        flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;border-bottom:0}
+      @keyframes rzAufklappen{
+        from{clip-path:inset(0 0 100% 0);opacity:.4}
+        to{clip-path:inset(0 0 0 0);opacity:1}}
+      @keyframes rzEinblenden{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+      @media(prefers-reduced-motion:reduce){
+        .rz-half{transition:none}
+        .rz-regal-inhalt:not(.pb-hidden),.rz-regal-offen>.rz-half:last-child .rz-fuss{animation:none}
+      }
+
       /* ============ D6 · Kulisse — ortsgebunden, leise, wachsend ============
          Start: auf der Naht (hell: Baeume ragen darueber, dunkel: Teich
          darunter). Vorraeume: unten in der Regal-Zone. Chat: keine. Eigener

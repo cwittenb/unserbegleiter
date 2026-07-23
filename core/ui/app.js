@@ -159,12 +159,15 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegMein"></div>
         <div class="rz-regal-reihen">
-          <button class="rz-zeile rz-unten" id="btnZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
+          <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
+          <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><div class="rz-caps">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
+          <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
         </div>
-        <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><div class="rz-caps">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
-        <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
         <div class="rz-fuss">
-          <h2 class="rz-h2">${t("zone.regal")}</h2>
+          <div class="rz-fuss-kopf">
+            <h2 class="rz-h2">${t("zone.regal")}</h2>
+            <button class="rz-zone-zu" title="${t("weg.fuss")}" aria-label="${t("weg.fuss")}">↓</button>
+          </div>
           <div class="rz-caps">${t("mein.gruppeRegale")}</div>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseMein"></div>
@@ -189,15 +192,18 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
-          <button class="rz-zeile rz-unten" id="btnRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
-          <button class="rz-zeile rz-unten" id="btnAgenda"><span>${t("teil.agenda")}</span><span class="rz-pfeil">↓</span></button>
-          <button class="rz-zeile rz-unten" id="btnQz"><span>${t("teil.qz")}</span><span class="rz-pfeil">↓</span></button>
+          <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
+          <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><div class="rz-caps" id="regalTitel"></div><p class="rz-sub" id="regalIntro" style="margin:6px 0 4px"></p><div id="regalItems"></div></div>
+          <button class="rz-zeile rz-unten" id="btnAgenda" data-box="boxAgenda"><span>${t("teil.agenda")}</span><span class="rz-pfeil">↓</span></button>
+          <div class="rz-regal-inhalt pb-hidden" id="boxAgenda"><div class="rz-caps">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
+          <button class="rz-zeile rz-unten" id="btnQz" data-box="boxQz"><span>${t("teil.qz")}</span><span class="rz-pfeil">↓</span></button>
+          <div class="rz-regal-inhalt pb-hidden" id="boxQz"></div>
         </div>
-        <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><div class="rz-caps" id="regalTitel"></div><p class="rz-sub" id="regalIntro" style="margin:6px 0 4px"></p><div id="regalItems"></div></div>
-        <div class="rz-regal-inhalt pb-hidden" id="boxAgenda"><div class="rz-caps">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
-        <div class="rz-regal-inhalt pb-hidden" id="boxQz"></div>
         <div class="rz-fuss">
-          <h2 class="rz-h2">${t("zone.regal")}</h2>
+          <div class="rz-fuss-kopf">
+            <h2 class="rz-h2">${t("zone.regal")}</h2>
+            <button class="rz-zone-zu" title="${t("weg.fuss")}" aria-label="${t("weg.fuss")}">↓</button>
+          </div>
           <div class="rz-caps">${t("teil.gruppeRegale")}</div>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseTeil"></div>
@@ -342,11 +348,79 @@ export function createApp({ doc, backend, root, diktat }) {
     for (const g of Object.values(INFO_GRUPPEN))
       if (g.includes(id)) for (const b of g) if (b !== id) $(b).classList.add("pb-hidden");
   }
-  /** Knopf-Verhalten: sichtbare Box erneut angefragt → zuklappen (Toggle). */
+  /* D9 · Regal-Vollbild. Der Wiedereinstiegs-Hinweis (boxRecovery) zählt
+     bewusst nicht als Regal-Inhalt: er steht von selbst da und soll den
+     Raum nicht dauerhaft ins Vollbild zwingen. */
+  const REGAL_OFFEN = ".rz-regal-inhalt:not(.pb-hidden):not(#boxRecovery)";
+
+  /** Fährt die Regal-Zone hoch bis unter den Kopf ("Raum für uns") und
+   *  wieder herunter. Der obere Teil bleibt dabei EXAKT stehen: beide Zonen
+   *  werden im offenen Zustand auf ihre gemessenen Maße festgesetzt, statt
+   *  dass das Flex-Layout sie neu verteilt.
+   *  Die Bewegung selbst läuft als FLIP — Lage messen, Zustand setzen, neu
+   *  messen, die Differenz als Transform vorgeben, im übernächsten Bild
+   *  loslassen. Reine Transform-Bewegung. Ohne Layout (Testumgebung) ist die
+   *  Differenz 0 → nur der Zustand wechselt. */
+  function regalModus(box) {
+    const screen = box.closest && box.closest(".rz-screen");
+    if (!screen) return;
+    const zone = box.closest(".rz-half");
+    const offen = !!screen.querySelector(REGAL_OFFEN);
+
+    // Pfeil der offenen Zeile verschwindet, die anderen behalten ihren.
+    for (const z of screen.querySelectorAll("[data-box]")) {
+      const ziel = $(z.getAttribute("data-box"));
+      z.classList.toggle("rz-auf", !!ziel && !ziel.classList.contains("pb-hidden"));
+    }
+
+    const misst = zone && typeof zone.getBoundingClientRect === "function";
+    if (!misst) { screen.classList.toggle("rz-regal-offen", offen); return; }
+
+    // Maße einfrieren: Kopfhöhe = Obergrenze der Zone, Höhe der oberen
+    // Zone = ihr Ist-Maß. So verschiebt sich oben kein Pixel.
+    if (offen) {
+      const oben = screen.querySelector(".rz-half");
+      const kopf = oben && oben.querySelector(".rz-kopf");
+      const rahmen = screen.getBoundingClientRect();
+      if (kopf) screen.style.setProperty("--rz-regal-top", Math.round(kopf.getBoundingClientRect().bottom - rahmen.top) + "px");
+      if (oben) screen.style.setProperty("--rz-oben-h", Math.round(oben.getBoundingClientRect().height) + "px");
+    }
+
+    const vorher = zone.getBoundingClientRect().top;
+    screen.classList.toggle("rz-regal-offen", offen);
+    const delta = vorher - zone.getBoundingClientRect().top;
+    const fenster = screen.ownerDocument && screen.ownerDocument.defaultView;
+    const aufraeumen = () => { if (!offen) { screen.style.removeProperty("--rz-regal-top"); screen.style.removeProperty("--rz-oben-h"); } };
+    if (!delta) { aufraeumen(); return; }
+    zone.style.transition = "none";
+    zone.style.transform = "translateY(" + delta + "px)";
+    const los = () => { zone.style.transition = ""; zone.style.transform = ""; aufraeumen(); };
+    if (fenster && fenster.requestAnimationFrame) fenster.requestAnimationFrame(() => fenster.requestAnimationFrame(los));
+    else los();
+  }
+
+  /** Schließt den offenen Regal-Kasten eines Raums (Zu-Pfeil, Klick oben). */
+  function regalZu(screen) {
+    if (!screen || !screen.classList.contains("rz-regal-offen")) return;
+    const offen = screen.querySelector(REGAL_OFFEN);
+    if (!offen) return;
+    offen.classList.add("pb-hidden");
+    regalModus(offen);
+  }
+
+  /** Knopf-Verhalten: sichtbare Box erneut angefragt → zuklappen (Toggle).
+   *  D9: es ist immer nur EINE Box offen — zwei gleichzeitig hieße wieder
+   *  springende Höhen. Danach folgt der Vollbild-Zustand. */
   function infoToggle(id, oeffnen) {
     const box = $(id);
-    if (!box.classList.contains("pb-hidden")) { box.classList.add("pb-hidden"); return Promise.resolve(); }
-    return oeffnen();
+    if (!box.classList.contains("pb-hidden")) {
+      box.classList.add("pb-hidden");
+      regalModus(box);
+      return Promise.resolve();
+    }
+    const zone = box.closest && box.closest(".rz-half");
+    if (zone) for (const g of zone.querySelectorAll(".rz-regal-inhalt")) if (g !== box && g.id !== "boxRecovery") g.classList.add("pb-hidden");
+    return Promise.resolve().then(oeffnen).then(r => { regalModus(box); return r; });
   }
 
   /* S35 · Lagebild für Wegweiser und Gating — ein paralleler Rundflug über
@@ -1653,6 +1727,16 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
   $("btnMoment").addEventListener("click", () => startChat("moment").catch(e => err(e.message)));
+  // D9 · Zu-Pfeil auf Höhe der Zonen-Überschrift und Klick auf den Bereich
+  // ÜBER dem Regal fahren es wieder herunter.
+  for (const screenId of ["scrMyRoom", "scrShared"]) {
+    const screen = $(screenId);
+    if (!screen) continue;
+    const zu = screen.querySelector(".rz-zone-zu");
+    if (zu) zu.addEventListener("click", () => regalZu(screen));
+    const oben = screen.querySelector(".rz-half");
+    if (oben) oben.addEventListener("click", () => regalZu(screen));
+  }
   $("btnZeitleiste").addEventListener("click", () => infoToggle("boxZeitleiste", () => zeigeZeitleiste()).catch(e => err(e.message)));
   // S88 · Prozessreflexion ist eine HANDLUNG und bekommt wie jede Handlung
   // einen eigenen Raum (S44 hatte sie bereits an die Stelle der Auftrags-

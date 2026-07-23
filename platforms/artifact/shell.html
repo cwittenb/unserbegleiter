@@ -13,8 +13,9 @@
   /* D8 · Entwickler-Panel bleibt — es schwebt jetzt ueber dem Design (das
      randlos den ganzen Schirm fuellt), statt darunter aus dem Bild zu fallen.
      Zugeklappt ist es nur die Zeile "Entwickler-Panel" oben links. */
-  #pbDevHost{position:fixed;top:0;left:0;z-index:60;max-width:min(560px,96vw);
-             max-height:96vh;overflow:auto;padding:8px 12px;box-sizing:border-box}
+  #pbDevHost{position:fixed;bottom:0;right:0;z-index:60;max-width:min(560px,96vw);
+             max-height:96vh;overflow:auto;padding:8px 12px;box-sizing:border-box;
+             display:flex;flex-direction:column;align-items:flex-end}
   #pbDevHost details{margin-top:0!important;border-top:0!important;padding-top:0!important}
   #pbDevHost summary{background:var(--bg);padding:4px 8px;border:1px solid var(--ink-soft);
                      display:inline-block;opacity:.75}
