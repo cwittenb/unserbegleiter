@@ -100,7 +100,7 @@ describe("S59 · D1: Handover schlägt lokalen Chat (Wegweiser & Selbstheilung)"
     await bootApp(backend);
     await klick(root.querySelector("#btnMyRoom"));
     await ruhe();
-    expect(root.querySelector("#btnEinzel").textContent).toBe(t("mein.einzelWeiter"));
+    expect(root.querySelector("#einzelLabel").textContent).toBe(t("mein.einzelWeiter"));   // D3: Label-Span
   });
 });
 

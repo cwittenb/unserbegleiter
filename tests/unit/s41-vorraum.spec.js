@@ -68,15 +68,17 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     await ruhe();
     const raum = root.querySelector("#scrShared");
     expect(raum.querySelector("#sharedIntro").textContent).toContain("Für alles, was ihr zu zweit macht");
-    expect(raum.querySelector("#wegTeil").closest(".pb-card").querySelector("#sharedIntro")).toBeTruthy();
-    const karten = raum.querySelector(".pb-drei");
-    expect(karten.querySelector("#btnMoment")).toBeTruthy();
-    expect(karten.querySelector("#btnGemeinsam")).toBeTruthy();
-    expect(karten.querySelector("#btnAufdeck")).toBeFalsy();   // S43: Aufdeckung ist Auftakt der Auflösung
-    const regale = raum.querySelector(".pb-card.pb-reihe");
+    // D3: Wegweiser als Naht-Panel mit Badge, Sessions als Zeilen in der
+    // Raum-Zone, Regal-Zeilen in der Regal-Zone, Zurück im Kopf.
+    expect(raum.querySelector("#wegTeil").classList.contains("rz-weg-panel")).toBe(true);
+    expect(raum.querySelector("#wegBadgeTeil")).toBeTruthy();
+    const sessions = raum.querySelector(".rz-tiefgruen .rz-fuss");
+    expect(sessions.querySelector("#btnMoment")).toBeTruthy();
+    expect(sessions.querySelector("#btnGemeinsam")).toBeTruthy();
+    expect(sessions.querySelector("#btnAufdeck")).toBeFalsy();   // S43: Aufdeckung ist Auftakt der Auflösung
+    const regale = raum.querySelector(".rz-regal-dunkel .rz-regal-reihen");
     expect(regale.querySelector("#btnRegal")).toBeTruthy();
-    const kinder = [...raum.children];
-    expect(kinder[kinder.length - 1].querySelector("#btnZurueck2")).toBeTruthy();
+    expect(raum.querySelector(".rz-kopf #btnZurueck2")).toBeTruthy();
   });
 
   it("gesperrte Sessions sind ausgegraut mit sichtbarem Hinweis statt Fehler", async () => {

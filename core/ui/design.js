@@ -233,6 +233,33 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       #pbDunkel::before{content:'\263E\FE0E'}
       .pb-theme button.an{display:none}
       html[data-theme=dark] .pb-theme button{color:var(--rz-marke)}
+
+      /* ============ D3 · Vorraeume als Zwei-Zonen-Layout (Design 17c/d) ============
+         Obere Zone: der Raum (Sessions als Zeilen unten an der Zonengrenze).
+         Untere Zone: das Regal (Zeilen direkt unter der Grenze, Titel unten
+         aussen). Kopf: Zurueck-Pfeil links, Caps-Label zentriert, blinder
+         Spiegel-Pfeil rechts. */
+      .rz-kopf-mitte{justify-content:space-between}
+      .rz-zurueck{border:0;background:none;padding:4px 8px;margin:-4px -8px;cursor:pointer;
+                  font-family:var(--rz-sans);font-size:13.5px;color:var(--rz-marke);min-height:0}
+      .rz-tiefgruen .rz-zurueck,.rz-regal-dunkel .rz-zurueck{color:var(--rz-sek-auf-gruen)}
+      .rz-blind{visibility:hidden;cursor:default}
+      .rz-intro{margin:4px 0 0;max-width:46ch}
+      .rz-tiefgruen .rz-sub,.rz-regal-dunkel .rz-sub{color:var(--rz-sek2-auf-gruen)}
+      .rz-still-aus{display:none!important}
+      .rz-zeile.rz-spalte{flex-direction:column;align-items:stretch;gap:0}
+      .rz-zeile-haupt{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+      .rz-zeile-haupt>span:first-child{flex:1}
+      .rz-zeile .rz-balken{margin-top:8px}
+      .rz-regal-reihen{display:flex;flex-direction:column}
+      .rz-regal-inhalt{font-size:13px;padding:12px 0;border-bottom:1px solid var(--rz-hairline-regal)}
+      .rz-regal-dunkel .rz-regal-inhalt{border-bottom-color:var(--rz-hairline-gruen)}
+      .rz-regal-inhalt .pb-item{border-bottom:1px solid var(--rz-hairline-regal);font-size:14px}
+      .rz-regal-dunkel .rz-regal-inhalt .pb-item{border-bottom-color:var(--rz-hairline-gruen)}
+      .rz-eine-zone{display:flex;flex-direction:column}
+      .rz-eine-zone .rz-half{flex:1;padding-top:calc(30px + env(safe-area-inset-top,0px));
+                             padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
+      .rz-eine-zone #boxMess{margin-top:18px;font-size:14px}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">

@@ -72,18 +72,18 @@ async function speichereEinzel(backend, letzterAssistantText) {
 describe("S53 · Kartentausch & dynamisches Label in Mein Raum", () => {
   it("links steht die Auftragsklärung, rechts das Reflexionsgespräch", async () => {
     await bootApp(memoryBackend(null));
-    const karten = root.querySelectorAll("#scrMyRoom .pb-zwei > .pb-card");
-    expect(karten).toHaveLength(2);
-    expect(karten[0].querySelector("#btnEinzel")).toBeTruthy();
-    expect(karten[0].querySelector("#btnMess")).toBeTruthy();
-    expect(karten[1].querySelector("#btnSolo")).toBeTruthy();
+    // D3: Sessions leben als Hairline-Zeilen unten an der Zonengrenze der
+    // Papier-Haelfte — Reflexion zuerst, dann Auftragsklaerung (mit Mess-Slot).
+    const zone = root.querySelector("#scrMyRoom .rz-papier .rz-fuss");
+    const knoepfe = [...zone.querySelectorAll("button.rz-zeile")].map(b => b.id);
+    expect(knoepfe).toEqual(["btnSolo", "btnEinzel", "btnMess"]);
   });
 
   it("ohne begonnene Auftragsklärung heißt der Knopf 'beginnen'", async () => {
     const app = await bootApp(memoryBackend(null));
     await klick(root.querySelector("#btnMyRoom"));
     await ruhe();
-    expect(root.querySelector("#btnEinzel").textContent).toBe(t("mein.einzel"));
+    expect(root.querySelector("#einzelLabel").textContent).toBe(t("mein.einzel"));   // D3: Label-Span
     expect(app._state.screen).toBe("scrMyRoom");
   });
 
@@ -93,7 +93,7 @@ describe("S53 · Kartentausch & dynamisches Label in Mein Raum", () => {
     await bootApp(backend);
     await klick(root.querySelector("#btnMyRoom"));
     await ruhe();
-    expect(root.querySelector("#btnEinzel").textContent).toBe(t("mein.einzelWeiter"));
+    expect(root.querySelector("#einzelLabel").textContent).toBe(t("mein.einzelWeiter"));   // D3: Label-Span
   });
 });
 

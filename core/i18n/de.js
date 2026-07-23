@@ -30,6 +30,9 @@ export const de = {
   "start.teilTitel": "Eure gemeinsame Zeit.",
   "weg.badge": "Wegweiser",
   "weg.fuss": "tippen zum Schließen",
+  // D3 · Vorraum-Zonen (Design Turn 17c/d)
+  "zone.raum": "Der Raum.",
+  "zone.regal": "Das Regal.",
 
   // Mein Raum
   "mein.intro": "Dieser Raum ist nur für dich — nichts von hier erreicht {partner}, außer du gibst es ausdrücklich frei. Wenn du magst, kannst du Erarbeitetes jederzeit teilen: Die Begleitung hilft dir dann bei einer Formulierung, und erst dein Häkchen gibt sie frei. Nimm dir die Zeit, die du brauchst.",

@@ -171,8 +171,10 @@ describe("S74 · Sessionende: nichts verschwindet mehr im Nirwana", () => {
     await bootApp(backend);
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
-    const karte = root.querySelector("#btnGemeinsam").closest(".pb-card");
-    expect(karte.classList.contains("pb-hidden")).toBe(true);
+    // D3: die Aufloesungs-ZEILE verschwindet (Karten gibt es nicht mehr)
+    const zeile = root.querySelector("#btnGemeinsam");
+    expect(zeile.classList.contains("pb-hidden")).toBe(true);
+    expect(root.querySelector("#gemeinsamSub").classList.contains("pb-hidden")).toBe(true);
   });
 
   it("ohne Befund bleibt die Karte sichtbar (kein Regress)", async () => {
@@ -181,9 +183,9 @@ describe("S74 · Sessionende: nichts verschwindet mehr im Nirwana", () => {
     await bootApp(backend);
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
-    const karte = root.querySelector("#btnGemeinsam").closest(".pb-card");
-    expect(karte.classList.contains("pb-hidden")).toBe(false);
-    expect(root.querySelector("#btnGemeinsam").textContent).toBe("Gemeinsame Auflösung beginnen");
+    const zeile = root.querySelector("#btnGemeinsam");
+    expect(zeile.classList.contains("pb-hidden")).toBe(false);
+    expect(root.querySelector("#gemeinsamLabel").textContent).toBe("Gemeinsame Auflösung beginnen");   // D3: Label-Span
   });
 });
 

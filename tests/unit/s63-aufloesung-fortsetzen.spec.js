@@ -85,7 +85,7 @@ describe("S63 · Vorraum spiegelt die pausierte Gemeinsame Auflösung", () => {
     const weg = root.querySelector("#wegTeil").textContent;
     expect(weg).toContain("ist offen — ihr könnt genau dort weitermachen");
     expect(weg).not.toContain("Startet eure Gemeinsame Auflösung");
-    expect(root.querySelector("#btnGemeinsam").textContent).toBe("Gemeinsame Auflösung fortsetzen");
+    expect(root.querySelector("#gemeinsamLabel").textContent).toBe("Gemeinsame Auflösung fortsetzen");   // D3: Label-Span
     expect(root.querySelector("#btnGemeinsam").disabled).toBe(false);
     const sub = root.querySelector("#gemeinsamSub");
     expect(sub.classList.contains("pb-hidden")).toBe(false);
@@ -99,7 +99,7 @@ describe("S63 · Vorraum spiegelt die pausierte Gemeinsame Auflösung", () => {
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
     expect(root.querySelector("#wegTeil").textContent).toContain("Startet eure Gemeinsame Auflösung");
-    expect(root.querySelector("#btnGemeinsam").textContent).toBe("Gemeinsame Auflösung beginnen");
+    expect(root.querySelector("#gemeinsamLabel").textContent).toBe("Gemeinsame Auflösung beginnen");   // D3: Label-Span
     expect(root.querySelector("#gemeinsamSub").textContent).toContain("Auflösung eurer Spekulationen");
   });
 

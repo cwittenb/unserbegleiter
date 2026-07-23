@@ -136,67 +136,79 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
     </div>
-    <div id="scrMyRoom" class="pb-hidden">
-      <div class="pb-card" style="padding:18px 26px">
-        <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("start.meinRaum")}</div>
-        <p class="pb-sub" id="meinIntro" style="margin:0"></p>
-        <div class="pb-weg pb-hidden" id="wegMein" style="margin-top:12px"></div>
-      </div>
-      <div class="pb-zwei pb-mitte">
-        <div class="pb-card">
-          <button class="pb-btn primary" id="btnEinzel">${t("mein.einzel")}</button>
-          <p class="pb-sub" id="einzelSubP" style="margin:8px 0 0">${t("mein.einzelSub")}</p>
-          <button class="pb-btn primary pb-hidden" id="btnMess">${t("mein.mess")}</button>
-          <p class="pb-sub pb-hidden" id="messSubP" style="margin:8px 0 0">${t("mein.messSub")}</p>
+    <div id="scrMyRoom" class="rz-screen rz-split pb-hidden">
+      <div class="rz-half rz-papier">
+        <div class="rz-kopf rz-kopf-mitte">
+          <button class="rz-zurueck" id="btnZurueck1" aria-label="${t("allg.zurueck")}">←</button>
+          <span class="rz-caps">${t("start.capsMein")}</span>
+          <span class="rz-zurueck rz-blind">←</span>
         </div>
-        <div class="pb-card">
-          <button class="pb-btn primary" id="btnSolo">${t("mein.solo")}</button>
-          <p class="pb-sub" style="margin:8px 0 0">${t("mein.soloSub")}</p>
+        <h1 class="rz-h1">${t("zone.raum")}</h1>
+        <p class="rz-sub rz-intro" id="meinIntro"></p>
+        <p class="rz-sub rz-still-aus" id="einzelSubP">${t("mein.einzelSub")}</p>
+        <p class="rz-sub rz-still-aus" id="messSubP">${t("mein.messSub")}</p>
+        <div class="rz-fuss">
+          <button class="rz-zeile" id="btnSolo"><span>${t("mein.solo")}</span><span class="rz-pfeil">↑</span></button>
+          <button class="rz-zeile rz-spalte" id="btnEinzel"><span class="rz-zeile-haupt"><span id="einzelLabel">${t("mein.einzel")}</span><span class="rz-pfeil">↑</span></span><span class="rz-balken pb-hidden" id="einzelBalken"><i></i></span></button>
+          <button class="rz-zeile pb-hidden" id="btnMess"><span>${t("mein.mess")}</span><span class="rz-pfeil">↑</span></button>
         </div>
       </div>
-      <div class="pb-card pb-reihe">
-        <div class="pb-sub">${t("mein.gruppeRegale")}</div>
-        <button class="pb-btn" id="btnZeitleiste">${t("mein.zeitleiste")}</button>
+      <div class="rz-half rz-regal rz-naht-anker">
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
+        <div class="rz-weg-panel pb-hidden" id="wegMein"></div>
+        <div class="rz-regal-reihen">
+          <button class="rz-zeile rz-unten" id="btnZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
+        </div>
+        <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><div class="rz-caps">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
+        <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
+        <div class="rz-fuss">
+          <h2 class="rz-h2">${t("zone.regal")}</h2>
+          <div class="rz-caps">${t("mein.gruppeRegale")}</div>
+        </div>
       </div>
-      <div class="pb-card pb-hidden" id="boxZeitleiste"><div class="pb-sub">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
-      <div class="pb-card pb-hidden" id="boxRecovery"></div>
-      <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck1">${t("allg.zurueck")}</button></div>
     </div>
-    <div id="scrShared" class="pb-hidden">
-      <div class="pb-card" style="padding:18px 26px">
-        <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("start.teilRaum")}</div>
-        <p class="pb-sub" id="sharedIntro" style="margin:0">${t("teil.intro")}</p>
-        <div class="pb-weg pb-hidden" id="wegTeil" style="margin-top:12px"></div>
-      </div>
-      <div class="pb-drei pb-mitte">
-        <div class="pb-card">
-          <button class="pb-btn primary" id="btnMoment">${t("teil.moment")}</button>
-          <p class="pb-sub" style="margin:8px 0 0">${t("teil.momentSub")}</p>
+    <div id="scrShared" class="rz-screen rz-split pb-hidden">
+      <div class="rz-half rz-tiefgruen">
+        <div class="rz-kopf rz-kopf-mitte">
+          <button class="rz-zurueck" id="btnZurueck2" aria-label="${t("allg.zurueck")}">←</button>
+          <span class="rz-caps">${t("start.capsTeil")}</span>
+          <span class="rz-zurueck rz-blind">←</span>
         </div>
-        <div class="pb-card">
-          <button class="pb-btn primary" id="btnGemeinsam">${t("teil.gemeinsam")}</button>
-          <p class="pb-sub" id="gemeinsamSub" style="margin:8px 0 0">${t("teil.gemeinsamSub")}</p>
-          <p class="pb-sub pb-hidden" id="gemeinsamHinweis" style="margin:8px 0 0"></p>
+        <h1 class="rz-h1">${t("zone.raum")}</h1>
+        <p class="rz-sub rz-intro" id="sharedIntro">${t("teil.intro")}</p>
+        <div class="rz-fuss">
+          <button class="rz-zeile" id="btnMoment"><span id="momentLabel">${t("teil.moment")}</span><span class="rz-pfeil">↑</span></button>
+          <button class="rz-zeile rz-spalte" id="btnGemeinsam"><span class="rz-zeile-haupt"><span id="gemeinsamLabel">${t("teil.gemeinsam")}</span><span class="rz-zustand pb-hidden" id="gemeinsamHinweis"></span><span class="rz-pfeil">↑</span></span></button>
+          <p class="rz-sub" id="gemeinsamSub">${t("teil.gemeinsamSub")}</p>
         </div>
       </div>
-      <div class="pb-card pb-reihe">
-        <div class="pb-sub">${t("teil.gruppeRegale")}</div>
-        <button class="pb-btn pb-mit-lz" id="btnRegal">${t("teil.regal")} <span class="pb-lz-leiste pb-hidden" id="lzRegal"></span></button>
-        <button class="pb-btn" id="btnAgenda">${t("teil.agenda")}</button>
-        <button class="pb-btn" id="btnQz">${t("teil.qz")}</button>
+      <div class="rz-half rz-regal-dunkel rz-naht-anker">
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
+        <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
+        <div class="rz-regal-reihen">
+          <button class="rz-zeile rz-unten" id="btnRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
+          <button class="rz-zeile rz-unten" id="btnAgenda"><span>${t("teil.agenda")}</span><span class="rz-pfeil">↓</span></button>
+          <button class="rz-zeile rz-unten" id="btnQz"><span>${t("teil.qz")}</span><span class="rz-pfeil">↓</span></button>
+        </div>
+        <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><div class="rz-caps" id="regalTitel"></div><p class="rz-sub" id="regalIntro" style="margin:6px 0 4px"></p><div id="regalItems"></div></div>
+        <div class="rz-regal-inhalt pb-hidden" id="boxAgenda"><div class="rz-caps">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
+        <div class="rz-regal-inhalt pb-hidden" id="boxQz"></div>
+        <div class="rz-fuss">
+          <h2 class="rz-h2">${t("zone.regal")}</h2>
+          <div class="rz-caps">${t("teil.gruppeRegale")}</div>
+        </div>
       </div>
-      <div class="pb-card pb-hidden" id="boxRegal"><div class="pb-sub" id="regalTitel"></div><p class="pb-sub" id="regalIntro" style="margin:6px 0 4px"></p><div id="regalItems"></div></div>
-      <div class="pb-card pb-hidden" id="boxAgenda"><div class="pb-sub">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
-      <div class="pb-card pb-hidden" id="boxQz"></div>
-      <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck2">${t("allg.zurueck")}</button></div>
     </div>
-    <div id="scrProzess" class="pb-hidden">
-      <div class="pb-card" style="padding:18px 26px">
-        <div style="font-size:16px;font-weight:650;margin-bottom:4px">${t("prozess.titel")}</div>
-        <p class="pb-sub" style="margin:0">${t("prozess.intro")}</p>
+    <div id="scrProzess" class="rz-screen rz-eine-zone pb-hidden">
+      <div class="rz-half rz-papier">
+        <div class="rz-kopf rz-kopf-mitte">
+          <button class="rz-zurueck" id="btnZurueck3" aria-label="${t("allg.zurueck")}">←</button>
+          <span class="rz-caps">${t("prozess.titel")}</span>
+          <span class="rz-zurueck rz-blind">←</span>
+        </div>
+        <p class="rz-sub rz-intro">${t("prozess.intro")}</p>
+        <div id="boxMess"></div>
       </div>
-      <div class="pb-card" id="boxMess"></div>
-      <div class="pb-reihe" style="padding:10px 0 0"><button class="pb-btn" id="btnZurueck3">${t("allg.zurueck")}</button></div>
     </div>
     <div id="scrChat" class="pb-hidden"></div>`;
 
@@ -501,8 +513,18 @@ export function createApp({ doc, backend, root, diktat }) {
       const tog = (id, hide) => { const e = $(id); if (e) e.classList.toggle("pb-hidden", hide); };
       // S53 · Eine begonnene Auftragsklärung heißt "fortsetzen" statt
       // "beginnen" (Muster wie btnMoment/teil.momentWeiter).
-      const be = $("btnEinzel");
+      const be = $("einzelLabel");
       if (be) be.textContent = lage.einzelBegonnen ? t("mein.einzelWeiter") : t("mein.einzel");
+      // D3 · 2px-Fortschrittsbalken (Design 17c) unter der Auftragsklaerungs-
+      // Zeile: sichtbar, solange eine Kapitel-Pause vorliegt; Breite = Anteil
+      // geschaffter Kapitel. Kein Kapitel-Label (Spez).
+      const balken = $("einzelBalken");
+      if (balken) {
+        const gesamt = (K().KAPITEL_TITEL || []).length || 1;
+        balken.classList.toggle("pb-hidden", !lage.einzelKapitel);
+        const i = balken.querySelector("i");
+        if (i) i.style.width = Math.round(100 * Math.min(1, lage.einzelKapitel / gesamt)) + "%";
+      }
       tog("btnEinzel", auf); tog("einzelSubP", auf);
       tog("btnMess", !auf); tog("messSubP", !auf);
       return;
@@ -513,26 +535,27 @@ export function createApp({ doc, backend, root, diktat }) {
       const b = $(btnId), h = $(hinweisId);
       if (!b) return;
       b.disabled = zu;
+      b.classList.toggle("rz-gedimmt", zu);   // D3: gedimmt + Zustandstext statt Pfeil
       if (h) { h.textContent = text || ""; h.classList.toggle("pb-hidden", !zu || !text); }
     };
-    const bm = $("btnMoment");
+    const bm = $("momentLabel");
     if (bm) bm.textContent = lage.momentOffen ? t("teil.momentWeiter") : t("teil.moment");
     sperre("btnGemeinsam", "gemeinsamHinweis", !lage.handBeide, t("teil.gateAufloesung"));
     // S63 · Begonnene Auflösung heißt "fortsetzen" statt "beginnen" (Muster
     // btnMoment/btnEinzel); der Subtext wechselt mit.
     const bg = $("btnGemeinsam");
-    if (bg) bg.textContent = lage.aufloesungOffen ? t("teil.gemeinsamWeiter") : t("teil.gemeinsam");
-    // S74 · Nach dem Befund ist die Auflösung abgeschlossen — die ganze Karte
-    // (Knopf + Subtext) verschwindet, statt wieder "beginnen" anzubieten; der
-    // lineare Pfad geht bei der Prozessreflexion weiter.
-    const bgKarte = bg ? bg.closest(".pb-card") : null;
-    if (bgKarte) bgKarte.classList.toggle("pb-hidden", !!lage.aufloesungGelaufen);
+    const bgl = $("gemeinsamLabel");
+    if (bgl) bgl.textContent = lage.aufloesungOffen ? t("teil.gemeinsamWeiter") : t("teil.gemeinsam");
+    // S74 · Nach dem Befund ist die Auflösung abgeschlossen — die ganze Zeile
+    // (D3: Hairline-Zeile statt Karte) verschwindet samt Subtext, statt wieder
+    // "beginnen" anzubieten; der lineare Pfad geht bei der Prozessreflexion weiter.
+    if (bg) bg.classList.toggle("pb-hidden", !!lage.aufloesungGelaufen);
     // S62 · Dauerhafter Subtext unter der Auflösungs-Karte; solange gesperrt,
     // weicht er dem Gate-Hinweis (nie beide zugleich).
     const gSub = $("gemeinsamSub");
     if (gSub) {
       gSub.textContent = lage.aufloesungOffen ? t("teil.gemeinsamWeiterSub") : t("teil.gemeinsamSub");
-      gSub.classList.toggle("pb-hidden", !lage.handBeide);
+      gSub.classList.toggle("pb-hidden", !lage.handBeide || !!lage.aufloesungGelaufen);
     }
   }
 
@@ -1565,6 +1588,8 @@ export function createApp({ doc, backend, root, diktat }) {
      jeweiligen Vorraum (Erwartungs-Kontinuität, S35). Die Bedienelemente der
      Chat-Oberfläche binden seit S87 in verdrahteChat() bei jedem Aufbau. */
   verdrahteWegweiser(doc, $("wegBadgeStart"), $("wegStart"));   // D2: Badge auf der Naht
+  verdrahteWegweiser(doc, $("wegBadgeMein"), $("wegMein"));     // D3: Vorraum mich
+  verdrahteWegweiser(doc, $("wegBadgeTeil"), $("wegTeil"));     // D3: Vorraum uns
   $("btnMyRoom").addEventListener("click", () => betrete("scrMyRoom"));
   $("btnSharedRoom").addEventListener("click", () => betrete("scrShared"));
   $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));

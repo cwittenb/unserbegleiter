@@ -91,7 +91,9 @@ describe("S36 · Mein Raum (4 Zeilen)", () => {
     await klick(root.querySelector("#btnMyRoom"));
     await ruhe();
     const weg = root.querySelector("#wegMein");
-    expect(weg.closest(".pb-card").querySelector("#meinIntro")).toBeTruthy();
+    // D3: der Wegweiser ist das Naht-Panel des Vorraums (Badge daneben)
+    expect(weg.classList.contains("rz-weg-panel")).toBe(true);
+    expect(weg.parentElement.querySelector("#wegBadgeMein")).toBeTruthy();
     expect(weg.textContent).toContain("wie ich euch begleiten kann");
     expect(weg.textContent).toContain("Nach einiger Zeit");
   });
@@ -107,21 +109,21 @@ describe("S36 · Mein Raum (4 Zeilen)", () => {
     expect(txt).not.toContain("Nach einiger Zeit");
   });
 
-  it("Zeile 2 Sessions nebeneinander, Zeile 3 Regale mit Inhaltspanel, Zeile 4 Zurück", async () => {
+  it("Sessions in der Raum-Zone, Regal-Zeilen in der Regal-Zone, Zurück im Kopf (D3)", async () => {
     await bootApp(memoryBackend(null));
     const raum = root.querySelector("#scrMyRoom");
-    const zwei = raum.querySelector(".pb-zwei.pb-mitte");
-    expect(zwei.querySelector("#btnSolo")).toBeTruthy();
-    expect(zwei.querySelector("#btnEinzel")).toBeTruthy();
-    const regale = raum.querySelector(".pb-reihe");
+    const oben = raum.querySelector(".rz-papier .rz-fuss");
+    expect(oben.querySelector("#btnSolo")).toBeTruthy();
+    expect(oben.querySelector("#btnEinzel")).toBeTruthy();
+    const regale = raum.querySelector(".rz-regal .rz-regal-reihen");
     expect(regale.querySelector("#btnZeitleiste")).toBeTruthy();
-    expect(regale.querySelector("#btnMess")).toBeFalsy();     // S44: nicht mehr in der Regal-Reihe
-    expect(zwei.querySelector("#btnMess")).toBeTruthy();      // S44: (verdeckt) im Auftragsklärungs-Slot
-    // Inhaltspanel unter der Regal-Reihe, Zurück als letzte Zeile
-    const kinder = [...raum.children];
-    const box = raum.querySelector("#boxZeitleiste");
+    expect(regale.querySelector("#btnMess")).toBeFalsy();     // S44: nicht in der Regal-Zone
+    expect(oben.querySelector("#btnMess")).toBeTruthy();      // S44: (verdeckt) im Auftragsklärungs-Slot
+    // Inhaltspanel unter den Regal-Zeilen, Zurück lebt im Kopf der Raum-Zone
+    const zone = regale.parentElement, kinder = [...zone.children];
+    const box = zone.querySelector("#boxZeitleiste");
     expect(kinder.indexOf(regale)).toBeLessThan(kinder.indexOf(box));
-    expect(kinder[kinder.length - 1].querySelector("#btnZurueck1")).toBeTruthy();
+    expect(raum.querySelector(".rz-kopf #btnZurueck1")).toBeTruthy();
   });
 });
 
