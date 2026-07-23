@@ -22,6 +22,14 @@ export const de = {
   "start.meinSub": "Hier begleite ich dich. Zum Reflektieren, zum Sortieren, Üben und Ablegen. Nichts von hier erreicht {partner}, außer du gibst es frei.",
   "start.teilRaum": "Gemeinsamer Raum",
   "start.teilSub": "Euer Raum für eure gemeinsame Zeit. Austausch, Begegnung, Reflexion — und zum Lesen, was einer von euch lesbar gemacht hat.",
+  // D2 · Startscreen als Zweiteilung (Design Turn 17a/b; Texte lt. Handoff)
+  "start.capsMein": "Raum für mich",
+  "start.capsTeil": "Raum für uns",
+  "start.betreteMein": "Deinen Raum betreten",
+  "start.betreteTeil": "Euren Raum betreten",
+  "start.teilTitel": "Eure gemeinsame Zeit.",
+  "weg.badge": "Wegweiser",
+  "weg.fuss": "tippen zum Schließen",
 
   // Mein Raum
   "mein.intro": "Dieser Raum ist nur für dich — nichts von hier erreicht {partner}, außer du gibst es ausdrücklich frei. Wenn du magst, kannst du Erarbeitetes jederzeit teilen: Die Begleitung hilft dir dann bei einer Formulierung, und erst dein Häkchen gibt sie frei. Nimm dir die Zeit, die du brauchst.",

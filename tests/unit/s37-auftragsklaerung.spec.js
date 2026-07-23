@@ -134,11 +134,12 @@ describe("S37 · Kapitel-Panel & Kopfzeile & UI-Sprache", () => {
     expect(p.querySelector("#kapPause")).toBeFalsy();
     start.catch(() => {});
   });
-  it("Marke steht als Untertitel unter dem Hallo (pb-brand), nicht rechts", async () => {
+  it("Marke lebt als Wortmarke im Screen-Kopf (D2); das alte Hallo bleibt still im DOM", async () => {
     await bootApp(memoryBackend(null));
-    const brand = root.querySelector(".pb-brand");
-    expect(brand.querySelector("#pbHallo")).toBeTruthy();
-    expect(brand.querySelector("#pbKern")).toBeTruthy();
+    // D2: pb-brand ist Geschichte — der Kopf traegt die Wortmarke, die
+    // Begruessung ist die H1 der Papier-Haelfte (startHallo).
+    expect(root.querySelector(".rz-kopf #pbKern")).toBeTruthy();
+    expect(root.querySelector("#pbHallo").classList.contains("pb-hidden")).toBe(true);
   });
   it("Paarsprache-Panel bietet 'Nur UI-Sprache ändern' an; Klick stellt nur die eigene Ansicht um", async () => {
     const backend = memoryBackend(null);

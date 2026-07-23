@@ -200,6 +200,39 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-weg-fuss{font-family:var(--rz-sans);font-size:11px;color:var(--rz-gedimmt);
                    text-align:center;padding-top:8px}
       @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
+
+      /* ============ D2 · Screen-Rahmen + Startscreen ============
+         Die App-Wurzel wird randlos (rz-app); noch nicht umgezogene Screens
+         behalten uebergangsweise die zentrierte Spalte. Der Startscreen ist
+         die erste volle Zweiteilung (Design 17a/b). */
+      #app.rz-app{max-width:none;padding:0}
+      .rz-app #scrMyRoom,.rz-app #scrShared,.rz-app #scrProzess,.rz-app #scrChat{
+        max-width:660px;margin:0 auto;box-sizing:border-box;
+        padding:calc(46px + env(safe-area-inset-top,0px)) 22px calc(34vh + env(safe-area-inset-bottom,0px))}
+      .rz-screen{min-height:100dvh}
+      .rz-screen .rz-half:first-child{padding-top:calc(30px + env(safe-area-inset-top,0px))}
+      .rz-screen .rz-half:last-child{padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
+      .rz-kopf{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
+      .rz-marke{font-family:var(--rz-sans);font-size:12px;font-weight:600;letter-spacing:.16em;
+                text-transform:uppercase;color:var(--rz-marke)}
+      .rz-h1{font-family:var(--rz-serif);font-size:30px;font-weight:300;line-height:1.18;margin:12px 0 0}
+      .rz-h2{font-family:var(--rz-serif);font-size:26px;font-weight:300;line-height:1.2;margin:0 0 6px}
+      .rz-sub{font-family:var(--rz-sans);font-size:13px;line-height:1.6;color:var(--rz-sek2);margin:8px 0 0}
+      .rz-fuss{margin-top:auto}
+      .rz-still{font-size:13px;margin-top:10px}
+      .rz-lz-leiste{display:inline-flex;gap:6px;margin-left:auto}
+      .rz-zeile .rz-lz-leiste+.rz-pfeil{margin-left:0}
+      .rz-zeile>span:first-child{flex:1}
+      /* Theme-Umschalter als leises Glyphen-Paar im Sinne des Kopfes: nur der
+         jeweils INAKTIVE Zustand ist sichtbar (= Wechselziel), Beschriftung
+         bleibt fuer Screenreader erhalten. */
+      .rz-app~.pb-theme,.pb-theme{background:none;border:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none}
+      .pb-theme button{font-size:0;padding:6px 10px;color:var(--rz-marke)}
+      .pb-theme button::before{font-size:15px;line-height:1;color:var(--rz-marke)}
+      #pbHell::before{content:'\2600\FE0E'}
+      #pbDunkel::before{content:'\263E\FE0E'}
+      .pb-theme button.an{display:none}
+      html[data-theme=dark] .pb-theme button{color:var(--rz-marke)}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">

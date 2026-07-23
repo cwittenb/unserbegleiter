@@ -54,7 +54,7 @@ async function bootApp(backend) {
 describe("S41 · Startscreen-Wegweiser", () => {
   it("führt mit der Auftragsklärung, hält Reflexionsgespräch und Qualitätszeit offen", async () => {
     await bootApp(memoryBackend(null));
-    const zeilen = [...root.querySelectorAll("#wegStart .pb-item")].map(x => x.textContent);
+    const zeilen = [...root.querySelectorAll("#wegStart .rz-option")].map(x => x.textContent);   // D2: Start-Wegweiser ist ein Naht-Panel
     expect(zeilen[0]).toContain("Starte direkt mit deiner Auftragsklärung");
     expect(zeilen[1]).toContain("Reflexionsgespräch");
     expect(zeilen[2]).toContain("Qualitätszeit");

@@ -24,6 +24,14 @@ export const en = {
   "start.meinSub": "This is where I accompany you. To reflect, to sort, to practice and to set things down. Nothing from here reaches {partner} unless you release it.",
   "start.teilRaum": "Our Shared Space",
   "start.teilSub": "Your space for your shared time. Exchange, encounter, reflection — and for reading what one of you has made readable.",
+  // D2 · Start screen as split (design turn 17a/b/g; EN term is "Guidepost")
+  "start.capsMein": "Room for me",
+  "start.capsTeil": "Room for us",
+  "start.betreteMein": "Enter your room",
+  "start.betreteTeil": "Enter our room",
+  "start.teilTitel": "Your time together.",
+  "weg.badge": "Guidepost",
+  "weg.fuss": "tap to close",
 
   // My Private Space
   "mein.intro": "This space is yours alone — nothing from here reaches {partner} unless you explicitly release it. Whenever you like, you can share what you've worked out: your companion helps you find a formulation, and only your checkmark releases it. Take the time you need.",

@@ -53,12 +53,14 @@ describe("S36 · Startscreen", () => {
     expect(root.querySelector("#pbSpr")).toBeFalsy();
   });
 
-  it("Wegweiser lebt IM Intro-Panel (oben) und hält alle drei Optionen offen", async () => {
+  it("Wegweiser lebt als Naht-Panel (D2) und hält alle drei Optionen offen", async () => {
     await bootApp(memoryBackend(null));
     const weg = root.querySelector("#wegStart");
     expect(weg.classList.contains("pb-hidden")).toBe(false);
-    // im Intro-Panel, nicht als eigene letzte Karte:
-    expect(weg.closest(".pb-card").querySelector("#startIntro")).toBeTruthy();
+    // D2: das Panel faltet aus der Naht — es hängt an der unteren Hälfte,
+    // direkt neben seinem Badge (Design 17a/b).
+    expect(weg.classList.contains("rz-weg-panel")).toBe(true);
+    expect(weg.parentElement.querySelector("#wegBadgeStart")).toBeTruthy();
     const txt = weg.textContent;
     expect(txt).toContain("Reflexionsgespräch");
     expect(txt).toContain("Auftragsklärung");
@@ -67,12 +69,19 @@ describe("S36 · Startscreen", () => {
     expect(txt).toContain("wie ich dich begleiten kann");
   });
 
-  it("Raum-Knöpfe stehen in der zentrierten Zwei-Karten-Reihe", async () => {
+  it("Betreten-Zeilen spiegeln sich an der Naht (D2: Hairline-Zeilen statt Karten-Reihe)", async () => {
     await bootApp(memoryBackend(null));
-    const reihe = root.querySelector("#scrStart .pb-zwei");
-    expect(reihe.classList.contains("pb-mitte")).toBe(true);
-    expect(reihe.querySelector("#btnMyRoom")).toBeTruthy();
-    expect(reihe.querySelector("#btnSharedRoom")).toBeTruthy();
+    const start = root.querySelector("#scrStart");
+    expect(start.classList.contains("rz-split")).toBe(true);
+    const mein = start.querySelector("#btnMyRoom"), teil = start.querySelector("#btnSharedRoom");
+    expect(mein.classList.contains("rz-zeile")).toBe(true);
+    expect(teil.classList.contains("rz-zeile")).toBe(true);
+    // oben: letzte Zeile der Papier-Hälfte (über der Naht, Pfeil ↑);
+    // unten: erste Zeile der Tiefgrün-Hälfte (unter der Naht, Pfeil ↓).
+    expect(mein.closest(".rz-half").classList.contains("rz-papier")).toBe(true);
+    expect(teil.closest(".rz-half").classList.contains("rz-tiefgruen")).toBe(true);
+    expect(mein.textContent).toContain("↑");
+    expect(teil.textContent).toContain("↓");
   });
 });
 

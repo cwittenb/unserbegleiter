@@ -51,7 +51,9 @@ async function bootApp(backend) {
   await ruhe();
   return app;
 }
-const zeilen = boxId => [...root.querySelectorAll("#" + boxId + " .pb-item")].map(x => x.textContent.replace("‣ ", ""));
+// D2: Auf dem Start rendert der Wegweiser als Naht-Panel (.rz-option),
+// in den (noch nicht umgezogenen) Vorraeumen weiter als .pb-item-Liste.
+const zeilen = boxId => [...root.querySelectorAll("#" + boxId + " .pb-item, #" + boxId + " .rz-option")].map(x => x.textContent.replace("‣ ", ""));
 
 async function beideFreigaben(backend) {
   await freigebeUebergabe(backend.repo, "A", { module: "kernwetten", name: "Anna", items: [{ id: "S1", text: "Nähe", tag: "FirstTake" }] });

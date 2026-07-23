@@ -10,7 +10,7 @@ import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, ranking
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf, pruefeLeserichtung, formatiereLeseMarker } from "./prozess.js";
-import { applyDesign } from "./design.js";
+import { applyDesign, verdrahteWegweiser } from "./design.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -104,34 +104,37 @@ export function createApp({ doc, backend, root, diktat }) {
   const state = { info: null, engine: null, chatId: null, screen: null, streamText: null, chatGen: 0, entwuerfe: {} };
 
   const wurzel = root || doc.getElementById("app");
+  wurzel.classList.add("rz-app");
   wurzel.innerHTML = `
     <div id="pbBusy" class="pb-busy pb-hidden"><span class="pb-busydots"><span></span><span></span><span></span></span><span id="pbBusyTxt"></span></div>
-    <div class="pb-top">
-      <div class="pb-brand">
-        <h1 class="pb-h1" id="pbHallo"></h1>
-        <span class="pb-sub" id="pbKern"></span>
-      </div>
-    </div>
     <div id="pbErr" class="pb-err pb-hidden"></div>
     <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
-    <div id="scrStart">
-      <div class="pb-card" style="padding:18px 26px">
-        <div id="startHallo" style="font-size:17px;font-weight:650;margin-bottom:4px"></div>
-        <p class="pb-sub" id="startIntro" style="margin:0"></p>
-        <div class="pb-weg pb-hidden" id="wegStart" style="margin-top:12px"></div>
-      </div>
-      <div class="pb-zwei pb-mitte">
-        <div class="pb-card">
-          <button class="pb-btn primary" id="btnMyRoom">${t("start.meinRaum")}</button>
-          <p class="pb-sub" id="startMeinSub" style="margin:8px 0 0"></p>
+    <div id="scrStart" class="rz-screen rz-split">
+      <div class="rz-half rz-papier">
+        <div class="rz-kopf">
+          <span class="rz-marke" id="pbKern"></span>
         </div>
-        <div class="pb-card">
-          <button class="pb-btn primary" id="btnSharedRoom">${t("start.teilRaum")}</button>
-          <p class="pb-sub" id="startTeilSub" style="margin:8px 0 0"></p>
+        <div class="rz-caps">${t("start.capsMein")}</div>
+        <h1 class="rz-h1" id="startHallo"></h1>
+        <p class="rz-sub pb-hidden" id="startIntro"></p>
+        <p class="rz-sub pb-hidden" id="startMeinSub"></p>
+        <p class="rz-sub pb-hidden" id="startTeilSub"></p>
+        <h1 class="pb-h1 pb-hidden" id="pbHallo"></h1>
+        <p class="rz-sub pb-hidden" id="psZeile"></p>
+        <div class="rz-still pb-hidden" id="boxPaarsprache"></div>
+        <div class="rz-fuss">
+          <button class="rz-zeile" id="btnMyRoom"><span>${t("start.betreteMein")}</span><span class="rz-pfeil">↑</span></button>
         </div>
       </div>
-      <p class="pb-sub pb-hidden" id="psZeile" style="margin:10px 4px 0"></p>
-      <div class="pb-card pb-hidden" id="boxPaarsprache"></div>
+      <div class="rz-half rz-tiefgruen rz-naht-anker">
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeStart"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
+        <div class="rz-weg-panel pb-hidden" id="wegStart"></div>
+        <button class="rz-zeile rz-unten" id="btnSharedRoom"><span>${t("start.betreteTeil")}</span><span class="rz-lz-leiste" id="lzStart"></span><span class="rz-pfeil">↓</span></button>
+        <div class="rz-fuss">
+          <h2 class="rz-h2">${t("start.teilTitel")}</h2>
+          <div class="rz-caps">${t("start.capsTeil")}</div>
+        </div>
+      </div>
     </div>
     <div id="scrMyRoom" class="pb-hidden">
       <div class="pb-card" style="padding:18px 26px">
@@ -480,6 +483,16 @@ export function createApp({ doc, backend, root, diktat }) {
       b.innerHTML = marken.map(p => `<span class="pb-lz">${esc(p.k)}</span>`).join("");
       b.classList.toggle("pb-hidden", !marken.length);
     };
+    if (screenId === "scrStart") {
+      // D2 · Runde Initial-Badge an der Betreten-Zeile (Design 17a): das
+      // Initial der Person, DIE LESEN SOLL — keine Zaehler, keine Details.
+      const leiste = $("lzStart");
+      if (leiste) {
+        const marken = [{ k: kA, n: lage.regalNeuA }, { k: kB, n: lage.regalNeuB }].filter(p => p.n > 0);
+        leiste.innerHTML = marken.map(p => `<span class="rz-initial">${esc(p.k)}</span>`).join("");
+      }
+      return;
+    }
     if (screenId === "scrMyRoom") {
       // S44 · Prozessreflexion erscheint erst, wenn die Gemeinsame Auflösung
       // gelaufen ist (Auftragsklärung abgeschlossen + aufgedeckt); dann tritt
@@ -536,8 +549,30 @@ export function createApp({ doc, backend, root, diktat }) {
     try {
       const lage = await ladeLage();
       wendeLageAn(lage, screenId);
-      const zeilen = waehleWegzeilen(wegKandidaten(lage, screenId), screenId);
+      const kandidaten = wegKandidaten(lage, screenId);
+      const zeilen = waehleWegzeilen(kandidaten, screenId);
       const box = $(boxId);
+      /* D2 · Badge/Panel-Wegweiser (Design Turn 17): Boxen mit Klasse
+         rz-weg-panel werden als faltbares Naht-Panel gerendert — nur Text,
+         2-3 Optionen, Serif, Fusszeile. Der Punkt im Badge zeigt an, dass
+         etwas WARTET (Stufe 1-3); stehende Stufe-4-Einladungen leuchten
+         nicht. Alte Boxen (bis zum D3-Umzug) behalten die pb-item-Liste. */
+      if (box.classList.contains("rz-weg-panel")) {
+        const badge = box.parentElement.querySelector(".rz-weg-badge");
+        if (!zeilen.length) {
+          box.classList.add("pb-hidden");
+          if (badge) badge.classList.add("pb-hidden");
+          return;
+        }
+        box.innerHTML = zeilen.map(x => `<p class="rz-option">${esc(x)}</p>`).join("") +
+          `<div class="rz-weg-fuss">${t("weg.fuss")}</div>`;
+        box.classList.remove("pb-hidden");
+        if (badge) {
+          badge.classList.remove("pb-hidden");
+          badge.classList.toggle("rz-wartet", kandidaten.some(kd => kd.stufe < 4));
+        }
+        return;
+      }
       if (!zeilen.length) { box.classList.add("pb-hidden"); return; }
       box.innerHTML = (screenId === "scrShared" ? `<div class="pb-sub">${t("weg.titel")}</div>` : "") +
         zeilen.map(x => `<div class="pb-item">‣ ${esc(x)}</div>`).join("");
@@ -1529,6 +1564,7 @@ export function createApp({ doc, backend, root, diktat }) {
      Raum verlassen landet nicht mehr auf der Hauptübersicht, sondern im
      jeweiligen Vorraum (Erwartungs-Kontinuität, S35). Die Bedienelemente der
      Chat-Oberfläche binden seit S87 in verdrahteChat() bei jedem Aufbau. */
+  verdrahteWegweiser(doc, $("wegBadgeStart"), $("wegStart"));   // D2: Badge auf der Naht
   $("btnMyRoom").addEventListener("click", () => betrete("scrMyRoom"));
   $("btnSharedRoom").addEventListener("click", () => betrete("scrShared"));
   $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));
