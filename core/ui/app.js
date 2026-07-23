@@ -221,13 +221,17 @@ export function createApp({ doc, backend, root, diktat }) {
      Bauen — ein Sprachwechsel greift so auch auf einer bereits einmal
      gebauten Oberfläche. */
   const CHAT_HTML = () => `
-      <div class="pb-card">
-        <div class="pb-sub" id="chatTitel"></div>
+      <div class="rz-chat-innen">
+        <div class="rz-kopf rz-kopf-mitte">
+          <button class="rz-zurueck" id="btnChatZurueck" title="${t("chat.raumVerlassen")}" aria-label="${t("chat.raumVerlassen")}">←</button>
+          <span class="rz-caps" id="chatTitel"></span>
+          <span class="rz-zurueck rz-blind">←</span>
+        </div>
         <div class="pb-msgs" id="pbMsgs"></div>
-        <div id="gatePanel" class="pb-card pb-hidden"></div>
-        <div id="kwPanel" class="pb-card pb-hidden"></div>
+        <div id="gatePanel" class="rz-panel pb-hidden"></div>
+        <div id="kwPanel" class="rz-panel pb-hidden"></div>
         <div class="pb-skala" id="pbSkala">
-          <span style="font-size:13px;color:#5a6675">${t("chat.deineZahl")}</span>
+          <span style="font-size:13px">${t("chat.deineZahl")}</span>
           <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
           <span class="value" id="pbSkalaWert">7</span>
           <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">${t("chat.senden")}</button>
@@ -237,8 +241,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <button class="pb-btn pb-ikon" id="btnMic" data-icon="mic" title="${t("chat.diktieren")}" aria-label="${t("chat.diktieren")}">${IKON.mic}</button>
           <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
         </div>
-        <button class="pb-btn pb-hidden" id="btnChatEnde">${t("chat.abschliessen")}</button>
-        <button class="pb-btn" id="btnChatZurueck">${t("chat.raumVerlassen")}</button>
+        <button class="rz-zeile pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">→</span></button>
       </div>`;
 
   const $ = id => wurzel.querySelector("#" + id);
@@ -779,6 +782,7 @@ export function createApp({ doc, backend, root, diktat }) {
       const msgs = state.engine.chat.messages;
       const juengste = msgs[msgs.length - 1];
       let ersteTafel = true;   // Intro-Text nur an der ersten Tafel des Verlaufs
+      let letzteRolle = null;  // D4: Sprecherlabel nur beim Rollenwechsel
       for (const m of msgs) {
         // S44 · Panel-Echo: geschlossene Regler/Slider hinterlassen eine
         // kompakte Zusammenfassungszeile im Verlauf (statt spurlos zu verschwinden).
@@ -790,6 +794,15 @@ export function createApp({ doc, backend, root, diktat }) {
           continue;
         }
         if (m.hidden || istWireNachricht(m)) continue;   // S41: Wächter auch für Alt-Sessions
+        // D4 · Kein Blasen-Layout mehr: die Begleitung traegt bei jedem
+        // Rollenwechsel ein leises Caps-Label (Design 17e), Nutzertext steht
+        // rechtsbuendig in Sans — beides via CSS, hier nur das Label.
+        if (m.role === "assistant" && letzteRolle !== "assistant") {
+          const lbl = el("div", "rz-sprecher");
+          lbl.textContent = t("chat.begleitung");
+          box.appendChild(lbl);
+        }
+        letzteRolle = m.role;
         const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
         const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
         if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, mkListe, ALLE_BLOECKE));

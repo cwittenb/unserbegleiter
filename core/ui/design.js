@@ -206,7 +206,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          behalten uebergangsweise die zentrierte Spalte. Der Startscreen ist
          die erste volle Zweiteilung (Design 17a/b). */
       #app.rz-app{max-width:none;padding:0}
-      .rz-app #scrMyRoom,.rz-app #scrShared,.rz-app #scrProzess,.rz-app #scrChat{
+      .rz-app #scrMyRoom,.rz-app #scrShared,.rz-app #scrProzess{
         max-width:660px;margin:0 auto;box-sizing:border-box;
         padding:calc(46px + env(safe-area-inset-top,0px)) 22px calc(34vh + env(safe-area-inset-bottom,0px))}
       .rz-screen{min-height:100dvh}
@@ -260,6 +260,37 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-eine-zone .rz-half{flex:1;padding-top:calc(30px + env(safe-area-inset-top,0px));
                              padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
       .rz-eine-zone #boxMess{margin-top:18px;font-size:14px}
+
+      /* ============ D4 · Chat ohne Blasen (Design 17e) ============
+         Begleitung: Serif 17/300 links (Label als leise Caps-Marke beim
+         Rollenwechsel), Nutzerin: Sans 14.5 rechtsbuendig in Dunkelgruen.
+         Composer als Hairline-Zeile mit kursivem Serif-Platzhalter,
+         Send-Quadrat 34x34. Desktop: ruhige 640px-Mittelspalte. */
+      .rz-app #scrChat{max-width:none;margin:0;background:var(--rz-papier);color:var(--rz-ink);
+        min-height:100dvh;padding:calc(30px + env(safe-area-inset-top,0px)) 24px
+        calc(24px + env(safe-area-inset-bottom,0px))}
+      .rz-chat-innen{max-width:640px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100dvh - 60px)}
+      #scrChat .pb-msgs{gap:22px;flex:1}
+      #scrChat .rz-sprecher{font-family:var(--rz-sans);font-size:10px;font-weight:600;
+        letter-spacing:.16em;text-transform:uppercase;color:var(--rz-sek2);margin-bottom:-17px}
+      #scrChat .pb-msg{background:none;border:0;border-radius:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none}
+      #scrChat .pb-msg.ai{font-family:var(--rz-serif);font-size:17px;font-weight:300;line-height:1.55;
+        align-self:flex-start;max-width:88%;color:var(--rz-ink)}
+      #scrChat .pb-msg.me{font-family:var(--rz-sans);font-size:14.5px;line-height:1.6;
+        align-self:flex-end;max-width:82%;text-align:right;color:var(--rz-nutzer)}
+      #scrChat .pb-composer{border-top:1px solid var(--rz-hairline);padding-top:16px;margin-top:24px;align-items:center}
+      #scrChat .pb-composer textarea{border:0;background:none;border-radius:0;padding:6px 0;
+        font-family:var(--rz-serif);color:var(--rz-ink)}
+      #scrChat .pb-composer textarea::placeholder{font-style:italic;color:var(--rz-gedimmt)}
+      #scrChat #btnMic{border:0;background:none;color:var(--rz-akzent-hell);padding:0 6px;min-height:34px}
+      #scrChat #btnMic svg{stroke-width:1.6}
+      #scrChat #btnSend{width:34px;height:34px;min-height:34px;padding:0;border:0;border-radius:0;
+        background:var(--rz-akzent-hell);color:var(--rz-papier);display:inline-flex;align-items:center;justify-content:center}
+      #scrChat .rz-panel{border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
+        padding:14px 0;margin:10px 0;font-size:14px}
+      #scrChat .pb-skala{background:none;border:1px solid var(--rz-hairline);border-radius:0}
+      #scrChat #btnChatEnde{font-size:16px;margin-top:6px}
+      html[data-theme=dark] #scrChat #btnSend{color:var(--rz-tiefgruen)}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">

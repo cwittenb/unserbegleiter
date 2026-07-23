@@ -35,6 +35,8 @@ export const en = {
   // D3 · Anteroom zones (design turn 17c/d)
   "zone.raum": "The Room.",
   "zone.regal": "The Shelf.",
+  // D4 · Chat without bubbles (design 17e)
+  "chat.begleitung": "Companion",
 
   // My Private Space
   "mein.intro": "This space is yours alone — nothing from here reaches {partner} unless you explicitly release it. Whenever you like, you can share what you've worked out: your companion helps you find a formulation, and only your checkmark releases it. Take the time you need.",
