@@ -6,8 +6,21 @@ import { t as uiText } from "../i18n/index.js";
 // Literal): Textfelder nie unter 16px (iOS-Fokus-Zoom), Composer hält per
 // scroll-margin Abstand zur Tastatur, Haupt-Aktionen min. 44px Touch-Höhe,
 // Safe-Area-Insets an #app und fixiertem Chrome (Theme/Busy).
-export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&display=swap');
+export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&family=Instrument+Sans:wght@400;500;600&display=swap');
       :root{
+        /* D1 · Design-Tokens (Handoff Turn 17) — Namensraum rz-. Die alten
+           pb-Variablen bleiben bestehen, bis D2–D5 die Screens umziehen. */
+        --rz-serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+        --rz-sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
+        --rz-papier:#faf8f2;--rz-papier-regal:#f0ece0;
+        --rz-hairline:#e3dfd0;--rz-hairline-regal:#ddd8c6;--rz-hairline-gruen:rgba(157,176,143,.28);
+        --rz-tiefgruen:#1e2a22;--rz-regal-dunkel:#141f18;
+        --rz-ink:#23291f;--rz-ink-auf-gruen:#eef0e7;--rz-ink2-auf-gruen:#e6e9d9;
+        --rz-sek:#6b7261;--rz-sek2:#8b917d;--rz-sek-auf-gruen:#b9c3ac;--rz-sek2-auf-gruen:#8a9e7c;
+        --rz-gedimmt:#a3a894;--rz-marke:#5c6653;
+        --rz-akzent:#8fae74;--rz-akzent-text:#14201a;--rz-akzent-hell:#7d9b62;
+        --rz-pfeil:#7d9b62;--rz-pfeil-auf-gruen:#a9c88b;
+        --rz-label:#7d9b62;--rz-label-auf-gruen:#9db08f;--rz-nutzer:#41562c;
         --bg1:#f7f4ea;--bg2:#edf1e2;--ink:#313c31;--ink-soft:#64705c;--ink-faint:#909a86;
         --accent:#7ba05b;--accent-ink:#41562c;--on-accent:#ffffff;--me-bg:#7ba05b;--me-ink:#ffffff;
         --card:rgba(255,255,255,.60);--card-bd:rgba(90,110,80,.15);
@@ -15,6 +28,14 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         --field:rgba(255,255,255,.74);--field-bd:rgba(90,110,80,.22);
       }
       html[data-theme=dark]{
+        /* D1 · Dark-Tokens: Papier wird Dark-Papier, Tiefgruen wird tiefer. */
+        --rz-papier:#242b21;--rz-papier-regal:#20261d;
+        --rz-hairline:#39412f;--rz-hairline-regal:#39412f;
+        --rz-tiefgruen:#101b14;--rz-regal-dunkel:#0c1510;
+        --rz-ink:#ece9da;--rz-sek:#b9c3ac;--rz-sek2:#9aa38c;
+        --rz-gedimmt:#7f8672;--rz-marke:#99a189;
+        --rz-akzent-hell:#8fae74;--rz-pfeil:#a9c88b;
+        --rz-label:#aeca8d;--rz-nutzer:#c4d8ab;
         --bg1:#2a3a34;--bg2:#151f1c;--ink:#edf1e8;--ink-soft:#b3c1aa;--ink-faint:#889481;
         --accent:#aeca8d;--accent-ink:#e2ecd4;--on-accent:#1d2a1a;--me-bg:#42583b;--me-ink:#f4f7ef;
         --card:rgba(255,255,255,.055);--card-bd:rgba(255,255,255,.10);
@@ -22,8 +43,8 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         --field:rgba(255,255,255,.06);--field-bd:rgba(255,255,255,.16);
       }
       body{margin:0;background:linear-gradient(172deg,var(--bg1),var(--bg2));background-attachment:fixed;transition:background .5s}
-      #app{max-width:660px;position:relative;z-index:1;font-family:"Newsreader",Georgia,'Times New Roman',serif;
-           color:var(--ink);font-size:18px;line-height:1.72;
+      #app{max-width:660px;position:relative;z-index:1;font-family:var(--rz-sans);
+           color:var(--ink);font-size:16px;line-height:1.65;
            padding:calc(46px + env(safe-area-inset-top,0px)) calc(22px + env(safe-area-inset-right,0px))
                    calc(34vh + env(safe-area-inset-bottom,0px)) calc(22px + env(safe-area-inset-left,0px))}
       .pb-kulisse{position:fixed;inset:auto 0 0 0;height:84vh;z-index:0;pointer-events:none;overflow:hidden}
@@ -33,7 +54,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-hidden{display:none!important}
       .pb-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
       .pb-brand{display:flex;flex-direction:column;gap:3px}
-      .pb-h1{font-size:31px;font-weight:300;margin:0;letter-spacing:.005em;line-height:1.15}
+      .pb-h1{font-family:var(--rz-serif);font-size:30px;font-weight:300;margin:0;letter-spacing:.005em;line-height:1.18}
       .pb-sub{color:var(--ink-faint);font-size:13px}
       .pb-brand .pb-sub{letter-spacing:.2em;text-transform:uppercase;font-size:12px}
       .pb-card{background:var(--card);border:1px solid var(--card-bd);border-radius:18px;padding:24px 26px;margin:16px 0;
@@ -109,6 +130,76 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-platz.leer{border-style:dashed;color:var(--ink-faint);cursor:default}
       .pb-platz.gewaehlt{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
       #kwPool [draggable]{cursor:grab}
+
+      /* ============ D1 · Grundbaustein A — Zweiteilung / Naht ============
+         Zwei Haelften je flex:1; die Naht ist die Grenze dazwischen. Mobil
+         horizontal gestapelt, ab 900px vertikale Naht (Spiegelung horizontal).
+         Elemente "auf der Naht" ankern an der ZWEITEN Haelfte (top 0,
+         translate -50%). */
+      .rz-split{display:flex;flex-direction:column;min-height:100dvh}
+      .rz-half{flex:1;display:flex;flex-direction:column;position:relative;
+               padding:30px 24px;box-sizing:border-box}
+      .rz-half.rz-papier{background:var(--rz-papier);color:var(--rz-ink)}
+      .rz-half.rz-regal{background:var(--rz-papier-regal);color:var(--rz-ink)}
+      .rz-half.rz-tiefgruen{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen)}
+      .rz-half.rz-regal-dunkel{background:var(--rz-regal-dunkel);color:var(--rz-ink-auf-gruen)}
+      .rz-naht-anker{position:relative}
+      .rz-auf-naht{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:5}
+      @media(min-width:900px){
+        .rz-split{flex-direction:row}
+        .rz-auf-naht{left:0;top:50%;transform:translate(-50%,-50%)}
+      }
+
+      /* ============ D1 · Grundbaustein B — Hairline-Zeile ============
+         Serif-Zeile mit Pfeil-Suffix, 1px-Linien statt Karten. Als <button>
+         nutzbar (Reset inklusive). Varianten: gedimmt (+ Zustandstext statt
+         Pfeil), Fortschrittsbalken 2px, runde Initial-Badge 22px. */
+      .rz-zeile{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+                width:100%;box-sizing:border-box;min-height:44px;padding:15px 0;margin:0;
+                border:0;border-top:1px solid var(--rz-hairline);background:none;text-align:left;
+                font-family:var(--rz-serif);font-size:20px;font-weight:400;line-height:1.3;
+                color:inherit;cursor:pointer;border-radius:0}
+      .rz-zeile:disabled,.rz-zeile.rz-gedimmt{color:var(--rz-gedimmt);cursor:default}
+      .rz-zeile .rz-pfeil{flex:none;font-family:var(--rz-sans);font-size:15px;color:var(--rz-pfeil)}
+      .rz-tiefgruen .rz-zeile,.rz-regal-dunkel .rz-zeile{border-top-color:var(--rz-hairline-gruen)}
+      .rz-tiefgruen .rz-zeile .rz-pfeil,.rz-regal-dunkel .rz-zeile .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
+      .rz-regal .rz-zeile{border-top-color:var(--rz-hairline-regal);font-size:19px}
+      .rz-zeile.rz-unten{border-top:0;border-bottom:1px solid var(--rz-hairline-gruen)}
+      .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:12px;color:var(--rz-gedimmt);
+                            max-width:38%;text-align:right;line-height:1.4}
+      .rz-balken{height:2px;background:var(--rz-hairline);margin-top:8px}
+      .rz-balken>i{display:block;height:2px;background:var(--rz-akzent-hell)}
+      .rz-initial{width:22px;height:22px;flex:none;border-radius:50%;background:var(--rz-akzent);
+                  color:var(--rz-akzent-text);font-family:var(--rz-sans);font-size:11px;font-weight:600;
+                  display:inline-flex;align-items:center;justify-content:center;align-self:center}
+      .rz-caps{font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.2em;
+               text-transform:uppercase;color:var(--rz-label)}
+      .rz-tiefgruen .rz-caps,.rz-regal-dunkel .rz-caps{color:var(--rz-label-auf-gruen)}
+
+      /* ============ D1 · Grundbaustein C — Wegweiser-Badge / -Panel ============
+         Badge sitzt exakt auf der Naht (rz-auf-naht), Punkt = etwas wartet.
+         Panel faltet sich aus der Naht (scaleY + opacity, ~300ms,
+         cubic-bezier(.2,.8,.2,1)), ueberdeckt als Overlay, Klick irgendwohin
+         schliesst. Inhalt: nur Text, 2–3 Optionen, Serif, Raumnamen kursiv. */
+      .rz-weg-badge{background:var(--rz-akzent);color:var(--rz-akzent-text);border:0;cursor:pointer;
+                    font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.16em;
+                    text-transform:uppercase;padding:9px 18px;display:flex;align-items:center;gap:8px;
+                    border-radius:0;min-height:0}
+      .rz-weg-badge .rz-punkt{width:6px;height:6px;border-radius:50%;background:var(--rz-akzent-text);
+                              display:none}
+      .rz-weg-badge.rz-wartet .rz-punkt{display:block}
+      .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px 24px 14px;
+                    background:var(--rz-papier);color:var(--rz-ink);
+                    border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
+                    transform:scaleY(0);transform-origin:top center;opacity:0;pointer-events:none;
+                    transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s cubic-bezier(.2,.8,.2,1)}
+      .rz-weg-panel.rz-offen{transform:scaleY(1);opacity:1;pointer-events:auto}
+      .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:17px;font-weight:300;
+                               line-height:1.55;margin:0 0 14px}
+      .rz-weg-panel .rz-option em{font-style:italic}
+      .rz-weg-fuss{font-family:var(--rz-sans);font-size:11px;color:var(--rz-gedimmt);
+                   text-align:center;padding-top:8px}
+      @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">
@@ -140,6 +231,26 @@ export function istStandalone(win) {
     if (typeof win.matchMedia === "function" && win.matchMedia("(display-mode: standalone)").matches) return true;
   } catch { /* z. B. sehr alte Engines */ }
   return win.navigator ? win.navigator.standalone === true : false;
+}
+
+/* D1 · Wegweiser-Panel-Verdrahtung (Grundbaustein C). Öffnen per Tap aufs
+ * Badge, Schließen per Tap irgendwohin — das Badge stoppt die Propagation,
+ * damit derselbe Tap das Panel nicht sofort wieder schließt. Der Dokument-
+ * Listener wird nur EINMAL gesetzt (Marker am document), egal wie viele
+ * Badges es gibt; er schließt alle offenen Panels. Ab D2 von den Screens
+ * benutzt. */
+export function verdrahteWegweiser(doc, badge, panel) {
+  if (!badge || !panel) return;
+  badge.addEventListener("click", e => {
+    e.stopPropagation();
+    panel.classList.toggle("rz-offen");
+  });
+  if (!doc.__rzWegZu) {
+    doc.__rzWegZu = true;
+    doc.addEventListener("click", () => {
+      for (const p of doc.querySelectorAll(".rz-weg-panel.rz-offen")) p.classList.remove("rz-offen");
+    });
+  }
 }
 
 export function applyDesign(doc) {
