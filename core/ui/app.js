@@ -11,6 +11,7 @@ import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf, pruefeLeserichtung, formatiereLeseMarker } from "./prozess.js";
 import { applyDesign, verdrahteWegweiser } from "./design.js";
+import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -127,6 +128,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
+        <div class="rz-kulisse-naht" id="kulisseStart"></div>
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeStart"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegStart"></div>
         <button class="rz-zeile rz-unten" id="btnSharedRoom"><span>${t("start.betreteTeil")}</span><span class="rz-lz-leiste" id="lzStart"></span><span class="rz-pfeil">↓</span></button>
@@ -165,6 +167,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <h2 class="rz-h2">${t("zone.regal")}</h2>
           <div class="rz-caps">${t("mein.gruppeRegale")}</div>
         </div>
+        <div class="rz-kulisse-fuss" id="kulisseMein"></div>
       </div>
     </div>
     <div id="scrShared" class="rz-screen rz-split pb-hidden">
@@ -197,6 +200,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <h2 class="rz-h2">${t("zone.regal")}</h2>
           <div class="rz-caps">${t("teil.gruppeRegale")}</div>
         </div>
+        <div class="rz-kulisse-fuss" id="kulisseTeil"></div>
       </div>
     </div>
     <div id="scrProzess" class="rz-screen rz-eine-zone pb-hidden">
@@ -395,6 +399,8 @@ export function createApp({ doc, backend, root, diktat }) {
       regalNeuA: (((shelf && shelf.items) || [])).filter(i => i.by !== state.info.nameA && !i.read).length,
       regalNeuB: (((shelf && shelf.items) || [])).filter(i => i.by !== state.info.nameB && !i.read).length,
       agendaOffen: (((agenda && agenda.items) || [])).filter(i => i.state === "open").length,
+      // D6 · Meilenstein "Ziele definiert" (erstes Blatt der Kulisse)
+      zieleDefiniert: (((agenda && agenda.items) || [])).some(i => i.zielKandidat),
       messBereit: (((measurements && measurements.items) || [])).some(r => r.status === "ready"),
       messOffen: !!(offeneRunde && !offeneRunde.values[rolle]),
       // "pausiert bei Kapitel N" nur solange die Auftragsklärung wirklich läuft
@@ -575,6 +581,7 @@ export function createApp({ doc, backend, root, diktat }) {
     try {
       const lage = await ladeLage();
       wendeLageAn(lage, screenId);
+      aktualisiereKulisse(screenId, lage);   // D6: still im Hintergrund
       const kandidaten = wegKandidaten(lage, screenId);
       const zeilen = waehleWegzeilen(kandidaten, screenId);
       const box = $(boxId);
@@ -608,6 +615,28 @@ export function createApp({ doc, backend, root, diktat }) {
   function betrete(screenId) {
     show(screenId);
     aktualisiereWegweiser(screenId);
+  }
+
+  /* D6 · Kulisse nachziehen — still, fehlertolerant, nie blockierend.
+     Startzeitpunkte liegen SERVERSEITIG (K4): der geteilte Zaehler im
+     Bstate (Naht des Starts + Vorraum uns), der persoenliche im Pstate
+     (Vorraum mich); beide werden beim ersten Betreten einmalig gesetzt.
+     Meilensteine kommen aus der ohnehin geladenen Lage. */
+  async function aktualisiereKulisse(screenId, lage) {
+    const ziel = { scrStart: "kulisseStart", scrMyRoom: "kulisseMein", scrShared: "kulisseTeil" }[screenId];
+    if (!ziel) return;
+    const halter = $(ziel);
+    if (!halter) return;
+    try {
+      const privat = screenId === "scrMyRoom";
+      const lies = () => privat ? backend.pstate.get("kulisse") : backend.bstate.get("kulisse");
+      const schreib = v => privat ? backend.pstate.set("kulisse", v) : backend.bstate.set("kulisse", v);
+      let k = await lies();
+      if (!k || !k.start) { k = { start: Date.now() }; await schreib(k); }
+      const meilensteine = (lage.einzelBegonnen ? 1 : 0) + (lage.aufdeckGelaufen ? 1 : 0) + (lage.zieleDefiniert ? 1 : 0);
+      const n = kulisseAnzahl({ meilensteine, startTs: k.start });
+      halter.innerHTML = baueKulisse(n, screenId);
+    } catch { /* Kulisse ist Beiwerk, kein Muss */ }
   }
 
   /* S39/S44 · Prozessreflexions-Rhythmus: geteilter Vertrag, jetzt als Sektion
