@@ -291,6 +291,23 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       #scrChat .pb-skala{background:none;border:1px solid var(--rz-hairline);border-radius:0}
       #scrChat #btnChatEnde{font-size:16px;margin-top:6px}
       html[data-theme=dark] #scrChat #btnSend{color:var(--rz-tiefgruen)}
+
+      /* ============ D5 · Teilen-Flow (Design 17f) ============
+         Die Freigabe-Vorschau zeigt EXAKT den Text, der im Regal ankommt:
+         Tiefgruen-Block mit Von-Zeile, typografische Anfuehrung per CSS
+         (keine Textaenderung). Wahl-Labels und Aktionen als Hairline-Zeilen. */
+      .rz-teilen-block{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
+        padding:18px 20px;margin:12px 0}
+      .rz-teilen-block .rz-von{color:var(--rz-label-auf-gruen);margin-bottom:8px}
+      .rz-teilen-text{font-family:var(--rz-serif);font-size:16.5px;font-weight:300;
+        line-height:1.55;margin:0}
+      .rz-teilen-text::before{content:'„'}
+      .rz-teilen-text::after{content:'“'}
+      .rz-wahl{display:block;font-size:14px;margin:0;padding:10px 0;
+        border-top:1px solid var(--rz-hairline)}
+      .rz-von .rz-initial{width:18px;height:18px;font-size:10px;vertical-align:middle}
+      .rz-regal-eintrag .rz-von{margin-bottom:4px}
+      .rz-regal-text{font-family:var(--rz-serif);font-size:15.5px;font-weight:300;line-height:1.5}
     `;
 
 export const KULISSE_HTML = String.raw`<div class="pb-kulisse" aria-hidden="true">

@@ -931,13 +931,17 @@ export function createApp({ doc, backend, root, diktat }) {
     const p = $("gatePanel");
     p.classList.remove("pb-hidden");
     const wegName = { self: t("gate.weg.selbst"), shelf: t("gate.weg.regal"), moment: t("gate.weg.moment") };
+    // D5 · Teilen-Vorschau (Design 17f): GENAU der Text, der drueben ankommt,
+    // als Tiefgruen-Block mit Von-Zeile — Formular schuetzt den Wert,
+    // Erzaehlung schuetzt die Beziehung. Optionen darunter als Hairline-Zeilen.
     p.innerHTML =
-      `<div class="pb-sub">${t("gate.titel")}</div>` +
-      `<p style="font-size:14px">${esc(data.selbstmitteilung)}</p>` +
-      (data.wish ? `<p class="pb-sub">${t("gate.wish")}${esc(data.wish)}</p>` : "") +
-      data.paths.map(w => `<label style="display:block;font-size:14px;margin:4px 0"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
-      `<button class="pb-btn primary" id="btnGateOk">${t("allg.freigeben")}</button>` +
-      `<button class="pb-btn" id="btnGateNein">${t("allg.nochNicht")}</button>`;
+      `<div class="rz-caps">${t("gate.titel")}</div>` +
+      `<div class="rz-teilen-block"><div class="rz-caps rz-von">${t("allg.von", { name: esc(state.info.name) })}</div>` +
+      `<p class="rz-teilen-text">${esc(data.selbstmitteilung)}</p></div>` +
+      (data.wish ? `<p class="rz-sub">${t("gate.wish")}${esc(data.wish)}</p>` : "") +
+      data.paths.map(w => `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
+      `<button class="rz-zeile" id="btnGateOk"><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
+      `<button class="rz-zeile" id="btnGateNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
     p.querySelector("#btnGateOk").addEventListener("click", async () => {
       const wege = [...p.querySelectorAll("input:checked")].map(x => x.getAttribute("data-weg"));
       p.classList.add("pb-hidden");
@@ -1336,9 +1340,13 @@ export function createApp({ doc, backend, root, diktat }) {
     $("regalItems").innerHTML = regal.items.length
       ? regal.items.map(i => {
           const fremd = i.by !== state.info.name;
-          return `<div class="pb-item">${esc(i.text)}` +
+          // D5 · Empfang im Regal (Design 17f): Von-Caps-Zeile ueber dem Text,
+          // Initial-Badge solange ungelesen; Status und Handgriffe leise darunter.
+          return `<div class="pb-item rz-regal-eintrag">` +
+            `<div class="rz-caps rz-von">${fremd && !i.read ? `<span class="rz-initial">${esc((i.by || "?")[0].toUpperCase())}</span> ` : ""}${t("allg.von", { name: esc(i.by) })}</div>` +
+            `<span class="rz-regal-text">${esc(i.text)}</span>` +
             (i.wish ? `<br><span class="pb-sub">${t("gate.wish")}${esc(i.wish)}</span>` : "") +
-            `<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })}${i.read ? " · " + t("regal.stGelesen") : ""}${i.gehoben ? " · " + t(i.alsZiel ? "regal.stZielVorschlag" : "regal.stInAgenda") : ""}</span>` +
+            `${i.read || i.gehoben ? `<br><span class="pb-sub">${i.read ? t("regal.stGelesen") : ""}${i.read && i.gehoben ? " · " : ""}${i.gehoben ? t(i.alsZiel ? "regal.stZielVorschlag" : "regal.stInAgenda") : ""}</span>` : ""}` +
             (fremd && !i.read ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
             (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnBesprechen")}</button>` +
               ` <button class="pb-btn" data-ziel="${i.id}" style="padding:3px 10px">${t("regal.btnZiel")}</button>` : "") +
@@ -1982,12 +1990,12 @@ export function createApp({ doc, backend, root, diktat }) {
     const p = kw();
     p.classList.remove("pb-hidden");
     p.innerHTML =
-      `<div class="pb-sub">${t("fg.titel")}</div>` +
+      `<div class="rz-caps">${t("fg.titel")}</div>` +
       data.items.map((it, i) =>
-        `<label style="display:block;font-size:14px;margin:6px 0"><input type="checkbox" data-fg="${i}" checked> <strong>${esc(it.id)}</strong> ${esc(it.text)}</label>`
+        `<label class="rz-wahl"><input type="checkbox" data-fg="${i}" checked> <strong>${esc(it.id)}</strong> ${esc(it.text)}</label>`
       ).join("") +
-      `${wieder ? `<p style="font-size:14px">${t("fg.wieder", { partner: esc(state.info.partner) })}</p><label style="display:block;font-size:14px;margin:6px 0"><input type="checkbox" id="kwFgAufdeck"> ${t("fg.check")}</label>` : ""}<button class="pb-btn primary" id="kwFgOk">${t("allg.freigeben")}</button>` +
-      `<button class="pb-btn" id="kwFgNein">${t("allg.nochNicht")}</button>`;
+      `${wieder ? `<p style="font-size:14px">${t("fg.wieder", { partner: esc(state.info.partner) })}</p><label class="rz-wahl"><input type="checkbox" id="kwFgAufdeck"> ${t("fg.check")}</label>` : ""}<button class="rz-zeile" id="kwFgOk"><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
+      `<button class="rz-zeile" id="kwFgNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
     p.querySelector("#kwFgOk").addEventListener("click", async () => {
       const items = [...p.querySelectorAll("input[data-fg]:checked")].map(x => {
         const it = data.items[+x.getAttribute("data-fg")];
