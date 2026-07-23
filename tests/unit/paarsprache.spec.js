@@ -66,7 +66,12 @@ describe("Paarsprache-Karte · drei Zustände", () => {
     // S35: Die Karte liegt hinter einem kleinen Link (versteckt per Default)
     const zeile = document.getElementById("psZeile");
     expect(zeile.classList.contains("pb-hidden")).toBe(false);
-    expect(zeile.textContent).toContain("Deutsch");
+    // D8: Die Ecke traegt den kompakten DE/EN-Wechsler — die aktuelle Sprache
+    // leuchtet, der volle Name lebt im title (und im Dialog selbst).
+    const knopf = zeile.querySelector("#psLink");
+    expect(knopf.textContent.replace(/\s/g, "")).toBe("DEEN");
+    expect(knopf.querySelector(".an").textContent).toBe("DE");
+    expect(knopf.getAttribute("title")).toContain("Deutsch");
     const box = document.getElementById("boxPaarsprache");
     expect(box.classList.contains("pb-hidden")).toBe(true);
     await klick(zeile.querySelector("#psLink"));

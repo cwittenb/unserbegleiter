@@ -121,8 +121,8 @@ export function createApp({ doc, backend, root, diktat }) {
         <p class="rz-sub pb-hidden" id="startMeinSub"></p>
         <p class="rz-sub pb-hidden" id="startTeilSub"></p>
         <h1 class="pb-h1 pb-hidden" id="pbHallo"></h1>
-        <p class="rz-sub pb-hidden" id="psZeile"></p>
-        <div class="rz-still pb-hidden" id="boxPaarsprache"></div>
+        <p class="rz-sprachecke pb-hidden" id="psZeile"></p>
+        <div class="rz-sprachdialog pb-hidden" id="boxPaarsprache"></div>
         <div class="rz-fuss">
           <button class="rz-zeile" id="btnMyRoom"><span>${t("start.betreteMein")}</span><span class="rz-pfeil">↑</span></button>
         </div>
@@ -1455,9 +1455,14 @@ export function createApp({ doc, backend, root, diktat }) {
     const aktuell = state.info.locale === "en" ? "en" : "de";
     const wunsch = state.info.languageRequest;
     if (wunsch && wunsch.by !== state.info.role) state.psOffen = true;
-    zeile.innerHTML = `<span class="pb-link" id="psLink">${wunsch
-      ? t("paarspr.linkOffen", { sprache: sprachName(aktuell) })
-      : t("paarspr.link", { sprache: sprachName(aktuell) })}</span>`;
+    // D8 · Kleiner DE/EN-Wechsler unten rechts (Design-Korrektur): die
+    // aktuelle Sprache leuchtet, ein offener Vorschlag setzt den Punkt UND
+    // schreibt den Hinweis daneben. Der Tap oeffnet den Dialog.
+    const marke = l => `<span class="${aktuell === l ? "an" : ""}">${l.toUpperCase()}</span>`;
+    zeile.innerHTML =
+      (wunsch ? `<span class="rz-sprach-hinweis">${t("paarspr.linkOffen", { sprache: sprachName(aktuell) })}</span>` : "") +
+      `<button class="rz-sprachknopf" id="psLink" title="${t("paarspr.link", { sprache: sprachName(aktuell) })}">` +
+      marke("de") + marke("en") + (wunsch ? `<span class="rz-punkt"></span>` : "") + `</button>`;
     zeile.classList.remove("pb-hidden");
     zeile.querySelector("#psLink").addEventListener("click", () => {
       state.psOffen = !state.psOffen;

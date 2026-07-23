@@ -72,14 +72,16 @@ describe("D1 · Grundbaustein B — Hairline-Zeile", () => {
 
 describe("D1 · Grundbaustein C — Wegweiser-Badge/Panel", () => {
   it("Badge: grün, UPPERCASE, eckig, mit Warte-Punkt", () => {
-    expect(DESIGN_CSS).toMatch(/\.rz-weg-badge\{background:var\(--rz-akzent\);[^}]*text-transform:uppercase/);
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-badge\{[^}]*background:var\(--rz-akzent\);[^}]*text-transform:uppercase/);
     expect(DESIGN_CSS).toContain(".rz-weg-badge.rz-wartet .rz-punkt{display:block}");
   });
 
-  it("Panel faltet aus der Naht: scaleY + opacity, 300ms, cubic-bezier(.2,.8,.2,1)", () => {
-    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*transform:scaleY\(0\);transform-origin:top center/);
+  it("Panel klappt aus der MITTE der Naht auf — nach oben und unten gleichermassen (D8)", () => {
+    // Verankert auf der Nahtlinie (top:0 + translateY(-50%)), Ursprung Mitte:
+    // die Flaeche waechst symmetrisch in beide Haelften.
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*transform:translateY\(-50%\) scaleY\(0\);transform-origin:center center/);
     expect(DESIGN_CSS).toContain("transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s cubic-bezier(.2,.8,.2,1)");
-    expect(DESIGN_CSS).toContain(".rz-weg-panel.rz-offen{transform:scaleY(1);opacity:1;pointer-events:auto}");
+    expect(DESIGN_CSS).toContain(".rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}");
   });
 
   it("Verdrahtung: Badge-Tap öffnet, Tap irgendwohin (auch aufs Panel) schließt", () => {

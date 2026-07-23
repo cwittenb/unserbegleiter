@@ -72,7 +72,8 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <style>:root{--bg:#f5f7f9;--ink:#1b2430;--ink-soft:#5a6675;--accent:#0f766e}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-#app{max-width:760px;margin:0 auto;padding:24px 18px}</style></head>
+html,body{height:100%}
+#app{margin:0;padding:0;max-width:none;width:100%}</style></head>
 <body><div id="app" data-core-hash="${hash}"></div><script src="/app.js"></script></body></html>\n`);
 
   // Betreiber-Verwaltung (Einladungslinks erzeugen) — statisch mitgeliefert.

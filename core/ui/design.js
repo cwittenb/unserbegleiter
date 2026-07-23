@@ -42,7 +42,8 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         --ai-bg:rgba(255,255,255,.06);--ai-bd:rgba(255,255,255,.09);
         --field:rgba(255,255,255,.06);--field-bd:rgba(255,255,255,.16);
       }
-      body{margin:0;background:linear-gradient(172deg,var(--bg1),var(--bg2));background-attachment:fixed;transition:background .5s}
+      html{height:100%}
+      body{margin:0;min-height:100%;background:var(--rz-papier);transition:background .5s}
       #app{max-width:660px;position:relative;z-index:1;font-family:var(--rz-sans);
            color:var(--ink);font-size:16px;line-height:1.65;
            padding:calc(46px + env(safe-area-inset-top,0px)) calc(22px + env(safe-area-inset-right,0px))
@@ -179,19 +180,22 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          Panel faltet sich aus der Naht (scaleY + opacity, ~300ms,
          cubic-bezier(.2,.8,.2,1)), ueberdeckt als Overlay, Klick irgendwohin
          schliesst. Inhalt: nur Text, 2–3 Optionen, Serif, Raumnamen kursiv. */
-      .rz-weg-badge{background:var(--rz-akzent);color:var(--rz-akzent-text);border:0;cursor:pointer;
+      /* Der Knopf liegt UNTER dem Textpanel: klappt das Panel aus der Mitte
+         auf, verschwindet der Knopf dahinter (Tap aufs Panel schliesst). */
+      .rz-weg-badge{z-index:3;background:var(--rz-akzent);color:var(--rz-akzent-text);border:0;cursor:pointer;
                     font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.16em;
                     text-transform:uppercase;padding:9px 18px;display:flex;align-items:center;gap:8px;
                     border-radius:0;min-height:0}
       .rz-weg-badge .rz-punkt{width:6px;height:6px;border-radius:50%;background:var(--rz-akzent-text);
                               display:none}
       .rz-weg-badge.rz-wartet .rz-punkt{display:block}
-      .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px 24px 14px;
+      .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px 24px;
                     background:var(--rz-papier);color:var(--rz-ink);
                     border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
-                    transform:scaleY(0);transform-origin:top center;opacity:0;pointer-events:none;
+                    transform:translateY(-50%) scaleY(0);transform-origin:center center;
+                    opacity:0;pointer-events:none;
                     transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s cubic-bezier(.2,.8,.2,1)}
-      .rz-weg-panel.rz-offen{transform:scaleY(1);opacity:1;pointer-events:auto}
+      .rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}
       .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:17px;font-weight:300;
                                line-height:1.55;margin:0 0 14px}
       .rz-weg-panel .rz-option em{font-style:italic}
@@ -203,10 +207,16 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          Die App-Wurzel wird randlos (rz-app); noch nicht umgezogene Screens
          behalten uebergangsweise die zentrierte Spalte. Der Startscreen ist
          die erste volle Zweiteilung (Design 17a/b). */
-      #app.rz-app{max-width:none;padding:0}
-      .rz-app #scrMyRoom,.rz-app #scrShared,.rz-app #scrProzess{
-        max-width:660px;margin:0 auto;box-sizing:border-box;
-        padding:calc(46px + env(safe-area-inset-top,0px)) 22px calc(34vh + env(safe-area-inset-bottom,0px))}
+      /* D8 · Vollbild: keine Spalte, kein Rand — die Screens fuellen den
+         Schirm bis an die Kante. Die Sicherheitsabstaende leben in den
+         Zonen selbst (rz-half), nicht in einer Huelle darum.
+         Der Marker sitzt am <html>, nicht an #app: je nach Plattform ist die
+         App-Wurzel #app (Pages) ODER #pbMain in einer Huelle (Artefakt) —
+         beide Huellen muessen randlos werden, sonst bleibt oben ein Streifen. */
+      html[data-vollbild],html[data-vollbild] body{margin:0;padding:0;width:100%;height:100%;max-width:none}
+      html[data-vollbild] #app,html[data-vollbild] #pbMain{
+        margin:0;padding:0;max-width:none;width:100%;min-height:100dvh;box-sizing:border-box}
+      .rz-app{max-width:none;padding:0;width:100%;min-height:100dvh}
       .rz-screen{min-height:100dvh}
       .rz-screen .rz-half:first-child{padding-top:calc(30px + env(safe-area-inset-top,0px))}
       .rz-screen .rz-half:last-child{padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
@@ -307,6 +317,33 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-regal-eintrag .rz-von{margin-bottom:4px}
       .rz-regal-text{font-family:var(--rz-serif);font-size:15.5px;font-weight:300;line-height:1.5}
 
+      /* ============ D8 · Sprachwechsel als Eckknopf + Aufwaerts-Dialog ============
+         Kleiner DE/EN-Wechsler unten rechts; der Dialog faehrt von unten
+         herein. Der Knopf bleibt UEBER dem Dialog liegen, damit derselbe
+         Tap wieder schliesst. Der Vorgang selbst (Paarsprache: vorschlagen,
+         bestaetigen, zuruecknehmen) ist unveraendert. */
+      #psZeile.rz-sprachecke{position:fixed;z-index:30;margin:0;
+        right:calc(18px + env(safe-area-inset-right,0px));
+        bottom:calc(18px + env(safe-area-inset-bottom,0px));
+        display:flex;align-items:center;gap:8px}
+      .rz-sprach-hinweis{font-family:var(--rz-sans);font-size:11px;color:var(--rz-sek2);
+        max-width:16ch;text-align:right;line-height:1.35}
+      .rz-sprachknopf{border:1px solid var(--rz-hairline);background:var(--rz-papier);
+        color:var(--rz-gedimmt);cursor:pointer;border-radius:0;padding:6px 10px;min-height:0;
+        font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.1em;
+        display:inline-flex;align-items:center;gap:5px}
+      .rz-sprachknopf .an{color:var(--rz-akzent-hell)}
+      .rz-sprachknopf .rz-punkt{width:5px;height:5px;border-radius:50%;background:var(--rz-akzent)}
+      #boxPaarsprache.rz-sprachdialog{position:fixed;left:0;right:0;bottom:0;z-index:25;
+        display:block;margin:0;border:0;border-top:1px solid var(--rz-hairline);border-radius:0;
+        background:var(--rz-papier);color:var(--rz-ink);font-size:13px;
+        padding:22px 24px calc(64px + env(safe-area-inset-bottom,0px));
+        transform:translateY(100%);opacity:0;pointer-events:none;
+        transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s cubic-bezier(.2,.8,.2,1)}
+      #boxPaarsprache.rz-sprachdialog:not(.pb-hidden){transform:translateY(0);opacity:1;pointer-events:auto}
+      .rz-sprachdialog .pb-btn{margin:6px 8px 0 0}
+      @media(prefers-reduced-motion:reduce){#boxPaarsprache.rz-sprachdialog{transition:none}}
+
       /* ============ D6 · Kulisse — ortsgebunden, leise, wachsend ============
          Start: auf der Naht (hell: Baeume ragen darueber, dunkel: Teich
          darunter). Vorraeume: unten in der Regal-Zone. Chat: keine. Eigener
@@ -361,6 +398,7 @@ export function applyDesign(doc) {
   // Standalone-Haken (M3): CSS kann per html[data-standalone] reagieren —
   // z. B. künftige Installations-Hinweise ausblenden, wenn schon installiert.
   if (istStandalone(doc.defaultView)) doc.documentElement.setAttribute("data-standalone", "1");
+  doc.documentElement.setAttribute("data-vollbild", "1");   // D8: randlos, egal welche Huelle
   const st = doc.createElement("style");
   st.id = "pbDesign";
   st.textContent = DESIGN_CSS;
