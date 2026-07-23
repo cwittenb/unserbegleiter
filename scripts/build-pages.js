@@ -128,6 +128,15 @@ body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,sy
     "#          Export, Zugang wiederherstellen)",
     "",
   ].join("\n"));
+  // D7 · Landing fuer die Apex-Domain (raumzuzweit.de): eigenstaendiges,
+  // statisches Artefakt neben der App (app.raumzuzweit.de) — bewusst NICHT
+  // unter public/, damit die beiden Deploy-Ziele getrennt bleiben.
+  await mkdir(path.join(outDir, "landing"), { recursive: true });
+  await copyFile(
+    path.join(ROOT, "platforms/cloudflare/landing/index.html"),
+    path.join(outDir, "landing/index.html")
+  );
+
   return { outDir, hash };
 }
 

@@ -1,0 +1,171 @@
+<!doctype html>
+<!-- D7 · Landing fuer die Apex-Domain raumzuzweit.de (Design 11a/12a).
+     Self-contained: Inline-CSS, Inline-SVG-Kulisse, Fonts via Google.
+     Texte = Copy-VORSCHLAG lt. Handoff (K2) — Textreview folgt.
+     Signup ist reine Oberflaeche (K6): der Backend-Teil kommt als eigener
+     Sprint; bis dahin antwortet das Formular mit einer stillen Notiz. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>raumzuzweit — Eine Paarbegleitung.</title>
+<meta name="description" content="Ein Raum, der dir gehört. Ein Raum, der euch gehört. Eine Paarbegleitung — nur auf Einladung.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papier:#faf8f2;--papier-regal:#f0ece0;--hairline:#e3dfd0;
+  --tiefgruen:#1e2a22;--ink:#23291f;--ink-hell:#eef0e7;
+  --sek:#6b7261;--sek-hell:#b9c3ac;--gedimmt:#a3a894;
+  --akzent:#8fae74;--akzent-text:#14201a;--akzent-tief:#7d9b62;
+  --label:#7d9b62;--label-hell:#9db08f;
+  --serif:'Source Serif 4',Georgia,serif;--sans:'Instrument Sans',system-ui,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+  :root{--papier:#242b21;--papier-regal:#20261d;--hairline:#39412f;
+    --tiefgruen:#101b14;--ink:#ece9da;--sek:#b9c3ac;--label:#aeca8d}
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--papier);font-size:15px;line-height:1.65}
+.caps{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--label)}
+.tief .caps{color:var(--label-hell)}
+h1,h2{font-family:var(--serif);font-weight:300;line-height:1.15;margin:0}
+/* ---- Hero: Zweiteilung, Naht vertikal ab 900px ---- */
+.hero{display:flex;flex-direction:column;min-height:100dvh}
+.hero>section{flex:1;padding:34px 26px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.hero .papier{background:var(--papier)}
+.hero .tief{background:var(--tiefgruen);color:var(--ink-hell)}
+.hero h1{font-size:clamp(34px,6vw,54px);margin-top:14px}
+.hero p{max-width:34ch;color:var(--sek);margin:14px 0 0}
+.hero .tief p{color:var(--sek-hell)}
+.marke{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--label)}
+.naht-badge{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:3;
+  background:var(--akzent);color:var(--akzent-text);font-size:11px;font-weight:600;
+  letter-spacing:.16em;text-transform:uppercase;padding:9px 18px;white-space:nowrap}
+.runter{margin-top:auto;padding-top:26px;display:inline-block;color:inherit;text-decoration:none;
+  font-family:var(--serif);font-size:19px;border-top:1px solid rgba(157,176,143,.28)}
+.runter span{color:#a9c88b;font-family:var(--sans);font-size:15px;float:right}
+.unterzeile{margin-top:auto;padding-top:20px;font-family:var(--serif);font-size:17px;color:var(--sek)}
+@media(min-width:900px){
+  .hero{flex-direction:row}
+  .naht-badge{left:0;top:50%}
+  .hero>section{padding:48px 56px}
+}
+/* ---- Kulisse ---- */
+.kulisse{position:absolute;left:0;right:0;bottom:0;height:84px;pointer-events:none;color:var(--akzent-tief)}
+.kulisse svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
+/* ---- Sektionen ---- */
+main section.block{padding:64px 26px;max-width:860px;margin:0 auto}
+.block h2{font-size:clamp(28px,4.5vw,40px);margin:10px 0 18px}
+.block .lead{max-width:56ch;color:var(--sek)}
+/* Kreis */
+.kreis{display:flex;flex-wrap:wrap;gap:0;margin-top:28px;border-top:1px solid var(--hairline)}
+.kreis div{flex:1 1 160px;padding:16px 14px 16px 0;border-bottom:1px solid var(--hairline)}
+.kreis b{display:block;font-family:var(--serif);font-weight:400;font-size:18px}
+.kreis small{color:var(--gedimmt);font-size:12.5px}
+.agenda-hin{margin-top:14px;font-size:13px;color:var(--sek)}
+/* Regel */
+.regel{background:var(--papier-regal)}
+.regel .innen{max-width:860px;margin:0 auto;padding:64px 26px}
+.regel p{font-family:var(--serif);font-size:clamp(20px,3.4vw,28px);font-weight:300;line-height:1.4;
+  margin:0;padding:18px 0;border-bottom:1px solid var(--hairline)}
+.regel p:first-of-type{border-top:1px solid var(--hairline)}
+/* Signup */
+.signup{background:var(--tiefgruen);color:var(--ink-hell)}
+.signup .innen{max-width:860px;margin:0 auto;padding:72px 26px}
+.signup h2{color:var(--ink-hell)}
+.signup .lead{color:var(--sek-hell)}
+.signup form{margin-top:26px;display:flex;gap:0;max-width:460px;border-bottom:1px solid rgba(157,176,143,.4)}
+.signup input{flex:1;background:none;border:0;color:var(--ink-hell);font:italic 300 17px var(--serif);
+  padding:12px 0;outline:none}
+.signup input::placeholder{color:rgba(185,195,172,.7)}
+.signup button{background:var(--akzent);color:var(--akzent-text);border:0;cursor:pointer;
+  font:600 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;padding:0 20px}
+.signup .notiz{margin-top:12px;font-size:12.5px;color:var(--sek-hell);visibility:hidden}
+/* Footer */
+footer{background:var(--tiefgruen);color:var(--sek-hell);border-top:1px solid rgba(157,176,143,.2)}
+footer .innen{max-width:860px;margin:0 auto;padding:26px;display:flex;justify-content:space-between;
+  flex-wrap:wrap;gap:12px;font-size:12.5px}
+footer a{color:inherit;text-decoration:none;margin-left:18px}
+footer a:first-child{margin-left:0}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <section class="papier">
+    <span class="marke">raumzuzweit</span>
+    <span class="caps" style="margin-top:26px">Raum für mich</span>
+    <h1>Ein Raum,<br>der dir gehört.</h1>
+    <p>Nachdenken, sortieren, wachsen — mit einer Begleitung, die zuhört. Du teilst, was dir wichtig ist.</p>
+    <div class="unterzeile">Für jede und jeden von euch. Eine Paarbegleitung.</div>
+    <div class="kulisse" aria-hidden="true">
+      <svg viewBox="0 0 390 84" preserveAspectRatio="xMaxYMax meet">
+        <path d="M0 60 Q100 48 195 58 T390 54 V84 H0Z" fill="currentColor" opacity=".07"></path>
+        <g fill="currentColor" opacity=".13"><polygon points="288,22 278,50 298,50"></polygon><polygon points="288,12 281,32 295,32"></polygon><rect x="286.5" y="49" width="3" height="6"></rect></g>
+        <g fill="currentColor" opacity=".22"><polygon points="338,34 322,80 354,80"></polygon><polygon points="338,18 326,52 350,52"></polygon><rect x="335.5" y="78" width="5" height="6"></rect></g>
+      </svg>
+    </div>
+  </section>
+  <section class="tief">
+    <div class="naht-badge">Nur auf Einladung</div>
+    <span class="caps">Raum für uns</span>
+    <h1>Ein Raum,<br>der euch gehört.</h1>
+    <p>Qualitätszeit, Begegnung — und alles, was ihr miteinander teilen wollt.</p>
+    <a class="runter" href="#signup">Informiert werden <span>↓</span></a>
+  </section>
+</header>
+
+<main>
+  <section class="block">
+    <span class="caps">So begleiten wir euch</span>
+    <h2>Ein Kreis,<br>der sich wiederholt.</h2>
+    <p class="lead">Den Einstieg macht ihr einzeln mit der Auftragsklärung — dann deckt ihr gemeinsam auf. So entsteht eure Agenda. Daran arbeitet ihr im Kreis: reflektieren, teilen, besprechen, weitergehen.</p>
+    <div class="kreis">
+      <div><b>Einzelreflexion</b><small>einzeln, in deinem Raum</small></div>
+      <div><b>Erfahrungen teilen</b><small>wenn du magst</small></div>
+      <div><b>Gemeinsame Session</b><small>zu zweit, mit Begleitung</small></div>
+      <div><b>Prozessreflexion</b><small>einzeln, dann aufdecken</small></div>
+      <div><b>Agenda</b><small>eure Ziele &amp; Themen</small></div>
+    </div>
+    <p class="agenda-hin">Und Qualitätszeit? Die gehört euch jederzeit — außerhalb des Kreises.</p>
+  </section>
+
+  <section class="regel">
+    <div class="innen">
+      <span class="caps">Eine einfache Regel</span>
+      <p>Was in deinem Raum bleibt, bleibt bei dir.</p>
+      <p>Geteilt wird nur, was du bewusst teilst.</p>
+      <p>Ihr seht immer genau, was der andere sieht.</p>
+    </div>
+  </section>
+
+  <section class="signup" id="signup">
+    <div class="innen">
+      <span class="caps">Wir starten in kleinen Schritten</span>
+      <h2>Raumzuzweit öffnet nur auf Einladung.</h2>
+      <p class="lead">Trag dich ein — wir melden uns, sobald es losgeht. Sonst nichts.</p>
+      <form id="signupForm" autocomplete="off">
+        <input type="email" placeholder="dein@postfach.de" aria-label="E-Mail-Adresse" required>
+        <button type="submit">Informiert werden</button>
+      </form>
+      <p class="notiz" id="signupNotiz">Die Eintragung öffnet in Kürze — schau bald wieder vorbei.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="innen">
+    <span class="marke" style="color:inherit">raumzuzweit</span>
+    <span><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="mailto:hallo@raumzuzweit.de">Kontakt</a></span>
+  </div>
+</footer>
+
+<script>
+/* K6 · Signup-Backend folgt als eigener Sprint — bis dahin still bleiben. */
+document.getElementById("signupForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  document.getElementById("signupNotiz").style.visibility = "visible";
+});
+</script>
+</body>
+</html>

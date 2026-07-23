@@ -108,8 +108,8 @@ export function tippe(wurzel, id, text) {
 /** Composer bereit: Antwort-Stream beendet, btnSend wieder aktiv. Ohne dieses
  *  Warten fällt ein schneller Klick in die state.warten-Phase und wird
  *  verschluckt (Flake-Lehre S67: Text rendert schon WÄHREND des Streams). */
-export const warteSendbereit = wurzel =>
-  warteAuf(() => { const b = wurzel.querySelector("#btnSend"); return b && !b.disabled ? b : null; }, "Composer sendbereit");
+export const warteSendbereit = (wurzel, opts) =>
+  warteAuf(() => { const b = wurzel.querySelector("#btnSend"); return b && !b.disabled ? b : null; }, "Composer sendbereit", opts);
 
 const sichtbar = (wurzel, id) => {
   const el = wurzel.querySelector("#" + id);

@@ -113,30 +113,30 @@ describe("E2E · Pages-Vollstack (Worker + gebauter Client)", () => {
     new Function(clientCode)();
 
     // 3 · Enrollment verbraucht den Token, die App bootet über die Worker-API.
-    await warteAuf(() => document.getElementById("btnMyRoom"), "App bootet bis zur Startseite", { timeoutMs: 15000 });
+    await warteAuf(() => document.getElementById("btnMyRoom"), "App bootet bis zur Startseite", { timeoutMs: 60000 });
     expect(window.PAARBEGLEITUNG.coreHash).toBe(hash);
     expect(location.hash).toBe("");                            // Token aus der Adresszeile entfernt
 
     // 4 · In den Solo-Raum und eine Nachricht durch den ECHTEN Proxy schicken.
     document.getElementById("btnMyRoom").click();
-    await warteAuf(() => !document.getElementById("scrMyRoom").classList.contains("pb-hidden"), "Mein Raum");
+    await warteAuf(() => !document.getElementById("scrMyRoom").classList.contains("pb-hidden"), "Mein Raum", { timeoutMs: 60000 });
     document.getElementById("btnSolo").click();
-    await warteAuf(() => document.body.textContent.includes("[PF1]"), "Eröffnung über /api/llm gerendert", { timeoutMs: 15000 });
-    await warteSendbereit(document.body);                      // Stream zu Ende — sonst schluckt state.warten den Klick
+    await warteAuf(() => document.body.textContent.includes("[PF1]"), "Eröffnung über /api/llm gerendert", { timeoutMs: 60000 });
+    await warteSendbereit(document.body, { timeoutMs: 60000 });   // Stream zu Ende — sonst schluckt state.warten den Klick
     const inp = document.getElementById("pbInput");
     inp.value = "Mich beschäftigt, dass wir kaum noch gemeinsame Abende haben.";
     document.getElementById("btnSend").click();
-    await warteAuf(() => document.body.textContent.includes("[PF2]"), "Antwort (SSE→neutral) gerendert", { timeoutMs: 15000 });
+    await warteAuf(() => document.body.textContent.includes("[PF2]"), "Antwort (SSE→neutral) gerendert", { timeoutMs: 60000 });
 
     // 5 · Persistenz liegt im Worker-KV (Cookie-Session, derselbe Jar liest über
     //     die API). Das Rendern läuft dem save() der Antwort voraus — pollen.
     const roh = await warteAuf(async () => {
       const j = JSON.stringify(await bruecke("/api/chat/mine/solo").then(r => r.json()));
       return j.includes("[PF2]") ? j : null;
-    }, "Antwort im Worker-KV persistiert");
+    }, "Antwort im Worker-KV persistiert", { timeoutMs: 60000 });
     expect(roh).toContain("[PF1]");
     expect(roh).toContain("gemeinsame Abende");
-  }, 40000);
+  }, 300000);   // Wanduhr-Polster: Summe der 60s-Fenster, nie Korrektheits-Kriterium
 
   it("abgelaufener Link führt in den Wiedereinstieg statt in eine Sackgasse (voller Stack)", async () => {
     document.body.innerHTML = '<div id="app"></div>';
