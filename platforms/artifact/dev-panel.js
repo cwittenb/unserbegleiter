@@ -12,6 +12,7 @@
 // Szenen-Quittung überlebt den reboot.
 
 import { ladeTokenStaende, wipeTokenStaende, formatTokens, TOKEN_PREFIX } from "./token-zaehler.js";
+import { baueKulisse, KULISSE_DECKEL } from "../../core/ui/kulisse.js";
 
 export const DUMP_VERSION = 1;
 const NS = "PBDEV";
@@ -371,6 +372,14 @@ export function createDevPanel({ doc, host, store, reboot }) {
            </div>`).join("")}
         </div>
 
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin:14px 0 6px">Kulisse — Wachstumsstufe</div>
+        <div style="display:flex;align-items:center;gap:10px;padding:2px 0 6px">
+          <input id="devKulisse" type="range" min="0" max="${KULISSE_DECKEL}" step="1" value="-1" style="flex:1">
+          <span id="devKulisseWert" style="min-width:5.5em;color:var(--ink-soft)">gewachsen</span>
+          <button id="devKulisseAus" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 10px;white-space:nowrap">Zurück zu echt</button>
+        </div>
+        <div style="font-size:12px;color:var(--ink-soft);padding-bottom:4px">Nur Vorschau: überschreibt die gewachsene Anzahl, bis „Zurück zu echt“. Der Untergrund bleibt immer.</div>
+
         <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:600;margin:14px 0 6px">Token-Zähler (echte usage, pro Paar)</div>
         <div id="devTokens" style="padding:2px 0 6px"></div>
         <button id="devTokensReset" style="font:inherit;cursor:pointer;border:1px solid var(--card-bd);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px">Token-Zähler zurücksetzen</button>
@@ -403,6 +412,23 @@ export function createDevPanel({ doc, host, store, reboot }) {
     }).join("");
   }
   ladeTokenStaende(store).then(s => { tokenStaende = s; zeigeTokens(); });
+  /* Kulissen-Vorschau: setzt den Haken, den aktualisiereKulisse() liest, und
+     malt die vorhandenen Halter sofort neu — so sieht man die Stufe, ohne
+     erst durch die Räume zu navigieren. -1 heißt: echte, gewachsene Zahl. */
+  function maleKulisse(n) {
+    const fenster = doc.defaultView;
+    if (n < 0) { if (fenster) delete fenster.__rzKulisseVorschau; }
+    else if (fenster) fenster.__rzKulisseVorschau = n;
+    const wert = $("devKulisseWert");
+    if (wert) wert.textContent = n < 0 ? "gewachsen" : n + " Element" + (n === 1 ? "" : "e");
+    for (const id of ["kulisseStart", "kulisseMein", "kulisseTeil"]) {
+      const halter = doc.getElementById(id);
+      if (halter && n >= 0) halter.innerHTML = baueKulisse(n, id);
+    }
+  }
+  $("devKulisse").addEventListener("input", e => maleKulisse(Number(e.target.value)));
+  $("devKulisseAus").addEventListener("click", () => { $("devKulisse").value = "-1"; maleKulisse(-1); });
+
   doc.addEventListener("pb:tokens", ev => {
     const d = (ev && ev.detail) || {};
     if (!d.code) return;

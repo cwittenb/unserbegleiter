@@ -11,16 +11,22 @@
 
 export const WOCHE_MS = 7 * 24 * 3600 * 1000;
 export const KULISSE_DECKEL = 7;
+/** D11 · Der Raum startet nicht kahl: ein Element ist von Anfang an da. */
+export const KULISSE_BASIS = 1;
 
 /** Anzahl der Kulissen-Elemente — deterministisch aus Meilensteinen (0-3)
- *  und der Zeit seit dem ersten Betreten des Raums. */
+ *  und der Zeit seit dem ersten Betreten des Raums. Nie unter der Basis,
+ *  nie ueber dem Deckel. */
 export function kulisseAnzahl({ meilensteine = 0, startTs = null, jetzt = Date.now() } = {}) {
   let zeit = 0;
   if (startTs != null) {
     const wochen = (jetzt - startTs) / WOCHE_MS;
     if (wochen >= 1) zeit = Math.floor(Math.log2(wochen)) + 1;   // 1,2,4,8,16 ... Wochen
   }
-  return Math.max(0, Math.min(KULISSE_DECKEL, (meilensteine | 0) + zeit));
+  // Die Basis wird ADDIERT, nicht nur als Untergrenze gesetzt: sonst
+  // verpufft der erste Meilenstein (frisch = 1, Knospe = 1) und der
+  // sichtbare erste Schritt der Dramaturgie ginge verloren.
+  return Math.min(KULISSE_DECKEL, KULISSE_BASIS + (meilensteine | 0) + zeit);
 }
 
 /* ---- Bausteine (Pfad-Daten exakt aus dem Handoff) ---- */
@@ -82,12 +88,15 @@ function baum(p) {
     `<rect x="${x - 1.5}" y="${grund - 1}" width="3" height="6"></rect></g>`;
 }
 
-/** Beide Theme-Fassungen einer Kulisse mit n Elementen; leer bei n<=0.
+/** Beide Theme-Fassungen einer Kulisse mit n Elementen.
+ *  D11 · Der geschwungene Untergrund (Huegellinie bzw. Wasserlinie) gehoert
+ *  NICHT zum Wachstum — er ist immer da, auch bei n = 0. Nur die Baeume bzw.
+ *  Seerosen kommen dazu.
  *  kennung haelt Masken-IDs pro Einbauort eindeutig. */
 export function baueKulisse(n, kennung = "k") {
-  if (!n || n <= 0) return "";
-  const baeume = BAUM_PLAETZE.slice(0, n).map(baum).join("");
-  const teile = TEICH_PLAETZE.slice(0, n);
+  const zahl = Math.max(0, Math.min(KULISSE_DECKEL, n | 0));
+  const baeume = BAUM_PLAETZE.slice(0, zahl).map(baum).join("");
+  const teile = TEICH_PLAETZE.slice(0, zahl);
   const blaetter = teile.filter(p => p.art === "blatt")
     .map(p => schwimmblatt(p.x, p.y, p.r, 1, p.d || 0)).join("");
   const maskId = "rzTeichMaske-" + kennung;
@@ -100,8 +109,17 @@ export function baueKulisse(n, kennung = "k") {
   }
   teich += teile.filter(p => p.art === "blatt").map(p => schwimmblatt(p.x, p.y, p.r, p.o, p.d || 0)).join("");
   teich += teile.filter(p => p.art !== "blatt" && p.art !== "ring").map(p => kelch(p.x, p.y, p.s, p.o, p.art)).join("");
-  return `<svg class="rz-kulisse-hell" viewBox="0 0 390 84" preserveAspectRatio="xMaxYMax meet" aria-hidden="true">` +
-    `<path d="M0 60 Q100 48 195 58 T390 54 V84 H0Z" fill="currentColor" opacity=".07"></path>${baeume}</svg>` +
-    `<svg class="rz-kulisse-dunkel" viewBox="0 0 390 84" preserveAspectRatio="xMaxYMax meet" aria-hidden="true" fill="currentColor" color="#8fae74">` +
-    `<path d="M0 66 Q100 60 195 66 T390 64 V84 H0Z" fill="#ffffff" opacity=".04"></path>${teich}</svg>`;
+  /* D11a · Zwei Lagen je Fassung: der geschwungene Untergrund laeuft
+     DURCHGEHEND von links nach rechts (preserveAspectRatio="none", er darf
+     sich in die Breite ziehen), die Silhouetten behalten ihr Seitenverhaeltnis
+     (xMaxYMax meet). Vorher trug eine einzige Lage beides — und endete auf
+     breiten Schirmen bei 390px mitten im Bild. */
+  const lage = (klasse, inhalt, extra = "") =>
+    `<svg class="${klasse}" viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true"${extra}>${inhalt}</svg>`;
+  const figuren = (klasse, inhalt, extra = "") =>
+    `<svg class="${klasse}" viewBox="0 0 390 84" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"${extra}>${inhalt}</svg>`;
+  return lage("rz-kulisse-hell", `<path d="M0 60 Q100 48 195 58 T390 54 V84 H0Z" fill="currentColor" opacity=".07"></path>`) +
+    figuren("rz-kulisse-hell", baeume) +
+    lage("rz-kulisse-dunkel", `<path d="M0 66 Q100 60 195 66 T390 64 V84 H0Z" fill="#ffffff" opacity=".04"></path>`) +
+    figuren("rz-kulisse-dunkel", teich, ` fill="currentColor" color="#8fae74"`);
 }

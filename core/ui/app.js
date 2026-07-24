@@ -708,7 +708,12 @@ export function createApp({ doc, backend, root, diktat }) {
       let k = await lies();
       if (!k || !k.start) { k = { start: Date.now() }; await schreib(k); }
       const meilensteine = (lage.einzelBegonnen ? 1 : 0) + (lage.aufdeckGelaufen ? 1 : 0) + (lage.zieleDefiniert ? 1 : 0);
-      const n = kulisseAnzahl({ meilensteine, startTs: k.start });
+      // D11 · Vorschau-Haken fuers Entwickler-Panel: setzt jemand eine Zahl,
+      // gilt sie statt der gewachsenen. Nur lesend, nur wenn vorhanden — im
+      // Betrieb setzt das niemand.
+      const fenster = doc.defaultView;
+      const vorschau = fenster && fenster.__rzKulisseVorschau;
+      const n = Number.isFinite(vorschau) ? vorschau : kulisseAnzahl({ meilensteine, startTs: k.start });
       halter.innerHTML = baueKulisse(n, screenId);
     } catch { /* Kulisse ist Beiwerk, kein Muss */ }
   }

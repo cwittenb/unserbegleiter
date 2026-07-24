@@ -13,22 +13,24 @@ import { freigebeUebergabe } from "../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../core/contracts/uebergabe.js";
 
 describe("D6 · Wachstumsfunktion", () => {
-  it("Meilensteine zaehlen sofort: 0-3 Elemente ohne Zeitanteil", () => {
+  it("D11 · der Raum startet nicht kahl: ein Element ist von Anfang an da", () => {
     const jetzt = Date.now();
-    expect(kulisseAnzahl({ meilensteine: 0, startTs: jetzt, jetzt })).toBe(0);
-    expect(kulisseAnzahl({ meilensteine: 2, startTs: jetzt, jetzt })).toBe(2);
+    expect(kulisseAnzahl({ meilensteine: 0, startTs: jetzt, jetzt })).toBe(1);
+    // Die Basis wird ADDIERT — sonst bliebe der erste Meilenstein unsichtbar:
+    expect(kulisseAnzahl({ meilensteine: 1, startTs: jetzt, jetzt })).toBe(2);
+    expect(kulisseAnzahl({ meilensteine: 2, startTs: jetzt, jetzt })).toBe(3);
   });
 
   it("Zeitreihe logarithmisch: Woche 1, 2, 4, 8, 16 schalten je ein Element frei", () => {
     const start = 0;
     const bei = wochen => kulisseAnzahl({ meilensteine: 0, startTs: start, jetzt: start + wochen * WOCHE_MS });
-    expect(bei(0.9)).toBe(0);
-    expect(bei(1)).toBe(1);
-    expect(bei(2)).toBe(2);
-    expect(bei(3.9)).toBe(2);
-    expect(bei(4)).toBe(3);
-    expect(bei(8)).toBe(4);
-    expect(bei(16)).toBe(5);
+    expect(bei(0.9)).toBe(1);      // Basis
+    expect(bei(1)).toBe(2);
+    expect(bei(2)).toBe(3);
+    expect(bei(3.9)).toBe(3);
+    expect(bei(4)).toBe(4);
+    expect(bei(8)).toBe(5);
+    expect(bei(16)).toBe(6);
   });
 
   it("Deckel bei 7 — die Kulisse kippt nie ins Laut-Werden", () => {
@@ -37,7 +39,15 @@ describe("D6 · Wachstumsfunktion", () => {
 
   it("determinstisch: gleiche Eingabe, gleiches SVG", () => {
     expect(baueKulisse(4, "x")).toBe(baueKulisse(4, "x"));
-    expect(baueKulisse(0)).toBe("");
+  });
+
+  it("D11 · der geschwungene Untergrund ist IMMER da, auch ohne ein einziges Element", () => {
+    const leer = baueKulisse(0, "u");
+    expect(leer).not.toBe("");
+    expect(leer).toContain("M0 60 Q100 48 195 58 T390 54 V84 H0Z");   // Huegellinie (hell)
+    expect(leer).toContain("M0 66 Q100 60 195 66 T390 64 V84 H0Z");   // Wasserlinie (dunkel)
+    expect(leer).not.toContain("polygon");                            // aber keine Baeume
+    expect(leer).not.toContain("rotate(15) scale(.62)");              // und keine Bluete
   });
 
   it("Teich-Fassung: zwei Blatt-Lagen im Kelch (innere 62 %, 15 Grad versetzt), Ringe unter Blaettern per Maske", () => {
@@ -88,6 +98,13 @@ async function bootApp(backend) {
 }
 
 describe("D6 · App-Verdrahtung", () => {
+  it("D11a · Teich und Baeume sitzen an derselben Stelle — beide ueber der Naht", async () => {
+    const { DESIGN_CSS } = await import("../../core/ui/design.js");
+    expect(DESIGN_CSS).toContain(".rz-kulisse-naht{top:0;transform:translateY(-100%)}");
+    // die alte Ausnahme, die den Teich unter die Naht haengte, ist weg:
+    expect(DESIGN_CSS).not.toContain("html[data-theme=dark] .rz-kulisse-naht{transform:none}");
+  });
+
   it("Halter sitzen an ihren Orten: Start auf der Naht, Vorraeume im Regal-Fuss, Chat keiner", async () => {
     await bootApp(memoryBackend());
     expect(root.querySelector("#scrStart .rz-tiefgruen > .rz-kulisse-naht#kulisseStart")).toBeTruthy();

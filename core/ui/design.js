@@ -398,8 +398,9 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          Clipping-Halter, nie klickbar, statisch (reduced-motion-fest). */
       .rz-kulisse-naht,.rz-kulisse-fuss{position:absolute;left:0;right:0;height:84px;
         overflow:hidden;pointer-events:none;color:var(--rz-akzent-hell)}
+      /* D11a · Beide Fassungen sitzen gleich: der Teich steht dort, wo auch
+         die Baeume stehen — ueber der Naht, nicht darunter. */
       .rz-kulisse-naht{top:0;transform:translateY(-100%)}
-      html[data-theme=dark] .rz-kulisse-naht{transform:none}
       .rz-kulisse-fuss{bottom:0}
       .rz-kulisse-naht svg,.rz-kulisse-fuss svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
       .rz-kulisse-dunkel{display:none}
