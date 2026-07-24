@@ -408,7 +408,11 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
     `;
 
 /* D6 · Die alte fixe Hintergrund-Kulisse ist Geschichte — die Kulisse
-   lebt jetzt ortsgebunden in den Screens (core/ui/kulisse.js). */
+   lebt jetzt ortsgebunden in den Screens (core/ui/kulisse.js).
+   D10 · Der Ansicht-Umschalter steckte in ebenjenem Block und ging dabei
+   verloren. Er lebt jetzt eigenstaendig: eine kleine feste Gruppe oben
+   rechts, in der CSS nur das WECHSELZIEL zeigt (Sonne bzw. Mond). Sie ist
+   ausserdem der Wirt fuer die Push-Glocke (M7a, client.js sucht .pb-theme). */
 
 /** Läuft die App als installierte PWA (eigenes Fenster statt Browser-Tab)?
  *  Reine Funktion über dem window-Objekt: display-mode aus dem Manifest
@@ -441,6 +445,12 @@ export function verdrahteWegweiser(doc, badge, panel) {
   }
 }
 
+/** Feste Bedien-Ecke oben rechts: Ansicht hell/dunkel (+ Push-Glocke). */
+export const CHROME_HTML = String.raw`<div class="pb-theme" role="group">
+      <button id="pbHell" type="button"></button>
+      <button id="pbDunkel" type="button"></button>
+    </div>`;
+
 export function applyDesign(doc) {
   if (doc.getElementById("pbDesign")) return;
   // Standalone-Haken (M3): CSS kann per html[data-standalone] reagieren —
@@ -451,6 +461,12 @@ export function applyDesign(doc) {
   st.id = "pbDesign";
   st.textContent = DESIGN_CSS;
   doc.head.appendChild(st);
+  // D10 · Bedien-Ecke anlegen, falls die Huelle sie nicht mitbringt.
+  if (!doc.getElementById("pbHell") && doc.body) {
+    const halter = doc.createElement("div");
+    halter.innerHTML = CHROME_HTML;
+    while (halter.firstChild) doc.body.appendChild(halter.firstChild);
+  }
   const setze = t => {
     const d = t === "dark";
     doc.documentElement.setAttribute("data-theme", d ? "dark" : "light");
@@ -459,8 +475,8 @@ export function applyDesign(doc) {
     if (n) n.classList.toggle("an", d);
   };
   const h = doc.getElementById("pbHell"), n = doc.getElementById("pbDunkel");
-  if (h) h.textContent = uiText("theme.hell");
-  if (n) n.textContent = uiText("theme.dunkel");
+  if (h) { h.textContent = uiText("theme.hell"); h.setAttribute("aria-label", uiText("theme.hell")); }
+  if (n) { n.textContent = uiText("theme.dunkel"); n.setAttribute("aria-label", uiText("theme.dunkel")); }
   if (h) h.addEventListener("click", () => setze("light"));
   if (n) n.addEventListener("click", () => setze("dark"));
   setze("light");
