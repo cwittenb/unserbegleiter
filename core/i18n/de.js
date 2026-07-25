@@ -5,6 +5,8 @@
 export const de = {
   // Allgemein
   "allg.marke": "raumzuzweit",
+  // D12-2 · Paar-Signatur in der Kopfzeile (Design Turn 27, §1): eigener Name zuerst.
+  "allg.signatur": "{ich} & {partner}",
   "allg.hallo": "Hallo {name}",
   "allg.zurueck": "← Zurück",
   "allg.weiter": "Weiter",
@@ -46,11 +48,11 @@ export const de = {
   "mein.soloSub": "Dein privater Raum zum Sortieren — frei erzählen, in Ruhe hinschauen.",
   "mein.einzelSub": "Wo wünschst du dir Entwicklung — und wohin darf ich euch begleiten?",
   "mein.messSub": "Ein kurzer, verdeckter Blick auf eure Nähe und eure Aufträge — aufgedeckt wird gemeinsam.",
-  "mein.gruppeRegale": "Mein Weg",
+  "mein.gruppeRegale": "Mein Weg.",
   // Gemeinsamer Raum
   "teil.intro": "Für alles, was ihr zu zweit macht. In den Regalen liegt nur, was freigegeben wurde — die Räume betretet ihr bewusst.",
   "teil.gruppeRaeume": "Räume — betreten und beginnen",
-  "teil.gruppeRegale": "Euer gemeinsamer Boden",
+  "teil.gruppeRegale": "Euer gemeinsamer Boden.",
   "teil.moment": "Qualitätszeit beginnen",
   "teil.momentSub": "Eure begleitete gemeinsame Zeit — ob ihr etwas besprechen oder einfach Zeit miteinander verbringen wollt.",
   "teil.momentWeiter": "Qualitätszeit fortsetzen",

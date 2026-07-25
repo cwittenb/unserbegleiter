@@ -17,7 +17,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         --rz-tiefgruen:#1e2a22;--rz-regal-dunkel:#141f18;
         --rz-ink:#23291f;--rz-ink-auf-gruen:#eef0e7;--rz-ink2-auf-gruen:#e6e9d9;
         --rz-sek:#6b7261;--rz-sek2:#8b917d;--rz-sek-auf-gruen:#b9c3ac;--rz-sek2-auf-gruen:#8a9e7c;
-        --rz-gedimmt:#a3a894;--rz-marke:#5c6653;
+        --rz-gedimmt:#a3a894;--rz-marke:#5c6653;--rz-marke-auf-gruen:#6f8062;
         --rz-akzent:#8fae74;--rz-akzent-text:#14201a;--rz-akzent-hell:#7d9b62;
         --rz-pfeil:#7d9b62;--rz-pfeil-auf-gruen:#a9c88b;
         --rz-label:#7d9b62;--rz-label-auf-gruen:#9db08f;--rz-nutzer:#41562c;
@@ -184,6 +184,29 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-caps{font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.2em;
                text-transform:uppercase;color:var(--rz-label)}
       .rz-tiefgruen .rz-caps,.rz-regal-dunkel .rz-caps{color:var(--rz-label-auf-gruen)}
+
+      /* ============ D12-2 · Kopf-Signatur, Fussmarke, Wegweiser-Ikon (Turn 27) ============
+         Turn 27 raeumt die Etiketten-Dopplung auf: der Kopf traegt auf JEDEM
+         Screen die Paar-Signatur (eigener Name zuerst), der Ortsname wandert
+         ins Wegweiser-Badge, und die Wortmarke ist Signet am Fuss. Sperrung
+         .34em (nicht .2em wie .rz-caps) haelt beide Zeilen auseinander. */
+      .rz-signatur{font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.34em;
+                   text-transform:uppercase;color:var(--rz-gedimmt);text-align:center}
+      .rz-tiefgruen .rz-signatur,.rz-regal-dunkel .rz-signatur{color:var(--rz-sek2-auf-gruen)}
+      .rz-fussmarke{display:block;margin-top:28px;text-align:center;
+                    font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.34em;
+                    text-transform:uppercase;color:var(--rz-gedimmt)}
+      .rz-tiefgruen .rz-fussmarke,.rz-regal-dunkel .rz-fussmarke{color:var(--rz-marke-auf-gruen)}
+      /* Das Wegweiser-Zeichen (Pfosten mit Schild) steht IMMER neben dem
+         Badge-Text — auch dort, wo das Badge einen Ortsnamen traegt. */
+      .rz-weg-ikon{flex:none;width:9px;height:11px;display:block;color:currentColor}
+      /* Nur auf dem Startscreen steht das Ortsetikett ueber der Betreten-Zeile;
+         in den Vorraeumen traegt das Badge den Ort (Turn 27, §1). */
+      .rz-caps-ueber{margin-bottom:11px}
+      /* Der Sessionname verlaesst den Kopf und wird zur leisen Zeile ueber der
+         ersten Nachricht — der Ort steht im Badge, die Session hier. */
+      .rz-sessionname{font-family:var(--rz-serif);font-size:15px;font-weight:300;
+                      color:var(--rz-sek2);margin:0 0 4px}
 
       /* ============ D1 · Grundbaustein C — Wegweiser-Badge / -Panel ============
          Badge sitzt exakt auf der Naht (rz-auf-naht), Punkt = etwas wartet.

@@ -49,7 +49,7 @@ async function bootApp(backend) {
 }
 
 describe("D3 · Zwei Zonen", () => {
-  it("mich: Papier-Zone (Der Raum) ueber Regal-Zone (Das Regal), Titel unten aussen", async () => {
+  it("mich: Papier-Zone (Der Raum) ueber Regal-Zone (Mein Weg), Titel unten aussen", async () => {
     await bootApp(memoryBackend());
     const raum = root.querySelector("#scrMyRoom");
     expect(raum.classList.contains("rz-split")).toBe(true);
@@ -57,7 +57,8 @@ describe("D3 · Zwei Zonen", () => {
     expect(zonen[0].classList.contains("rz-papier")).toBe(true);
     expect(zonen[1].classList.contains("rz-regal")).toBe(true);
     expect(zonen[0].querySelector(".rz-h1").textContent).toBe("Der Raum.");
-    expect(zonen[1].querySelector(".rz-fuss .rz-h2").textContent).toBe("Das Regal.");
+    // D12-2 · Turn 27: ein Titel je Zone — unten traegt die Regalgruppe.
+    expect(zonen[1].querySelector(".rz-fuss .rz-h2").textContent).toBe("Mein Weg.");
   });
 
   it("uns: Tiefgruen-Zone ueber Dunkel-Regal-Zone; Intro klein unter dem Titel (K1c)", async () => {

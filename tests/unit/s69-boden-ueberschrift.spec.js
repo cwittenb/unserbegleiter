@@ -10,13 +10,14 @@ import { en } from "../../core/i18n/en.js";
 
 describe("S69 · Überschriften Boden & Weg", () => {
   it("Gemeinsamer Raum: DE/EN neuer Wortlaut", () => {
-    expect(de["teil.gruppeRegale"]).toBe("Euer gemeinsamer Boden");
-    expect(en["teil.gruppeRegale"]).toBe("Your common ground");
+    // D12-2 · Turn 27: die Regalgruppe IST jetzt der Zonentitel (Serif, mit Punkt).
+    expect(de["teil.gruppeRegale"]).toBe("Euer gemeinsamer Boden.");
+    expect(en["teil.gruppeRegale"]).toBe("Your common ground.");
   });
 
   it("Privater Raum: DE/EN neuer Wortlaut", () => {
-    expect(de["mein.gruppeRegale"]).toBe("Mein Weg");
-    expect(en["mein.gruppeRegale"]).toBe("My path");
+    expect(de["mein.gruppeRegale"]).toBe("Mein Weg.");
+    expect(en["mein.gruppeRegale"]).toBe("My path.");
   });
 
   it("alte „Regale“/„Shelves“-Fassung ist überall weg", () => {

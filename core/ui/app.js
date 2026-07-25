@@ -63,6 +63,9 @@ const IKON = {
   mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>',
   stop: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
   send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>',
+  // D12-2 · Wegweiser: Pfosten mit Schild. Flaechen statt Striche, damit das
+  // Zeichen auch bei 9 px scharf bleibt; faerbt sich ueber currentColor.
+  wegweiser: '<svg class="rz-weg-ikon" viewBox="0 0 9 11" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="1.5" height="11"/><rect x="0" y="1" width="9" height="3"/></svg>',
 };
 
 /* S41 · Anzeige-Wächter: Ergebnis-Nachrichten der Panels sind Wire — seit
@@ -113,10 +116,11 @@ export function createApp({ doc, backend, root, diktat }) {
     <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
     <div id="scrStart" class="rz-screen rz-split">
       <div class="rz-half rz-papier">
-        <div class="rz-kopf">
-          <span class="rz-marke" id="pbKern"></span>
+        <div class="rz-kopf rz-kopf-mitte">
+          <span class="rz-zurueck rz-blind">←</span>
+          <span class="rz-signatur" data-rz-signatur></span>
+          <span class="rz-zurueck rz-blind">←</span>
         </div>
-        <div class="rz-caps">${t("start.capsMein")}</div>
         <h1 class="rz-h1" id="startHallo"></h1>
         <p class="rz-sub pb-hidden" id="startIntro"></p>
         <p class="rz-sub pb-hidden" id="startMeinSub"></p>
@@ -125,25 +129,27 @@ export function createApp({ doc, backend, root, diktat }) {
         <p class="rz-sprachecke pb-hidden" id="psZeile"></p>
         <div class="rz-sprachdialog pb-hidden" id="boxPaarsprache"></div>
         <div class="rz-fuss">
+          <div class="rz-caps rz-caps-ueber">${t("start.capsMein")}</div>
           <button class="rz-zeile" id="btnMyRoom"><span>${t("start.betreteMein")}</span><span class="rz-pfeil">↑</span></button>
         </div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
         <div class="rz-kulisse-naht" id="kulisseStart"></div>
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeStart"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeStart">${IKON.wegweiser}<span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegStart"></div>
         <button class="rz-zeile rz-unten" id="btnSharedRoom"><span>${t("start.betreteTeil")}</span><span class="rz-lz-leiste" id="lzStart"></span><span class="rz-pfeil">↓</span></button>
         <div class="rz-fuss">
           <h2 class="rz-h2">${t("start.teilTitel")}</h2>
           <div class="rz-caps">${t("start.capsTeil")}</div>
         </div>
+        <span class="rz-fussmarke" id="pbKern" data-rz-marke></span>
       </div>
     </div>
     <div id="scrMyRoom" class="rz-screen rz-split pb-hidden">
       <div class="rz-half rz-papier">
         <div class="rz-kopf rz-kopf-mitte">
           <button class="rz-zurueck" id="btnZurueck1" aria-label="${t("allg.zurueck")}">←</button>
-          <span class="rz-caps">${t("start.capsMein")}</span>
+          <span class="rz-signatur" data-rz-signatur></span>
           <span class="rz-zurueck rz-blind">←</span>
         </div>
         <h1 class="rz-h1">${t("zone.raum")}</h1>
@@ -157,7 +163,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-regal rz-naht-anker">
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein">${IKON.wegweiser}<span>${t("start.capsMein")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegMein"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
@@ -166,19 +172,19 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <div class="rz-fuss">
           <div class="rz-fuss-kopf">
-            <h2 class="rz-h2">${t("zone.regal")}</h2>
+            <h2 class="rz-h2">${t("mein.gruppeRegale")}</h2>
             <button class="rz-zone-zu" title="${t("weg.fuss")}" aria-label="${t("weg.fuss")}">↓</button>
           </div>
-          <div class="rz-caps">${t("mein.gruppeRegale")}</div>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseMein"></div>
+        <span class="rz-fussmarke" data-rz-marke></span>
       </div>
     </div>
     <div id="scrShared" class="rz-screen rz-split pb-hidden">
       <div class="rz-half rz-tiefgruen">
         <div class="rz-kopf rz-kopf-mitte">
           <button class="rz-zurueck" id="btnZurueck2" aria-label="${t("allg.zurueck")}">←</button>
-          <span class="rz-caps">${t("start.capsTeil")}</span>
+          <span class="rz-signatur" data-rz-signatur></span>
           <span class="rz-zurueck rz-blind">←</span>
         </div>
         <h1 class="rz-h1">${t("zone.raum")}</h1>
@@ -190,7 +196,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-regal-dunkel rz-naht-anker">
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil"><span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil">${IKON.wegweiser}<span>${t("start.capsTeil")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
@@ -202,23 +208,25 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <div class="rz-fuss">
           <div class="rz-fuss-kopf">
-            <h2 class="rz-h2">${t("zone.regal")}</h2>
+            <h2 class="rz-h2">${t("teil.gruppeRegale")}</h2>
             <button class="rz-zone-zu" title="${t("weg.fuss")}" aria-label="${t("weg.fuss")}">↓</button>
           </div>
-          <div class="rz-caps">${t("teil.gruppeRegale")}</div>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseTeil"></div>
+        <span class="rz-fussmarke" data-rz-marke></span>
       </div>
     </div>
     <div id="scrProzess" class="rz-screen rz-eine-zone pb-hidden">
       <div class="rz-half rz-papier">
         <div class="rz-kopf rz-kopf-mitte">
           <button class="rz-zurueck" id="btnZurueck3" aria-label="${t("allg.zurueck")}">←</button>
-          <span class="rz-caps">${t("prozess.titel")}</span>
+          <span class="rz-signatur" data-rz-signatur></span>
           <span class="rz-zurueck rz-blind">←</span>
         </div>
+        <h1 class="rz-h1">${t("prozess.titel")}</h1>
         <p class="rz-sub rz-intro">${t("prozess.intro")}</p>
         <div id="boxMess"></div>
+        <span class="rz-fussmarke" data-rz-marke></span>
       </div>
     </div>
     <div id="scrChat" class="pb-hidden"></div>`;
@@ -235,9 +243,10 @@ export function createApp({ doc, backend, root, diktat }) {
       <div class="rz-chat-innen">
         <div class="rz-kopf rz-kopf-mitte">
           <button class="rz-zurueck" id="btnChatZurueck" title="${t("chat.raumVerlassen")}" aria-label="${t("chat.raumVerlassen")}">←</button>
-          <span class="rz-caps" id="chatTitel"></span>
+          <span class="rz-signatur" data-rz-signatur></span>
           <span class="rz-zurueck rz-blind">←</span>
         </div>
+        <div class="rz-sessionname" id="chatTitel"></div>
         <div class="pb-msgs" id="pbMsgs"></div>
         <div id="gatePanel" class="rz-panel pb-hidden"></div>
         <div id="ausschnittPanel" class="rz-panel pb-hidden"></div>
@@ -255,7 +264,22 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">→</span></button>
         <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnRaumVerlassen"><span>${t("chat.raumVerlassenKnopf")}</span><span class="rz-pfeil">→</span></button>
+        <span class="rz-fussmarke" data-rz-marke></span>
       </div>`;
+
+  /* D12-2 · Kopf-Signatur und Fussmarke (Design Turn 27, §1/§3). Beide sitzen
+     in JEDEM Screen-Rahmen, auch in der Chat-Vorlage, die bei jedem Betreten
+     neu gebaut wird — deshalb werden sie ueber Attribute gesucht statt ueber
+     Ids und nach jedem Aufbau erneut gesetzt. Ohne geladene Lage bleibt die
+     Signatur leer: ein Platzhalter wuerde beim Nachladen sichtbar springen. */
+  function setzeSignatur() {
+    const i = state.info;
+    const text = i ? t("allg.signatur", { ich: i.name, partner: i.partner }) : "";
+    for (const e of wurzel.querySelectorAll("[data-rz-signatur]")) e.textContent = text;
+  }
+  function setzeMarke() {
+    for (const e of wurzel.querySelectorAll("[data-rz-marke]")) e.textContent = t("allg.marke");
+  }
 
   const $ = id => wurzel.querySelector("#" + id);
   const screens = ["scrStart", "scrMyRoom", "scrShared", "scrProzess", "scrChat"];
@@ -302,6 +326,7 @@ export function createApp({ doc, backend, root, diktat }) {
   function baueChatOberflaeche() {
     raeumeChatOberflaeche();
     $("scrChat").innerHTML = CHAT_HTML();
+    setzeSignatur(); setzeMarke();   // D12-2: die Vorlage bringt leere Huellen mit
     verdrahteChat();
   }
 
@@ -2550,7 +2575,8 @@ export function createApp({ doc, backend, root, diktat }) {
     } catch { /* Umgebungen ohne pstate */ }
     doc.documentElement.lang = getLocale();
     $("pbHallo").textContent = t("allg.hallo", { name: state.info.name });
-    $("pbKern").textContent = t("allg.marke");
+    setzeMarke();
+    setzeSignatur();
     $("startHallo").textContent = t("start.hallo", { name: state.info.name });
     $("startIntro").textContent = t("start.intro");
     $("startMeinSub").textContent = t("start.meinSub", { partner: state.info.partner });

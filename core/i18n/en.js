@@ -7,6 +7,8 @@
 export const en = {
   // General
   "allg.marke": "roomfortwo",
+  // D12-2 · Couple signature in the header (design turn 27, §1): own name first.
+  "allg.signatur": "{ich} & {partner}",
   "allg.hallo": "Hello {name}",
   "allg.zurueck": "← Back",
   "allg.weiter": "Continue",
@@ -48,11 +50,11 @@ export const en = {
   "mein.soloSub": "Your private space for sorting things out — speak freely, look closely, at your pace.",
   "mein.einzelSub": "Where do you wish for growth — and where may I accompany the two of you?",
   "mein.messSub": "A brief, hidden look at your closeness and your mandates — revealed together.",
-  "mein.gruppeRegale": "My path",
+  "mein.gruppeRegale": "My path.",
   // Our Shared Space
   "teil.intro": "For everything the two of you do together. The shelves hold only what has been released — the rooms you enter deliberately.",
   "teil.gruppeRaeume": "Rooms — enter and begin",
-  "teil.gruppeRegale": "Your common ground",
+  "teil.gruppeRegale": "Your common ground.",
   "teil.moment": "Begin quality time",
   "teil.momentSub": "Your accompanied time together — whether you want to talk something through or simply spend time with each other.",
   "teil.momentWeiter": "Continue quality time",

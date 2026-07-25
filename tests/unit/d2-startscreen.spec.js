@@ -58,9 +58,11 @@ describe("D2 · Zweiteilung", () => {
     expect(haelften[1].classList.contains("rz-naht-anker")).toBe(true);
   });
 
-  it("Wortmarke im Kopf, H1-Begruessung oben, Titel+Label unten aussen", async () => {
+  it("Wortmarke am Fuss, H1-Begruessung oben, Titel+Label unten aussen", async () => {
     await bootApp(memoryBackend());
-    expect(root.querySelector("#scrStart .rz-kopf #pbKern")).toBeTruthy();
+    // D12-2 · Turn 27: die Marke ist Signet am Fuss, im Kopf steht die Signatur.
+    expect(root.querySelector("#scrStart .rz-kopf #pbKern")).toBeFalsy();
+    expect(root.querySelector("#scrStart .rz-fussmarke#pbKern")).toBeTruthy();
     const h1 = root.querySelector("#scrStart #startHallo");
     expect(h1.classList.contains("rz-h1")).toBe(true);
     expect(h1.textContent).toContain("Lena");

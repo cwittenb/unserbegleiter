@@ -40,10 +40,14 @@ beforeEach(async () => {
 });
 
 describe("D4 · Kopf & Rahmen", () => {
-  it("Zurueck-Pfeil links im Kopf, Caps-Titel zentriert, keine Karten-Huelle", () => {
+  it("Zurueck-Pfeil links im Kopf, Signatur zentriert, Sessionname darunter, keine Karten-Huelle", () => {
     const kopf = root.querySelector("#scrChat .rz-kopf");
     expect(kopf.querySelector("#btnChatZurueck")).toBeTruthy();
-    expect(kopf.querySelector("#chatTitel").classList.contains("rz-caps")).toBe(true);
+    // D12-2 · Turn 27: der Kopf traegt die Paar-Signatur, der Ort steht im Badge,
+    // der Sessionname als leise Serif-Zeile ueber der ersten Nachricht.
+    expect(kopf.querySelector(".rz-signatur")).toBeTruthy();
+    expect(kopf.querySelector("#chatTitel")).toBeFalsy();
+    expect(root.querySelector("#scrChat #chatTitel").classList.contains("rz-sessionname")).toBe(true);
     expect(root.querySelector("#scrChat .rz-chat-innen")).toBeTruthy();
     expect(root.querySelector("#scrChat > .pb-card")).toBeFalsy();
   });
