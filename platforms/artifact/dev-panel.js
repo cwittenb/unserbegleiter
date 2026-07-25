@@ -156,6 +156,67 @@ export function baueReveal(meta = MOCK_META) {
 
 /** Voll ausgebauter Betriebszustand (die „Mockdaten") — Zustand NACH der
     Gemeinsamen Auflösung: reveal + revealLog + findings liegen vor. */
+/* S96.4 · Solo-Verlauf für den Dialogausschnitt.
+   Ohne Verlauf lässt sich der Auswahl-Modus im Mock nicht anfassen: Die
+   Auswahlmenge entsteht aus Frage-Antwort-Paaren des laufenden Chats. Der
+   Verlauf gehört bewusst zur bestehenden Mock-Geschichte (Absage, Rückzug,
+   Verlässlichkeit) — dieselbe Person, dieselbe Woche wie Regal und Zeitleiste.
+
+   Das dritte Paar reisst absichtlich die Kriterien („nie", Charakterurteil):
+   Ohne einen Verletzer bliebe die stumme Darstellung und die Auslassung „…"
+   in der Vorschau ungeprüft. */
+const SOLO_ZUEGE = [
+  ["Was beschäftigt dich gerade?",
+   "Bernd hat Mittwoch wieder abgesagt. Ich hab nur „okay“ geschrieben und dann nichts mehr."],
+  ["Was ist in dem Moment passiert, als die Nachricht kam?",
+   "Erst war ich einfach müde. Dann kam etwas Hartes dazu, so ein Zumachen."],
+  ["Und wenn du an die letzten Wochen denkst?",
+   "Er nimmt sowas nie ernst. Ihm ist es im Grunde egal, wie das bei mir ankommt."],
+  ["Was macht das mit dir, das so auszusprechen?",
+   "Es wird klarer, wie es ist. Und unangenehm — weil ich weiß, dass es nicht die ganze Wahrheit ist."],
+  ["Was wäre denn die andere Hälfte?",
+   "Dass er selbst kaum noch Luft hat gerade. Ich glaube, er sagt ab, weil er nicht mehr kann, nicht weil ich ihm egal bin."],
+  ["Was wünschst du dir für den nächsten Mittwoch?",
+   "Dass ich es sage, bevor ich dichtmache. Und dass er früh Bescheid gibt, wenn es kippt."],
+];
+
+/** Laufender Solo-Chat mit Verlauf — Grundlage für die Ausschnitt-Auswahl. */
+export function baueSoloChat(meta = MOCK_META) {
+  const messages = [{ role: "user", hidden: true, content: "Ich bin da und möchte beginnen." }];
+  for (const [frage, antwort] of SOLO_ZUEGE) {
+    messages.push({ role: "assistant", content: frage });
+    messages.push({ role: "user", content: antwort });
+  }
+  return stempel({ status: "running", language: "de", messages });
+}
+
+/** Ein bereits sichtbarer Ausschnitt im Regal — die LESESEITE (S96.3). */
+function ausschnittItem(meta) {
+  return {
+    id: "RG2", freigabe: "FG-mock-1", kind: "excerpt", role: "A", by: meta.nameA,
+    text: null, frame: "Ich zeig dir lieber, wie ich da hingekommen bin.",
+    pairs: [
+      { question: SOLO_ZUEGE[1][0], answer: SOLO_ZUEGE[1][1], gapBefore: false },
+      // Das Urteils-Paar fehlt bewusst — genau dafür ist die Auslassung da.
+      { question: SOLO_ZUEGE[3][0], answer: SOLO_ZUEGE[3][1], gapBefore: true },
+      { question: SOLO_ZUEGE[4][0], answer: SOLO_ZUEGE[4][1], gapBefore: false },
+    ],
+    at: vor(2), read: false, visibleFrom: vor(2),
+  };
+}
+
+/** Eine Freigabe MITTEN IN DER KARENZ: beim Owner zurückziehbar, für den
+    Partner nicht einmal als existent sichtbar (I11). */
+function karenzItem(meta) {
+  return {
+    id: "RG3", freigabe: "FG-mock-2", kind: "excerpt", role: "A", by: meta.nameA,
+    text: null, frame: null,
+    pairs: [{ question: SOLO_ZUEGE[5][0], answer: SOLO_ZUEGE[5][1], gapBefore: false }],
+    at: new Date().toISOString(), read: false,
+    visibleFrom: new Date(Date.now() + 18 * 60000).toISOString(),   // noch 18 min
+  };
+}
+
 export function baueMockdaten(meta = MOCK_META) {
   const shared = {};
   const privat = {};
@@ -171,7 +232,14 @@ export function baueMockdaten(meta = MOCK_META) {
         baseline: {}, createdAt: vor(21) },
     ]},
     shelf: { items: [
-      { id: "RG1", text: meta.nameA + " wünscht sich, dass Verabredungen verlässlicher gelten — Absagen in letzter Minute treffen sie stärker, als sie lange gezeigt hat.", wish: "Kurz Bescheid geben, sobald sich etwas abzeichnet.", by: meta.nameA, at: vor(5), read: false },
+      // S96.4 · Bestandsform mit den seit S95.3b geführten Feldern: kind/role/
+      // freigabe/visibleFrom. Ohne role griffe weder Redaktion noch Rücknahme.
+      { id: "RG1", kind: "message", role: "A", freigabe: "FG-mock-0",
+        text: meta.nameA + " wünscht sich, dass Verabredungen verlässlicher gelten — Absagen in letzter Minute treffen sie stärker, als sie lange gezeigt hat.",
+        wish: "Kurz Bescheid geben, sobald sich etwas abzeichnet.", by: meta.nameA,
+        at: vor(5), read: false, visibleFrom: vor(5) },
+      ausschnittItem(meta),
+      karenzItem(meta),
     ]},
     agenda: { items: [
       { id: "AGD1", text: "Wie wir mit spontanen Planänderungen umgehen.", wish: null, by: meta.nameA, herkunft: "shelf", at: vor(4), state: "open" },
@@ -208,6 +276,10 @@ export function baueMockdaten(meta = MOCK_META) {
       ],
     },
   });
+
+  // S96.4 · Der Solo-Verlauf gehört zu Annas Seite — er ist die Grundlage,
+  // auf der sich der Auswahl-Modus überhaupt anfassen lässt.
+  privat[key(meta, "chat:A:solo")] = baueSoloChat(meta);
 
   privat[key(meta, "pstate:A")] = stempel({
     timeline: { entries: [{ at: vor(6), topics: ["Rückzug"], summary: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat." }] },
@@ -264,6 +336,11 @@ async function setzeZustand(store, { shared, privat }) {
   await pruefeEingespielt(store, shared, privat);
 }
 
+/** S96.4 · Bequemer Zugriff auf die gebauten bstate-Teile einer Szene. */
+function nurBstate(mock) {
+  return mock.shared[key(mock.meta, "bstate")];
+}
+
 function nur(mock, teile /* z. B. ["bstate"] */, module) {
   const shared = { [META_KEY]: mock.meta };
   for (const [k, v] of Object.entries(mock.shared)) {
@@ -318,6 +395,28 @@ export const SZENEN = [
     id: "betrieb", titel: "Betrieb · Vollausbau (Mockdaten)",
     beschreibung: "Befund + gemeinsamer Auftrag aktiv, Regal, Agenda, früherer Moment, QZ-Wahl — der komplette Mockdaten-Satz.",
     async wende(store) { const m = baueMockdaten(); await setzeZustand(store, m); },
+  },
+  {
+    id: "ausschnitt-auswahl", titel: "Ausschnitt · Verlauf steht zur Auswahl",
+    beschreibung: "Annas Reflexionsgespräch läuft mit sechs Frage-Antwort-Paaren — als Anna einsteigen und die Session abschließen, dann kommt der Eignungsbericht und die Auswahl lässt sich anfassen.",
+    async wende(store) {
+      const mock = baueMockdaten();
+      const shared = { [META_KEY]: mock.meta };
+      await setzeZustand(store, { shared, privat: { [key(mock.meta, "chat:A:solo")]: baueSoloChat(mock.meta) } });
+    },
+  },
+  {
+    id: "ausschnitt-gelesen", titel: "Ausschnitt · liegt im Regal",
+    beschreibung: "Ein freigegebener Dialogausschnitt mit Auslassung — als Bernd einsteigen, um die Leseseite zu sehen; als Anna, um die Rücknahme in der Karenz zu sehen (ein zweiter Ausschnitt ist noch unsichtbar für Bernd).",
+    async wende(store) {
+      const mock = baueMockdaten();
+      const shared = { [META_KEY]: mock.meta };
+      shared[key(mock.meta, "bstate")] = stempel({
+        shelf: nurBstate(mock).shelf,
+        agenda: nurBstate(mock).agenda,
+      });
+      await setzeZustand(store, { shared, privat: {} });
+    },
   },
   {
     id: "regal-ungelesen", titel: "Regal · Einblick wartet ungelesen",

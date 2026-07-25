@@ -39,7 +39,9 @@ describe("Dev-Panel · Zustand speichern & laden", () => {
     await szene("betrieb").wende(store);
     const vorher = await dumpZustand(store);
     expect(Object.keys(vorher.shared).length).toBeGreaterThan(2);   // meta + bstate + 2 übergaben
-    expect(Object.keys(vorher.privat)).toHaveLength(4);             // pstate:A/B + chat:A/B:einzel (S59)
+    // S96.4: + chat:A:solo — ohne Verlauf lässt sich der Ausschnitt-Auswahlmodus
+    // im Mock nicht anfassen; die Auswahlmenge entsteht aus dem laufenden Chat.
+    expect(Object.keys(vorher.privat)).toHaveLength(5);             // pstate:A/B + chat:A/B:einzel (S59) + chat:A:solo (S96.4)
 
     await wipeZustand(store);
     expect((await dumpZustand(store)).shared).toEqual({});
