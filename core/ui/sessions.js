@@ -25,7 +25,7 @@ export function soloDef(backend, hooks = {}) {
     sysPrompt: ctx => K().reflexionsPrompt(ctx.me, ctx.partner) + K().THEMEN_RAHMEN,
     // S93 · Urteils-Wächter: ein Prädikats-Urteil aus der Richterposition löst
     // genau eine SYSTEM-REVISION aus (Engine-Vertrag 2).
-    validiereAntwort: text => pruefeUrteilsAntwort(text),
+    validiereAntwort: text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",
@@ -76,7 +76,7 @@ export function momentDef(backend, hooks = {}) {
     titel: "Qualitätszeit",
     sysPrompt: ctx => K().momentPrompt(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
     // S93 · Urteils-Wächter (siehe soloDef).
-    validiereAntwort: text => pruefeUrteilsAntwort(text),
+    validiereAntwort: text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
     // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
     // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort
     // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es

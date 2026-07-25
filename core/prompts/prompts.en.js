@@ -371,6 +371,21 @@ export const steuerTexte = {
   einzelRueckkehr: "[Return after completion: The mandate clarification is already completed and released; I am entering this space again. Open the AFTERGLOW.]",
   einzelWeiter: "[Return to the ongoing mandate clarification: I am entering this space again; the session is paused. Open the RE-ENTRY.]",
   gemeinsamWeiter: "[Return to the running Shared Resolution: We are entering the space again; the session was paused. Open the RE-ENTRY.]",
+  /* S94 \u00b7 Guard revision texts live in the corpus \u2014 see prompts.de.js. */
+  aufdeckRevision:
+    "[SYSTEM REVISION: Your last message reproduces stack contents in the text \u2014 " +
+    "only the app's board shows those (STACK REPRODUCTION BAN). " +
+    "Repeat the message without any reproduction of stack contents; name at most the DIRECTION. " +
+    "If both have agreed and the direction is chosen, end the message with exactly one " +
+    "reveal mark ([[REVEAL-A]] or [[REVEAL-B]]) alone on the last line.]",
+  urteilsRevision:
+    "[SYSTEM REVISION: Your last message contains a verdict from the judge's seat " +
+    "(\"That is \u2026\", \"That sounds \u2026\", \"a powerful wording\" or similar). Positive verdicts are verdicts too. " +
+    "Repeat the message without any grading: mirror close to the person's own words, " +
+    "or \u2014 if you offer your own perception \u2014 from the I-perspective WITH a return question " +
+    "(\"For me this sounds like \u2026 \u2013 does that fit for you?\"). If nothing substantial strikes you, " +
+    "the best mirroring is short or none: ask the next question. " +
+    "Content and length stay the same otherwise.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: The app has shown both of you the direction {owner} – {owner}'s stack next to {tipper}'s guess, touching points highlighted; the board stays visible within the conversation. Now FIRST ask the open question what catches their eye or surprises them – your own observations only afterwards.",
 };
 

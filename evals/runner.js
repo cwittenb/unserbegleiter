@@ -22,6 +22,10 @@
 //                   [--judge-key <key>]        Key für den Judge-Provider (sonst dessen Env-Key)
 //                   [--batch]                  kompletter Lauf über die Anthropic Batches API (−50%; nur Anthropic)
 //                   [--batch-intervall 20] [--batch-max-min 60]   Polling-Intervall / Zeit-Cap
+//                   [--waechter]               Waechter-Stufe an: greift ein Waechter, laeuft GENAU
+//                                              EINE Revisions-Runde wie in der Engine. Default AUS —
+//                                              ohne Flag misst der Lauf den Korpus allein, wie bisher.
+//                                              Nicht mit --batch kombinierbar (s. u.).
 //                   [--erlaube-gleiches-modell]
 //
 // Modell-Konfiguration ist PFLICHT (S35d): kein Modell-Default im Code — fehlt
@@ -97,6 +101,10 @@ async function main() {
     process.exit(2);
   }
   const weiterBeiFehler = process.argv.includes("--weiter-bei-fehler");
+  // S94 · Waechter-Stufe. Default AUS: alle bisherigen Ergebnisse in
+  // evals/ergebnisse/ sind ohne Waechter entstanden — ein Default-Wechsel
+  // braeche die Vergleichbarkeit still.
+  const waechter = process.argv.includes("--waechter");
 
   // Drossel gilt pro Provider-Workspace. Gleicher Provider für Pipeline+Judge → EINE
   // geteilte Instanz (S51). Anderer Judge-Provider (S52) → eigenständiges Limit; die
@@ -142,6 +150,14 @@ async function main() {
   // Batch-Modus (S57): kompletter Lauf über die Anthropic Message Batches API (−50 %).
   // Opt-in; ohne bleibt alles synchron. Nur Anthropic (Pipeline UND Judge) — D1.
   const batchModus = process.argv.includes("--batch");
+  // S94 · Der Batch-Pfad stellt ALLE Anfragen vorab zusammen; eine Revisions-
+  // Runde waere eine zweite Welle mit eigener Wartezeit. Das ist ein eigener
+  // Sprint wert — bis dahin schliessen sich die beiden Modi aus, laut statt still.
+  if (waechter && batchModus) {
+    console.error("--waechter und --batch schliessen sich aus: der Batch-Pfad kennt keine Revisions-Runde.");
+    console.error("Entweder den Lauf ohne --batch fahren, oder ohne --waechter (Korpus-Lesart).");
+    process.exit(1);
+  }
   if (batchModus && (provider !== "anthropic" || judgeProvider !== "anthropic")) {
     console.error("--batch unterstützt nur Anthropic (Pipeline UND Judge). Aktuell: Pipeline " +
       provider + ", Judge " + judgeProvider + ".");
@@ -208,6 +224,7 @@ async function main() {
     judgePromptVersion: JUDGE_PROMPT_VERSION,
     batch: batchModus,
     ziel,                                       // dev | release (S66) — n-Politik des Laufs
+    waechter,                                   // S94 · Lesart des Laufs: Korpus allein (false) oder ausgeliefertes System (true)
   };
   const bericht = batchModus
     ? await laufeAlleBatch(szenarien, {
@@ -218,7 +235,7 @@ async function main() {
         },
       })
     : await laufeAlle(szenarien, {
-        pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen, stand,
+        pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen, stand, waechter,
       });
 
   bericht.kosten = laufKosten(bericht.telemetrie.pipe, bericht.telemetrie.judge, batchModus ? 0.5 : 1, batchModus);   // Batch: −50 % + 1h-Write-Tarif (S65)
@@ -238,6 +255,17 @@ async function main() {
     if (s.textStrukturSamples)
       console.log("  ⚠ " + s.id + ": " + s.textStrukturSamples + " Bewertung(en) über Text-Rettung (kein tool_use) — deklarierter Pfad, s. strukturQuelle je Sample");
   }
+
+  // S94 · Lesart und Waechter-Treffer sichtbar machen — ohne sie ist nicht
+  // erkennbar, ob ein gruener Lauf dem Korpus oder dem Waechter zu verdanken ist.
+  const WT = bericht.waechterTreffer || { aufdeck: 0, urteil: 0 };
+  console.log("Lesart: " + (waechter ? "mit Waechter (ausgeliefertes System)" : "ohne Waechter (Korpus allein)") +
+    (waechter ? "  ·  Treffer: Aufdeck " + WT.aufdeck + ", Urteil " + WT.urteil : ""));
+  if (waechter)
+    for (const s of bericht.szenarien)
+      if (s.waechterTreffer)
+        console.log("  ~ " + s.id + ": Revision in " + (s.waechterTreffer.aufdeck + s.waechterTreffer.urteil) +
+          " Runde(n) (Aufdeck " + s.waechterTreffer.aufdeck + ", Urteil " + s.waechterTreffer.urteil + ")");
 
   // Telemetrie-Zeile (S55): echte Token, Cache-Trefferquote, Kosten, Wall-Clock.
   const T = bericht.telemetrie;

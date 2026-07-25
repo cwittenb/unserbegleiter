@@ -77,7 +77,7 @@ export function einzelDef(backend, hooks = {}) {
     wiedereinstieg: "einzelWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
     // S93 · Urteils-Wächter (siehe soloDef).
-    validiereAntwort: text => pruefeUrteilsAntwort(text),
+    validiereAntwort: text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
     markerOrder: ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
       "[[SCALE-SAFETY]]": e => hooks.onScale && hooks.onScale("safety", e),
@@ -123,7 +123,8 @@ export function gemeinsamDef(backend, hooks = {}) {
     // Dramaturgie wiegt schwerer als eine Formulierungs-Korrektur.
     validiereAntwort: (text, eng) => pruefeAufdeckAntwort(text, {
       messages: eng.chat.messages, nameA: eng.ctx && eng.ctx.nameA, nameB: eng.ctx && eng.ctx.nameB,
-    }) || pruefeUrteilsAntwort(text),
+      revision: K().steuerTexte.aufdeckRevision,
+    }) || pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)

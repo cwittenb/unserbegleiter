@@ -83,11 +83,15 @@ describe("S93 · A1 Steuer-Token verlassen nie den Draht", () => {
     expect(entferneSteuerToken("Text\n[Rückkehr nach Abschluss: irgendwas]\nMehr")).toBe("Text\nMehr");
   });
 
-  it("lässt gewöhnlichen Text und Marken unberührt", () => {
+  it("lässt gewöhnlichen Text unberührt; nur GANZE Klammerzeilen fallen", () => {
     expect(entferneSteuerToken("Ein Satz ohne Klammern.")).toBe("Ein Satz ohne Klammern.");
-    expect(entferneSteuerToken("Nun denn.\n[[RANKING]]")).toBe("Nun denn.\n[[RANKING]]");
     expect(entferneSteuerToken("Er sagte [sinngemäß] das Richtige."))
       .toBe("Er sagte [sinngemäß] das Richtige.");   // inline, nicht ganze Zeile
+    // S94 · Auch eine allein stehende Marke ist Protokoll und fällt hier —
+    // in cleanDisplay ist sie zu diesem Zeitpunkt ohnehin schon von der
+    // Markenliste entfernt; eine FREMDE Marke (andere Session) verschwindet
+    // damit ebenfalls, statt roh im Verlauf zu stehen.
+    expect(entferneSteuerToken("Nun denn.\n[[RANKING]]")).toBe("Nun denn.");
   });
 
   it("Kanarie: jeder vollständig geklammerte Steuertext (de+en) wird erfasst", () => {

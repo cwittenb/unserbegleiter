@@ -84,6 +84,8 @@ export function findetUrteil(text) {
   return null;
 }
 
+// S94 · Wortlaut im Korpus (steuerTexte.urteilsRevision); diese Konstante ist
+// der deutsche Rückfall für Aufrufer ohne Korpus. Siehe aufdeck-waechter.js.
 export const URTEILS_REVISION =
   "[SYSTEM-REVISION: Deine letzte Nachricht enthält ein Urteil aus der Richterposition " +
   "(\"Das ist …\", \"Das klingt …\", \"eine starke Fassung\" o. ä.). Auch positive Urteile sind Urteile. " +
@@ -100,9 +102,9 @@ export const URTEILS_REVISION =
  * Marken-/Block-Antworten sind ausgenommen: dort gehört die letzte Zeile der
  * App, und eine Revisions-Runde würde die Dramaturgie verzögern.
  */
-export function pruefeUrteilsAntwort(text) {
+export function pruefeUrteilsAntwort(text, revision) {
   const t = String(text || "");
   if (/\[\[[A-Z][A-Z0-9-]*\]\]/.test(t)) return null;   // Marke → App übernimmt
   if (/\b[A-Z]+-BLOCK\b/.test(t)) return null;          // Block → Protokoll, kein Spiegel
-  return findetUrteil(t) ? URTEILS_REVISION : null;
+  return findetUrteil(t) ? (revision || URTEILS_REVISION) : null;
 }

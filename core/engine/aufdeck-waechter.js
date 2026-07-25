@@ -74,6 +74,10 @@ export function tafelSchonGezeigt(messages) {
     m.tafel || (m.role === "assistant" && typeof m.content === "string" && m.content.includes("[[REVEAL")));
 }
 
+// S94 · Der Wortlaut lebt seit S94 im Korpus (steuerTexte.aufdeckRevision) und
+// wird von der SessionDef bzw. dem Eval-Runner sprachrichtig hereingereicht.
+// Diese Konstante bleibt der deutsche Rückfall — für Aufrufer ohne Korpus
+// (ältere Tests, Werkzeuge) und damit das Modul importfrei bleibt.
 export const AUFDECK_REVISION =
   "[SYSTEM-REVISION: Deine letzte Nachricht gibt Inhalte der Stapel im Text wieder — " +
   "die zeigt ausschließlich die Tafel der App (STAPEL-WIEDERGABE-VERBOT). " +
@@ -85,12 +89,12 @@ export const AUFDECK_REVISION =
  * Validator für gemeinsamDef (Engine-Hook `validiereAntwort`):
  * liefert die Revisions-Nachricht oder null.
  */
-export function pruefeAufdeckAntwort(text, { messages, nameA, nameB }) {
+export function pruefeAufdeckAntwort(text, { messages, nameA, nameB, revision }) {
   const erste = (messages || []).find(m => m.role === "user");
   if (!imAufdeckPfad(erste && erste.content)) return null;      // S73: nur im Aufdeck-Pfad
   if (tafelSchonGezeigt(messages)) return null;
   if (/\[\[REVEAL(-A|-B)?\]\]/.test(text || "")) return null;   // Marke gesetzt → App übernimmt
   const items = extrahiereStapelItems(erste && erste.content, [nameA || "", nameB || ""]);
   if (!items.length) return null;
-  return findetStapelLeck(text || "", items) ? AUFDECK_REVISION : null;
+  return findetStapelLeck(text || "", items) ? (revision || AUFDECK_REVISION) : null;
 }

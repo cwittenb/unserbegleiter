@@ -24,9 +24,15 @@
  *  sie stehen in prompts.de.js und prompts.en.js wortgleich). */
 export const STEUER_TOKEN = ["[CLOSE SESSION]", "[CLOSE MOMENT]"];
 
-/** Eine Zeile, die vollständig ein eckig geklammerter Ausdruck ist. Die
- *  Obergrenze hält den Ausdruck linear und schützt vor Backtracking. */
-const KLAMMERZEILE = /^[ \t]*\[[^\]\n]{1,600}\][ \t]*$/;
+/** Eine Zeile, die vollständig ein eckig geklammerter Ausdruck ist.
+ *  S94: Innere Klammern sind erlaubt — die Revisionstexte der Wächter zitieren
+ *  Marken ("… mit genau einer Aufdeck-Marke ([[REVEAL-A]]) …"), und gerade sie
+ *  dürfen im Verlauf nicht auftauchen. Die Zeile ist per Konstruktion
+ *  umbruchfrei (der Aufrufer splittet an "\n"); die Obergrenze hält den
+ *  Ausdruck linear.
+ *  Ungefährlich trotz Gier: Der Filter läuft in cleanDisplay NACH der
+ *  Blockersetzung — JSON-Innenleben existiert an dieser Stelle nicht mehr. */
+const KLAMMERZEILE = /^[ \t]*\[[^\n]{1,4000}\][ \t]*$/;
 
 /** Entfernt Steuer-Token aus einem Anzeigetext. Reine Textfunktion. */
 export function entferneSteuerToken(text) {

@@ -368,6 +368,24 @@ export const steuerTexte = {
   einzelRueckkehr: "[Rückkehr nach Abschluss: Die Auftragsklärung ist bereits abgeschlossen und freigegeben; ich betrete den Raum erneut. Eröffne den NACHKLANG.]",
   einzelWeiter: "[Rückkehr in die laufende Auftragsklärung: Ich betrete den Raum erneut; die Session ist pausiert. Eröffne den WIEDEREINSTIEG.]",
   gemeinsamWeiter: "[Rückkehr in die laufende Gemeinsame Auflösung: Wir betreten den Raum erneut; die Session war pausiert. Eröffne den WIEDEREINSTIEG.]",
+  /* S94 · Die Revisionstexte der beiden Wächter leben im Korpus, nicht mehr
+     hartkodiert im Modul: Bei einer englischen Session bekam das Modell bis
+     S93 eine deutsche SYSTEM-REVISION. Die Heuristik bleibt im Modul, der
+     Wortlaut gehört zur Sprachfassung. */
+  aufdeckRevision:
+    "[SYSTEM-REVISION: Deine letzte Nachricht gibt Inhalte der Stapel im Text wieder \u2014 " +
+    "die zeigt ausschlie\u00dflich die Tafel der App (STAPEL-WIEDERGABE-VERBOT). " +
+    "Wiederhole die Nachricht ohne jede Wiedergabe von Stapel-Inhalten; nenne h\u00f6chstens die RICHTUNG. " +
+    "Wenn beide zugestimmt haben und die Richtung gew\u00e4hlt ist, beende die Nachricht mit genau einer " +
+    "Aufdeck-Marke ([[REVEAL-A]] oder [[REVEAL-B]]) allein in der letzten Zeile.]",
+  urteilsRevision:
+    "[SYSTEM-REVISION: Deine letzte Nachricht enth\u00e4lt ein Urteil aus der Richterposition " +
+    "(\"Das ist \u2026\", \"Das klingt \u2026\", \"eine starke Fassung\" o. \u00e4.). Auch positive Urteile sind Urteile. " +
+    "Wiederhole die Nachricht ohne jede Benotung: Spiegle nah an den Worten der Person, " +
+    "oder \u2014 wenn du eine eigene Wahrnehmung anbietest \u2014 aus der Ich-Perspektive MIT R\u00fcckfrage " +
+    "(\"F\u00fcr mich klingt das wie \u2026 \u2013 stimmt das f\u00fcr dich?\"). F\u00e4llt dir nichts Substanzielles auf, " +
+    "ist die beste Spiegelung kurz oder keine: Stell die n\u00e4chste Frage. " +
+    "Inhalt und L\u00e4nge bleiben sonst gleich.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: Die App hat beiden die Richtung {owner} gezeigt – {owner}s Stapel neben dem Tipp von {tipper}, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach.",
 };
 
