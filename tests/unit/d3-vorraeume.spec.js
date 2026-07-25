@@ -61,11 +61,15 @@ describe("D3 · Zwei Zonen", () => {
     expect(zonen[1].querySelector(".rz-fuss .rz-h2").textContent).toBe("Mein Weg.");
   });
 
-  it("uns: Tiefgruen-Zone ueber Dunkel-Regal-Zone; Intro klein unter dem Titel (K1c)", async () => {
+  // D12-2e · Korrektur: der gemeinsame Raum faerbt nicht den ganzen Schirm ein.
+  // Oben bleibt Papier — dort stehen Qualitaetszeit und Gespraech —, dunkel
+  // ist nur das Regal. Die Aufteilung ist damit auf allen Screens dieselbe.
+  it("uns: Papier-Zone ueber Dunkel-Regal-Zone; Intro klein unter dem Titel (K1c)", async () => {
     await bootApp(memoryBackend());
     const raum = root.querySelector("#scrShared");
     const zonen = raum.querySelectorAll(":scope > .rz-half");
-    expect(zonen[0].classList.contains("rz-tiefgruen")).toBe(true);
+    expect(zonen[0].classList.contains("rz-papier")).toBe(true);
+    expect(zonen[0].classList.contains("rz-tiefgruen")).toBe(false);
     expect(zonen[1].classList.contains("rz-regal-dunkel")).toBe(true);
     const intro = zonen[0].querySelector("#sharedIntro");
     expect(intro.classList.contains("rz-intro")).toBe(true);

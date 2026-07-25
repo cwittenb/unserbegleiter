@@ -60,39 +60,33 @@ async function inDenChat(art) {
   p.catch(() => {});
 }
 
-describe("D12-2c · Raumtoene im Chat", () => {
-  it("Einzelsession bleibt auf Papier", async () => {
+describe("D12-2c/e · Raumtoene im Chat", () => {
+  it("oben ist ueberall Papier — auch im gemeinsamen Raum", async () => {
     await inDenChat("solo");
-    expect(root.querySelector("#scrChat").classList.contains("rz-chat-gemeinsam")).toBe(false);
     expect(root.querySelector("#scrChat .rz-chat-oben").classList.contains("rz-papier")).toBe(true);
+    await inDenChat("moment");
+    expect(root.querySelector("#scrChat .rz-chat-oben").classList.contains("rz-papier")).toBe(true);
+    expect(root.querySelector("#scrChat .rz-chat-oben").classList.contains("rz-tiefgruen")).toBe(false);
+  });
+
+  it("nur die Schreibkante folgt dem Raum", async () => {
+    await inDenChat("solo");
     expect(root.querySelector("#scrChat .rz-chat-unten").classList.contains("rz-regal")).toBe(true);
-  });
-
-  it("gemeinsame Session traegt Tiefgruen oben und Regal-Dunkel an der Schreibkante", async () => {
     await inDenChat("moment");
-    expect(root.querySelector("#scrChat").classList.contains("rz-chat-gemeinsam")).toBe(true);
-    expect(root.querySelector("#scrChat .rz-chat-oben").classList.contains("rz-tiefgruen")).toBe(true);
-    expect(root.querySelector("#scrChat .rz-chat-unten").classList.contains("rz-regal-dunkel")).toBe(true);
+    const unten = root.querySelector("#scrChat .rz-chat-unten");
+    expect(unten.classList.contains("rz-regal-dunkel")).toBe(true);
+    expect(unten.classList.contains("rz-regal")).toBe(false);
   });
 
-  it("die Raumfarbe geht beim Verlassen wieder ab", async () => {
+  it("kein Screen faerbt sich als Ganzes ein", async () => {
     await inDenChat("moment");
-    expect(root.querySelector("#scrChat").classList.contains("rz-chat-gemeinsam")).toBe(true);
-    app.show("scrStart");
-    expect(root.querySelector("#scrChat").classList.contains("rz-chat-gemeinsam")).toBe(false);
-  });
-
-  it("die eigene Stimme hat auf Tiefgruen einen eigenen Ton", () => {
-    expect(DESIGN_CSS).toContain("--rz-nutzer-auf-gruen:#c4d8ab");
-    expect(DESIGN_CSS).toContain("#scrChat .rz-tiefgruen .pb-msg.me{color:var(--rz-nutzer-auf-gruen)}");
+    expect(root.querySelector("#scrChat").className).not.toContain("gemeinsam");
+    expect(DESIGN_CSS).not.toContain("rz-chat-gemeinsam");
   });
 
   it("die Zonen erben die bestehenden Regeln statt sie zu verdoppeln", async () => {
     await inDenChat("moment");
-    // .rz-tiefgruen/.rz-regal-dunkel sind dieselben Klassen wie in den
-    // Vorraeumen — Signatur, Zurueck-Pfeil und Fussmarke haengen daran.
     expect(DESIGN_CSS).toContain(".rz-tiefgruen .rz-signatur,.rz-regal-dunkel .rz-signatur");
-    expect(root.querySelector("#scrChat .rz-tiefgruen .rz-signatur")).toBeTruthy();
     expect(root.querySelector("#scrChat .rz-regal-dunkel .rz-fussmarke")).toBeTruthy();
   });
 });

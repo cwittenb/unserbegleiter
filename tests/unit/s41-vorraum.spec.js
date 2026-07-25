@@ -72,7 +72,8 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     // Raum-Zone, Regal-Zeilen in der Regal-Zone, Zurück im Kopf.
     expect(raum.querySelector("#wegTeil").classList.contains("rz-weg-panel")).toBe(true);
     expect(raum.querySelector("#wegBadgeTeil")).toBeTruthy();
-    const sessions = raum.querySelector(".rz-tiefgruen .rz-fuss");
+    // D12-2e: die obere Zone des gemeinsamen Vorraums ist Papier, nicht Tiefgruen.
+    const sessions = raum.querySelector(".rz-papier .rz-fuss");
     expect(sessions.querySelector("#btnMoment")).toBeTruthy();
     expect(sessions.querySelector("#btnGemeinsam")).toBeTruthy();
     expect(sessions.querySelector("#btnAufdeck")).toBeFalsy();   // S43: Aufdeckung ist Auftakt der Auflösung

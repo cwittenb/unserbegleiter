@@ -178,7 +178,7 @@ export function createApp({ doc, backend, root, diktat }) {
       </div>
     </div>
     <div id="scrShared" class="rz-screen rz-split pb-hidden">
-      <div class="rz-half rz-tiefgruen">
+      <div class="rz-half rz-papier">
         <div class="rz-kopf rz-kopf-mitte">
           <button class="rz-zurueck" id="btnZurueck2" aria-label="${t("allg.zurueck")}">←</button>
           <span class="rz-signatur" data-rz-signatur></span>
@@ -235,7 +235,7 @@ export function createApp({ doc, backend, root, diktat }) {
      gebauten Oberfläche. */
   const CHAT_HTML = (gemeinsam = false) => `
       <div class="rz-chat-innen">
-        <div class="rz-chat-oben ${gemeinsam ? "rz-tiefgruen" : "rz-papier"}">
+        <div class="rz-chat-oben rz-papier">
           <div class="rz-kopf rz-kopf-mitte">
             <button class="rz-zurueck" id="btnChatZurueck" title="${t("chat.raumVerlassen")}" aria-label="${t("chat.raumVerlassen")}">←</button>
             <span class="rz-signatur" data-rz-signatur></span>
@@ -311,7 +311,7 @@ export function createApp({ doc, backend, root, diktat }) {
     if (state.chatId && eingabe)                       // G3-Guard: raeume läuft bei JEDER
       state.entwuerfe[state.chatId] = eingabe.value;   // Nicht-Chat-Navigation, auch ohne Session
     const huelle = $("scrChat");
-    if (huelle) { huelle.innerHTML = ""; huelle.classList.remove("rz-chat-gemeinsam"); }
+    if (huelle) huelle.innerHTML = "";
     err(""); hint(null);
     state.engine = null; state.chatId = null; state.chatShared = null;
     state.streamText = null; state.herkunft = null;
@@ -325,7 +325,6 @@ export function createApp({ doc, backend, root, diktat }) {
      Diktat und Pausenstempel der alten Session. */
   function baueChatOberflaeche(gemeinsam = false) {
     raeumeChatOberflaeche();
-    $("scrChat").classList.toggle("rz-chat-gemeinsam", !!gemeinsam);
     $("scrChat").innerHTML = CHAT_HTML(gemeinsam);
     setzeSignatur(); setzeMarke();   // D12-2: die Vorlage bringt leere Huellen mit
     verdrahteChat();
