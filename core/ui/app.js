@@ -6,8 +6,10 @@ import { cleanDisplay, findeBlock } from "../contracts/block.js";
 import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht } from "../contracts/steuertoken.js";
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
-import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor } from "./sessions.js";
-import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, WEGE_FUER } from "../engine/regal.js";
+import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
+import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, WEGE_FUER, inKarenz } from "../engine/regal.js";
+import { paareAusVerlauf, baueAusschnitt, paarWaehlbar, paarGrund, waehleUm,
+  fuelleSpanne, ueberRichtwert, hatStilleLuecken } from "../engine/ausschnitt.js";
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
@@ -238,6 +240,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <div class="pb-msgs" id="pbMsgs"></div>
         <div id="gatePanel" class="rz-panel pb-hidden"></div>
+        <div id="ausschnittPanel" class="rz-panel pb-hidden"></div>
         <div id="kwPanel" class="rz-panel pb-hidden"></div>
         <div class="pb-skala" id="pbSkala">
           <span style="font-size:13px">${t("chat.deineZahl")}</span>
@@ -896,6 +899,8 @@ export function createApp({ doc, backend, root, diktat }) {
     state.streamText = null;   // Voll-Rerender ersetzt jede laufende Stream-Blase
     const box = $("pbMsgs");
     if (!box) return;   // S87: leere Hülle (kein Chat aufgebaut) — folgenlos
+    // S96.2 · Im Auswahl-Modus übernimmt der Verlauf selbst die Fläche.
+    if (ausw) { (ausw.phase === "vorschau" ? renderVorschau : renderAuswahl)(box); box.scrollTop = 0; return; }
     box.innerHTML = "";
     if (state.engine) {
       const msgs = state.engine.chat.messages;
@@ -1050,6 +1055,241 @@ export function createApp({ doc, backend, root, diktat }) {
       await laeuft;
       hint(backend.llm && backend.llm.kontingent ? backend.llm.kontingent.hinweis : null);
     }, true);                                     // eigenes Senden nimmt das Mitlaufen wieder auf (S62)
+  }
+
+
+  /* ══════════ S96.2 · Dialogausschnitt: Auswahl und Vorschau ══════════
+     Drei Stationen: Auswählen → Vorschau → Freigeben.
+
+     Der VERLAUF SELBST kippt in den Auswahl-Modus — keine abgeleitete Liste.
+     Das Material bleibt in seinem Kontext, und die Person hat es gerade eben
+     gelesen; eine gestrippte Liste zwänge zum Wiedererkennen statt zum
+     Erinnern. Sichtbar wechselt dabei die EINHEIT: aus zwei Blasen wird EIN
+     Block, sonst tippt jeder zuerst auf eine einzelne Blase und lernt die
+     Regel durch Scheitern. */
+
+  let ausw = null;   // {paare, eignung, gewaehlt:Set, anker, phase, rahmen, …}
+
+  /** Ruhiger Zugang nach dem Eignungsbericht — nie aufgedrängt. */
+  function ausschnittAngebot(eignung, engine) {
+    const p = $("ausschnittPanel");
+    if (!p) return;
+    const paare = paareAusVerlauf(engine.chat.messages);
+    const wahl = paare.filter(x => paarWaehlbar(eignung, x.id));
+    if (!wahl.length) return;            // keine Tür statt einer verschlossenen
+    p.classList.remove("pb-hidden");
+    p.innerHTML = `<button class="rz-zeile rz-knopf-flach" id="btnAuswStart"><span>${esc(t("ausschnitt.zugang"))}</span><span class="rz-pfeil">→</span></button>`;
+    p.querySelector("#btnAuswStart").addEventListener("click", () => {
+      p.classList.add("pb-hidden");
+      starteAuswahl(paare, eignung, engine);
+    });
+  }
+
+  function starteAuswahl(paare, eignung, engine) {
+    ausw = {
+      paare, eignung, engine,
+      gewaehlt: new Set(),             // Startzustand LEER — Vorauswahl wäre ein Nudge
+      anker: null, phase: "auswahl",
+      rahmen: "", hinweis: false,      // Richtwert-Hinweis fällt genau EINMAL
+      gruende: new Set(),              // Grund je Paar ebenfalls einmal
+      luecken: hatStilleLuecken(paare, eignung),
+    };
+    renderMsgs(true);
+  }
+
+  function beendeAuswahl() { ausw = null; renderMsgs(true); }
+
+  /** Auswahlfläche: Paar-Blöcke statt Blasen. */
+  function renderAuswahl(box) {
+    box.innerHTML = "";
+    const kopf = el("div", "pb-echo");
+    kopf.textContent = ausw.luecken ? t("ausschnitt.luecken") : t("ausschnitt.anleitung");
+    kopf.setAttribute("style", "align-self:center;font-size:12px;color:var(--ink-faint);padding:6px 0;text-align:center");
+    box.appendChild(kopf);
+
+    for (const paar of ausw.paare) {
+      const wahlbar = paarWaehlbar(ausw.eignung, paar.id);
+      const an = ausw.gewaehlt.has(paar.id);
+      const b = el("div", "rz-paar");
+      b.setAttribute("data-paar", paar.id);
+      b.setAttribute("role", "button");
+      b.setAttribute("tabindex", "0");
+      b.setAttribute("aria-pressed", an ? "true" : "false");
+      if (!wahlbar) b.setAttribute("aria-disabled", "true");
+      // Kein Häkchen, kein Badge an bestandenen Paaren: Wer seine Auswahl
+      // abgenommen bekommt, sitzt in einer Klassenarbeit.
+      b.setAttribute("style",
+        "border:1px solid " + (an ? "var(--rz-tiefgruen)" : "var(--card-bd)") +
+        ";background:" + (an ? "var(--card)" : "transparent") +
+        ";border-radius:14px;padding:10px 12px;margin:6px 0;" +
+        (wahlbar ? "cursor:pointer" : "opacity:.45"));
+      const f = el("div"); f.textContent = kuerze(paar.frage.text);
+      f.setAttribute("style", "font-size:13px;color:var(--ink-faint);margin-bottom:6px");
+      const a = el("div"); a.textContent = kuerze(paar.antwort.text);
+      a.setAttribute("style", "font-size:14px");
+      b.appendChild(f); b.appendChild(a);
+      if (!wahlbar && ausw.gruende.has(paar.id)) {
+        const g = el("div"); g.textContent = paarGrund(ausw.eignung, paar.id) || "";
+        g.setAttribute("style", "font-size:12px;color:var(--ink-faint);margin-top:6px;font-style:italic");
+        b.appendChild(g);
+      }
+      verdrahtePaar(b, paar, wahlbar);
+      box.appendChild(b);
+    }
+
+    const n = ausw.gewaehlt.size;
+    const leiste = el("div");
+    leiste.setAttribute("style", "position:sticky;bottom:0;background:var(--bg);padding:8px 0 2px");
+    const zaehler = el("div");
+    zaehler.id = "auswZaehler";
+    // Zähler schlicht: keine Lesezeit-Schätzung — das wäre eine Aussage über
+    // den Empfänger, und für den spricht die Begleitung nicht.
+    zaehler.textContent = fuelle(t("ausschnitt.zaehler"), { n });
+    zaehler.setAttribute("style", "font-size:12px;color:var(--ink-faint);text-align:center;padding-bottom:6px");
+    leiste.appendChild(zaehler);
+    if (ausw.hinweis) {
+      const h = el("div"); h.id = "auswHinweis"; h.textContent = t("ausschnitt.richtwert");
+      h.setAttribute("style", "font-size:12px;color:var(--ink-faint);text-align:center;padding-bottom:6px");
+      leiste.appendChild(h);
+    }
+    const weiter = el("button", "rz-zeile rz-knopf-flach" + (n ? "" : " rz-gedimmt"));
+    weiter.id = "btnAuswWeiter"; weiter.disabled = !n;
+    weiter.innerHTML = `<span>${esc(t("ausschnitt.weiter"))}</span><span class="rz-pfeil">→</span>`;
+    weiter.addEventListener("click", () => { ausw.phase = "vorschau"; renderMsgs(true); });
+    const ab = el("button", "rz-zeile rz-knopf-flach");
+    ab.id = "btnAuswAbbruch";
+    ab.innerHTML = `<span>${esc(t("ausschnitt.behalten"))}</span><span class="rz-pfeil">→</span>`;
+    // Lautlos: keine Sicherheitsabfrage, keine Bilanz.
+    ab.addEventListener("click", () => beendeAuswahl());
+    leiste.appendChild(weiter); leiste.appendChild(ab);
+    box.appendChild(leiste);
+  }
+
+  const KURZ = 220;
+  const kuerze = txt => (txt.length > KURZ ? txt.slice(0, KURZ).trimEnd() + " …" : txt);
+
+  /** Tippen = umschalten. Gedrückthalten = „bis hierhin". */
+  function verdrahtePaar(b, paar, wahlbar) {
+    let timer = null, lang = false;
+    const tippen = () => {
+      if (!wahlbar) {
+        if (!ausw.gruende.has(paar.id)) { ausw.gruende.add(paar.id); renderMsgs(); }
+        return;                                   // Grund genau EINMAL
+      }
+      ausw.gewaehlt = waehleUm(ausw.gewaehlt, ausw.eignung, paar.id);
+      ausw.anker = ausw.gewaehlt.has(paar.id) ? paar.id : null;
+      pruefeRichtwert(); renderMsgs();
+    };
+    const spanne = () => {
+      lang = true;
+      ausw.gewaehlt = fuelleSpanne(ausw.paare, ausw.gewaehlt, ausw.eignung, ausw.anker, paar.id);
+      ausw.anker = paar.id;
+      pruefeRichtwert(); renderMsgs();
+    };
+    b.addEventListener("pointerdown", () => { lang = false; timer = setTimeout(spanne, 500); });
+    for (const ev of ["pointerup", "pointerleave", "pointercancel"])
+      b.addEventListener(ev, () => { if (timer) { clearTimeout(timer); timer = null; } });
+    b.addEventListener("click", () => { if (!lang) tippen(); lang = false; });
+    // Zugänglichkeit: Gedrückthalten ist unsichtbar und mit Tastatur nicht
+    // erreichbar — Umschalt+Enter ist die Entsprechung für „bis hierhin".
+    b.addEventListener("keydown", e => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      if (e.shiftKey && wahlbar) spanne(); else tippen();
+    });
+  }
+
+  function pruefeRichtwert() {
+    if (!ausw.hinweis && ueberRichtwert(ausw.gewaehlt.size)) ausw.hinweis = true;
+  }
+
+  /* Vorschau — PFLICHT, nicht Komfort: Es gibt kein Nachbearbeiten (D1) und
+     nach der Karenz ist es endgültig (D5). Vor allem existieren die „…" NUR
+     hier: Im Verlauf ist ein nicht gewähltes Paar bloß nicht gewählt; dass
+     daraus beim Leser eine sichtbare Lücke wird, ist auf der Auswahlfläche
+     unsichtbar. Die Markierungspflicht soll aber beim ABSENDER wirken. */
+  function renderVorschau(box) {
+    box.innerHTML = "";
+    const stuecke = baueAusschnitt(ausw.paare, [...ausw.gewaehlt]);
+    const karte = el("div", "rz-teilen-block");
+    const von = el("div", "rz-caps rz-von");
+    von.textContent = fuelle(t("ausschnitt.denkarbeit"), { name: state.info.name });
+    karte.appendChild(von);
+    for (const st of stuecke) {
+      if (st.gapBefore) {
+        const l = el("div"); l.className = "rz-luecke"; l.textContent = "…";
+        l.setAttribute("style", "text-align:center;padding:4px 0;opacity:.7");
+        karte.appendChild(l);
+      }
+      const zeile = el("div");
+      zeile.setAttribute("data-vorschau", st.id);
+      zeile.setAttribute("style", "padding:6px 0");
+      const f = el("div"); f.textContent = st.question;
+      f.setAttribute("style", "font-size:13px;opacity:.75;margin-bottom:4px");
+      const a = el("p", "rz-teilen-text"); a.textContent = st.answer;
+      zeile.appendChild(f); zeile.appendChild(a);
+      const weg = el("button");
+      weg.setAttribute("data-weg-paar", st.id);
+      weg.textContent = "×";
+      weg.setAttribute("aria-label", t("ausschnitt.entfernen"));
+      weg.setAttribute("style", "background:none;border:0;color:inherit;opacity:.6;font-size:16px;padding:0 4px");
+      weg.addEventListener("click", () => {
+        ausw.gewaehlt.delete(st.id);
+        if (!ausw.gewaehlt.size) { ausw.phase = "auswahl"; }
+        renderMsgs();
+      });
+      zeile.appendChild(weg);
+      karte.appendChild(zeile);
+    }
+    box.appendChild(karte);
+
+    const rahmen = el("textarea");
+    rahmen.id = "auswRahmen";
+    rahmen.setAttribute("maxlength", "280");
+    rahmen.setAttribute("placeholder", t("ausschnitt.rahmenPlatzhalter"));
+    rahmen.value = ausw.rahmen;
+    rahmen.setAttribute("style", "width:100%;margin-top:10px;min-height:56px");
+    rahmen.addEventListener("input", () => { ausw.rahmen = rahmen.value; });
+    box.appendChild(rahmen);
+
+    const wegName = { shelf: t("gate.weg.regal", { partner: state.info.partner }), moment: t("gate.weg.moment", { partner: state.info.partner }) };
+    const wahl = el("div");
+    wahl.innerHTML = WEGE_FUER("excerpt").map(w =>
+      `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"> ${esc(wegName[w])}</label>`).join("");
+    box.appendChild(wahl);
+
+    const frei = el("button", "rz-zeile rz-knopf-flach rz-gedimmt");
+    frei.id = "btnAuswFreigeben"; frei.disabled = true;
+    frei.innerHTML = `<span>${esc(t("allg.freigeben"))}</span><span class="rz-pfeil">→</span>`;
+    const stand = () => {
+      const gewaehlt = !!wahl.querySelector("input[data-weg]:checked");
+      frei.disabled = !gewaehlt;
+      frei.classList.toggle("rz-gedimmt", !gewaehlt);
+    };
+    for (const b of wahl.querySelectorAll("input[data-weg]")) b.addEventListener("change", stand);
+    frei.addEventListener("click", async () => {
+      const wege = [...wahl.querySelectorAll("input[data-weg]:checked")].map(x => x.getAttribute("data-weg"));
+      if (!wege.length) return;
+      const engine = ausw.engine;
+      try {
+        await quereGate(backend, {
+          kind: "excerpt",
+          pairs: baueAusschnitt(ausw.paare, [...ausw.gewaehlt]),
+          frame: ausw.rahmen.trim() || null,
+          selbstmitteilung: null, wish: null,
+        }, wege);
+      } catch (e) { err(e.message); return; }
+      beendeAuswahl();
+      if (!engine) return;
+      await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.freigabeGequert, { paths: wege.join(", ") })));
+    });
+    box.appendChild(frei);
+
+    const zurueck = el("button", "rz-zeile rz-knopf-flach");
+    zurueck.id = "btnAuswZurueck";
+    zurueck.innerHTML = `<span>${esc(t("ausschnitt.zurueck"))}</span><span class="rz-pfeil">→</span>`;
+    zurueck.addEventListener("click", () => { ausw.phase = "auswahl"; renderMsgs(true); });
+    box.appendChild(zurueck);
   }
 
   /* S96.1 · Bauvorschrift: engine-frei. Die Engine wird AUSSCHLIESSLICH für die
@@ -1246,6 +1486,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const lebend = fn => (...a) => { if (gen === state.chatGen) return fn(...a); };
     const hooks = {
       onGate: lebend((d, e2) => gatePanel(d, e2)),
+      onAusschnitt: lebend((paare, e2) => ausschnittAngebot(paare, e2)),
       onRegler: lebend(e2 => reglerPanel(e2)),
       onRanking: lebend((mode, e2) => rankPanel(mode, e2)),
       onStartwerte: lebend(e2 => startwertePanel(e2)),
@@ -1502,12 +1743,17 @@ export function createApp({ doc, backend, root, diktat }) {
           // Initial-Badge solange ungelesen; Status und Handgriffe leise darunter.
           return `<div class="pb-item rz-regal-eintrag">` +
             `<div class="rz-caps rz-von">${fremd && !i.read ? `<span class="rz-initial">${esc((i.by || "?")[0].toUpperCase())}</span> ` : ""}${t("allg.von", { name: esc(i.by) })}</div>` +
-            `<span class="rz-regal-text">${esc(i.text)}</span>` +
+            regalKoerper(i) +
             (i.wish ? `<br><span class="pb-sub">${t("gate.wish")}${esc(i.wish)}</span>` : "") +
             `${i.read || i.gehoben ? `<br><span class="pb-sub">${i.read ? t("regal.stGelesen") : ""}${i.read && i.gehoben ? " · " : ""}${i.gehoben ? t(i.alsZiel ? "regal.stZielVorschlag" : "regal.stInAgenda") : ""}</span>` : ""}` +
             (fremd && !i.read ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
             (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnBesprechen")}</button>` +
               ` <button class="pb-btn" data-ziel="${i.id}" style="padding:3px 10px">${t("regal.btnZiel")}</button>` : "") +
+            // D5 · Der Owner sieht einen RUHIGEN Zustand, keinen Countdown —
+            // ein tickender Timer erzeugt genau die Anspannung, gegen die die
+            // Karenz gedacht ist.
+            (!fremd && inKarenz(i) ? `<br><span class="pb-sub">${t("regal.stZurueckziehbar")}</span>` +
+              ` <button class="pb-btn" data-zurueck="${esc(i.freigabe || "")}" style="padding:3px 10px">${t("regal.btnZurueckziehen")}</button>` : "") +
             `</div>`;
         }).join("")
       : `<div class="pb-item">${t("regal.leer")}</div>`;
@@ -1517,6 +1763,26 @@ export function createApp({ doc, backend, root, diktat }) {
       b.addEventListener("click", async () => { await hebeInAgenda(backend, b.getAttribute("data-heben")); zeigeRegal(); });
     for (const b of $("regalItems").querySelectorAll("[data-ziel]"))
       b.addEventListener("click", async () => { await hebeInAgenda(backend, b.getAttribute("data-ziel"), { alsZiel: true }); zeigeRegal(); });
+    for (const b of $("regalItems").querySelectorAll("[data-zurueck]"))
+      b.addEventListener("click", async () => { await nimmFreigabeZurueckAb(backend, b.getAttribute("data-zurueck")); zeigeRegal(); });
+  }
+
+  /* S96.3 · Zwei Artefakt-Formen, zwei Darstellungen. Der Ausschnitt ist eine
+     SZENE, keine Aussage — als Fließtext gelesen verlöre er genau das, was ihn
+     wertvoll macht: dass man dem Denken beim Arbeiten zusieht. Die Auslassungen
+     erscheinen hier so wie in der Vorschau des Absenders (D2). */
+  function regalKoerper(i) {
+    if (i.kind !== "excerpt" || !Array.isArray(i.pairs) || !i.pairs.length)
+      return `<span class="rz-regal-text">${esc(i.text || "")}</span>`;
+    return `<div class="rz-ausschnitt">` +
+      `<div class="pb-sub rz-denkarbeit">${esc(fuelle(t("ausschnitt.denkarbeit"), { name: i.by }))}</div>` +
+      (i.frame ? `<p class="rz-regal-text rz-rahmensatz">${esc(i.frame)}</p>` : "") +
+      i.pairs.map(pr =>
+        (pr.gapBefore ? `<div class="rz-luecke" style="text-align:center;opacity:.6">…</div>` : "") +
+        `<div class="rz-paar-lesen" style="padding:4px 0">` +
+        `<div class="pb-sub" style="margin-bottom:2px">${esc(pr.question)}</div>` +
+        `<span class="rz-regal-text">${esc(pr.answer)}</span></div>`).join("") +
+      `</div>`;
   }
 
   /* S43 · Agenda-Regal v2: EIN Regal, zwei Konzepte getrennt — die
@@ -2298,5 +2564,8 @@ export function createApp({ doc, backend, root, diktat }) {
   }
 
   // S62: testHooks exponiert Render/Stream für die Scroll-Disziplin-Tests.
-  return { boot, show, startChat, _state: state, _err: err, testHooks: { renderMsgs, zeigeStream: t2 => Promise.resolve(zeigeStream(t2)) } };
+  return { boot, show, startChat, _state: state, _err: err,
+    engine: () => state.engine,
+    testAusschnitt: eignung => ausschnittAngebot(eignung, state.engine),
+    testHooks: { renderMsgs, zeigeStream: t2 => Promise.resolve(zeigeStream(t2)) } };
 }

@@ -54,6 +54,16 @@ export function soloDef(backend, hooks = {}) {
         ...BLOECKE.note,
         handle: (data, engine) => merkeMerkposten(backend, data),
       },
+      {
+        // S96.2 · Eignungsbericht für den Dialogausschnitt. Der Block DRÄNGT
+        // NICHTS AUF: Er hinterlegt nur, welche Paare wählbar wären, und die
+        // Oberfläche bietet einen ruhigen Zugang an. Bleibt er unbenutzt,
+        // schließt sich die Gabelung lautlos (Designnotiz §4).
+        ...BLOECKE.ausschnitt,
+        handle: (data, engine) => {
+          if (hooks.onAusschnitt) hooks.onAusschnitt(data.pairs || [], engine);
+        },
+      },
     ],
   };
 }
