@@ -347,6 +347,13 @@ export const en = {
   // Theme toggle
   "theme.hell": "Light",
   "theme.dunkel": "Dark",
+  "theme.auto": "Automatic",
+  "einst.titel": "Settings",
+  "einst.ansicht": "Appearance",
+  "einst.sprache": "Interface language",
+  "einst.paarsprache": "Your companion speaks {sprache}.",
+  "einst.paarspracheHinweis": "You change that together — in the agenda in your shared room.",
+  "paarspr.agendaKopf": "Companion language",
   // PWA (M1): manifest & home screen
   "pwa.name": "roomfortwo",
   "pwa.kurzname": "roomfortwo",

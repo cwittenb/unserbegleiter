@@ -200,6 +200,36 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       /* Das Wegweiser-Zeichen (Pfosten mit Schild) steht IMMER neben dem
          Badge-Text — auch dort, wo das Badge einen Ortsnamen traegt. */
       .rz-weg-ikon{flex:none;width:9px;height:11px;display:block;color:currentColor}
+      /* ---- D12-2d · Bedien-Ecke und Einstellungs-Blatt ---- */
+      .rz-ecke{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));
+               right:calc(16px + env(safe-area-inset-right,0px));z-index:7;
+               display:flex;gap:4px;align-items:flex-start}
+      .rz-einst{position:relative;border:0;background:none;margin:0;padding:6px;cursor:pointer;
+                line-height:0;min-width:36px;min-height:36px;color:var(--rz-marke)}
+      .rz-einst svg{width:20px;height:20px;display:block;margin:auto}
+      .rz-einst-seerose{display:none}
+      html[data-theme=dark] .rz-einst-baum{display:none}
+      html[data-theme=dark] .rz-einst-seerose{display:block}
+      .rz-einst .rz-punkt{position:absolute;top:3px;right:3px;width:6px;height:6px;
+                          border-radius:50%;background:var(--rz-akzent)}
+      .rz-einst-blatt{position:absolute;top:42px;right:0;width:min(272px,calc(100vw - 32px));
+                      background:var(--rz-papier);color:var(--rz-ink);
+                      border:1px solid var(--rz-hairline);border-radius:14px;padding:14px 16px;
+                      box-shadow:0 12px 34px rgba(0,0,0,.14);text-align:left}
+      html[data-theme=dark] .rz-einst-blatt{background:var(--rz-regal-dunkel);color:var(--rz-ink-auf-gruen);
+                                            border-color:var(--rz-hairline-gruen)}
+      .rz-einst-blatt .rz-caps{margin:0 0 6px}
+      .rz-einst-blatt .rz-caps+.rz-caps,.rz-einst-gruppe+.rz-einst-gruppe{margin-top:16px}
+      .rz-einst-wahl{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;
+                     border:0;background:none;padding:8px 0;margin:0;cursor:pointer;text-align:left;
+                     font-family:var(--rz-sans);font-size:15px;color:inherit;
+                     border-bottom:1px solid var(--rz-hairline)}
+      html[data-theme=dark] .rz-einst-wahl{border-bottom-color:var(--rz-hairline-gruen)}
+      .rz-einst-wahl:last-child{border-bottom:0}
+      .rz-einst-wahl .rz-haken{color:var(--rz-akzent-hell);font-size:14px;opacity:0}
+      .rz-einst-wahl.an .rz-haken{opacity:1}
+      .rz-einst-fuss{font-size:13px;color:var(--rz-sek2);margin:10px 0 0;line-height:1.45}
+      html[data-theme=dark] .rz-einst-fuss{color:var(--rz-sek2-auf-gruen)}
       /* Nur auf dem Startscreen steht das Ortsetikett ueber der Betreten-Zeile;
          in den Vorraeumen traegt das Badge den Ort (Turn 27, §1). */
       .rz-caps-ueber{margin-bottom:11px}
@@ -519,38 +549,84 @@ export function verdrahteWegweiser(doc, badge, panel) {
 }
 
 /** Feste Bedien-Ecke oben rechts: Ansicht hell/dunkel (+ Push-Glocke). */
-export const CHROME_HTML = String.raw`<div class="pb-theme" role="group">
-      <button id="pbHell" type="button"></button>
-      <button id="pbDunkel" type="button"></button>
+/* D12-2d · Die Bedien-Ecke traegt jetzt EIN Zeichen: Baum bei Hell, Seerose
+   bei Dunkel — dieselbe Paarung wie Kulisse und .pb-baeume/.pb-seerosen. Der
+   Punkt am Zeichen zeigt einen offenen Sprachantrag des Partners; ohne ihn
+   waere ein Antrag hinter dem geschlossenen Blatt unsichtbar.
+   Die Klasse .rz-ecke ist zugleich der Wirt fuer die Push-Glocke (M7a). */
+export const CHROME_HTML = String.raw`<div class="rz-ecke pb-theme" role="group">
+      <button id="pbEinst" class="rz-einst" type="button" aria-haspopup="dialog" aria-expanded="false">
+        <svg class="rz-einst-baum" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 6.6 10.6h3L5.4 17.4h5.5V22h2.2v-4.6h5.5l-4.2-6.8h3z"/></svg>
+        <svg class="rz-einst-seerose" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.4c1.7 1.8 2.5 3.5 2.5 5.3 0 1.7-.8 3.1-2.5 4.2-1.7-1.1-2.5-2.5-2.5-4.2 0-1.8.8-3.5 2.5-5.3z"/><path d="M2.4 14h7.4l-2.5 3.6H5a4.2 4.2 0 0 1-2.6-3.6zm19.2 0h-7.4l2.5 3.6H19a4.2 4.2 0 0 0 2.6-3.6z"/></svg>
+        <span class="rz-punkt pb-hidden" id="pbEinstPunkt"></span>
+      </button>
+      <div class="rz-einst-blatt pb-hidden" id="pbEinstBlatt" role="dialog"></div>
     </div>`;
 
 export function applyDesign(doc) {
-  if (doc.getElementById("pbDesign")) return;
-  // Standalone-Haken (M3): CSS kann per html[data-standalone] reagieren —
-  // z. B. künftige Installations-Hinweise ausblenden, wenn schon installiert.
-  if (istStandalone(doc.defaultView)) doc.documentElement.setAttribute("data-standalone", "1");
-  doc.documentElement.setAttribute("data-vollbild", "1");   // D8: randlos, egal welche Huelle
-  const st = doc.createElement("style");
-  st.id = "pbDesign";
-  st.textContent = DESIGN_CSS;
-  doc.head.appendChild(st);
+  // D12-2d · Der Waechter galt frueher fuer die GANZE Funktion. Das war
+  // brauchbar, solange nur das Stylesheet daranhing — aber die Bedien-Ecke
+  // lebt im Body, und wer den Body neu baut (Hüllenwechsel, Relaunch), stand
+  // ohne Ecke da, weil das Stylesheet im Head ueberlebt hatte. Jetzt wacht
+  // jeder Teil ueber sich selbst.
+  if (!doc.getElementById("pbDesign")) {
+    // Standalone-Haken (M3): CSS kann per html[data-standalone] reagieren —
+    // z. B. künftige Installations-Hinweise ausblenden, wenn schon installiert.
+    if (istStandalone(doc.defaultView)) doc.documentElement.setAttribute("data-standalone", "1");
+    doc.documentElement.setAttribute("data-vollbild", "1");   // D8: randlos, egal welche Huelle
+    const st = doc.createElement("style");
+    st.id = "pbDesign";
+    st.textContent = DESIGN_CSS;
+    doc.head.appendChild(st);
+  }
   // D10 · Bedien-Ecke anlegen, falls die Huelle sie nicht mitbringt.
-  if (!doc.getElementById("pbHell") && doc.body) {
+  if (!doc.getElementById("pbEinst") && doc.body) {
     const halter = doc.createElement("div");
     halter.innerHTML = CHROME_HTML;
     while (halter.firstChild) doc.body.appendChild(halter.firstChild);
   }
-  const setze = t => {
-    const d = t === "dark";
-    doc.documentElement.setAttribute("data-theme", d ? "dark" : "light");
-    const h = doc.getElementById("pbHell"), n = doc.getElementById("pbDunkel");
-    if (h) h.classList.toggle("an", !d);
-    if (n) n.classList.toggle("an", d);
-  };
-  const h = doc.getElementById("pbHell"), n = doc.getElementById("pbDunkel");
-  if (h) { h.textContent = uiText("theme.hell"); h.setAttribute("aria-label", uiText("theme.hell")); }
-  if (n) { n.textContent = uiText("theme.dunkel"); n.setAttribute("aria-label", uiText("theme.dunkel")); }
-  if (h) h.addEventListener("click", () => setze("light"));
-  if (n) n.addEventListener("click", () => setze("dark"));
-  setze("light");
+  const e = doc.getElementById("pbEinst");
+  if (e) e.setAttribute("aria-label", uiText("einst.titel"));
+  setzeAnsicht(doc, gemerkteAnsicht());
+}
+
+/* ---- D12-2d · Ansicht: Hell, Dunkel oder Automatisch --------------------
+   "Automatisch" folgt prefers-color-scheme und HOERT MIT: wer die Systemwahl
+   im Betrieb umstellt (Nachtmodus nach Zeitplan), soll nicht neu laden
+   muessen. Der Zuhoerer haengt genau einmal am Dokument. */
+const ANSICHT_SPEICHER = "pb.ansicht";
+let systemZuhoerer = null;
+
+export function gemerkteAnsicht() {
+  try {
+    const v = globalThis.localStorage && globalThis.localStorage.getItem(ANSICHT_SPEICHER);
+    return v === "light" || v === "dark" || v === "auto" ? v : "auto";
+  } catch { return "auto"; }
+}
+
+export function merkeAnsicht(wahl) {
+  try { globalThis.localStorage && globalThis.localStorage.setItem(ANSICHT_SPEICHER, wahl); }
+  catch { /* z. B. Safari privat */ }
+}
+
+function systemDunkel() {
+  try { return !!(globalThis.matchMedia && globalThis.matchMedia("(prefers-color-scheme: dark)").matches); }
+  catch { return false; }
+}
+
+export function setzeAnsicht(doc, wahl) {
+  const w = wahl === "light" || wahl === "dark" ? wahl : "auto";
+  const dunkel = w === "auto" ? systemDunkel() : w === "dark";
+  doc.documentElement.setAttribute("data-theme", dunkel ? "dark" : "light");
+  doc.documentElement.setAttribute("data-ansicht", w);
+  if (w === "auto" && !systemZuhoerer && globalThis.matchMedia) {
+    try {
+      const mq = globalThis.matchMedia("(prefers-color-scheme: dark)");
+      systemZuhoerer = () => {
+        if (doc.documentElement.getAttribute("data-ansicht") === "auto") setzeAnsicht(doc, "auto");
+      };
+      mq.addEventListener ? mq.addEventListener("change", systemZuhoerer) : mq.addListener(systemZuhoerer);
+    } catch { systemZuhoerer = null; }
+  }
+  return w;
 }

@@ -345,6 +345,16 @@ export const de = {
   // Theme-Umschalter
   "theme.hell": "Hell",
   "theme.dunkel": "Dunkel",
+  "theme.auto": "Automatisch",
+  // D12-2d · Einstellungs-Blatt: Ansicht (persoenlich, sofort) und
+  // Oberflaechensprache (persoenlich). Die Paarsprache wird in der Agenda
+  // vereinbart — sie ist eine Absprache, kein Schalter.
+  "einst.titel": "Einstellungen",
+  "einst.ansicht": "Ansicht",
+  "einst.sprache": "Sprache der Oberfläche",
+  "einst.paarsprache": "Die Begleitung spricht {sprache}.",
+  "einst.paarspracheHinweis": "Das ändert ihr gemeinsam — in der Agenda im gemeinsamen Raum.",
+  "paarspr.agendaKopf": "Sprache der Begleitung",
   // PWA (M1): Manifest & Home-Bildschirm
   "pwa.name": "raumzuzweit",
   "pwa.kurzname": "raumzuzweit",

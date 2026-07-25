@@ -110,40 +110,49 @@ beforeEach(async () => {
   await ruhe();
 });
 
-describe("D8 · Sprachknopf im Betrieb", () => {
-  it("sitzt in der Ecke, zeigt beide Kuerzel, hebt die aktuelle Sprache hervor", () => {
-    const ecke = root.querySelector("#psZeile");
-    expect(ecke.classList.contains("rz-sprachecke")).toBe(true);
-    const knopf = ecke.querySelector("#psLink");
-    expect(knopf.classList.contains("rz-sprachknopf")).toBe(true);
-    const marken = [...knopf.querySelectorAll("span")].map(s => s.textContent);
-    expect(marken).toContain("DE");
-    expect(marken).toContain("EN");
-    expect(knopf.querySelector(".an").textContent).toBe("DE");
+describe("D8/D12-2d · Sprache im Einstellungs-Blatt", () => {
+  it("das Blatt bietet die Oberflaechensprache an und zeigt die aktuelle als gewaehlt", async () => {
+    document.getElementById("pbEinst").click();
+    await ruhe();
+    const blatt = document.getElementById("pbEinstBlatt");
+    expect(blatt.classList.contains("pb-hidden")).toBe(false);
+    const wahlen = [...blatt.querySelectorAll("[data-ui]")].map(b => b.getAttribute("data-ui"));
+    expect(wahlen).toEqual(["de", "en"]);
+    expect(blatt.querySelector('[data-ui="de"]').classList.contains("an")).toBe(true);
+    expect(blatt.querySelector('[data-ui="en"]').classList.contains("an")).toBe(false);
   });
 
-  it("Tap faehrt den Dialog aus, erneuter Tap schliesst ihn wieder", async () => {
-    const dialog = root.querySelector("#boxPaarsprache");
-    expect(dialog.classList.contains("rz-sprachdialog")).toBe(true);
-    expect(dialog.classList.contains("pb-hidden")).toBe(true);
-
-    root.querySelector("#psLink").click();
+  it("es nennt die Paarsprache und verweist fuer die Aenderung auf die Agenda", async () => {
+    document.getElementById("pbEinst").click();
     await ruhe();
-    expect(dialog.classList.contains("pb-hidden")).toBe(false);
-    expect(dialog.querySelector("#psAntrag")).toBeTruthy();      // Vorgang unveraendert
-
-    root.querySelector("#psLink").click();
-    await ruhe();
-    expect(dialog.classList.contains("pb-hidden")).toBe(true);
+    const fuss = document.getElementById("pbEinstBlatt").querySelector(".rz-einst-fuss");
+    expect(fuss.textContent).toContain("Deutsch");
+    expect(fuss.textContent).toContain("Agenda");
+    // Der Antrag selbst wird hier NICHT gestellt — er ist eine Absprache.
+    expect(document.getElementById("pbEinstBlatt").querySelector("#psAntrag")).toBeNull();
   });
 
-  it("offener Vorschlag setzt Punkt UND Hinweis neben den Knopf", async () => {
-    root.querySelector("#psLink").click();
+  it("die Ansicht steht als drei Zeilen im Blatt", async () => {
+    document.getElementById("pbEinst").click();
     await ruhe();
-    root.querySelector("#psAntrag").click();
+    const blatt = document.getElementById("pbEinstBlatt");
+    expect([...blatt.querySelectorAll("[data-ansicht]")].map(b => b.getAttribute("data-ansicht")))
+      .toEqual(["light", "dark", "auto"]);
+    blatt.querySelector('[data-ansicht="dark"]').click();
     await ruhe();
-    const ecke = root.querySelector("#psZeile");
-    expect(ecke.querySelector(".rz-punkt")).toBeTruthy();
-    expect(ecke.querySelector(".rz-sprach-hinweis")).toBeTruthy();
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+  });
+
+  it("erneuter Tap schliesst das Blatt wieder", async () => {
+    const knopf = document.getElementById("pbEinst"), blatt = document.getElementById("pbEinstBlatt");
+    knopf.click(); await ruhe();
+    expect(blatt.classList.contains("pb-hidden")).toBe(false);
+    knopf.click(); await ruhe();
+    expect(blatt.classList.contains("pb-hidden")).toBe(true);
+  });
+
+  it("der alte Sprachknopf auf dem Startscreen ist weg", () => {
+    expect(root.querySelector("#psZeile")).toBeNull();
+    expect(root.querySelector("#psLink")).toBeNull();
   });
 });

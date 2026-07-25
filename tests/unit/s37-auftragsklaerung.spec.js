@@ -141,15 +141,17 @@ describe("S37 · Kapitel-Panel & Kopfzeile & UI-Sprache", () => {
     expect(root.querySelector(".rz-fussmarke#pbKern")).toBeTruthy();
     expect(root.querySelector("#pbHallo").classList.contains("pb-hidden")).toBe(true);
   });
-  it("Paarsprache-Panel bietet 'Nur UI-Sprache ändern' an; Klick stellt nur die eigene Ansicht um", async () => {
+  // D12-2d · Die Oberflaechensprache wohnt jetzt im Einstellungs-Blatt (nicht
+  // mehr als Knopf in der Paarsprach-Karte). Sie bleibt persoenlich: sie
+  // aendert pstate.language und die eigene Ansicht, nicht die Paarsprache.
+  it("das Einstellungs-Blatt stellt nur die eigene Oberflaeche um", async () => {
     const backend = memoryBackend(null);
     backend.language = { request: async () => ({}), withdraw: async () => ({}) };
     await bootApp(backend);
-    await klick(root.querySelector("#psLink"));
-    const ui = root.querySelector("#psUi");
-    expect(ui).toBeTruthy();
-    expect(ui.textContent).toContain("Nur UI-Sprache ändern");
-    await klick(ui);
+    await klick(document.getElementById("pbEinst"));
+    const en = document.getElementById("pbEinstBlatt").querySelector('[data-ui="en"]');
+    expect(en).toBeTruthy();
+    await klick(en);
     await ruhe();
     expect(await backend.pstate.get("language")).toBe("en");
     expect(document.documentElement.lang).toBe("en");

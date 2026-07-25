@@ -59,22 +59,21 @@ async function booten(backend) {
   return app;
 }
 
-describe("Paarsprache-Karte · drei Zustände", () => {
+/* D12-2d · Die Karte wohnt jetzt in der Agenda unter den Absprachen: die
+   Paarsprache ist eine Absprache, kein persoenlicher Schalter. Der Weg dorthin
+   fuehrt ueber den gemeinsamen Vorraum. */
+async function oeffneAgenda() {
+  await klick(root.querySelector("#btnSharedRoom"));
+  await klick(root.querySelector("#btnAgenda"));
+  return document.getElementById("agendaSprache");
+}
+
+describe("Paarsprache-Karte · drei Zustände (in der Agenda)", () => {
   it("kein Wunsch: zeigt aktuelle Sprache und Vorschlagen-Knopf; Klick → Wartet-Ansicht", async () => {
     const backend = memoryBackend(new MockLLM([]));
     await booten(backend);
-    // S35: Die Karte liegt hinter einem kleinen Link (versteckt per Default)
-    const zeile = document.getElementById("psZeile");
-    expect(zeile.classList.contains("pb-hidden")).toBe(false);
-    // D8: Die Ecke traegt den kompakten DE/EN-Wechsler — die aktuelle Sprache
-    // leuchtet, der volle Name lebt im title (und im Dialog selbst).
-    const knopf = zeile.querySelector("#psLink");
-    expect(knopf.textContent.replace(/\s/g, "")).toBe("DEEN");
-    expect(knopf.querySelector(".an").textContent).toBe("DE");
-    expect(knopf.getAttribute("title")).toContain("Deutsch");
-    const box = document.getElementById("boxPaarsprache");
-    expect(box.classList.contains("pb-hidden")).toBe(true);
-    await klick(zeile.querySelector("#psLink"));
+    expect(document.getElementById("psZeile")).toBeNull();   // nicht mehr auf dem Startscreen
+    const box = await oeffneAgenda();
     expect(box.classList.contains("pb-hidden")).toBe(false);
     expect(box.textContent).toContain("Deutsch");
     const antrag = box.querySelector("#psAntrag");
@@ -88,10 +87,7 @@ describe("Paarsprache-Karte · drei Zustände", () => {
   it("eigener Wunsch offen: Zurückziehen räumt auf und zeigt wieder Vorschlagen", async () => {
     const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "A", at: 1 } });
     await booten(backend);
-    // eigener offener Wunsch klappt die Karte NICHT von selbst auf — der Link zeigt ihn an
-    expect(document.getElementById("psZeile").textContent).toContain("Vorschlag");
-    await klick(document.getElementById("psZeile").querySelector("#psLink"));
-    const box = document.getElementById("boxPaarsprache");
+    const box = await oeffneAgenda();
     await klick(box.querySelector("#psZurueck"));
     expect(backend.meta.languageRequest).toBeUndefined();
     expect(box.querySelector("#psAntrag")).toBeTruthy();
@@ -100,7 +96,7 @@ describe("Paarsprache-Karte · drei Zustände", () => {
   it("Partner-Wunsch offen: Bestätigen wechselt mit Von-beiden-bestätigt-Meldung", async () => {
     const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "B", at: 1 } });
     await booten(backend);
-    const box = document.getElementById("boxPaarsprache");
+    const box = await oeffneAgenda();
     expect(box.querySelector("#psJa")).toBeTruthy();
     expect(box.querySelector("#psNein")).toBeTruthy();
     await klick(box.querySelector("#psJa"));
@@ -113,7 +109,7 @@ describe("Paarsprache-Karte · drei Zustände", () => {
   it("Ablehnen des Partner-Wunschs: Sprache unverändert, Wunsch weg", async () => {
     const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "B", at: 1 } });
     await booten(backend);
-    const box = document.getElementById("boxPaarsprache");
+    const box = await oeffneAgenda();
     await klick(box.querySelector("#psNein"));
     expect(backend.meta.locale).toBe("de");
     expect(backend.meta.languageRequest).toBeUndefined();
@@ -124,8 +120,21 @@ describe("Paarsprache-Karte · drei Zustände", () => {
     const backend = memoryBackend(new MockLLM([]));
     delete backend.language;
     await booten(backend);
-    expect(document.getElementById("boxPaarsprache").classList.contains("pb-hidden")).toBe(true);
-    expect(document.getElementById("psZeile").classList.contains("pb-hidden")).toBe(true);
+    const box = await oeffneAgenda();
+    expect(box.classList.contains("pb-hidden")).toBe(true);
+  });
+
+  it("ein offener Wunsch des Partners setzt den Punkt am Einstellungs-Zeichen", async () => {
+    const backend = memoryBackend(new MockLLM([]), { languageRequest: { target: "en", by: "B", at: 1 } });
+    await booten(backend);
+    // Der Punkt ist der einzige Ort, an dem ein Antrag noch auffaellt, seit
+    // die Karte nicht mehr auf dem Startscreen liegt.
+    expect(document.getElementById("pbEinstPunkt").classList.contains("pb-hidden")).toBe(false);
+  });
+
+  it("ohne offenen Wunsch bleibt der Punkt aus", async () => {
+    await booten(memoryBackend(new MockLLM([])));
+    expect(document.getElementById("pbEinstPunkt").classList.contains("pb-hidden")).toBe(true);
   });
 });
 
@@ -134,7 +143,9 @@ describe("Wechselwirkung mit dem Sprach-Schnappschuss (C1/C2)", () => {
     const mock = new MockLLM(["Hello Anna."]);
     const backend = memoryBackend(mock, { languageRequest: { target: "en", by: "B", at: 1 } });
     await booten(backend);
-    await klick(document.querySelector("#psJa"));
+    const box = await oeffneAgenda();
+    await klick(box.querySelector("#psJa"));
+    await klick(root.querySelector("#btnZurueck2"));
     await klick(root.querySelector("#btnMyRoom"));
     await klick(root.querySelector("#btnEinzel"));
     expect(getKorpusSprache()).toBe("en");

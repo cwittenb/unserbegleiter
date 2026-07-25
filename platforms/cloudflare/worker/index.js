@@ -46,7 +46,10 @@ const BSTATE_FELDER = new Set(Bstate.FIELDS);
 // fehlten aber in der Whitelist — auf Pages liefen sie ins 404 (Lesen still
 // null-maskiert: Merkposten und persönliche UI-Sprache funktionierten nur im
 // Artefakt). leseMarker ist das neue S92-Feld (Marker-Regel, je Rolle privat).
-const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "language", "leseMarker"]);
+// D12-2d · "theme" ist die persoenliche Ansicht (hell/dunkel/auto). Sie liegt
+// im pstate, damit sie der Person aufs naechste Geraet folgt; localStorage ist
+// nur der Spiegel fuer das sofortige Zeichnen beim Start.
+const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "language", "leseMarker", "theme"]);
 
 /* ---- Web Push (M7a): Abo-Ablage & inhaltsfreier Freigabe-Hinweis ----
  *  KV: push/<code>/<Rolle> → Array von Browser-Subscriptions (max. 5, dedupliziert

@@ -17,7 +17,9 @@ describe("M3 · Safe-Areas im Design", () => {
   });
 
   it("fixierte Chrome-Elemente (Theme, Busy) weichen der oberen Safe-Area aus", () => {
-    expect(DESIGN_CSS).toMatch(/\.pb-theme\{position:fixed;top:calc\(18px \+ env\(safe-area-inset-top/);
+    // D12-2d: die Bedien-Ecke heisst .rz-ecke (die Klasse .pb-theme bleibt als
+    // Wirt fuer die Push-Glocke am selben Element).
+    expect(DESIGN_CSS).toMatch(/\.rz-ecke\{position:fixed;top:calc\(18px \+ env\(safe-area-inset-top/);
     expect(DESIGN_CSS).toMatch(/\.pb-busy\{position:fixed;top:calc\(18px \+ env\(safe-area-inset-top/);
   });
 });

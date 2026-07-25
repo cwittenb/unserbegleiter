@@ -14,7 +14,7 @@ import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, ranking
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf, pruefeLeserichtung, formatiereLeseMarker } from "./prozess.js";
-import { applyDesign, verdrahteWegweiser } from "./design.js";
+import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser } from "./design.js";
 import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 
@@ -126,8 +126,6 @@ export function createApp({ doc, backend, root, diktat }) {
         <p class="rz-sub pb-hidden" id="startMeinSub"></p>
         <p class="rz-sub pb-hidden" id="startTeilSub"></p>
         <h1 class="pb-h1 pb-hidden" id="pbHallo"></h1>
-        <p class="rz-sprachecke pb-hidden" id="psZeile"></p>
-        <div class="rz-sprachdialog pb-hidden" id="boxPaarsprache"></div>
         <div class="rz-fuss">
           <div class="rz-caps rz-caps-ueber">${t("start.capsMein")}</div>
           <button class="rz-zeile" id="btnMyRoom"><span>${t("start.betreteMein")}</span><span class="rz-pfeil">↑</span></button>
@@ -1867,13 +1865,94 @@ export function createApp({ doc, backend, root, diktat }) {
       `<div class="pb-ag-kopf">${t("agenda.gruppePunkte")}</div>` +
       (items.length ? items.map(punktZeile).join("") : `<div class="pb-item">${t("agenda.leer")}</div>`) +
       `</div>` +
-      `<div id="agendaAbsprachen"></div>`;
+      `<div id="agendaAbsprachen"></div>` +
+      `<div class="pb-ag-block" id="agendaSprache"></div>`;
     for (const b of $("agendaItems").querySelectorAll("[data-abr]"))
       b.addEventListener("click", async () => { await raeumeAgendaAb(backend, b.getAttribute("data-abr"), "selfResolved"); zeigeAgenda(); });
     for (const b of $("agendaItems").querySelectorAll("[data-vor]"))
       b.addEventListener("click", async () => { await merkeVor(backend, b.getAttribute("data-vor")); zeigeAgenda(); });
     // S44 · "Weitere Absprachen": Prozessreflexions-Rhythmus lebt jetzt hier.
     await rhythmusSektion($("agendaAbsprachen"));
+    // D12-2d · Die Paarsprache ist eine Absprache und wohnt deshalb hier,
+    // nicht im persönlichen Einstellungs-Blatt.
+    zeigePaarsprache();
+  }
+
+  /* ---- D12-2d · Einstellungs-Blatt: Ansicht und Oberflächensprache.
+     Beides ist persönlich und wirkt sofort — im Gegensatz zur Paarsprache,
+     die in der Agenda ausgehandelt wird. Das Blatt sitzt in der Bedien-Ecke
+     am Dokument, nicht in der App-Wurzel: es soll auf jedem Screen erreichbar
+     sein, auch wenn die Wurzel gerade neu gebaut wird. ---- */
+  const chrome = id => doc.getElementById(id);
+
+  /** Der Punkt am Zeichen ist der einzige Ort, an dem ein offener Sprach-
+   *  antrag des Partners noch auffällt, seit die Karte in der Agenda wohnt. */
+  function aktualisierePunkt() {
+    const punkt = chrome("pbEinstPunkt");
+    if (!punkt) return;
+    const w = state.info && state.info.languageRequest;
+    const offenFuerMich = !!(w && w.by !== state.info.role);
+    punkt.classList.toggle("pb-hidden", !offenFuerMich);
+  }
+
+  async function waehleAnsicht(wahl) {
+    const w = setzeAnsicht(doc, wahl);
+    merkeAnsicht(w);
+    try { await backend.pstate.set("theme", w); } catch { /* Umgebungen ohne pstate */ }
+    zeigeEinstellungen();
+  }
+
+  function zeigeEinstellungen() {
+    const blatt = chrome("pbEinstBlatt");
+    if (!blatt || blatt.classList.contains("pb-hidden")) return;
+    const ansicht = doc.documentElement.getAttribute("data-ansicht") || "auto";
+    const ui = getLocale();
+    const paar = state.info && state.info.locale === "en" ? "en" : "de";
+    const wahl = (gruppe, wert, text, aktiv) =>
+      `<button class="rz-einst-wahl${aktiv ? " an" : ""}" data-${gruppe}="${wert}">` +
+      `<span>${text}</span><span class="rz-haken" aria-hidden="true">✓</span></button>`;
+    blatt.innerHTML =
+      `<div class="rz-einst-gruppe">` +
+      `<div class="rz-caps">${t("einst.ansicht")}</div>` +
+      wahl("ansicht", "light", t("theme.hell"), ansicht === "light") +
+      wahl("ansicht", "dark", t("theme.dunkel"), ansicht === "dark") +
+      wahl("ansicht", "auto", t("theme.auto"), ansicht === "auto") +
+      `</div>` +
+      `<div class="rz-einst-gruppe">` +
+      `<div class="rz-caps">${t("einst.sprache")}</div>` +
+      wahl("ui", "de", t("paarspr.name.de"), ui === "de") +
+      wahl("ui", "en", t("paarspr.name.en"), ui === "en") +
+      `<p class="rz-einst-fuss">${t("einst.paarsprache", { sprache: sprachName(paar) })} ` +
+      `${t("einst.paarspracheHinweis")}</p>` +
+      `</div>`;
+    for (const b of blatt.querySelectorAll("[data-ansicht]"))
+      b.addEventListener("click", () => waehleAnsicht(b.getAttribute("data-ansicht")));
+    for (const b of blatt.querySelectorAll("[data-ui]"))
+      b.addEventListener("click", async () => {
+        const l = b.getAttribute("data-ui");
+        if (l === getLocale()) return;
+        setLocale(l);
+        try { await backend.pstate.set("language", l); } catch { /* Umgebungen ohne pstate */ }
+        relaunch();     // die Oberfläche wird in der neuen Sprache neu gebaut
+      });
+  }
+
+  function verdrahteEinstellungen() {
+    const knopf = chrome("pbEinst"), blatt = chrome("pbEinstBlatt");
+    if (!knopf || !blatt || knopf.dataset.rzVerdrahtet) return;
+    knopf.dataset.rzVerdrahtet = "1";
+    knopf.addEventListener("click", ev => {
+      ev.stopPropagation();
+      const zu = blatt.classList.toggle("pb-hidden");
+      knopf.setAttribute("aria-expanded", String(!zu));
+      if (!zu) zeigeEinstellungen();
+    });
+    doc.addEventListener("click", ev => {
+      if (blatt.classList.contains("pb-hidden")) return;
+      if (blatt.contains(ev.target) || knopf.contains(ev.target)) return;
+      blatt.classList.add("pb-hidden");
+      knopf.setAttribute("aria-expanded", "false");
+    });
   }
 
   /* ---- Paarsprache: beidseitig bestätigter Wechsel (S30·C3).
@@ -1882,28 +1961,17 @@ export function createApp({ doc, backend, root, diktat }) {
      erzwingt der Worker bzw. das lokale Backend, nie die UI. ---- */
   function sprachName(l) { return t("paarspr.name." + (l === "en" ? "en" : "de")); }
   function zeigePaarsprache(meldung) {
-    // S35: Die Karte ist hinter einem kleinen Link versteckt; ein offener
-    // Vorschlag des Partners klappt sie von selbst auf (Bestätigung wartet).
-    const box = $("boxPaarsprache"), zeile = $("psZeile");
-    if (!backend.language) { box.classList.add("pb-hidden"); zeile.classList.add("pb-hidden"); return; }
+    // D12-2d · Die Karte lebt jetzt in der Agenda unter den Absprachen. Kein
+    // Aufklapp-Link mehr: wer die Agenda offen hat, sieht den Stand sofort.
+    // Der Wartepunkt bei einem offenen Antrag sitzt am Einstellungs-Zeichen
+    // (aktualisierePunkt) — sonst bliebe ein Antrag ungesehen liegen.
+    const box = $("agendaSprache");
+    if (!box) return;                      // Agenda gerade nicht gerendert
+    if (!backend.language) { box.classList.add("pb-hidden"); return; }
+    box.classList.remove("pb-hidden");
     const aktuell = state.info.locale === "en" ? "en" : "de";
     const wunsch = state.info.languageRequest;
-    if (wunsch && wunsch.by !== state.info.role) state.psOffen = true;
-    // D8 · Kleiner DE/EN-Wechsler unten rechts (Design-Korrektur): die
-    // aktuelle Sprache leuchtet, ein offener Vorschlag setzt den Punkt UND
-    // schreibt den Hinweis daneben. Der Tap oeffnet den Dialog.
-    const marke = l => `<span class="${aktuell === l ? "an" : ""}">${l.toUpperCase()}</span>`;
-    zeile.innerHTML =
-      (wunsch ? `<span class="rz-sprach-hinweis">${t("paarspr.linkOffen", { sprache: sprachName(aktuell) })}</span>` : "") +
-      `<button class="rz-sprachknopf" id="psLink" title="${t("paarspr.link", { sprache: sprachName(aktuell) })}">` +
-      marke("de") + marke("en") + (wunsch ? `<span class="rz-punkt"></span>` : "") + `</button>`;
-    zeile.classList.remove("pb-hidden");
-    zeile.querySelector("#psLink").addEventListener("click", () => {
-      state.psOffen = !state.psOffen;
-      zeigePaarsprache();
-    });
-    box.classList.toggle("pb-hidden", !state.psOffen);
-    if (!state.psOffen) return;
+    aktualisierePunkt();
     const ziel = aktuell === "en" ? "de" : "en";
     const w = wunsch;
     const meins = w && w.by === state.info.role;
@@ -1919,28 +1987,19 @@ export function createApp({ doc, backend, root, diktat }) {
       knoepfe = `<button class="pb-btn primary" id="psJa">${t("paarspr.bestaetigen")}</button> ` +
                 `<button class="pb-btn" id="psNein">${t("paarspr.ablehnen")}</button>`;
     }
-    const uiZiel = getLocale() === "en" ? "de" : "en";
     box.innerHTML =
-      `<div class="pb-sub">${t("paarspr.titel")}</div>` +
+      `<div class="pb-ag-kopf">${t("paarspr.agendaKopf")}</div>` +
       `<p style="font-size:13px;margin:6px 0">${mitte}</p>` + knoepfe +
-      ` <button class="pb-btn" id="psUi">${t("paarspr.uiWechsel", { sprache: sprachName(uiZiel) })}</button>` +
       (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650" id="psMeldung">${meldung}</p>` : "") +
-      `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>` +
-      `<p class="pb-sub" style="margin:4px 0 0">${t("paarspr.uiHinweis", { partner: esc(state.info.partner) })}</p>`;
+      `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>`;
     const anwenden = r => {
       state.info.locale = r.locale;
       state.info.languageRequest = r.languageRequest;
-      state.psOffen = true;   // Ergebnis-Meldung sichtbar lassen
       zeigePaarsprache(r.status === "confirmed"
         ? t("paarspr.gewechselt", { sprache: sprachName(r.locale) })
         : "");
     };
     const knopf = (id, fn) => { const b = box.querySelector(id); if (b) b.addEventListener("click", () => fn().then(anwenden).catch(e => err(fehlerText(e)))); };
-    box.querySelector("#psUi").addEventListener("click", async () => {
-      setLocale(uiZiel);
-      try { await backend.pstate.set("language", uiZiel); } catch { /* Umgebungen ohne pstate */ }
-      relaunch();
-    });
     knopf("#psAntrag", () => backend.language.request(ziel));
     knopf("#psJa", () => backend.language.request(w.target));
     knopf("#psZurueck", () => backend.language.withdraw());
@@ -2586,6 +2645,19 @@ export function createApp({ doc, backend, root, diktat }) {
       const sp = await backend.pstate.get("language");
       if (sp && sp !== getLocale()) { setLocale(sp); return relaunch(); }
     } catch { /* Umgebungen ohne pstate */ }
+    // D12-2d · Die Ansicht folgt der Person. localStorage zeichnet SOFORT,
+    // pstate ist die Wahrheit und holt die Wahl aufs nächste Gerät — aber es
+    // wird NICHT abgewartet: eine Komfort-Einstellung darf den Start nie
+    // aufhalten (dieselbe Regel wie bei der Kulisse). Der Boot lief sonst in
+    // eine zusätzliche Runde durch die API, bevor die Sitzung stand.
+    setzeAnsicht(doc, gemerkteAnsicht());
+    verdrahteEinstellungen();
+    aktualisierePunkt();
+    backend.pstate.get("theme").then(w => {
+      if (!w || w === gemerkteAnsicht()) return;
+      merkeAnsicht(w);
+      setzeAnsicht(doc, w);
+    }).catch(() => { /* Umgebungen ohne pstate */ });
     doc.documentElement.lang = getLocale();
     $("pbHallo").textContent = t("allg.hallo", { name: state.info.name });
     setzeMarke();
@@ -2597,7 +2669,6 @@ export function createApp({ doc, backend, root, diktat }) {
     $("meinIntro").textContent = t("mein.intro", { partner: state.info.partner });
     $("pbBusyTxt").textContent = t("allg.arbeitet");
     zeigeRecovery();
-    zeigePaarsprache();
     betrete("scrStart");
     if (backend.recovery && state.info.emailRequired && !state.info.recoveryEmail) zeigeEmailPflicht();
   }

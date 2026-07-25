@@ -64,6 +64,9 @@ export function remoteBackend() {
       get: f => api("GET", "/api/pstate/" + f).then(r => r.value),
       set: (f, v) => {
         if (f === "language") { try { localStorage.setItem("pb.sprache", v); } catch { /* z. B. Safari privat */ } }
+        // D12-2d · Spiegel der Ansicht: beim naechsten Start steht die Farbe,
+        // bevor der Server geantwortet hat — sonst blitzt es kurz hell auf.
+        if (f === "theme") { try { localStorage.setItem("pb.ansicht", v); } catch { /* dito */ } }
         return api("PUT", "/api/pstate/" + f, { value: v });
       },
     },

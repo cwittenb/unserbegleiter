@@ -1,75 +1,104 @@
 // @vitest-environment happy-dom
-// Design-Track D10 — der Ansicht-Umschalter (hell/dunkel) muss DA SEIN.
-// Genau das fehlte: er steckte im alten KULISSE_HTML und verschwand mit ihm
-// in D6, ohne dass ein Test es merkte — die Verdrahtung ist "if (el)"-
-// abgesichert und schweigt, wenn die Knoepfe fehlen. Diese Datei ist der
-// Waechter dagegen: Existenz, Wirkung, und der Wirt fuer die Push-Glocke.
+// D10/D12-2d · Die Bedien-Ecke traegt ein Zeichen, nicht zwei Pillen.
+// Baum bei Hell, Seerose bei Dunkel — dieselbe Paarung wie in der Kulisse.
+// Die Ansicht ist dreiwertig (hell/dunkel/automatisch) und wird gemerkt.
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { applyDesign, DESIGN_CSS } from "../../core/ui/design.js";
+import { DESIGN_CSS, CHROME_HTML, applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht } from "../../core/ui/design.js";
 
-beforeEach(() => {
+function frisch() {
   document.head.innerHTML = "";
-  document.body.innerHTML = '<div id="app"></div>';
+  document.body.innerHTML = "";
   document.documentElement.removeAttribute("data-theme");
-});
+  document.documentElement.removeAttribute("data-ansicht");
+  try { localStorage.clear(); } catch { /* egal */ }
+}
+beforeEach(frisch);
 
-describe("D10 · Der Umschalter existiert", () => {
-  it("applyDesign legt die Bedien-Ecke an, wenn die Huelle sie nicht mitbringt", () => {
-    expect(document.getElementById("pbHell")).toBeNull();
+describe("D10 · Die Bedien-Ecke existiert", () => {
+  it("applyDesign legt sie an, wenn die Huelle sie nicht mitbringt", () => {
+    expect(document.getElementById("pbEinst")).toBeNull();
     applyDesign(document);
-    const gruppe = document.querySelector(".pb-theme");
-    expect(gruppe).toBeTruthy();
-    expect(gruppe.querySelector("#pbHell")).toBeTruthy();
-    expect(gruppe.querySelector("#pbDunkel")).toBeTruthy();
+    const ecke = document.querySelector(".rz-ecke");
+    expect(ecke).toBeTruthy();
+    expect(ecke.querySelector("#pbEinst")).toBeTruthy();
+    expect(ecke.querySelector("#pbEinstBlatt")).toBeTruthy();
   });
 
-  it("beide Knoepfe tragen eine Beschriftung (der sichtbare Text wird per CSS zum Zeichen)", () => {
+  it("das Zeichen traegt beide Fassungen und eine Beschriftung", () => {
     applyDesign(document);
-    for (const id of ["pbHell", "pbDunkel"]) {
-      const k = document.getElementById(id);
-      expect(k.getAttribute("aria-label")).toBeTruthy();
-      expect(k.textContent.length).toBeGreaterThan(0);
-    }
+    const k = document.getElementById("pbEinst");
+    expect(k.querySelector(".rz-einst-baum")).toBeTruthy();
+    expect(k.querySelector(".rz-einst-seerose")).toBeTruthy();
+    expect(k.getAttribute("aria-label")).toBeTruthy();
+    // CSS tauscht sie am Theme, nicht JavaScript.
+    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-baum{display:none}");
+    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-seerose{display:block}");
   });
 
-  it("legt NICHT doppelt an, wenn die Huelle die Knoepfe schon mitbringt", () => {
-    document.body.insertAdjacentHTML("beforeend",
-      '<div class="pb-theme"><button id="pbHell"></button><button id="pbDunkel"></button></div>');
+  it("legt NICHT doppelt an, wenn die Huelle das Zeichen schon mitbringt", () => {
+    document.body.innerHTML = CHROME_HTML;
     applyDesign(document);
-    expect(document.querySelectorAll(".pb-theme")).toHaveLength(1);
-  });
-});
-
-describe("D10 · Der Umschalter wirkt", () => {
-  it("Start ist hell; Tap auf Dunkel setzt data-theme und tauscht das Wechselziel", () => {
-    applyDesign(document);
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-    // Sichtbar ist immer nur das ZIEL: der aktive Knopf traegt "an" und wird
-    // per CSS ausgeblendet.
-    expect(document.getElementById("pbHell").classList.contains("an")).toBe(true);
-    expect(document.getElementById("pbDunkel").classList.contains("an")).toBe(false);
-
-    document.getElementById("pbDunkel").click();
-    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
-    expect(document.getElementById("pbDunkel").classList.contains("an")).toBe(true);
-    expect(document.getElementById("pbHell").classList.contains("an")).toBe(false);
-
-    document.getElementById("pbHell").click();
-    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.querySelectorAll("#pbEinst")).toHaveLength(1);
+    expect(document.querySelectorAll(".rz-ecke")).toHaveLength(1);
   });
 
-  it("CSS zeigt nur das Wechselziel und stellt die Ecke oben rechts", () => {
-    expect(DESIGN_CSS).toContain(".pb-theme button.an{display:none}");
-    expect(DESIGN_CSS).toMatch(/\.pb-theme\{position:fixed;top:calc\(18px \+ env\(safe-area-inset-top,0px\)\);right:/);
-  });
-});
-
-describe("D10 · Wirt fuer die Push-Glocke (M7a)", () => {
-  it(".pb-theme ist vorhanden — sonst haengt sich die Glocke nirgends ein", () => {
+  it("bleibt Wirt fuer die Push-Glocke (M7a sucht .pb-theme)", () => {
     applyDesign(document);
-    // genau diese Abfrage macht client.js: ergaenzePushGlocke() kehrt ohne
-    // Wirt sofort zurueck, und die Glocke bliebe unsichtbar.
     expect(document.querySelector(".pb-theme")).toBeTruthy();
+  });
+
+  it("die Ecke wird auch dann angelegt, wenn das Stylesheet schon steht", () => {
+    applyDesign(document);
+    document.body.innerHTML = "";        // Huellenwechsel: Body neu, Head bleibt
+    applyDesign(document);
+    expect(document.getElementById("pbEinst")).toBeTruthy();
+  });
+});
+
+describe("D12-2d · Die Ansicht ist dreiwertig", () => {
+  it("hell und dunkel setzen data-theme unmittelbar", () => {
+    setzeAnsicht(document, "dark");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.documentElement.getAttribute("data-ansicht")).toBe("dark");
+    setzeAnsicht(document, "light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+  });
+
+  it("automatisch folgt der Systemvorgabe — in beide Richtungen", () => {
+    const echt = globalThis.matchMedia;
+    let dunkel = true;
+    globalThis.matchMedia = () => ({ matches: dunkel, addEventListener() {}, addListener() {} });
+    setzeAnsicht(document, "auto");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    dunkel = false;
+    setzeAnsicht(document, "auto");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    globalThis.matchMedia = echt;
+  });
+
+  it("eine ausdrueckliche Wahl ueberstimmt die Systemvorgabe", () => {
+    const echt = globalThis.matchMedia;
+    globalThis.matchMedia = () => ({ matches: true, addEventListener() {}, addListener() {} });
+    setzeAnsicht(document, "light");
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    globalThis.matchMedia = echt;
+  });
+
+  it("unbekannte Werte fallen auf automatisch zurueck", () => {
+    expect(setzeAnsicht(document, "lila")).toBe("auto");
+  });
+
+  it("die Wahl wird gemerkt; Vorgabe ist automatisch", () => {
+    expect(gemerkteAnsicht()).toBe("auto");
+    merkeAnsicht("dark");
+    expect(gemerkteAnsicht()).toBe("dark");
+    merkeAnsicht("quatsch");
+    expect(gemerkteAnsicht()).toBe("auto");
+  });
+
+  it("die Ecke steht oben rechts und traegt den Punkt fuer offene Antraege", () => {
+    expect(DESIGN_CSS).toMatch(/\.rz-ecke\{position:fixed;top:calc\(18px \+ env\(safe-area-inset-top,0px\)\)/);
+    expect(DESIGN_CSS).toContain(".rz-einst .rz-punkt{position:absolute");
   });
 });
