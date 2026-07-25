@@ -122,6 +122,7 @@ export const de = {
   "chat.platzhalter": "Deine Nachricht…",
   "chat.senden": "Senden",
   "chat.raumVerlassen": "← Raum verlassen",
+  "chat.raumVerlassenKnopf": "Raum verlassen",
   "chat.deineZahl": "Deine Zahl:",
   "chat.tippt": "Die Begleitung schreibt",
   "chat.diktieren": "Diktieren",

@@ -124,6 +124,7 @@ export const en = {
   "chat.platzhalter": "Your message…",
   "chat.senden": "Send",
   "chat.raumVerlassen": "← Leave the space",
+  "chat.raumVerlassenKnopf": "Leave the space",
   "chat.deineZahl": "Your number:",
   "chat.tippt": "The Companion is writing",
   "chat.diktieren": "Dictate",

@@ -5,6 +5,7 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeAufdeckAntwort } from "../engine/aufdeck-waechter.js";
+import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -75,6 +76,8 @@ export function einzelDef(backend, hooks = {}) {
     titel: "Auftragsklärung",
     wiedereinstieg: "einzelWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
+    // S93 · Urteils-Wächter (siehe soloDef).
+    validiereAntwort: text => pruefeUrteilsAntwort(text),
     markerOrder: ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
       "[[SCALE-SAFETY]]": e => hooks.onScale && hooks.onScale("safety", e),
@@ -115,9 +118,12 @@ export function gemeinsamDef(backend, hooks = {}) {
     sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
     // S72 · Aufdeck-Wächter (E2): Stapel-Inhalte im Begleitungs-Text vor der
     // ersten Tafel lösen genau eine SYSTEM-REVISION aus (Engine-Vertrag 2).
+    // S93 · Zwei Wächter, EIN Hook: der spezifischere zuerst. Die Engine
+    // gewährt ohnehin nur EINE Revisions-Runde je Antwort — die Aufdeck-
+    // Dramaturgie wiegt schwerer als eine Formulierungs-Korrektur.
     validiereAntwort: (text, eng) => pruefeAufdeckAntwort(text, {
       messages: eng.chat.messages, nameA: eng.ctx && eng.ctx.nameA, nameB: eng.ctx && eng.ctx.nameB,
-    }),
+    }) || pruefeUrteilsAntwort(text),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)

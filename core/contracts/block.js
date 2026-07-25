@@ -5,13 +5,15 @@
 // sonst Fehlertexte). Ungültig → genau EINE automatische Korrektur-Runde
 // (die Korrektur-Nachricht liefert korrekturNachricht(); die Runden-Zählung
 // verantwortet die Engine, S3). cleanDisplay ersetzt Blöcke durch ihre
-// Platzhalter und entfernt Marker aus der Anzeige.
+// Platzhalter und entfernt Marker sowie Steuer-Token (S93) aus der Anzeige.
 //
 // Beibehaltene Toleranz (Ballast-Register §1.4, mit dokumentierendem Test):
 // Markdown-Zäune (```json … ```) um den Block-Körper werden entfernt.
 // Begründung: billig, schadlos, und auch aktuelle Modelle zäunen JSON
 // gelegentlich ein. Alles darüber hinaus (Reparatur kaputten JSONs o. ä.)
 // ist bewusst NICHT toleriert — dafür gibt es die Korrektur-Runde.
+
+import { entferneSteuerToken } from "./steuertoken.js";
 
 /**
  * Erzeugt eine Block-Definition mit Parse- und Strip-Regex.
@@ -82,5 +84,9 @@ export function cleanDisplay(text, alleMarker, alleBloecke) {
     const ersatz = b.placeholder ? "\n\n" + b.placeholder : "";
     t = t.replace(b.stripRe, ersatz);
   }
+  // S93: Steuer-Token ZULETZT — die Blöcke sind dann bereits durch ihre
+  // Platzhalter ersetzt, sodass der Klammerzeilen-Filter kein JSON-Innenleben
+  // mehr sehen kann.
+  t = entferneSteuerToken(t);
   return t.replace(/\n{3,}/g, "\n\n").trim();
 }

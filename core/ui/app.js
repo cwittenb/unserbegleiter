@@ -3,6 +3,7 @@
 
 import { Engine } from "../engine/engine.js";
 import { cleanDisplay, findeBlock } from "../contracts/block.js";
+import { offeneKlammerAbIndex } from "../contracts/steuertoken.js";
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor } from "./sessions.js";
@@ -251,7 +252,8 @@ export function createApp({ doc, backend, root, diktat }) {
           <button class="pb-btn pb-ikon" id="btnMic" data-icon="mic" title="${t("chat.diktieren")}" aria-label="${t("chat.diktieren")}">${IKON.mic}</button>
           <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
         </div>
-        <button class="rz-zeile pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">→</span></button>
+        <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">→</span></button>
+        <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnRaumVerlassen"><span>${t("chat.raumVerlassenKnopf")}</span><span class="rz-pfeil">→</span></button>
       </div>`;
 
   const $ = id => wurzel.querySelector("#" + id);
@@ -307,6 +309,14 @@ export function createApp({ doc, backend, root, diktat }) {
      verschwinden; eine stehengebliebene Closure hat danach kein Ziel mehr. */
   function verdrahteChat() {
     $("btnChatZurueck").addEventListener("click", async () => {
+      await pausiereChat();
+      betrete(state.herkunft || "scrStart");
+    });
+    // S93 · Ausgang aus der ABGESCHLOSSENEN Session. Der Composer verschwindet
+    // dort (nichts Eintippbares darf ins Nirwana laufen) — bis S93 blieb aber
+    // NICHTS an seiner Stelle stehen: nur der kleine Pfeil im Kopf, weit weg
+    // vom Blick, der gerade am Sitzungsende hing. Derselbe Pfad wie der Pfeil.
+    $("btnRaumVerlassen").addEventListener("click", async () => {
       await pausiereChat();
       betrete(state.herkunft || "scrStart");
     });
@@ -818,6 +828,9 @@ export function createApp({ doc, backend, root, diktat }) {
     }
     const iM = txt.indexOf("[[");
     if (iM >= 0 && iM < schnitt) schnitt = iM;        // Marker im Entstehen
+    // S93: ein Steuer-Token im Entstehen ("[CLOSE SESS…") darf nie aufblitzen.
+    const iS = offeneKlammerAbIndex(txt);
+    if (iS >= 0 && iS < schnitt) schnitt = iS;
     txt = txt.slice(0, schnitt);
     if (txt.endsWith("[")) txt = txt.slice(0, -1);    // halbe Marker-Klammer
     for (const tok of ALLE_BLOECKE.map(b => b.start)) // angerissenes Start-Token
@@ -945,6 +958,12 @@ export function createApp({ doc, backend, root, diktat }) {
     if (!c) return;
     const fertig = !!(state.engine && state.engine.chat && state.engine.chat.status !== "running");
     c.classList.toggle("pb-hidden", fertig);
+    // S93 · Das Versprechen des S74-Kommentars endlich einlösen: An die Stelle
+    // des Composers TRITT der Ausgang. Er hängt am Chat-Zustand, nicht am Raum
+    // — damit gilt er für alle vier Sessions (Reflexionsgespräch, Qualitätszeit,
+    // Auftragsklärung, Gemeinsame Auflösung) ohne Sonderfall je Raum.
+    const v = $("btnRaumVerlassen");
+    if (v) v.classList.toggle("pb-hidden", !fertig);
   }
 
   function setzeWarten(v) { state.warten = v; aktualisiereBusy(); }
@@ -1048,10 +1067,26 @@ export function createApp({ doc, backend, root, diktat }) {
       `<p class="rz-teilen-text">${esc(data.selbstmitteilung)}</p></div>` +
       (data.wish ? `<p class="rz-sub">${t("gate.wish")}${esc(data.wish)}</p>` : "") +
       data.paths.map(w => `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
-      `<button class="rz-zeile" id="btnGateOk"><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
-      `<button class="rz-zeile" id="btnGateNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
-    p.querySelector("#btnGateOk").addEventListener("click", async () => {
-      const wege = [...p.querySelectorAll("input:checked")].map(x => x.getAttribute("data-weg"));
+      `<button class="rz-zeile rz-knopf-flach rz-gedimmt" id="btnGateOk" disabled><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
+      `<button class="rz-zeile rz-knopf-flach" id="btnGateNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
+    // S93 · Eine Entscheidung statt zwei. Bis S93 stand „Freigeben“ auch ohne
+    // gewählten Weg bereit — der Klick schickte dann „nichts gequert“, eine
+    // erreichbare, aber sinnlose Kombination, die sich wie eine dritte
+    // Rückversicherung anfühlte. Jetzt trägt die Weg-Wahl die Entscheidung;
+    // „Noch nicht“ bleibt der ausdrückliche Ausstieg.
+    const gateOk = p.querySelector("#btnGateOk");
+    const gateStand = () => {
+      const gewaehlt = !!p.querySelector("input[data-weg]:checked");
+      gateOk.disabled = !gewaehlt;
+      gateOk.classList.toggle("rz-gedimmt", !gewaehlt);
+    };
+    for (const box of p.querySelectorAll("input[data-weg]")) box.addEventListener("change", gateStand);
+    gateStand();
+    gateOk.addEventListener("click", async () => {
+      // Zwei Schlösser, absichtlich: das disabled-Attribut ist die SICHTBARE
+      // Zusage, die Zählung der Häkchen die logische — die DOM-Lage entscheidet.
+      const wege = [...p.querySelectorAll("input[data-weg]:checked")].map(x => x.getAttribute("data-weg"));
+      if (!wege.length) return;
       p.classList.add("pb-hidden");
       try { await quereGate(backend, data, wege); } catch (e) { err(e.message); return; }
       await warteAntwort(() => engine.submitToolResult(
@@ -2117,8 +2152,8 @@ export function createApp({ doc, backend, root, diktat }) {
       data.items.map((it, i) =>
         `<label class="rz-wahl"><input type="checkbox" data-fg="${i}" checked> <strong>${esc(it.id)}</strong> ${esc(it.text)}</label>`
       ).join("") +
-      `${wieder ? `<p style="font-size:14px">${t("fg.wieder", { partner: esc(state.info.partner) })}</p><label class="rz-wahl"><input type="checkbox" id="kwFgAufdeck"> ${t("fg.check")}</label>` : ""}<button class="rz-zeile" id="kwFgOk"><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
-      `<button class="rz-zeile" id="kwFgNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
+      `${wieder ? `<p style="font-size:14px">${t("fg.wieder", { partner: esc(state.info.partner) })}</p><label class="rz-wahl"><input type="checkbox" id="kwFgAufdeck"> ${t("fg.check")}</label>` : ""}<button class="rz-zeile rz-knopf-flach" id="kwFgOk"><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
+      `<button class="rz-zeile rz-knopf-flach" id="kwFgNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
     p.querySelector("#kwFgOk").addEventListener("click", async () => {
       const items = [...p.querySelectorAll("input[data-fg]:checked")].map(x => {
         const it = data.items[+x.getAttribute("data-fg")];

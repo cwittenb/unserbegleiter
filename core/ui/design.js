@@ -159,6 +159,16 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                 font-family:var(--rz-serif);font-size:20px;font-weight:400;line-height:1.3;
                 color:inherit;cursor:pointer;border-radius:0}
       .rz-zeile:disabled,.rz-zeile.rz-gedimmt{color:var(--rz-gedimmt);cursor:default}
+      /* S93 · HANDLUNG vs. NAVIGATION. Die Hairline-Zeile bleibt die Sprache
+         von Navigation und Auswahl (Vorraum, Regal, Wahl-Labels). Eine Zeile,
+         die etwas TUT — eine Sitzung beenden, den Raum wechseln, etwas queren
+         lassen oder es lassen — bekommt einen eigenen Rahmen: flach, kantig,
+         ohne Radius. So gibt sie sich als Knopf zu erkennen, ohne die
+         Kanten-Sprache zu verlassen. */
+      .rz-knopf-flach{border:1px solid var(--rz-hairline);padding:13px 16px;margin-top:10px}
+      .rz-knopf-flach+.rz-knopf-flach{margin-top:8px}
+      .rz-tiefgruen .rz-knopf-flach,.rz-regal-dunkel .rz-knopf-flach{border-color:var(--rz-hairline-gruen)}
+      .rz-knopf-flach:disabled,.rz-knopf-flach.rz-gedimmt{cursor:not-allowed;opacity:.55}
       .rz-zeile .rz-pfeil{flex:none;font-family:var(--rz-sans);font-size:15px;color:var(--rz-pfeil)}
       .rz-tiefgruen .rz-zeile,.rz-regal-dunkel .rz-zeile{border-top-color:var(--rz-hairline-gruen)}
       .rz-tiefgruen .rz-zeile .rz-pfeil,.rz-regal-dunkel .rz-zeile .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}

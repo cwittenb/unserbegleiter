@@ -107,7 +107,13 @@ describe("UI · Gate-Drehbuch (Vertrag 1 + Querung)", () => {
     expect(panel.classList.contains("pb-hidden")).toBe(false);
     expect(panel.textContent).toContain("mehr gemeinsame Abende");
 
-    panel.querySelector('input[data-weg="shelf"]').checked = true;
+    // S93 · Die Weg-Wahl schaltet die Freigabe erst frei — wie in der Hand
+    // der Person: Häkchen setzen, change feuert, dann ist der Knopf lebendig.
+    const wegBox = panel.querySelector('input[data-weg="shelf"]');
+    expect(panel.querySelector("#btnGateOk").disabled).toBe(true);
+    wegBox.checked = true;
+    wegBox.dispatchEvent(new panel.ownerDocument.defaultView.Event("change"));
+    expect(panel.querySelector("#btnGateOk").disabled).toBe(false);
     await klick(panel.querySelector("#btnGateOk"));
 
     const regal = await backend.bstate.get("shelf");
