@@ -20,7 +20,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         --rz-gedimmt:#a3a894;--rz-marke:#5c6653;--rz-marke-auf-gruen:#6f8062;
         --rz-akzent:#8fae74;--rz-akzent-text:#14201a;--rz-akzent-hell:#7d9b62;
         --rz-pfeil:#7d9b62;--rz-pfeil-auf-gruen:#a9c88b;
-        --rz-label:#7d9b62;--rz-label-auf-gruen:#9db08f;--rz-nutzer:#41562c;
+        --rz-label:#7d9b62;--rz-label-auf-gruen:#9db08f;--rz-nutzer:#41562c;--rz-nutzer-auf-gruen:#c4d8ab;
         --bg1:#f7f4ea;--bg2:#edf1e2;--ink:#313c31;--ink-soft:#64705c;--ink-faint:#909a86;
         --accent:#7ba05b;--accent-ink:#41562c;--on-accent:#ffffff;--me-bg:#7ba05b;--me-ink:#ffffff;
         --card:rgba(255,255,255,.60);--card-bd:rgba(90,110,80,.15);
@@ -342,6 +342,27 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         display:flex;flex-direction:column}
       #scrChat .rz-chat-unten .pb-composer{margin-top:0;border-top:0;padding-top:0}
       #scrChat .rz-chat-unten .rz-weg-badge{cursor:default}
+      /* ---- D12-2c · der gemeinsame Chat traegt die Toene seines Raums ----
+         Die Zonen bekommen dieselben Klassen wie in den Vorraeumen; damit
+         greifen alle bestehenden Regeln (.rz-tiefgruen .rz-zurueck, .rz-sub,
+         .rz-signatur, .rz-fussmarke, .rz-knopf-flach ...) ohne Doppelpflege.
+         Nur die Flaechen und die Ausnahmen des Chats stehen hier. */
+      #scrChat.rz-chat-gemeinsam{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen)}
+      #scrChat .rz-chat-oben.rz-tiefgruen{background:transparent}
+      #scrChat .rz-chat-unten.rz-regal{background:var(--rz-papier-regal)}
+      #scrChat .rz-chat-unten.rz-regal-dunkel{background:var(--rz-regal-dunkel);color:var(--rz-ink2-auf-gruen)}
+      #scrChat .rz-tiefgruen .pb-msg.ai{color:var(--rz-ink-auf-gruen)}
+      /* Die eigene Stimme bleibt der Gegenpol zur Begleitung — auf Papier
+         dunkelgruen, auf Tiefgruen hell. Derselbe Ton, den --rz-nutzer in der
+         Dunkel-Fassung ohnehin traegt: kein neuer Farbwert im System. */
+      #scrChat .rz-tiefgruen .pb-msg.me{color:var(--rz-nutzer-auf-gruen)}
+      #scrChat .rz-tiefgruen .rz-sprecher,#scrChat .rz-tiefgruen .rz-sessionname{color:var(--rz-sek2-auf-gruen)}
+      #scrChat .rz-regal-dunkel .pb-composer textarea{color:var(--rz-ink-auf-gruen)}
+      #scrChat .rz-regal-dunkel .pb-composer textarea::placeholder{color:var(--rz-sek2-auf-gruen)}
+      #scrChat .rz-regal-dunkel .pb-skala{border-color:var(--rz-hairline-gruen)}
+      #scrChat .rz-tiefgruen .rz-panel{border-color:var(--rz-hairline-gruen)}
+      #scrChat .rz-regal-dunkel .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
+      #scrChat.rz-chat-gemeinsam #btnSend{color:var(--rz-tiefgruen)}
       html[data-theme=dark] #scrChat #btnSend{color:var(--rz-tiefgruen)}
 
       /* ============ D5 · Teilen-Flow (Design 17f) ============

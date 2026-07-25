@@ -233,9 +233,9 @@ export function createApp({ doc, backend, root, diktat }) {
      Verlassen restlos abgebaut. Funktion statt Konstante: t() liest erst beim
      Bauen — ein Sprachwechsel greift so auch auf einer bereits einmal
      gebauten Oberfläche. */
-  const CHAT_HTML = () => `
+  const CHAT_HTML = (gemeinsam = false) => `
       <div class="rz-chat-innen">
-        <div class="rz-chat-oben">
+        <div class="rz-chat-oben ${gemeinsam ? "rz-tiefgruen" : "rz-papier"}">
           <div class="rz-kopf rz-kopf-mitte">
             <button class="rz-zurueck" id="btnChatZurueck" title="${t("chat.raumVerlassen")}" aria-label="${t("chat.raumVerlassen")}">←</button>
             <span class="rz-signatur" data-rz-signatur></span>
@@ -247,7 +247,8 @@ export function createApp({ doc, backend, root, diktat }) {
           <div id="ausschnittPanel" class="rz-panel pb-hidden"></div>
           <div id="kwPanel" class="rz-panel pb-hidden"></div>
         </div>
-        <div class="rz-chat-unten rz-naht-anker">
+        <div class="rz-chat-unten rz-naht-anker ${gemeinsam ? "rz-regal-dunkel" : "rz-regal"}">
+          <div class="rz-kulisse-naht" id="kulisseChat"></div>
           <span class="rz-weg-badge rz-auf-naht" id="chatOrt">${IKON.wegweiser}<span id="chatOrtName"></span></span>
           <div class="pb-skala" id="pbSkala">
             <span style="font-size:13px">${t("chat.deineZahl")}</span>
@@ -310,7 +311,7 @@ export function createApp({ doc, backend, root, diktat }) {
     if (state.chatId && eingabe)                       // G3-Guard: raeume läuft bei JEDER
       state.entwuerfe[state.chatId] = eingabe.value;   // Nicht-Chat-Navigation, auch ohne Session
     const huelle = $("scrChat");
-    if (huelle) huelle.innerHTML = "";
+    if (huelle) { huelle.innerHTML = ""; huelle.classList.remove("rz-chat-gemeinsam"); }
     err(""); hint(null);
     state.engine = null; state.chatId = null; state.chatShared = null;
     state.streamText = null; state.herkunft = null;
@@ -322,9 +323,10 @@ export function createApp({ doc, backend, root, diktat }) {
      direkter Chat→Chat-Übergang — heute existiert keiner, aber die Invariante
      soll Konstruktion sein, nicht Topologie-Zufall — sichert erst Entwurf,
      Diktat und Pausenstempel der alten Session. */
-  function baueChatOberflaeche() {
+  function baueChatOberflaeche(gemeinsam = false) {
     raeumeChatOberflaeche();
-    $("scrChat").innerHTML = CHAT_HTML();
+    $("scrChat").classList.toggle("rz-chat-gemeinsam", !!gemeinsam);
+    $("scrChat").innerHTML = CHAT_HTML(gemeinsam);
     setzeSignatur(); setzeMarke();   // D12-2: die Vorlage bringt leere Huellen mit
     verdrahteChat();
   }
@@ -737,12 +739,16 @@ export function createApp({ doc, backend, root, diktat }) {
      (Vorraum mich); beide werden beim ersten Betreten einmalig gesetzt.
      Meilensteine kommen aus der ohnehin geladenen Lage. */
   async function aktualisiereKulisse(screenId, lage) {
-    const ziel = { scrStart: "kulisseStart", scrMyRoom: "kulisseMein", scrShared: "kulisseTeil" }[screenId];
+    const ziel = { scrStart: "kulisseStart", scrMyRoom: "kulisseMein", scrShared: "kulisseTeil", scrChat: "kulisseChat" }[screenId];
     if (!ziel) return;
     const halter = $(ziel);
     if (!halter) return;
     try {
-      const privat = screenId === "scrMyRoom";
+      // D12-2c · Der Chat wächst mit dem Raum, in dem er stattfindet: die
+      // Einzelsession aus dem persönlichen Zähler, die gemeinsame aus dem
+      // geteilten. Ein eigener Chat-Zähler wäre ein dritter Garten für
+      // denselben Ort.
+      const privat = screenId === "scrMyRoom" || (screenId === "scrChat" && !state.chatShared);
       const lies = () => privat ? backend.pstate.get("kulisse") : backend.bstate.get("kulisse");
       const schreib = v => privat ? backend.pstate.set("kulisse", v) : backend.bstate.set("kulisse", v);
       let k = await lies();
@@ -1622,7 +1628,7 @@ export function createApp({ doc, backend, root, diktat }) {
     // gezogen. Hooks alter Sessions (Nachzügler: laufende Antworten, Retries)
     // kehren am Zaun wortlos um; onSave bleibt bewusst UNGEZÄUNT, damit die
     // alte Sitzung zu Ende gespeichert wird und beim Wiederbetreten vollständig ist.
-    baueChatOberflaeche();
+    baueChatOberflaeche(def.shared);
     // Der konstruktive Abbau in baueChatOberflaeche hat die Sessionfelder
     // genullt — für DIESE Session neu setzen (nach dem Abbau, vor der Engine).
     state.chatId = art;
@@ -1646,6 +1652,8 @@ export function createApp({ doc, backend, root, diktat }) {
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;
     aktualisiereChatEnde();
     show("scrChat");
+    // D6/D12-2c · Kulisse still im Hintergrund — nie blockierend, nie kritisch.
+    ladeLage().then(l => aktualisiereKulisse("scrChat", l)).catch(() => {});
     renderMsgs(true);   // (Wieder-)Betreten springt einmalig ans Verlaufs-Ende (S53/S62)
     if (chat.messages.length) {
       await state.engine.resume();
