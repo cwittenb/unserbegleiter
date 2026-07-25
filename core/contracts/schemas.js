@@ -75,6 +75,78 @@ export function gateArtSchema(d) {
   return e;
 }
 
+/* ---- EXCERPT-BLOCK (Dialogausschnitt · Eignungsbericht, S95.2) ----
+   Der Ausschnitt wird NICHT vom Modell verfasst — er ist wörtliches Material,
+   das die Person auswählt (Designnotiz D1: auswählen ja, umschreiben nein).
+   Das Modell liefert deshalb keinen Text, sondern die EIGNUNG je Paar: zwei
+   getrennte Kriteriensätze (D3), einer für die Züge der Person, einer für die
+   Züge der Begleitung.
+
+   Harte Vertragsregel — Schweigen bei Bestehen: Ist ein Paar in beiden Sätzen
+   sauber, MUSS "reason" null sein. Ein bestandenes Kriterium wird nie
+   ausgesprochen (Prompt-Regel: "wer seine Selbstmitteilung abgenommen bekommt,
+   sitzt in einer Klassenarbeit statt in einem Gespräch"). Was bisher nur
+   Prompt-Disziplin war, ist hier strukturell erzwungen: Lob quert am Schema. */
+export function ausschnittBlockSchema(d) {
+  const e = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (!Array.isArray(d.pairs) || !d.pairs.length) return ['"pairs" needs at least one entry'];
+  const seen = new Set();
+  d.pairs.forEach((p, i) => {
+    const w = "pair " + (i + 1) + ": ";
+    if (!p || typeof p !== "object") { e.push(w + "not an object"); return; }
+    if (typeof p.id !== "string" || !p.id.trim()) e.push(w + '"id" is missing');
+    else if (seen.has(p.id)) e.push(w + 'duplicate id "' + p.id + '"');
+    else seen.add(p.id);
+    if (typeof p.ownerOk !== "boolean") e.push(w + '"ownerOk" must be true or false');
+    if (typeof p.companionOk !== "boolean") e.push(w + '"companionOk" must be true or false');
+    const bestanden = p.ownerOk === true && p.companionOk === true;
+    if (!bestanden && (typeof p.reason !== "string" || !p.reason.trim()))
+      e.push(w + 'a pair that does not qualify needs a "reason" naming the criterion');
+    if (bestanden && p.reason !== null)
+      e.push(w + 'a qualifying pair must carry "reason": null – never state a passed criterion');
+  });
+  return e;
+}
+
+/* ---- Dialogausschnitt · gespeichertes Artefakt (kein Block) ----
+   Prüft, was tatsächlich quert. Kein Modell-Erzeugnis: Die Paare stammen
+   wörtlich aus dem Verlauf, die Auswahl von der Person. */
+export const AUSSCHNITT_RAHMEN_MAX = 280;
+
+export function ausschnittSchema(d) {
+  const e = [];
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (!Array.isArray(d.pairs) || !d.pairs.length) e.push('"pairs" needs at least one entry');
+  else d.pairs.forEach((p, i) => {
+    const w = "pair " + (i + 1) + ": ";
+    if (!p || typeof p !== "object") { e.push(w + "not an object"); return; }
+    if (typeof p.question !== "string" || !p.question.trim()) e.push(w + '"question" is missing');
+    if (typeof p.answer !== "string" || !p.answer.trim()) e.push(w + '"answer" is missing');
+    if (typeof p.gapBefore !== "boolean") e.push(w + '"gapBefore" must be true or false');
+    // D2: Auslassungen markieren, was ÜBERSPRUNGEN wurde. Vor dem ersten Paar
+    // gibt es nichts zu überspringen — ein "…" dort behauptete Material, das
+    // den Ausschnitt nie betreten hat.
+    if (i === 0 && p.gapBefore === true) e.push(w + 'the first pair cannot have "gapBefore": true');
+  });
+  if (!("frame" in d) || (d.frame !== null && typeof d.frame !== "string"))
+    e.push('"frame" is missing (text or null)');
+  else if (typeof d.frame === "string" && d.frame.length > AUSSCHNITT_RAHMEN_MAX)
+    e.push('"frame" must not exceed ' + AUSSCHNITT_RAHMEN_MAX + " characters");
+  const ko = d.criteriaOwner;
+  if (!ko || ko.characterJudgment !== false || ko.generalization !== false || ko.situationSpecific !== true || ko.ownShare !== true)
+    e.push('"criteriaOwner" must show the passed check (characterJudgment:false, generalization:false, situationSpecific:true, ownShare:true)');
+  const kb = d.criteriaCompanion;
+  if (!kb || kb.partisan !== false || kb.interpretsAbsent !== false || kb.diagnoses !== false)
+    e.push('"criteriaCompanion" must show the passed check (partisan:false, interpretsAbsent:false, diagnoses:false)');
+  // "self" (Generalprobe) ergibt für fremdes Dialogmaterial keinen Sinn — man
+  // probt keinen Dialog, den man bereits geführt hat.
+  const W = ["shelf", "moment"];
+  if (!Array.isArray(d.paths) || !d.paths.length || d.paths.some(w => !W.includes(w)))
+    e.push('"paths" needs at least one of shelf/moment ("self" is not available for excerpts)');
+  return e;
+}
+
 /* ---- CLOSURE-BLOCK (Auftragsklärung Einzelsession, Freigabe-Liste) ---- */
 export function gateSchema(d) {
   const e = [];

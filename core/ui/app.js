@@ -3,7 +3,7 @@
 
 import { Engine } from "../engine/engine.js";
 import { cleanDisplay, findeBlock } from "../contracts/block.js";
-import { offeneKlammerAbIndex } from "../contracts/steuertoken.js";
+import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht } from "../contracts/steuertoken.js";
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor } from "./sessions.js";
@@ -64,13 +64,10 @@ const IKON = {
 
 /* S41 · Anzeige-Wächter: Ergebnis-Nachrichten der Panels sind Wire — seit
    S35/S37 gehen sie hidden über den Draht, aber Sessions aus der Zeit davor
-   tragen das Flag nicht. Diese Köpfe werden deshalb IMMER unterdrückt. */
-export const WIRE_KOEPFE = [
-  "SLIDERS-RESULT", "RANKING-RESULT", "PARTNER-GUESS-CHANGE", "PARTNER-GUESS",
-  "BASELINE-RESULT", "SCALE-RESULT", "CHOICE-RESULT", "SHARING-RESULT", "REVEAL-SHOWN",
-];
-const istWireNachricht = m =>
-  m.role === "user" && WIRE_KOEPFE.some(k => String(m.content || "").startsWith(k));
+   tragen das Flag nicht. Diese Köpfe werden deshalb IMMER unterdrückt.
+   S95.1: Die Liste lebt jetzt in contracts/steuertoken.js (zweiter Verbraucher:
+   die Ausschnitt-Auswahlmenge); hier bleibt der Re-Export für Bestandscode. */
+export { WIRE_KOEPFE };
 
 export function createApp({ doc, backend, root, diktat }) {
   const rohBackend = backend;   // Relaunch umhüllt selbst neu (kein Doppel-Zählen)

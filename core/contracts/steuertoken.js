@@ -42,6 +42,22 @@ export function entferneSteuerToken(text) {
   return t.split("\n").filter(z => !KLAMMERZEILE.test(z)).join("\n");
 }
 
+/* S41/S95.1 · Wire-Köpfe: Ergebnis-Nachrichten der Panels sind Protokoll, kein
+   Gesprächszug. Seit S35/S37 gehen sie hidden über den Draht, Sessions aus der
+   Zeit davor tragen das Flag nicht — diese Köpfe werden deshalb IMMER
+   unterdrückt. Kanonischer Ort ist die Protokoll-Hygiene: die Liste hat seit
+   S95.1 zwei Verbraucher (Renderer und Ausschnitt-Auswahlmenge) und darf nicht
+   in zwei Kopien auseinanderlaufen. */
+export const WIRE_KOEPFE = [
+  "SLIDERS-RESULT", "RANKING-RESULT", "PARTNER-GUESS-CHANGE", "PARTNER-GUESS",
+  "BASELINE-RESULT", "SCALE-RESULT", "CHOICE-RESULT", "SHARING-RESULT", "REVEAL-SHOWN",
+];
+
+/** Ist die Nachricht eine Panel-Ergebnis-Nachricht (Wire, nie Anzeige)? */
+export function istWireNachricht(m) {
+  return !!m && m.role === "user" && WIRE_KOEPFE.some(k => String(m.content || "").startsWith(k));
+}
+
 /** Beginnt am Textende ein Steuer-Token, das noch nicht geschlossen ist?
  *  Liefert den Schnittindex oder -1. Für die Stream-Anzeige: während des
  *  Stroms darf ein halb angekommenes "[CLOSE SESS" nie aufblitzen. */

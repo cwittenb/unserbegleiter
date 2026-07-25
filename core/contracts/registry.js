@@ -5,6 +5,7 @@
 import { blockDef } from "./block.js";
 import {
   gateSchema, befundSchema, zeitSchema, gateArtSchema, momentSchema, auftragBlockSchema, qzSchema, aufdeckSchema, choiceSchema, noteSchema,
+  ausschnittBlockSchema,
 } from "./schemas.js";
 
 export const BLOECKE = {
@@ -69,6 +70,16 @@ export const BLOECKE = {
     start: "NOTE-BLOCK", end: "END NOTE-BLOCK",
     placeholder: "",
     dataset: "note", schema: noteSchema,
+  }),
+  // Dialogausschnitt (S95.2): Eignungsbericht je Frage-Antwort-Paar — welche
+  // Paare dürfen überhaupt in einen Ausschnitt. Der Ausschnitt SELBST entsteht
+  // nicht hier: Er ist wörtliches Material, das die Person auswählt (D1).
+  // Unsichtbar (leerer Platzhalter): Der Abschluss-Text soll ungestört bleiben,
+  // und ein sichtbarer Hinweis auf eine Prüfung wäre bereits Prüfungs-Sprache.
+  ausschnitt: blockDef({
+    start: "EXCERPT-BLOCK", end: "END EXCERPT-BLOCK",
+    placeholder: "",
+    dataset: "ausschnitt", schema: ausschnittBlockSchema,
   }),
 };
 
