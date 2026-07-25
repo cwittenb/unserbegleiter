@@ -171,10 +171,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
         </div>
         <div class="rz-fuss">
-          <div class="rz-fuss-kopf">
-            <h2 class="rz-h2">${t("mein.gruppeRegale")}</h2>
-            <button class="rz-zone-zu" title="${t("weg.fuss")}" aria-label="${t("weg.fuss")}">↓</button>
-          </div>
+          <h2 class="rz-h2">${t("mein.gruppeRegale")}</h2>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseMein"></div>
         <span class="rz-fussmarke" data-rz-marke></span>
@@ -200,17 +197,14 @@ export function createApp({ doc, backend, root, diktat }) {
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
-          <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><div class="rz-caps" id="regalTitel"></div><p class="rz-sub" id="regalIntro" style="margin:6px 0 4px"></p><div id="regalItems"></div></div>
+          <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><p class="rz-sub" id="regalTitel" style="margin:6px 0 4px"></p><div id="regalItems"></div><p class="rz-sub rz-regal-fussnote" id="regalIntro"></p></div>
           <button class="rz-zeile rz-unten" id="btnAgenda" data-box="boxAgenda"><span>${t("teil.agenda")}</span><span class="rz-pfeil">↓</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxAgenda"><div class="rz-caps">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
           <button class="rz-zeile rz-unten" id="btnQz" data-box="boxQz"><span>${t("teil.qz")}</span><span class="rz-pfeil">↓</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxQz"></div>
         </div>
         <div class="rz-fuss">
-          <div class="rz-fuss-kopf">
-            <h2 class="rz-h2">${t("teil.gruppeRegale")}</h2>
-            <button class="rz-zone-zu" title="${t("weg.fuss")}" aria-label="${t("weg.fuss")}">↓</button>
-          </div>
+          <h2 class="rz-h2">${t("teil.gruppeRegale")}</h2>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseTeil"></div>
         <span class="rz-fussmarke" data-rz-marke></span>
@@ -241,30 +235,35 @@ export function createApp({ doc, backend, root, diktat }) {
      gebauten Oberfläche. */
   const CHAT_HTML = () => `
       <div class="rz-chat-innen">
-        <div class="rz-kopf rz-kopf-mitte">
-          <button class="rz-zurueck" id="btnChatZurueck" title="${t("chat.raumVerlassen")}" aria-label="${t("chat.raumVerlassen")}">←</button>
-          <span class="rz-signatur" data-rz-signatur></span>
-          <span class="rz-zurueck rz-blind">←</span>
+        <div class="rz-chat-oben">
+          <div class="rz-kopf rz-kopf-mitte">
+            <button class="rz-zurueck" id="btnChatZurueck" title="${t("chat.raumVerlassen")}" aria-label="${t("chat.raumVerlassen")}">←</button>
+            <span class="rz-signatur" data-rz-signatur></span>
+            <span class="rz-zurueck rz-blind">←</span>
+          </div>
+          <div class="rz-sessionname" id="chatTitel"></div>
+          <div class="pb-msgs" id="pbMsgs"></div>
+          <div id="gatePanel" class="rz-panel pb-hidden"></div>
+          <div id="ausschnittPanel" class="rz-panel pb-hidden"></div>
+          <div id="kwPanel" class="rz-panel pb-hidden"></div>
         </div>
-        <div class="rz-sessionname" id="chatTitel"></div>
-        <div class="pb-msgs" id="pbMsgs"></div>
-        <div id="gatePanel" class="rz-panel pb-hidden"></div>
-        <div id="ausschnittPanel" class="rz-panel pb-hidden"></div>
-        <div id="kwPanel" class="rz-panel pb-hidden"></div>
-        <div class="pb-skala" id="pbSkala">
-          <span style="font-size:13px">${t("chat.deineZahl")}</span>
-          <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
-          <span class="value" id="pbSkalaWert">7</span>
-          <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">${t("chat.senden")}</button>
+        <div class="rz-chat-unten rz-naht-anker">
+          <span class="rz-weg-badge rz-auf-naht" id="chatOrt">${IKON.wegweiser}<span id="chatOrtName"></span></span>
+          <div class="pb-skala" id="pbSkala">
+            <span style="font-size:13px">${t("chat.deineZahl")}</span>
+            <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
+            <span class="value" id="pbSkalaWert">7</span>
+            <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">${t("chat.senden")}</button>
+          </div>
+          <div class="pb-composer" id="pbComposer">
+            <textarea id="pbInput" placeholder="${t("chat.platzhalter")}"></textarea>
+            <button class="pb-btn pb-ikon" id="btnMic" data-icon="mic" title="${t("chat.diktieren")}" aria-label="${t("chat.diktieren")}">${IKON.mic}</button>
+            <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
+          </div>
+          <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">←</span></button>
+          <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnRaumVerlassen"><span>${t("chat.raumVerlassenKnopf")}</span><span class="rz-pfeil">←</span></button>
+          <span class="rz-fussmarke" data-rz-marke></span>
         </div>
-        <div class="pb-composer" id="pbComposer">
-          <textarea id="pbInput" placeholder="${t("chat.platzhalter")}"></textarea>
-          <button class="pb-btn pb-ikon" id="btnMic" data-icon="mic" title="${t("chat.diktieren")}" aria-label="${t("chat.diktieren")}">${IKON.mic}</button>
-          <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
-        </div>
-        <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">→</span></button>
-        <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnRaumVerlassen"><span>${t("chat.raumVerlassenKnopf")}</span><span class="rz-pfeil">→</span></button>
-        <span class="rz-fussmarke" data-rz-marke></span>
       </div>`;
 
   /* D12-2 · Kopf-Signatur und Fussmarke (Design Turn 27, §1/§3). Beide sitzen
@@ -403,10 +402,15 @@ export function createApp({ doc, backend, root, diktat }) {
     const zone = box.closest(".rz-half");
     const offen = !!screen.querySelector(REGAL_OFFEN);
 
-    // Pfeil der offenen Zeile verschwindet, die anderen behalten ihren.
+    // D12-2b · Die offene Zeile IST die Sektionsüberschrift und trägt den Weg
+    // nach oben; die geschlossenen zeigen weiter nach unten. Der Pfeil wird
+    // gesetzt, nicht versteckt — sonst stünde der Rückweg nirgends.
     for (const z of screen.querySelectorAll("[data-box]")) {
       const ziel = $(z.getAttribute("data-box"));
-      z.classList.toggle("rz-auf", !!ziel && !ziel.classList.contains("pb-hidden"));
+      const auf = !!ziel && !ziel.classList.contains("pb-hidden");
+      z.classList.toggle("rz-auf", auf);
+      const pfeil = z.querySelector(".rz-pfeil");
+      if (pfeil) pfeil.textContent = auf ? "\u2191" : "\u2193";
     }
 
     const misst = zone && typeof zone.getBoundingClientRect === "function";
@@ -1624,6 +1628,9 @@ export function createApp({ doc, backend, root, diktat }) {
     state.chatId = art;
     state.chatShared = def.shared;
     state.herkunft = def.shared ? "scrShared" : "scrMyRoom";
+    // D12-2b · Das Badge auf der Naht nennt den Ort (Turn 27, 27e). Es ist
+    // hier eine Marke, kein Knopf — der Wegweiser selbst lebt in den Vorräumen.
+    $("chatOrtName").textContent = t(def.shared ? "start.capsTeil" : "start.capsMein");
     gen = ++state.chatGen;
     state.engine = new Engine({
       def, chat, llm: backend.llm, ctx,
@@ -2073,13 +2080,12 @@ export function createApp({ doc, backend, root, diktat }) {
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
   $("btnMoment").addEventListener("click", () => startChat("moment").catch(e => err(e.message)));
-  // D9 · Zu-Pfeil auf Höhe der Zonen-Überschrift und Klick auf den Bereich
-  // ÜBER dem Regal fahren es wieder herunter.
+  // D9/D12-2b · Klick auf den Bereich ÜBER dem Regal fährt es wieder herunter.
+  // Der eigene Zu-Pfeil an der Zonen-Überschrift ist mit Turn 27 entfallen —
+  // der Weg nach oben steht jetzt an der Sektionszeile selbst (regalModus).
   for (const screenId of ["scrMyRoom", "scrShared"]) {
     const screen = $(screenId);
     if (!screen) continue;
-    const zu = screen.querySelector(".rz-zone-zu");
-    if (zu) zu.addEventListener("click", () => regalZu(screen));
     const oben = screen.querySelector(".rz-half");
     if (oben) oben.addEventListener("click", () => regalZu(screen));
   }

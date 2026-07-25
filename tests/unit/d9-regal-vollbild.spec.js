@@ -33,9 +33,14 @@ describe("D9 · Ruhe-Vertraege im CSS", () => {
     expect(DESIGN_CSS).toMatch(/@keyframes rzAufklappen\{\s*from\{clip-path:inset\(0 0 100% 0\)/);
   });
 
-  it("die offene Zeile verliert ihren Pfeil, die Zonen-Ueberschrift bekommt einen", () => {
-    expect(DESIGN_CSS).toContain(".rz-zeile.rz-auf .rz-pfeil{display:none}");
-    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-zone-zu{opacity:1;pointer-events:auto}");
+  // D12-2b (Turn 27) kehrt diesen D9-Nachtrag um: die geklickte Zeile IST die
+  // Sektionsueberschrift und traegt den Weg nach oben; der eigene Zu-Pfeil an
+  // der Zonen-Ueberschrift entfaellt, die Geschwisterzeilen treten ab.
+  it("die offene Zeile wird zur Sektionsueberschrift, die Geschwister treten ab", () => {
+    expect(DESIGN_CSS).not.toContain(".rz-zeile.rz-auf .rz-pfeil{display:none}");
+    expect(DESIGN_CSS).not.toContain(".rz-zone-zu");
+    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}");
+    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen \.rz-zeile\.rz-auf\{[^}]*font-family:var\(--rz-serif\)/);
   });
 
   it("Inhalt rollt INNERHALB der Zone statt die Seite zu verlaengern", () => {
@@ -43,9 +48,12 @@ describe("D9 · Ruhe-Vertraege im CSS", () => {
     expect(DESIGN_CSS).toMatch(/\.rz-regal-offen \.rz-regal-inhalt:not\(\.pb-hidden\)\{[^}]*min-height:0/);
   });
 
-  it("Ueberschrift wandert nach oben, Naht-Badge und Kulisse treten leise ab", () => {
-    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:last-child .rz-fuss{order:-1;margin-top:0");
-    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen \.rz-weg-badge,\.rz-regal-offen \.rz-kulisse-fuss\{\s*opacity:0/);
+  // D12-2b: der Zonentitel verschwindet im offenen Zustand (statt nach oben zu
+  // fahren), und das Badge FAEHRT MIT der Kante, statt abzublenden.
+  it("Zonentitel tritt ab, Kulisse blendet aus — das Badge bleibt", () => {
+    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:last-child .rz-fuss{display:none}");
+    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen \.rz-kulisse-fuss\{opacity:0/);
+    expect(DESIGN_CSS).not.toMatch(/\.rz-regal-offen \.rz-weg-badge[^{]*\{[^}]*opacity:0/);
   });
 
   it("Bewegung ist abschaltbar (prefers-reduced-motion)", () => {
@@ -119,16 +127,15 @@ describe("D9 · Vollbild im Betrieb (beide Raeume)", () => {
     expect(root.querySelector("#scrShared").classList.contains("rz-regal-offen")).toBe(false);
   });
 
-  it("Zu-Pfeil auf Hoehe der Zonen-Ueberschrift faehrt das Regal herunter", async () => {
+  it("die Sektionszeile selbst faehrt das Regal wieder herunter", async () => {
     await bootApp(memoryBackend());
     await klick(root.querySelector("#btnSharedRoom"));
     await klick(root.querySelector("#btnRegal"));
     const screen = root.querySelector("#scrShared");
     expect(screen.classList.contains("rz-regal-offen")).toBe(true);
-    // der Pfeil sitzt in der Zeile der Ueberschrift "Das Regal."
-    const kopf = screen.querySelector(".rz-regal-dunkel .rz-fuss .rz-fuss-kopf");
-    expect(kopf.querySelector(".rz-h2")).toBeTruthy();
-    await klick(kopf.querySelector(".rz-zone-zu"));
+    // D12-2b: kein eigener Zu-Pfeil mehr — die geklickte Zeile traegt ihn.
+    expect(screen.querySelector(".rz-zone-zu")).toBeFalsy();
+    await klick(root.querySelector("#btnRegal"));
     expect(screen.classList.contains("rz-regal-offen")).toBe(false);
     expect(root.querySelector("#boxRegal").classList.contains("pb-hidden")).toBe(true);
   });
@@ -143,7 +150,7 @@ describe("D9 · Vollbild im Betrieb (beide Raeume)", () => {
     expect(screen.classList.contains("rz-regal-offen")).toBe(false);
   });
 
-  it("nur die OFFENE Zeile verliert ihren Pfeil", async () => {
+  it("nur die OFFENE Zeile ist Sektion (rz-auf)", async () => {
     await bootApp(memoryBackend());
     await klick(root.querySelector("#btnSharedRoom"));
     await klick(root.querySelector("#btnAgenda"));

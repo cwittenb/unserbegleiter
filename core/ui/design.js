@@ -331,6 +331,17 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         padding:14px 0;margin:10px 0;font-size:14px}
       #scrChat .pb-skala{background:none;border:1px solid var(--rz-hairline);border-radius:0}
       #scrChat #btnChatEnde{font-size:16px;margin-top:6px}
+      /* ---- D12-2b (Turn 27, 27e) · der Chat bekommt dieselbe Grammatik wie
+         die uebrigen Screens: oben der Verlauf, unten die Schreibkante als
+         eigene Zone, dazwischen die Naht mit dem Wegweiser-Badge. Das Badge
+         ist hier eine MARKE, kein Knopf — es nennt den Ort, es oeffnet nichts. */
+      #scrChat .rz-chat-oben{flex:1;display:flex;flex-direction:column;min-height:0;padding:0}
+      #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-papier-regal);
+        margin:24px -24px calc(-24px - env(safe-area-inset-bottom,0px));
+        padding:40px 24px calc(22px + env(safe-area-inset-bottom,0px));
+        display:flex;flex-direction:column}
+      #scrChat .rz-chat-unten .pb-composer{margin-top:0;border-top:0;padding-top:0}
+      #scrChat .rz-chat-unten .rz-weg-badge{cursor:default}
       html[data-theme=dark] #scrChat #btnSend{color:var(--rz-tiefgruen)}
 
       /* ============ D5 · Teilen-Flow (Design 17f) ============
@@ -389,14 +400,15 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-screen .rz-half:first-child{overflow:hidden}
       .rz-regal-reihen{display:flex;flex-direction:column;min-height:0}
       .rz-fuss-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-      .rz-zone-zu{border:0;background:none;padding:2px 0 2px 12px;margin:0;cursor:pointer;
-        font-family:var(--rz-sans);font-size:16px;line-height:1;color:var(--rz-pfeil);
-        opacity:0;pointer-events:none;transition:opacity .2s ease}
-      .rz-regal-dunkel .rz-zone-zu{color:var(--rz-pfeil-auf-gruen)}
-      .rz-regal-offen .rz-zone-zu{opacity:1;pointer-events:auto}
-      /* Die offene Zeile behaelt ihre Linie, verliert aber ihren Pfeil —
-         der Weg nach unten steht jetzt oben an der Zonen-Ueberschrift. */
-      .rz-zeile.rz-auf .rz-pfeil{display:none}
+      /* ---- D12-2b (Turn 27) · die geklickte Zeile IST die Sektion ----
+         D9 hatte den Weg nach oben an die Zonen-Ueberschrift gehaengt und der
+         offenen Zeile den Pfeil genommen. Turn 27 dreht das um: aufgeklappt
+         verschwinden Zonentitel und Geschwisterzeilen, und die geklickte Zeile
+         steht als Ueberschrift oben — mit ihrem Pfeil, jetzt nach oben. */
+      .rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}
+      .rz-regal-offen .rz-zeile.rz-auf{border:0;padding:0;font-family:var(--rz-serif);
+        font-size:24px;font-weight:300;line-height:1.2;align-items:baseline}
+      .rz-regal-offen .rz-zeile.rz-auf .rz-pfeil{font-size:13px}
       .rz-regal-offen{position:relative;height:100dvh;overflow:hidden}
       /* Der obere Teil bleibt EXAKT stehen: statt ihn vom Flex-Layout neu
          verteilen zu lassen, wird er auf sein gemessenes Mass festgesetzt.
@@ -406,10 +418,14 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-regal-offen>.rz-half:last-child{position:absolute;left:0;right:0;bottom:0;
         top:var(--rz-regal-top,0px);z-index:2}
       .rz-half{transition:transform .36s cubic-bezier(.2,.8,.2,1)}
-      .rz-regal-offen .rz-weg-badge,.rz-regal-offen .rz-kulisse-fuss{
-        opacity:0;pointer-events:none;transition:opacity .2s ease}
-      .rz-regal-offen>.rz-half:last-child .rz-fuss{order:-1;margin-top:0;margin-bottom:14px;
-        animation:rzEinblenden .28s .08s both}
+      /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht
+         an der Oberkante der Regal-Zone und faehrt mit ihr nach oben, bis er
+         unter der Kopfzeile sitzt. Nur die Kulisse tritt ab — sie haengt am
+         Zonenfuss, der gerade unterwegs ist. */
+      .rz-regal-offen .rz-kulisse-fuss{opacity:0;pointer-events:none;transition:opacity .2s ease}
+      .rz-regal-offen .rz-weg-badge{z-index:6}
+      .rz-regal-offen>.rz-half:last-child .rz-fuss{display:none}
+      .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){animation:rzEinblenden .28s .08s both}
       .rz-regal-offen .rz-regal-reihen{flex:1 1 auto}
       /* Akkordeon: der Inhalt waechst aus dem Trennstrich unter seiner Zeile
          hervor — freigelegt per clip-path, ohne den Text zu verzerren. */
@@ -420,9 +436,13 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         from{clip-path:inset(0 0 100% 0);opacity:.4}
         to{clip-path:inset(0 0 0 0);opacity:1}}
       @keyframes rzEinblenden{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+      /* Die Erklaerzeile am Fuss des offenen Kastens (regal.intro): leise,
+         ueber einer Hairline, unter den Eintraegen. */
+      .rz-regal-fussnote{border-top:1px solid var(--rz-hairline-regal);padding-top:14px;margin-top:18px}
+      .rz-regal-dunkel .rz-regal-fussnote{border-top-color:var(--rz-hairline-gruen)}
       @media(prefers-reduced-motion:reduce){
         .rz-half{transition:none}
-        .rz-regal-inhalt:not(.pb-hidden),.rz-regal-offen>.rz-half:last-child .rz-fuss{animation:none}
+        .rz-regal-inhalt:not(.pb-hidden){animation:none}
       }
 
       /* ============ D6 · Kulisse — ortsgebunden, leise, wachsend ============
