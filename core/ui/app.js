@@ -1052,6 +1052,11 @@ export function createApp({ doc, backend, root, diktat }) {
     }, true);                                     // eigenes Senden nimmt das Mitlaufen wieder auf (S62)
   }
 
+  /* S96.1 · Bauvorschrift: engine-frei. Die Engine wird AUSSCHLIESSLICH für die
+     Quittung ans Modell gebraucht — quereGate selbst kommt ohne Session aus.
+     Ohne diese Trennung liesse sich der Replay-Eingang (S96.3) nur mit einer
+     zweiten Freigabestrecke anschliessen, also mit genau der Dopplung, die es
+     nicht geben soll. */
   function gatePanel(data, engine) {
     const p = $("gatePanel");
     p.classList.remove("pb-hidden");
@@ -1093,12 +1098,14 @@ export function createApp({ doc, backend, root, diktat }) {
       if (!wege.length) return;
       p.classList.add("pb-hidden");
       try { await quereGate(backend, data, wege); } catch (e) { err(e.message); return; }
+      if (!engine) return;   // Freigabe ausserhalb einer laufenden Session (S96.3)
       await warteAntwort(() => engine.submitToolResult(
         wege.length ? fuelle(K().steuerTexte.freigabeGequert, { paths: wege.join(", ") }) : K().steuerTexte.freigabeNichts
       ));
     });
     p.querySelector("#btnGateNein").addEventListener("click", async () => {
       p.classList.add("pb-hidden");
+      if (!engine) return;
       await warteAntwort(() => engine.submitToolResult(K().steuerTexte.freigabeWeiterarbeiten));
     });
   }

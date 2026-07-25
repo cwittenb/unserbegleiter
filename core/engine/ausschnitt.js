@@ -113,3 +113,68 @@ export function baueAusschnitt(paare, gewaehlteIds) {
     gapBefore: k > 0 && p.nr !== treffer[k - 1].nr + 1,
   }));
 }
+
+/* ====================== S96.1 · Auswahl-Logik ======================
+   Reine Funktionen für den Auswahl-Modus. Die Oberfläche hält nur DOM und
+   Gesten; alles, was entschieden wird, steht hier und ist einzeln prüfbar. */
+
+/** Richtwert (D6): 3–5 Paare sind bequem, ab 6 kommt EINMAL ein Hinweis. */
+export const RICHTWERT_PAARE = 5;
+
+/**
+ * Ist das Paar überhaupt wählbar? Ohne Eignungsbericht ist nichts wählbar —
+ * lieber eine geschlossene Tür als eine, die sich hinter der Schwelle als
+ * verschlossen erweist (Designnotiz §7).
+ */
+export function paarWaehlbar(eignung, id) {
+  const e = (eignung || []).find(x => x.id === id);
+  return !!e && e.ownerOk === true && e.companionOk === true;
+}
+
+/** Grund für die Nichtwählbarkeit — oder null. Wird EINMAL auf Antippen gezeigt. */
+export function paarGrund(eignung, id) {
+  const e = (eignung || []).find(x => x.id === id);
+  return e && !(e.ownerOk && e.companionOk) ? (e.reason || null) : null;
+}
+
+/** Tippen: an/aus. Nicht wählbare Paare ändern nichts. */
+export function waehleUm(gewaehlt, eignung, id) {
+  const neu = new Set(gewaehlt || []);
+  if (!paarWaehlbar(eignung, id)) return neu;
+  if (neu.has(id)) neu.delete(id); else neu.add(id);
+  return neu;
+}
+
+/**
+ * Gedrückthalten: „bis hierhin" — füllt die Spanne vom zuletzt gewählten Paar
+ * bis zu diesem auf. Nicht wählbare Paare in der Spanne bleiben ausgelassen
+ * und werden später zu „…" (D2). Ohne Anker verhält es sich wie ein Tippen.
+ */
+export function fuelleSpanne(paare, gewaehlt, eignung, ankerId, bisId) {
+  const neu = new Set(gewaehlt || []);
+  const nr = id => (paare || []).findIndex(p => p.id === id);
+  const a = nr(ankerId), b = nr(bisId);
+  if (b < 0) return neu;
+  if (a < 0) return waehleUm(neu, eignung, bisId);
+  const [von, bis] = a <= b ? [a, b] : [b, a];
+  for (let k = von; k <= bis; k++) {
+    const p = paare[k];
+    if (paarWaehlbar(eignung, p.id)) neu.add(p.id);
+  }
+  return neu;
+}
+
+/** Ist der Richtwert überschritten? (Hinweis kommt EINMAL, nie wiederholt.) */
+export function ueberRichtwert(anzahl) {
+  return anzahl > RICHTWERT_PAARE;
+}
+
+/**
+ * Fehlt Material, das serverseitig gar nicht erst geliefert wurde (I6)?
+ * Erkennbar an einer Lücke zwischen Verlauf und Eignungsbericht. Wird EINMAL
+ * oben neutral benannt, nie pro Element — und ohne zu sagen, was oder warum.
+ */
+export function hatStilleLuecken(paare, eignung) {
+  const bekannt = new Set((eignung || []).map(e => e.id));
+  return (paare || []).some(p => !bekannt.has(p.id));
+}
