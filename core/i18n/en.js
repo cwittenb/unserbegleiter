@@ -134,9 +134,9 @@ export const en = {
   // Gate (personal sharing)
   "gate.titel": "Your words, ready to share",
   "gate.wish": "Wish: ",
-  "gate.weg.selbst": "Bring it up yourself",
-  "gate.weg.regal": "Put it on the shelf (Glimpse)",
-  "gate.weg.moment": "Add it to the agenda (Focus)",
+  "gate.weg.selbst": "I’ll say it myself — stays here",
+  "gate.weg.regal": "{partner} can read it if they like",
+  "gate.weg.moment": "Comes up at the next conversation together",
 
   // Chapter checkpoint
   "kapitel.geschafft": "Chapter {n} complete – {titel}",

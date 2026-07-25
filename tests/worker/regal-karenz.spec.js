@@ -1,4 +1,4 @@
-// S95.3 · Karenz (D5) gegen den ECHTEN Worker.
+// S95.3/S95.3b · Karenz (D5) gegen den ECHTEN Worker.
 //
 // Beweist, dass „noch zurückziehbar" eine SPEICHER-Zusage ist: Ein Ausschnitt
 // in der Karenz verlässt den Worker für den Partner gar nicht — er ist nicht
@@ -61,105 +61,132 @@ beforeEach(async () => {
 });
 
 const AUSSCHNITT = {
-  kind: "excerpt",
+  kind: "excerpt", paths: ["shelf"],
   pairs: [{ question: "Was macht das mit dir?", answer: "Es wird klarer.", gapBefore: false }],
   frame: "Ein Stück von neulich.",
 };
-const NACHRICHT = { kind: "message", text: "Ich fühle mich allein, wenn du abends arbeitest." };
+const NACHRICHT = { kind: "message", paths: ["shelf"], text: "Ich fühle mich allein, wenn du abends arbeitest." };
+const BEIDE = { kind: "message", paths: ["shelf", "moment"], text: "Ich vermisse gemeinsame Abende." };
 
 const regal = async wer => (await wer.call("GET", "/api/bstate/shelf")).data.value || { items: [] };
+const agenda = async wer => (await wer.call("GET", "/api/bstate/agenda")).data.value || { items: [] };
 
 describe("S95.3 · Karenz serverseitig", () => {
-  it("A gibt einen Ausschnitt frei → B sieht NICHTS, A sieht ihn", async () => {
+  it("A gibt frei → B sieht NICHTS, A sieht es", async () => {
     const r = await anna.call("POST", "/api/regal/freigabe", AUSSCHNITT);
     expect(r.status).toBe(200);
     expect(r.data.item.kind).toBe("excerpt");
     expect(r.data.item.visibleFrom).toBeTruthy();
     expect(r.data.item.by).toBe("Anna");
     expect(r.data.item.role).toBe("A");
-
+    expect(r.data.freigabe).toBeTruthy();
     expect((await regal(bernd)).items).toHaveLength(0);   // nicht einmal Existenz
     expect((await regal(anna)).items).toHaveLength(1);
   });
 
-  it("eine Selbstmitteilung ist für beide sofort da", async () => {
+  it("S95.3b · auch eine Selbstmitteilung liegt in der Karenz", async () => {
+    // Umkehr gegenüber S95.3: gleiche Handlung, gleiche Rücknehmbarkeit.
     await anna.call("POST", "/api/regal/freigabe", NACHRICHT);
-    expect((await regal(bernd)).items).toHaveLength(1);
-    expect((await regal(bernd)).items[0].visibleFrom).toBeUndefined();
+    expect((await regal(bernd)).items).toHaveLength(0);
+    expect((await regal(anna)).items[0].visibleFrom).toBeTruthy();
   });
 
   it("der Client kann die Karenz nicht abwählen", async () => {
     const r = await anna.call("POST", "/api/regal/freigabe", {
-      ...AUSSCHNITT, visibleFrom: "1999-01-01T00:00:00.000Z", role: "B", by: "Bernd", id: "RGX",
+      ...AUSSCHNITT, visibleFrom: "1999-01-01T00:00:00.000Z", role: "B", by: "Bernd", id: "RGX", freigabe: "FG-fremd",
     });
     expect(Date.parse(r.data.item.visibleFrom)).toBeGreaterThan(Date.now());
     expect(r.data.item.role).toBe("A");
     expect(r.data.item.by).toBe("Anna");
     expect(r.data.item.id).toBe("RG1");
+    expect(r.data.item.freigabe).not.toBe("FG-fremd");
     expect((await regal(bernd)).items).toHaveLength(0);
   });
 
-  it("unbekannte Artefakt-Art wird abgewiesen", async () => {
-    const r = await anna.call("POST", "/api/regal/freigabe", { kind: "raw", text: "x" });
-    expect(r.status).toBe(400);
-    expect(r.data.code).toBe("regal_kind");
+  it("unbekannte Artefakt-Art und leere Wege werden abgewiesen", async () => {
+    expect((await anna.call("POST", "/api/regal/freigabe", { kind: "raw", paths: ["shelf"] })).data.code).toBe("regal_kind");
+    expect((await anna.call("POST", "/api/regal/freigabe", { kind: "message", paths: [] })).data.code).toBe("regal_weg");
+    // "selbst" quert nicht und ist beim Ausschnitt ohnehin kein Weg:
+    expect((await anna.call("POST", "/api/regal/freigabe", { ...AUSSCHNITT, paths: ["selbst"] })).data.code).toBe("regal_weg");
   });
 
-  it("direkter PUT auf shelf ist GESPERRT (403 regal_managed) — für beide Rollen", async () => {
+  it("direkter PUT auf shelf UND agenda ist gesperrt — für beide Rollen", async () => {
     await anna.call("POST", "/api/regal/freigabe", AUSSCHNITT);
     for (const wer of [anna, bernd]) {
-      const r = await wer.call("PUT", "/api/bstate/shelf", { value: { items: [] } });
-      expect(r.status).toBe(403);
-      expect(r.data.code).toBe("regal_managed");
+      expect((await wer.call("PUT", "/api/bstate/shelf", { value: { items: [] } })).data.code).toBe("regal_managed");
+      expect((await wer.call("PUT", "/api/bstate/agenda", { value: { items: [] } })).data.code).toBe("agenda_managed");
     }
     expect((await regal(anna)).items).toHaveLength(1);   // Angriff überlebt
   });
+});
 
-  it("A zieht in der Karenz zurück — das Item ist weg", async () => {
-    await anna.call("POST", "/api/regal/freigabe", AUSSCHNITT);
-    const r = await anna.call("POST", "/api/regal/ruecknahme", { itemId: "RG1" });
-    expect(r.status).toBe(200);
-    expect((await regal(anna)).items).toHaveLength(0);
+describe("S95.3b · beide Fächer, eine Freigabe", () => {
+  it("Regal und Agenda tragen dieselbe Klammer und dieselbe Karenz", async () => {
+    const r = await anna.call("POST", "/api/regal/freigabe", BEIDE);
+    const fg = r.data.freigabe;
+    expect((await regal(anna)).items[0].freigabe).toBe(fg);
+    expect((await agenda(anna)).items[0].freigabe).toBe(fg);
+    // B sieht in beiden Fächern nichts:
+    expect((await regal(bernd)).items).toHaveLength(0);
+    expect((await agenda(bernd)).items).toHaveLength(0);
   });
 
-  it("B kann fremdes Material nicht zurückziehen", async () => {
-    await anna.call("POST", "/api/regal/freigabe", AUSSCHNITT);
-    const r = await bernd.call("POST", "/api/regal/ruecknahme", { itemId: "RG1" });
-    expect(r.status).toBe(409);
-    expect(r.data.code).toBe("regal_sichtbar");
+  it("Rücknahme räumt BEIDE Fächer — nicht die Hälfte", async () => {
+    const fg = (await anna.call("POST", "/api/regal/freigabe", BEIDE)).data.freigabe;
+    expect((await anna.call("POST", "/api/regal/ruecknahme", { freigabe: fg })).status).toBe(200);
+    expect((await regal(anna)).items).toHaveLength(0);
+    expect((await agenda(anna)).items).toHaveLength(0);
+  });
+
+  it("B kann eine fremde Freigabe nicht zurückziehen", async () => {
+    const fg = (await anna.call("POST", "/api/regal/freigabe", BEIDE)).data.freigabe;
+    expect((await bernd.call("POST", "/api/regal/ruecknahme", { freigabe: fg })).data.code).toBe("regal_sichtbar");
     expect((await regal(anna)).items).toHaveLength(1);
   });
 
-  it("eine Selbstmitteilung ist nicht zurückziehbar", async () => {
-    await anna.call("POST", "/api/regal/freigabe", NACHRICHT);
-    expect((await anna.call("POST", "/api/regal/ruecknahme", { itemId: "RG1" })).status).toBe(409);
+  it("fremde Freigaben bleiben bei der Rücknahme unberührt", async () => {
+    const fg1 = (await anna.call("POST", "/api/regal/freigabe", BEIDE)).data.freigabe;
+    await bernd.call("POST", "/api/regal/freigabe", NACHRICHT);
+    await anna.call("POST", "/api/regal/ruecknahme", { freigabe: fg1 });
+    const alle = (await bernd.call("GET", "/api/bstate/shelf")).data.value;
+    expect(alle.items).toHaveLength(1);
+    expect(alle.items[0].by).toBe("Bernd");
   });
+});
 
-  it("B markiert eine sichtbare Nachricht als gelesen; A kann das nicht", async () => {
+describe("S95.3b · Lesestand, Hebung, Agenda-Pflege", () => {
+  it("nur der Empfänger setzt den Lesestand", async () => {
     await anna.call("POST", "/api/regal/freigabe", NACHRICHT);
     await anna.call("POST", "/api/regal/gelesen", { itemId: "RG1" });
     expect((await regal(anna)).items[0].read).toBe(false);   // Absender zählt nicht
-    await bernd.call("POST", "/api/regal/gelesen", { itemId: "RG1" });
-    expect((await regal(anna)).items[0].read).toBe(true);
   });
 
-  it("Hebung über die Route lässt fremde Karenz-Items unversehrt", async () => {
-    // Der eigentliche Grund für den PUT-Riegel: B liest redigiert und schreibt.
-    await anna.call("POST", "/api/regal/freigabe", AUSSCHNITT);    // RG1, in Karenz
-    await bernd.call("POST", "/api/regal/freigabe", NACHRICHT);    // RG2, sofort sichtbar
-    const r = await anna.call("POST", "/api/regal/gehoben", { itemId: "RG2" });
-    expect(r.status).toBe(200);
-    const sichtA = await regal(anna);
-    expect(sichtA.items).toHaveLength(2);                          // RG1 hat überlebt
-    expect(sichtA.items.find(i => i.id === "RG2").gehoben).toBe(true);
-    const agenda = (await anna.call("GET", "/api/bstate/agenda")).data.value;
-    expect(agenda.items).toHaveLength(1);
-    expect(agenda.items[0].herkunft).toBe("shelf");
-  });
-
-  it("ein Item in Karenz ist für den Partner nicht hebbar", async () => {
+  it("ein Schreibvorgang des Partners löscht keine fremden Karenz-Items", async () => {
+    // Der eigentliche Grund für den PUT-Riegel: B liest ein REDIGIERTES Regal.
+    // Käme sein Schreibvorgang von dort, verschwände A's Karenz-Item. Über die
+    // Route schreibt der Server mit voller Sicht — nachweisbar an der Nummer,
+    // die er vergibt: Sie kennt A's unsichtbares RG1.
     await anna.call("POST", "/api/regal/freigabe", AUSSCHNITT);
-    await bernd.call("POST", "/api/regal/gehoben", { itemId: "RG1" });
-    expect((await regal(anna)).items[0].gehoben).toBeUndefined();
+    expect((await regal(bernd)).items).toHaveLength(0);           // B sieht nichts
+    const r = await bernd.call("POST", "/api/regal/freigabe", NACHRICHT);
+    expect(r.data.item.id).toBe("RG2");                            // Server sah RG1
+    expect((await regal(anna)).items.map(i => i.id)).toEqual(["RG1"]);
+    expect((await regal(bernd)).items.map(i => i.id)).toEqual(["RG2"]);
+  });
+
+  it("Vormerkung und Abräumen laufen über Routen, nicht über PUT", async () => {
+    await anna.call("POST", "/api/regal/freigabe", BEIDE);
+    // Der Owner sieht seinen Agenda-Punkt auch in der Karenz:
+    const eigen = (await agenda(anna)).items[0];
+    expect((await anna.call("POST", "/api/agenda/vormerkung", { itemId: eigen.id })).status).toBe(200);
+    expect((await agenda(anna)).items[0].vormerkung).toBe(true);
+    expect((await anna.call("POST", "/api/agenda/abraeumen", { itemId: eigen.id, wie: "selfResolved" })).status).toBe(200);
+    expect((await agenda(anna)).items[0].state).toBe("selfResolved");
+  });
+
+  it("ein fremder Agenda-Punkt in Karenz ist nicht bearbeitbar", async () => {
+    await anna.call("POST", "/api/regal/freigabe", BEIDE);
+    await bernd.call("POST", "/api/agenda/abraeumen", { itemId: "AGD1", wie: "discussed" });
+    expect((await agenda(anna)).items[0].state).toBe("open");
   });
 });

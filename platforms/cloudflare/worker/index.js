@@ -11,7 +11,9 @@ import { Bstate, Pstate } from "../../../core/store/bundles.js";
 import { freigebeUebergabe } from "../../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
 import { trageMessbeitragEin, markiereAufgedeckt, redigiereMessungenFuerRolle } from "../../../core/ui/prozess.js";
-import { redigiereRegalFuerRolle, legeRegalItemAb, setzeRegalGelesen, nimmRegalZurueck, hebeRegalItem } from "../../../core/engine/regal.js";
+import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, legeRegalItemAb, legeAgendaItemAb,
+  setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER,
+  regalItemVerborgen as regalVerborgen } from "../../../core/engine/regal.js";
 import { makeAdapter, LLM_PROVIDERS } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { istAppOrigin, preflightAntwort, mitAppCors, aasaNutzlast, assetlinksNutzlast } from "./app-origins.js";
@@ -473,21 +475,36 @@ async function route(request, env) {
   if (p === "/api/regal/freigabe" && request.method === "POST") {
     const b = await request.json().catch(() => ({}));
     if (b.kind !== "excerpt" && b.kind !== "message") return fehler("Unbekannte Artefakt-Art.", 400, "regal_kind");
-    const regal = (await bstate.get("shelf")) || { items: [] };
-    // Bewusst: at/visibleFrom/id/role/by kommen NIE aus dem Body - sonst waere
+    const erlaubt = new Set(WEGE_FUER(b.kind));
+    const wege = (Array.isArray(b.paths) ? b.paths : []).filter(w => erlaubt.has(w));
+    if (!wege.length) return fehler("Kein gueltiger Weg gewaehlt.", 400, "regal_weg");
+    const paar = JSON.parse(await kv.get("sys/couple/" + session.code));
+    // Bewusst: id/at/visibleFrom/role/by kommen NIE aus dem Body - sonst waere
     // die Karenz clientseitig abwaehlbar.
-    const { regal: neu, item } = legeRegalItemAb(regal, {
-      kind: b.kind,
-      text: typeof b.text === "string" ? b.text : null,
-      pairs: Array.isArray(b.pairs) ? b.pairs : null,
-      frame: typeof b.frame === "string" ? b.frame : null,
-      wish: typeof b.wish === "string" ? b.wish : null,
-      by: (paarNamen => session.role === "A" ? paarNamen.nameA : paarNamen.nameB)(
-             JSON.parse(await kv.get("sys/couple/" + session.code))),
+    const gemeinsam = {
+      freigabe: "FG" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      by: session.role === "A" ? paar.nameA : paar.nameB,
       role: session.role,
-    });
-    if (!(await bstate.set("shelf", neu))) return fehler("Speichern fehlgeschlagen", 500);
-    return json({ item });
+      wish: typeof b.wish === "string" ? b.wish : null,
+      text: typeof b.text === "string" ? b.text : null,
+    };
+    let item = null;
+    if (wege.includes("shelf")) {
+      const regal = (await bstate.get("shelf")) || { items: [] };
+      const r = legeRegalItemAb(regal, {
+        ...gemeinsam, kind: b.kind,
+        pairs: Array.isArray(b.pairs) ? b.pairs : null,
+        frame: typeof b.frame === "string" ? b.frame : null,
+      });
+      if (!(await bstate.set("shelf", r.regal))) return fehler("Speichern fehlgeschlagen", 500);
+      item = r.item;
+    }
+    if (wege.includes("moment")) {
+      const agenda = (await bstate.get("agenda")) || { items: [] };
+      const a = legeAgendaItemAb(agenda, gemeinsam);
+      if (!(await bstate.set("agenda", a.agenda))) return fehler("Speichern fehlgeschlagen", 500);
+    }
+    return json({ freigabe: gemeinsam.freigabe, item });
   }
   if (p === "/api/regal/gelesen" && request.method === "POST") {
     const { itemId } = await request.json().catch(() => ({}));
@@ -497,10 +514,13 @@ async function route(request, env) {
     return json({ ok: true });
   }
   if (p === "/api/regal/ruecknahme" && request.method === "POST") {
-    const { itemId } = await request.json().catch(() => ({}));
+    const { freigabe } = await request.json().catch(() => ({}));
     const regal = (await bstate.get("shelf")) || { items: [] };
-    if (!nimmRegalZurueck(regal, itemId, session.role))
+    const agenda = (await bstate.get("agenda")) || { items: [] };
+    // Ganze Freigabe, ueber alle Faecher - ein Klick, eine Ruecknahme.
+    if (!nimmFreigabeZurueck(regal, agenda, freigabe, session.role))
       return fehler("Nicht mehr zurueckziehbar.", 409, "regal_sichtbar");
+    await bstate.set("agenda", agenda);
     if (!(await bstate.set("shelf", regal))) return fehler("Speichern fehlgeschlagen", 500);
     return json({ ok: true });
   }
@@ -516,6 +536,27 @@ async function route(request, env) {
     return json({ ok: true });
   }
 
+  if (p === "/api/agenda/vormerkung" && request.method === "POST") {
+    const { itemId } = await request.json().catch(() => ({}));
+    const agenda = (await bstate.get("agenda")) || { items: [] };
+    const it = (agenda.items || []).find(x => x.id === itemId);
+    if (it && it.state === "open" && !regalVerborgen(it, session.role)) {
+      it.vormerkung = true;
+      if (!(await bstate.set("agenda", agenda))) return fehler("Speichern fehlgeschlagen", 500);
+    }
+    return json({ ok: true });
+  }
+  if (p === "/api/agenda/abraeumen" && request.method === "POST") {
+    const b = await request.json().catch(() => ({}));
+    const agenda = (await bstate.get("agenda")) || { items: [] };
+    const it = (agenda.items || []).find(x => x.id === b.itemId);
+    if (it && !regalVerborgen(it, session.role) && (b.wie === "discussed" || b.wie === "selfResolved")) {
+      it.state = b.wie;
+      if (!(await bstate.set("agenda", agenda))) return fehler("Speichern fehlgeschlagen", 500);
+    }
+    return json({ ok: true });
+  }
+
   /* ---- Bstate: geteilt, beide Rollen ---- */
   let m = p.match(/^\/api\/bstate\/([a-zA-Z]+)$/);
   if (m) {
@@ -527,6 +568,7 @@ async function route(request, env) {
       // D5/I11: Ein Item in Karenz ist fuer die andere Rolle nicht ausgegraut,
       // sondern nicht da - ein Platzhalter waere eine Ankuendigung.
       if (m[1] === "shelf") return json({ value: redigiereRegalFuerRolle(wert, session.role) });
+      if (m[1] === "agenda") return json({ value: redigiereAgendaFuerRolle(wert, session.role) });
       return json({ value: wert });
     }
     if (request.method === "PUT") {
@@ -534,6 +576,7 @@ async function route(request, env) {
       // dort löschte Partner-Beiträge. Schreiben nur über /api/mess/*.
       if (m[1] === "measurements") return fehler("Messungen sind servergeführt (I12) — /api/mess/beitrag verwenden.", 403, "mess_managed");
       if (m[1] === "shelf") return fehler("Das Regal ist servergeführt (D5) — /api/regal/* verwenden.", 403, "regal_managed");
+      if (m[1] === "agenda") return fehler("Die Agenda ist servergeführt (D5) — /api/regal/* und /api/agenda/* verwenden.", 403, "agenda_managed");
       const { value } = await request.json();
       const ok = await bstate.set(m[1], value);
       return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);

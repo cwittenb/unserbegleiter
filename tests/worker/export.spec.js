@@ -41,7 +41,7 @@ async function paarMitDaten(namen) {
   await a.call("POST", "/api/enroll", { token: data.links.A });
   // S95.3 · Das Regal ist servergeführt (D5) — Fixtures laufen über die echte
   // Route, nicht mehr per PUT. Prüft nebenbei, dass Export weiterhin alles sieht.
-  await a.call("POST", "/api/regal/freigabe", { kind: "message", text: "MARKER-" + data.code });
+  await a.call("POST", "/api/regal/freigabe", { kind: "message", paths: ["shelf"], text: "MARKER-" + data.code });
   await a.call("PUT", "/api/pstate/timeline", { value: { entries: [{ text: "PRIVAT-" + data.code }] } });
   await a.call("PUT", "/api/chat/mine/solo1", { value: { status: "running", messages: [{ role: "user", content: "CHAT-" + data.code }] } });
   return data.code;

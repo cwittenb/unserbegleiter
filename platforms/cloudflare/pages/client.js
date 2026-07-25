@@ -49,11 +49,16 @@ export function remoteBackend() {
     },
     // S95.3 · Regal servergeführt: Ablage, Lesestand, Hebung und Rücknahme
     // laufen über eigene Routen; PUT auf /api/bstate/shelf ist gesperrt.
+    // S95.3b · Regal UND Agenda servergeführt: Ablage, Lesestand, Hebung,
+    // Vormerkung, Abräumen und Rücknahme laufen über eigene Routen; PUT auf
+    // /api/bstate/shelf und /api/bstate/agenda ist gesperrt.
     regal: {
-      freigabe: entwurf => api("POST", "/api/regal/freigabe", entwurf).then(r => r.item),
+      freigabe: entwurf => api("POST", "/api/regal/freigabe", entwurf),
       gelesen: itemId => api("POST", "/api/regal/gelesen", { itemId }),
       gehoben: (itemId, opts) => api("POST", "/api/regal/gehoben", { itemId, alsZiel: !!(opts && opts.alsZiel) }),
-      ruecknahme: itemId => api("POST", "/api/regal/ruecknahme", { itemId }).then(() => true, () => false),
+      ruecknahme: freigabe => api("POST", "/api/regal/ruecknahme", { freigabe }).then(() => true, () => false),
+      vormerkung: itemId => api("POST", "/api/agenda/vormerkung", { itemId }),
+      abraeumen: (itemId, wie) => api("POST", "/api/agenda/abraeumen", { itemId, wie }),
     },
     pstate: {
       get: f => api("GET", "/api/pstate/" + f).then(r => r.value),

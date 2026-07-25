@@ -71,13 +71,17 @@ describe("gateArtSchema (Querung / Sicherheits-Weiche-Ausgang)", () => {
       paths: ["self", "shelf"],
     })).toEqual([]);
   });
-  it("unbekannter Weg ungültig; leere Wege ungültig", () => {
+  it("S95.3b · \"paths\" ist KEIN Modellfeld mehr — mitgeschickt wird es ignoriert", () => {
+    // Das Wege-Menü ist konstant (core/engine/regal.js · WEGE_FUER). Ein vom
+    // Modell kuratiertes Menü war eine unsichtbare Verengung: Wer nicht sieht,
+    // dass es einen Weg gibt, kann ihn nicht wählen.
     const basis = {
       wording: "x", wish: null, reasoning: "y",
       criteria: { characterJudgment: false, generalization: false, situationSpecific: true, ownShare: true },
     };
-    expect(gateArtSchema({ ...basis, paths: ["melden"] }).length).toBeGreaterThan(0);
-    expect(gateArtSchema({ ...basis, paths: [] }).length).toBeGreaterThan(0);
+    expect(gateArtSchema({ ...basis, paths: ["quatsch"] })).toEqual([]);
+    expect(gateArtSchema({ ...basis, paths: [] })).toEqual([]);
+    expect(gateArtSchema(basis)).toEqual([]);
   });
   it("fehlende kriterien insgesamt ungültig (kein stillschweigendes Durchwinken)", () => {
     expect(gateArtSchema({ wording: "x", wish: null, reasoning: "y", paths: ["self"] }).length).toBeGreaterThan(0);

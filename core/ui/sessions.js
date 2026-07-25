@@ -14,7 +14,7 @@ import { BLOECKE } from "../contracts/registry.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
-import { legeRegalItemAb, setzeRegalGelesen, nimmRegalZurueck, hebeRegalItem } from "../engine/regal.js";
+import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
 import { fuelle } from "../i18n/index.js";
 
 /** Reflexionsgespräch (persönlicher Raum). */
@@ -143,37 +143,51 @@ export function momentDef(backend, hooks = {}) {
 
 /** Querung ausführen, nachdem die Person im Gate-Panel Wege gewählt hat. */
 export async function quereGate(backend, gateDaten, gewaehlteWege) {
-  const erlaubt = new Set(gateDaten.paths);
-  for (const weg of gewaehlteWege) {
-    if (!erlaubt.has(weg)) throw new Error("Weg " + weg + " war nicht freigegeben");
-    if (weg === "shelf") {
-      await legeRegalAb(backend, {
-        kind: gateDaten.kind === "excerpt" ? "excerpt" : "message",
-        text: gateDaten.selbstmitteilung ?? null,
-        pairs: gateDaten.pairs || null,
-        frame: gateDaten.frame ?? null,
-        wish: gateDaten.wish,
-      });
-    }
-    if (weg === "moment") {
-      const agenda = (await backend.bstate.get("agenda")) || { items: [] };
-      agenda.items.push({
-        id: "AGD" + (agenda.items.length + 1),   // auf der Agenda = Thema
-        text: gateDaten.selbstmitteilung,
-        wish: gateDaten.wish,
-        by: (await backend.info()).name,
-        at: new Date().toISOString(),
-        state: "open",
-      });
-      await backend.bstate.set("agenda", agenda);
-    }
-    // "selbst" → Selbstoffenbarung: bleibt im persönlichen Raum (selbst ansprechen)
-    if (weg === "selbst") {
-      const so = (await backend.pstate.get("selfDisclosures")) || { items: [] };
-      so.items.push({ text: gateDaten.selbstmitteilung, at: new Date().toISOString() });
-      await backend.pstate.set("selfDisclosures", so);
-    }
+  // S95.3b - Das Menue ist KONSTANT und haengt nur an der Artefakt-Art, nicht
+  // mehr an einer Modellentscheidung. Wer nicht sieht, dass es einen Weg gibt,
+  // kann ihn nicht waehlen; eine unsichtbare Verengung ist schlechter als eine
+  // ausgesprochene Empfehlung, denn gegen ein fehlendes Haekchen kann man sich
+  // nicht entscheiden.
+  const erlaubt = new Set(WEGE_FUER(gateDaten.kind));
+  for (const weg of gewaehlteWege) if (!erlaubt.has(weg)) throw new Error("Weg " + weg + " steht hier nicht offen");
+  if (backend.regal && backend.regal.freigabe)
+    return backend.regal.freigabe({
+      kind: gateDaten.kind === "excerpt" ? "excerpt" : "message",
+      text: gateDaten.selbstmitteilung ?? null,
+      pairs: gateDaten.pairs || null,
+      frame: gateDaten.frame ?? null,
+      wish: gateDaten.wish ?? null,
+      paths: [...gewaehlteWege],
+    });
+
+  // Ohne Server: dieselben Kernfunktionen lokal.
+  const info = await backend.info();
+  const freigabe = "FG" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const gemeinsam = { freigabe, by: info.name, role: info.role, wish: gateDaten.wish ?? null };
+  if (gewaehlteWege.includes("shelf")) {
+    const regal = (await backend.bstate.get("shelf")) || { items: [] };
+    const { regal: neu } = legeRegalItemAb(regal, {
+      ...gemeinsam,
+      kind: gateDaten.kind === "excerpt" ? "excerpt" : "message",
+      text: gateDaten.selbstmitteilung ?? null,
+      pairs: gateDaten.pairs || null,
+      frame: gateDaten.frame ?? null,
+    });
+    await backend.bstate.set("shelf", neu);
   }
+  if (gewaehlteWege.includes("moment")) {
+    const agenda = (await backend.bstate.get("agenda")) || { items: [] };
+    const { agenda: neu } = legeAgendaItemAb(agenda, { ...gemeinsam, text: gateDaten.selbstmitteilung ?? null });
+    await backend.bstate.set("agenda", neu);
+  }
+  // "selbst" -> Selbstoffenbarung: bleibt im persoenlichen Raum, quert nicht
+  // und braucht deshalb keine Karenz.
+  if (gewaehlteWege.includes("selbst")) {
+    const so = (await backend.pstate.get("selfDisclosures")) || { items: [] };
+    so.items.push({ text: gateDaten.selbstmitteilung, at: new Date().toISOString() });
+    await backend.pstate.set("selfDisclosures", so);
+  }
+  return { freigabe };
 }
 
 /**
@@ -300,12 +314,13 @@ export async function legeRegalAb(backend, entwurf) {
 }
 
 /** Ruecknahme in der Karenz - nur der Owner, nur solange unsichtbar (D5). */
-export async function nimmRegalItemZurueck(backend, itemId) {
-  if (backend.regal && backend.regal.ruecknahme) return backend.regal.ruecknahme(itemId);
+export async function nimmFreigabeZurueckAb(backend, freigabeId) {
+  if (backend.regal && backend.regal.ruecknahme) return backend.regal.ruecknahme(freigabeId);
   const regal = (await backend.bstate.get("shelf")) || { items: [] };
-  const ok = nimmRegalZurueck(regal, itemId, (await backend.info()).role);
-  if (ok) await backend.bstate.set("shelf", regal);
-  return ok;
+  const agenda = (await backend.bstate.get("agenda")) || { items: [] };
+  const weg = nimmFreigabeZurueck(regal, agenda, freigabeId, (await backend.info()).role);
+  if (weg) { await backend.bstate.set("shelf", regal); await backend.bstate.set("agenda", agenda); }
+  return weg > 0;
 }
 
 /** Regal-Item in die gemeinsame Agenda übernehmen (Herkunft bleibt sichtbar).
@@ -330,6 +345,7 @@ export async function hebeInAgenda(backend, itemId, opts = {}) {
     Nutzerseitig gibt es EIN Gefäß (Qualitätszeit) mit zwei Modi (besprechen /
     gemeinsame Zeit gestalten) — die Vormerkung steuert nur den Besprechen-Modus. */
 export async function merkeVor(backend, itemId) {
+  if (backend.regal && backend.regal.vormerkung) return void await backend.regal.vormerkung(itemId);
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
   const it = agenda.items.find(x => x.id === itemId);
   if (!it || it.state !== "open") return;
@@ -339,6 +355,7 @@ export async function merkeVor(backend, itemId) {
 
 /** Agenda-Punkt abräumen — beides ist legitim und wird nicht gewertet. */
 export async function raeumeAgendaAb(backend, itemId, wie /* "discussed" | "selfResolved" */) {
+  if (backend.regal && backend.regal.abraeumen) return void await backend.regal.abraeumen(itemId, wie);
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
   const it = agenda.items.find(x => x.id === itemId);
   if (!it) return;

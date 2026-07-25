@@ -69,9 +69,12 @@ export function gateArtSchema(d) {
   const k = d.criteria;
   if (!k || k.characterJudgment !== false || k.generalization !== false || k.situationSpecific !== true || k.ownShare !== true)
     e.push('"criteria" must show the passed check (characterJudgment:false, generalization:false, situationSpecific:true, ownShare:true) – otherwise do not cross, keep editing');
-  const W = ["self", "shelf", "moment"];
-  if (!Array.isArray(d.paths) || !d.paths.length || d.paths.some(w => !W.includes(w)))
-    e.push('"paths" needs at least one of self/shelf/moment');
+  // S95.3b: "paths" ist KEIN Modellfeld mehr. Das Wege-Menue ist konstant und
+  // haengt nur an der Artefakt-Art (core/engine/regal.js · WEGE_FUER). Ein vom
+  // Modell kuratiertes Menue war eine unsichtbare Verengung: Wer nicht sieht,
+  // dass es einen Weg gibt, kann ihn nicht waehlen. Ein mitgeschicktes Feld
+  // wird ignoriert, nicht abgewiesen - Altbestand soll nicht in die
+  // Korrektur-Runde laufen.
   return e;
 }
 

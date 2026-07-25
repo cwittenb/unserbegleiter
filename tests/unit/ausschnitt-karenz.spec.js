@@ -6,7 +6,8 @@
 import { describe, it, expect } from "vitest";
 import {
   KARENZ_MS, karenzBis, inKarenz, regalItemVerborgen, redigiereRegalFuerRolle,
-  legeRegalItemAb, setzeRegalGelesen, nimmRegalZurueck, hebeRegalItem,
+  redigiereAgendaFuerRolle, legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen,
+  nimmRegalZurueck, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER,
 } from "../../core/engine/regal.js";
 
 const T0 = Date.parse("2026-07-25T10:00:00.000Z");
@@ -14,7 +15,7 @@ const SPAETER = T0 + KARENZ_MS + 1000;
 
 const leer = () => ({ items: [] });
 const ablegen = (regal, over = {}, jetzt = T0) =>
-  legeRegalItemAb(regal, { kind: "excerpt", pairs: [{ question: "f", answer: "a", gapBefore: false }], by: "Anna", role: "A", ...over }, jetzt);
+  legeRegalItemAb(regal, { kind: "excerpt", freigabe: "FG1", pairs: [{ question: "f", answer: "a", gapBefore: false }], by: "Anna", role: "A", ...over }, jetzt);
 
 describe("Regal · Ablage und Karenz", () => {
   it("ein Ausschnitt bekommt eine Karenz von 30 Minuten", () => {
@@ -25,12 +26,14 @@ describe("Regal · Ablage und Karenz", () => {
     expect(inKarenz(item, SPAETER)).toBe(false);
   });
 
-  it("eine Selbstmitteilung bekommt KEINE Karenz", () => {
-    // Die Nachricht ist durch die Redaktion samt Bedeutungsrückfrage gegangen;
-    // ein Nachlauf widerspräche „gegebenes Ja zählt sofort".
+  it("S95.3b · eine Selbstmitteilung bekommt DIESELBE Karenz", () => {
+    // Umkehr gegenüber S95.3: Die Regel „gegebenes Ja zählt sofort" verbietet,
+    // noch einmal zu FRAGEN — die Karenz fragt nichts. Und asymmetrische
+    // Rücknehmbarkeit wäre eine Falle: Wer sie beim Ausschnitt gelernt hat,
+    // nimmt sie bei der Nachricht an.
     const { item } = ablegen(leer(), { kind: "message", text: "Ich fühle mich allein." });
-    expect(item.visibleFrom).toBeUndefined();
-    expect(inKarenz(item, T0)).toBe(false);
+    expect(Date.parse(item.visibleFrom) - T0).toBe(KARENZ_MS);
+    expect(inKarenz(item, T0)).toBe(true);
   });
 
   it("Ablage setzt Zeit und Karenz selbst — Client-Angaben zählen nicht", () => {
@@ -62,9 +65,10 @@ describe("Regal · Redaktion (D5/I11)", () => {
     expect(redigiereRegalFuerRolle(regal, "B", SPAETER).items).toHaveLength(1);
   });
 
-  it("Selbstmitteilungen sind für beide sofort sichtbar", () => {
+  it("auch Selbstmitteilungen sind in der Karenz für den Partner nicht da", () => {
     const { regal } = ablegen(leer(), { kind: "message", text: "x" });
-    expect(redigiereRegalFuerRolle(regal, "B", T0).items).toHaveLength(1);
+    expect(redigiereRegalFuerRolle(regal, "B", T0).items).toHaveLength(0);
+    expect(redigiereRegalFuerRolle(regal, "B", SPAETER).items).toHaveLength(1);
   });
 
   it("Items ohne visibleFrom (Bestand) bleiben sichtbar", () => {
@@ -103,9 +107,9 @@ describe("Regal · Rücknahme (D5)", () => {
     expect(regal.items).toHaveLength(1);
   });
 
-  it("eine Selbstmitteilung ist nie zurückziehbar", () => {
+  it("auch eine Selbstmitteilung ist in der Karenz zurückziehbar", () => {
     const { regal } = ablegen(leer(), { kind: "message", text: "x" });
-    expect(nimmRegalZurueck(regal, "RG1", "A", T0)).toBe(false);
+    expect(nimmRegalZurueck(regal, "RG1", "A", T0)).toBe(true);
   });
 
   it("Rücknahme und erneute Ablage starten die Karenz neu", () => {
@@ -145,7 +149,7 @@ describe("Regal · Gelesen-Markierung", () => {
 describe("Regal · Hebung in die Agenda", () => {
   it("hebt und vermerkt", () => {
     const { regal } = ablegen(leer(), { kind: "message", text: "Ich fühle mich allein." });
-    const r = hebeRegalItem(regal, { items: [] }, "RG1", "B", {}, T0);
+    const r = hebeRegalItem(regal, { items: [] }, "RG1", "B", {}, SPAETER);
     expect(r.eintrag.herkunft).toBe("shelf");
     expect(r.eintrag.vormerkung).toBe(true);
     expect(regal.items[0].gehoben).toBe(true);
@@ -153,7 +157,7 @@ describe("Regal · Hebung in die Agenda", () => {
 
   it("als Ziel markiert den Kandidaten", () => {
     const { regal } = ablegen(leer(), { kind: "message", text: "x" });
-    const r = hebeRegalItem(regal, { items: [] }, "RG1", "B", { alsZiel: true }, T0);
+    const r = hebeRegalItem(regal, { items: [] }, "RG1", "B", { alsZiel: true }, SPAETER);
     expect(r.eintrag.zielKandidat).toBe(true);
     expect(r.eintrag.vormerkung).toBeUndefined();
     expect(regal.items[0].alsZiel).toBe(true);
@@ -162,8 +166,8 @@ describe("Regal · Hebung in die Agenda", () => {
   it("zweimal heben ist folgenlos", () => {
     const { regal } = ablegen(leer(), { kind: "message", text: "x" });
     const agenda = { items: [] };
-    hebeRegalItem(regal, agenda, "RG1", "B", {}, T0);
-    expect(hebeRegalItem(regal, agenda, "RG1", "B", {}, T0)).toBe(null);
+    hebeRegalItem(regal, agenda, "RG1", "B", {}, SPAETER);
+    expect(hebeRegalItem(regal, agenda, "RG1", "B", {}, SPAETER)).toBe(null);
     expect(agenda.items).toHaveLength(1);
   });
 
@@ -179,5 +183,76 @@ describe("Regal · Sichtbarkeits-Prädikat", () => {
     expect(regalItemVerborgen(item, "B", T0)).toBe(true);
     expect(regalItemVerborgen(item, "A", T0)).toBe(false);
     expect(regalItemVerborgen(item, "B", SPAETER)).toBe(false);
+  });
+});
+
+describe("S95.3b · Agenda-Fach und ganze Freigabe", () => {
+  const querung = (jetzt = T0) => {
+    const regal = leer(), agenda = leer();
+    legeRegalItemAb(regal, { kind: "message", freigabe: "FG9", text: "t", by: "Anna", role: "A" }, jetzt);
+    legeAgendaItemAb(agenda, { freigabe: "FG9", text: "t", by: "Anna", role: "A" }, jetzt);
+    return { regal, agenda };
+  };
+
+  it("der Agenda-Eintrag trägt dieselbe Karenz — es ist derselbe Klick", () => {
+    const { agenda } = querung();
+    expect(Date.parse(agenda.items[0].visibleFrom) - T0).toBe(KARENZ_MS);
+    expect(redigiereAgendaFuerRolle(agenda, "B", T0).items).toHaveLength(0);
+    expect(redigiereAgendaFuerRolle(agenda, "B", SPAETER).items).toHaveLength(1);
+    expect(redigiereAgendaFuerRolle(agenda, "A", T0).items).toHaveLength(1);
+  });
+
+  it("Rücknahme wirkt auf BEIDE Fächer — nicht auf die Hälfte", () => {
+    const { regal, agenda } = querung();
+    expect(nimmFreigabeZurueck(regal, agenda, "FG9", "A", T0)).toBe(2);
+    expect(regal.items).toHaveLength(0);
+    expect(agenda.items).toHaveLength(0);
+  });
+
+  it("fremde Freigaben bleiben unberührt", () => {
+    const { regal, agenda } = querung();
+    legeRegalItemAb(regal, { kind: "message", freigabe: "FG-fremd", text: "u", by: "Bernd", role: "B" }, T0);
+    expect(nimmFreigabeZurueck(regal, agenda, "FG9", "A", T0)).toBe(2);
+    expect(regal.items).toHaveLength(1);
+    expect(regal.items[0].freigabe).toBe("FG-fremd");
+  });
+
+  it("nach Ablauf ist nichts mehr zurückziehbar", () => {
+    const { regal, agenda } = querung();
+    expect(nimmFreigabeZurueck(regal, agenda, "FG9", "A", SPAETER)).toBe(0);
+    expect(regal.items).toHaveLength(1);
+  });
+
+  it("der Empfänger kann keine fremde Freigabe zurückziehen", () => {
+    const { regal, agenda } = querung();
+    expect(nimmFreigabeZurueck(regal, agenda, "FG9", "B", T0)).toBe(0);
+  });
+
+  it("ohne Freigabe-Kennung passiert nichts", () => {
+    const { regal, agenda } = querung();
+    expect(nimmFreigabeZurueck(regal, agenda, null, "A", T0)).toBe(0);
+    expect(nimmFreigabeZurueck(regal, agenda, undefined, "A", T0)).toBe(0);
+  });
+
+  it("die Hebung erbt KEINE Karenz — sie ist keine Querung", () => {
+    const { regal } = querung();
+    const r = hebeRegalItem(regal, { items: [] }, "RG1", "B", {}, SPAETER);
+    expect(r.eintrag.visibleFrom).toBeUndefined();
+    expect(redigiereAgendaFuerRolle({ items: [r.eintrag] }, "A", SPAETER).items).toHaveLength(1);
+  });
+});
+
+describe("S95.3b · konstantes Wege-Menü", () => {
+  it("die Nachricht kennt drei Wege, der Ausschnitt zwei", () => {
+    expect(WEGE_FUER("message")).toEqual(["selbst", "shelf", "moment"]);
+    expect(WEGE_FUER("excerpt")).toEqual(["shelf", "moment"]);
+  });
+
+  it('"selbst" entfällt beim Ausschnitt — man probt keinen geführten Dialog', () => {
+    expect(WEGE_FUER("excerpt")).not.toContain("selbst");
+  });
+
+  it("unbekannte Art fällt auf das Nachrichten-Menü zurück", () => {
+    expect(WEGE_FUER(undefined)).toEqual(["selbst", "shelf", "moment"]);
   });
 });

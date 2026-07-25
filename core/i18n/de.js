@@ -132,9 +132,9 @@ export const de = {
   // Gate (Selbstmitteilung)
   "gate.titel": "Deine Selbstmitteilung zur Freigabe",
   "gate.wish": "Wunsch: ",
-  "gate.weg.selbst": "Selbst ansprechen",
-  "gate.weg.regal": "Ins Regal legen (Einblick)",
-  "gate.weg.moment": "Auf die Agenda (Thema)",
+  "gate.weg.selbst": "Ich sage es selbst — bleibt hier",
+  "gate.weg.regal": "{partner} kann es lesen, wenn es passt",
+  "gate.weg.moment": "Kommt beim nächsten gemeinsamen Gespräch zur Sprache",
 
   // Kapitel-Zwischenhalt
   "kapitel.geschafft": "Kapitel {n} geschafft – {titel}",

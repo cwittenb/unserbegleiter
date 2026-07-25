@@ -7,7 +7,7 @@ import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht } from "../contract
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor } from "./sessions.js";
-import { redigiereRegalFuerRolle } from "../engine/regal.js";
+import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, WEGE_FUER } from "../engine/regal.js";
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
@@ -1055,7 +1055,13 @@ export function createApp({ doc, backend, root, diktat }) {
   function gatePanel(data, engine) {
     const p = $("gatePanel");
     p.classList.remove("pb-hidden");
-    const wegName = { self: t("gate.weg.selbst"), shelf: t("gate.weg.regal"), moment: t("gate.weg.moment") };
+    // S95.3b · Die Beschriftungen nennen die FOLGE, nicht den Ort — der
+    // Unterschied zwischen „liest es, wenn er mag" und „kommt zur Sprache"
+    // muss im Moment der Entscheidung sichtbar sein, nicht rekonstruierbar.
+    const wp = { partner: state.info.partner };
+    const wegName = { self: t("gate.weg.selbst", wp), shelf: t("gate.weg.regal", wp), moment: t("gate.weg.moment", wp) };
+    // Das Menü ist konstant und hängt nur an der Artefakt-Art (S95.3b).
+    const wege = WEGE_FUER(data.kind);
     // D5 · Teilen-Vorschau (Design 17f): GENAU der Text, der drueben ankommt,
     // als Tiefgruen-Block mit Von-Zeile — Formular schuetzt den Wert,
     // Erzaehlung schuetzt die Beziehung. Optionen darunter als Hairline-Zeilen.
@@ -1064,7 +1070,7 @@ export function createApp({ doc, backend, root, diktat }) {
       `<div class="rz-teilen-block"><div class="rz-caps rz-von">${t("allg.von", { name: esc(state.info.name) })}</div>` +
       `<p class="rz-teilen-text">${esc(data.selbstmitteilung)}</p></div>` +
       (data.wish ? `<p class="rz-sub">${t("gate.wish")}${esc(data.wish)}</p>` : "") +
-      data.paths.map(w => `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"> ${wegName[w]}</label>`).join("") +
+      wege.map(w => `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"> ${esc(wegName[w])}</label>`).join("") +
       `<button class="rz-zeile rz-knopf-flach rz-gedimmt" id="btnGateOk" disabled><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
       `<button class="rz-zeile rz-knopf-flach" id="btnGateNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
     // S93 · Eine Entscheidung statt zwei. Bis S93 stand „Freigeben“ auch ohne
