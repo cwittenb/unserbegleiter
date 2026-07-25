@@ -14,6 +14,7 @@ import { BLOECKE } from "../contracts/registry.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
+import { legeRegalItemAb, setzeRegalGelesen, nimmRegalZurueck, hebeRegalItem } from "../engine/regal.js";
 import { fuelle } from "../i18n/index.js";
 
 /** Reflexionsgespräch (persönlicher Raum). */
@@ -146,16 +147,13 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
   for (const weg of gewaehlteWege) {
     if (!erlaubt.has(weg)) throw new Error("Weg " + weg + " war nicht freigegeben");
     if (weg === "shelf") {
-      const regal = (await backend.bstate.get("shelf")) || { items: [] };
-      regal.items.push({
-        id: "RG" + (regal.items.length + 1),   // Regal-Item = Einblick
-        text: gateDaten.selbstmitteilung,
+      await legeRegalAb(backend, {
+        kind: gateDaten.kind === "excerpt" ? "excerpt" : "message",
+        text: gateDaten.selbstmitteilung ?? null,
+        pairs: gateDaten.pairs || null,
+        frame: gateDaten.frame ?? null,
         wish: gateDaten.wish,
-        by: (await backend.info()).name,
-        at: new Date().toISOString(),
-        read: false,   // "merken statt melden": Pull, kein Push
       });
-      await backend.bstate.set("shelf", regal);
     }
     if (weg === "moment") {
       const agenda = (await backend.bstate.get("agenda")) || { items: [] };
@@ -283,11 +281,31 @@ export function baueMomentKontext({ goals, agenda, momentLog, messrunde, messVer
 
 /** Regal-Item als gelesen markieren (Pull-Prinzip: die lesende Person entscheidet). */
 export async function markiereGelesen(backend, itemId) {
+  if (backend.regal && backend.regal.gelesen) return void await backend.regal.gelesen(itemId);
   const regal = (await backend.bstate.get("shelf")) || { items: [] };
-  const it = regal.items.find(x => x.id === itemId);
-  if (!it) return;
-  it.read = true;
-  await backend.bstate.set("shelf", regal);
+  if (setzeRegalGelesen(regal, itemId, (await backend.info()).role)) await backend.bstate.set("shelf", regal);
+}
+
+/* S95.3 - Ablage, Ruecknahme und Hebung laufen ueber den Regal-Kern. Auf
+   Cloudflare uebernimmt der Worker (PUT-Riegel auf shelf, I11-Redaktion beim
+   Lesen); ohne Server laufen dieselben Funktionen lokal - die Karenz ist dort
+   UI-Zusicherung statt Speicher-Garantie, dokumentierte Restgrenze wie I12. */
+export async function legeRegalAb(backend, entwurf) {
+  if (backend.regal && backend.regal.freigabe) return backend.regal.freigabe(entwurf);
+  const info = await backend.info();
+  const regal = (await backend.bstate.get("shelf")) || { items: [] };
+  const { regal: neu, item } = legeRegalItemAb(regal, { ...entwurf, by: info.name, role: info.role });
+  await backend.bstate.set("shelf", neu);
+  return item;
+}
+
+/** Ruecknahme in der Karenz - nur der Owner, nur solange unsichtbar (D5). */
+export async function nimmRegalItemZurueck(backend, itemId) {
+  if (backend.regal && backend.regal.ruecknahme) return backend.regal.ruecknahme(itemId);
+  const regal = (await backend.bstate.get("shelf")) || { items: [] };
+  const ok = nimmRegalZurueck(regal, itemId, (await backend.info()).role);
+  if (ok) await backend.bstate.set("shelf", regal);
+  return ok;
 }
 
 /** Regal-Item in die gemeinsame Agenda übernehmen (Herkunft bleibt sichtbar).
@@ -297,22 +315,12 @@ export async function markiereGelesen(backend, itemId) {
     (AUFTRAG-BLOCK); die Marke lädt die Begleitung ein, die Entscheidung zu
     zweit aktiv anzubieten. */
 export async function hebeInAgenda(backend, itemId, opts = {}) {
+  if (backend.regal && backend.regal.gehoben) return void await backend.regal.gehoben(itemId, opts);
   const regal = (await backend.bstate.get("shelf")) || { items: [] };
-  const it = regal.items.find(x => x.id === itemId);
-  if (!it || it.gehoben) return;
   const agenda = (await backend.bstate.get("agenda")) || { items: [] };
-  const eintrag = {
-    id: "AGD" + (agenda.items.length + 1),
-    text: it.text, wish: it.wish || null,
-    by: it.by, herkunft: "shelf",
-    at: new Date().toISOString(), state: "open",
-  };
-  if (opts.alsZiel) eintrag.zielKandidat = true;
-  else eintrag.vormerkung = true;   // „besprechen" heißt: fürs nächste Mal vorgemerkt
-  agenda.items.push(eintrag);
-  it.gehoben = true;
-  if (opts.alsZiel) it.alsZiel = true;
-  await backend.bstate.set("agenda", agenda);
+  const r = hebeRegalItem(regal, agenda, itemId, (await backend.info()).role, opts);
+  if (!r) return;
+  await backend.bstate.set("agenda", r.agenda);
   await backend.bstate.set("shelf", regal);
 }
 

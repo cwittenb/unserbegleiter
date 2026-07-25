@@ -7,6 +7,7 @@ import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht } from "../contract
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor } from "./sessions.js";
+import { redigiereRegalFuerRolle } from "../engine/regal.js";
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
@@ -1472,7 +1473,11 @@ export function createApp({ doc, backend, root, diktat }) {
   }
 
   async function zeigeRegal() {
-    const regal = (await backend.bstate.get("shelf")) || { items: [] };
+    // S95.3 · Doppelt gesichert: Auf Cloudflare hat der Worker schon redigiert
+    // (Speicher-Garantie), auf Plattformen ohne Server ist DIES die Zusicherung.
+    // Zweimal filtern ist folgenlos — die Funktion ist idempotent.
+    const regal = redigiereRegalFuerRolle(
+      (await backend.bstate.get("shelf")) || { items: [] }, state.info.role);
     zeigeNur("boxRegal");
     $("boxRegal").classList.remove("pb-hidden");
     $("regalTitel").textContent = t("regal.titel");

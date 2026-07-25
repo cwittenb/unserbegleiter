@@ -47,6 +47,14 @@ export function remoteBackend() {
       beitrag: b => api("POST", "/api/mess/beitrag", b).then(r => r.runde),
       aufgedeckt: rundeId => api("POST", "/api/mess/aufgedeckt", { rundeId }),
     },
+    // S95.3 · Regal servergeführt: Ablage, Lesestand, Hebung und Rücknahme
+    // laufen über eigene Routen; PUT auf /api/bstate/shelf ist gesperrt.
+    regal: {
+      freigabe: entwurf => api("POST", "/api/regal/freigabe", entwurf).then(r => r.item),
+      gelesen: itemId => api("POST", "/api/regal/gelesen", { itemId }),
+      gehoben: (itemId, opts) => api("POST", "/api/regal/gehoben", { itemId, alsZiel: !!(opts && opts.alsZiel) }),
+      ruecknahme: itemId => api("POST", "/api/regal/ruecknahme", { itemId }).then(() => true, () => false),
+    },
     pstate: {
       get: f => api("GET", "/api/pstate/" + f).then(r => r.value),
       set: (f, v) => {

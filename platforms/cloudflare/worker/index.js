@@ -11,6 +11,7 @@ import { Bstate, Pstate } from "../../../core/store/bundles.js";
 import { freigebeUebergabe } from "../../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../../core/contracts/uebergabe.js";
 import { trageMessbeitragEin, markiereAufgedeckt, redigiereMessungenFuerRolle } from "../../../core/ui/prozess.js";
+import { redigiereRegalFuerRolle, legeRegalItemAb, setzeRegalGelesen, nimmRegalZurueck, hebeRegalItem } from "../../../core/engine/regal.js";
 import { makeAdapter, LLM_PROVIDERS } from "../../../core/llm/adapter.js";
 import { parseCookies, cookieHeader } from "./util.js";
 import { istAppOrigin, preflightAntwort, mitAppCors, aasaNutzlast, assetlinksNutzlast } from "./app-origins.js";
@@ -465,6 +466,56 @@ async function route(request, env) {
     return json({ ok: true });
   }
 
+  /* ---- Regal: SERVERGEFUEHRT (Karenz D5, S95.3).
+   *  Wie bei den Messungen kommt die Logik aus dem KERN; der Worker ist die
+   *  Stelle mit voller Sicht. Der Client sieht das Regal redigiert - ein
+   *  Read-Modify-Write von dort loeschte fremde Karenz-Items. ---- */
+  if (p === "/api/regal/freigabe" && request.method === "POST") {
+    const b = await request.json().catch(() => ({}));
+    if (b.kind !== "excerpt" && b.kind !== "message") return fehler("Unbekannte Artefakt-Art.", 400, "regal_kind");
+    const regal = (await bstate.get("shelf")) || { items: [] };
+    // Bewusst: at/visibleFrom/id/role/by kommen NIE aus dem Body - sonst waere
+    // die Karenz clientseitig abwaehlbar.
+    const { regal: neu, item } = legeRegalItemAb(regal, {
+      kind: b.kind,
+      text: typeof b.text === "string" ? b.text : null,
+      pairs: Array.isArray(b.pairs) ? b.pairs : null,
+      frame: typeof b.frame === "string" ? b.frame : null,
+      wish: typeof b.wish === "string" ? b.wish : null,
+      by: (paarNamen => session.role === "A" ? paarNamen.nameA : paarNamen.nameB)(
+             JSON.parse(await kv.get("sys/couple/" + session.code))),
+      role: session.role,
+    });
+    if (!(await bstate.set("shelf", neu))) return fehler("Speichern fehlgeschlagen", 500);
+    return json({ item });
+  }
+  if (p === "/api/regal/gelesen" && request.method === "POST") {
+    const { itemId } = await request.json().catch(() => ({}));
+    const regal = (await bstate.get("shelf")) || { items: [] };
+    if (setzeRegalGelesen(regal, itemId, session.role) && !(await bstate.set("shelf", regal)))
+      return fehler("Speichern fehlgeschlagen", 500);
+    return json({ ok: true });
+  }
+  if (p === "/api/regal/ruecknahme" && request.method === "POST") {
+    const { itemId } = await request.json().catch(() => ({}));
+    const regal = (await bstate.get("shelf")) || { items: [] };
+    if (!nimmRegalZurueck(regal, itemId, session.role))
+      return fehler("Nicht mehr zurueckziehbar.", 409, "regal_sichtbar");
+    if (!(await bstate.set("shelf", regal))) return fehler("Speichern fehlgeschlagen", 500);
+    return json({ ok: true });
+  }
+  if (p === "/api/regal/gehoben" && request.method === "POST") {
+    const b = await request.json().catch(() => ({}));
+    const regal = (await bstate.get("shelf")) || { items: [] };
+    const agenda = (await bstate.get("agenda")) || { items: [] };
+    const r = hebeRegalItem(regal, agenda, b.itemId, session.role, { alsZiel: !!b.alsZiel });
+    if (r) {
+      await bstate.set("agenda", r.agenda);
+      if (!(await bstate.set("shelf", regal))) return fehler("Speichern fehlgeschlagen", 500);
+    }
+    return json({ ok: true });
+  }
+
   /* ---- Bstate: geteilt, beide Rollen ---- */
   let m = p.match(/^\/api\/bstate\/([a-zA-Z]+)$/);
   if (m) {
@@ -473,12 +524,16 @@ async function route(request, env) {
       const wert = await bstate.get(m[1]);
       // I12: Messungen verlassen den Worker nur rollenbewusst redigiert.
       if (m[1] === "measurements") return json({ value: redigiereMessungenFuerRolle(wert, session.role) });
+      // D5/I11: Ein Item in Karenz ist fuer die andere Rolle nicht ausgegraut,
+      // sondern nicht da - ein Platzhalter waere eine Ankuendigung.
+      if (m[1] === "shelf") return json({ value: redigiereRegalFuerRolle(wert, session.role) });
       return json({ value: wert });
     }
     if (request.method === "PUT") {
       // I12: Der Client sieht Messungen redigiert — ein Read-Modify-Write von
       // dort löschte Partner-Beiträge. Schreiben nur über /api/mess/*.
       if (m[1] === "measurements") return fehler("Messungen sind servergeführt (I12) — /api/mess/beitrag verwenden.", 403, "mess_managed");
+      if (m[1] === "shelf") return fehler("Das Regal ist servergeführt (D5) — /api/regal/* verwenden.", 403, "regal_managed");
       const { value } = await request.json();
       const ok = await bstate.set(m[1], value);
       return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);
