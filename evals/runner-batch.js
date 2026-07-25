@@ -1,11 +1,15 @@
 // Batch-Ausführung (S57): kompletter Lauf über die Anthropic Message Batches API (−50 %).
 // Phase 1 – Pipeline im Turn-Lockstep: alle (Szenario×Sample)-Konversationen pro Turn-Tiefe
 //           in EINEM Batch (Turn d+1 enthält die Antwort von Turn d).
+// Phase 1b – S95: Waechter-Welle je Turn-Tiefe (nur mit deps.waechter). Sie traegt
+//           NUR die Konversationen, bei denen ein Waechter gegriffen hat; deren
+//           verworfene Antwort wird durch die revidierte ersetzt, bevor Turn d+1
+//           gebaut wird. GENAU EINE Runde je Turn, wie in der Engine (Vertrag 2).
 // Phase 2 – Judge in EINEM Batch (Single-Shot, keine Korrektur-Runde — D2).
 // Phase 3 – Report identisch zur synchronen Struktur (geteilte Bewertungs-Helfer).
 // Nur Anthropic (D1); der Aufrufer erzwingt das.
 
-import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht } from "./runner-kern.js";
+import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, validatorFuer, waechterArt } from "./runner-kern.js";
 import { baueJudgePrompt, baueJudgeUser, pruefeJudgeDaten, JUDGE_SCHEMA } from "./judge/judge.js";
 import { LLM_PROVIDERS } from "../core/llm/adapter.js";
 import { fuehreBatchAus } from "./batch-anthropic.js";
@@ -32,7 +36,7 @@ const PIPE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_TO
 const JUDGE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_TOKENS, cache: false, thinking: "adaptiv" });   // Judge-Caching AUS (S56)
 
 export async function laufeAlleBatch(szenarien, deps) {
-  const { pipelineModell, judgeModell, stand, melde, batch } = deps;
+  const { pipelineModell, judgeModell, stand, melde, batch, waechter } = deps;
   const fuehreBatch = deps.fuehreBatch || fuehreBatchAus;   // injizierbar für Tests
   const zeit = deps.zeit || new Date().toISOString();
   const t0 = Date.now();   // Gesamt-Wallclock des Batch-Laufs (S65)
@@ -42,7 +46,9 @@ export async function laufeAlleBatch(szenarien, deps) {
   for (const sz of szenarien) {
     const anzahl = deps.n || sz.n || 3;
     for (let i = 0; i < anzahl; i++)
-      konvs.push({ konvId: sz.id + "_" + (i + 1), sz, nr: i + 1, system: sysPromptFuer(sz), messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null });
+      konvs.push({ konvId: sz.id + "_" + (i + 1), sz, nr: i + 1, system: sysPromptFuer(sz), messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null,
+        // S95: Validator einmal je Konversation — dieselbe Zuordnung wie im synchronen Pfad.
+        validator: waechter ? validatorFuer(sz) : null });
   }
   const maxTurns = konvs.reduce((m, k) => Math.max(m, k.sz.eingaben.length), 0);
 
@@ -80,6 +86,56 @@ export async function laufeAlleBatch(szenarien, deps) {
         : { role: "assistant", content: text });
       if (!text || !String(text).trim()) k.leer = "leere Pipeline-Antwort (Turn " + (d + 1) + ")";   // Anomalie → nicht weiter (S65)
       else if (abgeschnitten) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Turn " + (d + 1) + ")";   // S77-Regel: Halbsätze werden nicht gerichtet
+    }
+
+    // ---- Phase 1b (S95) · Waechter-Welle dieser Turn-Tiefe --------------------
+    // Sie läuft VOR Turn d+1, weil der nächste Turn die revidierte Fassung im
+    // Kontext tragen muss — nie die verworfene. Nur die Konversationen dieser
+    // Tiefe (idx) kommen in Frage; wer hier schon leer/abgeschnitten ist, wird
+    // nicht revidiert (die S65/S77-Regel geht vor).
+    if (waechter) {
+      const rreq = [];
+      const ridx = new Map();
+      for (const k of idx.values()) {
+        if (k.fehler || k.leer || !k.validator) continue;
+        const letzte = k.messages[k.messages.length - 1];
+        if (!letzte || letzte.role !== "assistant") continue;
+        const revision = k.validator(letzte.content, k.messages.slice(0, -1));
+        if (!revision) continue;
+        const cid = "r_" + k.konvId + "_t" + d;
+        k._treffer = waechterArt(revision, k.sz);
+        ridx.set(cid, k);
+        rreq.push({
+          custom_id: cid,
+          params: LLM_PROVIDERS.anthropic.body(PIPE_CFG(pipelineModell), k.system,
+            k.messages.concat([{ role: "user", content: revision }])),
+        });
+      }
+      if (rreq.length) {
+        if (typeof melde === "function") melde({ phase: "batch", label: "Waechter-Revision Turn " + (d + 1) + "/" + maxTurns, gesamt: rreq.length });
+        const rerg = await fuehreBatch(rreq, batch);
+        if (typeof melde === "function") melde({ phase: "batch-fertig" });
+        for (const [cid, k] of ridx) {
+          const r = rerg.get(cid);
+          // Scheitert die Revision, wird das Sample UNBEWERTET — nicht etwa die
+          // unrevidierte Antwort stillschweigend angenommen. Sonst meldete der
+          // Lauf für dieses Sample die Korpus-Lesart und behäuptete die
+          // Waechter-Lesart; genau diese Verwechslung soll es nicht geben.
+          if (!r || r.fehler) { k.leer = "Waechter-Revision fehlgeschlagen (Turn " + (d + 1) + "): " + (r ? r.fehler : "kein Ergebnis"); continue; }
+          let rtext, rusage, rab;
+          try { ({ text: rtext, usage: rusage, abgeschnitten: rab } = LLM_PROVIDERS.anthropic.parse(r.message)); }
+          catch (e) { k.leer = e.message + " (Waechter-Revision Turn " + (d + 1) + ")"; continue; }
+          addUsage(k.pipe, rusage);
+          // Die verworfene Fassung wird ERSETZT und betritt das Transkript nie —
+          // die Person sähe in der App auch nur die zweite.
+          const zug = k.messages[k.messages.length - 1];
+          zug.content = rtext;
+          zug.waechterTreffer = k._treffer;
+          if (rab) zug.abgeschnitten = true; else delete zug.abgeschnitten;
+          if (!rtext || !String(rtext).trim()) k.leer = "leere Pipeline-Antwort (Waechter-Revision Turn " + (d + 1) + ")";
+          else if (rab) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Waechter-Revision Turn " + (d + 1) + ")";
+        }
+      }
     }
   }
 

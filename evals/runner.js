@@ -25,7 +25,7 @@
 //                   [--waechter]               Waechter-Stufe an: greift ein Waechter, laeuft GENAU
 //                                              EINE Revisions-Runde wie in der Engine. Default AUS —
 //                                              ohne Flag misst der Lauf den Korpus allein, wie bisher.
-//                                              Nicht mit --batch kombinierbar (s. u.).
+//                                              Im Batch: eine Revisions-Welle je Turn-Tiefe (S95).
 //                   [--erlaube-gleiches-modell]
 //
 // Modell-Konfiguration ist PFLICHT (S35d): kein Modell-Default im Code — fehlt
@@ -150,14 +150,11 @@ async function main() {
   // Batch-Modus (S57): kompletter Lauf über die Anthropic Message Batches API (−50 %).
   // Opt-in; ohne bleibt alles synchron. Nur Anthropic (Pipeline UND Judge) — D1.
   const batchModus = process.argv.includes("--batch");
-  // S94 · Der Batch-Pfad stellt ALLE Anfragen vorab zusammen; eine Revisions-
-  // Runde waere eine zweite Welle mit eigener Wartezeit. Das ist ein eigener
-  // Sprint wert — bis dahin schliessen sich die beiden Modi aus, laut statt still.
-  if (waechter && batchModus) {
-    console.error("--waechter und --batch schliessen sich aus: der Batch-Pfad kennt keine Revisions-Runde.");
-    console.error("Entweder den Lauf ohne --batch fahren, oder ohne --waechter (Korpus-Lesart).");
-    process.exit(1);
-  }
+  // S95 · Der Batch-Pfad kennt die Waechter-Stufe jetzt (eigene Welle je Turn-
+  // Tiefe). Preis ist die Wanduhr: bis zu doppelt so viele Wellen, weil die
+  // Batch-Durchlaufzeit kaum an der Wellengroesse haengt. Einmal ansagen.
+  if (waechter && batchModus)
+    console.log("Hinweis: --waechter verdoppelt im Batch die Zahl der Wellen (je Turn-Tiefe eine Revisions-Welle).");
   if (batchModus && (provider !== "anthropic" || judgeProvider !== "anthropic")) {
     console.error("--batch unterstützt nur Anthropic (Pipeline UND Judge). Aktuell: Pipeline " +
       provider + ", Judge " + judgeProvider + ".");
@@ -228,7 +225,7 @@ async function main() {
   };
   const bericht = batchModus
     ? await laufeAlleBatch(szenarien, {
-        pipelineModell, judgeModell, n, zeit, persistiere, melde, stand,
+        pipelineModell, judgeModell, n, zeit, persistiere, melde, stand, waechter,
         batch: {
           apiKey, intervallMs: batchIntervallMs, maxMs: batchMaxMs,
           fortschritt: () => process.stdout.write("."),
