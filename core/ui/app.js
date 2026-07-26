@@ -101,7 +101,7 @@ export function createApp({ doc, backend, root, diktat }) {
   wurzel.innerHTML = `
     <div id="pbBusy" class="pb-busy pb-hidden"><span class="pb-busydots"><span></span><span></span><span></span></span><span id="pbBusyTxt"></span></div>
     <div id="pbErr" class="pb-err pb-hidden"></div>
-    <div id="pbHint" class="pb-card pb-hidden" style="border-color:#e2d9a8;background:#fbf7e4;font-size:13px"></div>
+    <div id="pbHint" class="pb-card pb-hidden rz-hinweis-blatt"></div>
     <div id="scrStart" class="rz-screen rz-split">
       <div class="rz-half rz-papier">
         <div class="rz-kopf rz-kopf-mitte">
@@ -183,7 +183,7 @@ export function createApp({ doc, backend, root, diktat }) {
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
-          <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><p class="rz-sub" id="regalTitel" style="margin:6px 0 4px"></p><div id="regalItems"></div><p class="rz-sub rz-regal-fussnote" id="regalIntro"></p></div>
+          <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><p class="rz-sub rz-eng" id="regalTitel"></p><div id="regalItems"></div><p class="rz-sub rz-regal-fussnote" id="regalIntro"></p></div>
           <button class="rz-zeile rz-unten" id="btnAgenda" data-box="boxAgenda"><span>${t("teil.agenda")}</span><span class="rz-pfeil">↓</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxAgenda"><div class="rz-caps">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
           <button class="rz-zeile rz-unten" id="btnQz" data-box="boxQz"><span>${t("teil.qz")}</span><span class="rz-pfeil">↓</span></button>
@@ -237,10 +237,10 @@ export function createApp({ doc, backend, root, diktat }) {
           <div class="rz-kulisse-naht" id="kulisseChat"></div>
           <span class="rz-weg-badge rz-auf-naht" id="chatOrt">${IKON.wegweiser}<span id="chatOrtName"></span></span>
           <div class="pb-skala" id="pbSkala">
-            <span style="font-size:13px">${t("chat.deineZahl")}</span>
+            <span class="rz-fein">${t("chat.deineZahl")}</span>
             <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
             <span class="value" id="pbSkalaWert">7</span>
-            <button class="pb-btn primary" id="pbSkalaSend" style="white-space:nowrap">${t("chat.senden")}</button>
+            <button class="pb-btn primary rz-nowrap" id="pbSkalaSend">${t("chat.senden")}</button>
           </div>
           <div class="pb-composer" id="pbComposer">
             <textarea id="pbInput" placeholder="${t("chat.platzhalter")}"></textarea>
@@ -761,7 +761,7 @@ export function createApp({ doc, backend, root, diktat }) {
     let mitte, knoepfe;
     if (!w) {
       mitte = t("messiv.aktuell", { rhythmus: rhythmusText(iv.days) });
-      knoepfe = `<label style="font-size:13px">${t("messiv.eingabe")} <input id="miTage" type="number" min="1" max="90" value="${iv.days}" style="width:64px;padding:6px;border:1px solid var(--field-bd);border-radius:8px;background:var(--field);color:var(--ink);font:inherit"></label> ` +
+      knoepfe = `<label class="rz-fein">${t("messiv.eingabe")} <input id="miTage" type="number" min="1" max="90" value="${iv.days}" class="rz-zahlfeld"></label> ` +
                 `<button class="pb-btn" id="miVorschlag">${t("messiv.vorschlagen")}</button>`;
     } else if (meins) {
       mitte = t("messiv.wartet", { rhythmus: rhythmusText(w.days), partner: esc(state.info.partner) });
@@ -772,10 +772,10 @@ export function createApp({ doc, backend, root, diktat }) {
                 `<button class="pb-btn" id="miNein">${t("messiv.ablehnen")}</button>`;
     }
     box.innerHTML =
-      `<div class="pb-sub" style="margin-top:12px">${t("agenda.gruppeAbsprachen")}</div>` +
-      `<p style="font-size:13px;margin:4px 0 6px"><strong>${t("messiv.titel")}</strong> — ${mitte}</p>` + knoepfe +
-      (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650">${meldung}</p>` : "") +
-      `<p class="pb-sub" style="margin:8px 0 0">${t("messiv.hinweis")}</p>`;
+      `<div class="pb-sub rz-oben-3">${t("agenda.gruppeAbsprachen")}</div>` +
+      `<p class="rz-fein-abstand"><strong>${t("messiv.titel")}</strong> — ${mitte}</p>` + knoepfe +
+      (meldung ? `<p class="rz-fein-betont">${meldung}</p>` : "") +
+      `<p class="pb-sub rz-oben-2">${t("messiv.hinweis")}</p>`;
     const knopf = (id, fn) => {
       const b = box.querySelector(id);
       if (b) b.addEventListener("click", () => fn().then(r =>
@@ -1218,17 +1218,17 @@ export function createApp({ doc, backend, root, diktat }) {
     const p = kw();
     p.classList.remove("pb-hidden");
     const kt = k => fuelle(KTX("scale." + art + "." + k), { partner: esc(state.info.partner) });
-    const slider = id => `<input type="range" min="1" max="10" value="5" id="${id}" style="width:100%">` +
-      `<div class="pb-sub" style="display:flex;justify-content:space-between"><span>${kt("min")}</span><strong id="${id}W">5</strong><span>${kt("max")}</span></div>`;
+    const slider = id => `<input type="range" min="1" max="10" value="5" id="${id}" class="rz-voll">` +
+      `<div class="pb-sub rz-reihe-verteilt"><span>${kt("min")}</span><strong id="${id}W">5</strong><span>${kt("max")}</span></div>`;
     const doppel = art === "closing";
     p.innerHTML =
-      `<p style="font-size:15px"><strong>${kt("titel")}</strong></p>` +
+      `<p class="rz-text"><strong>${kt("titel")}</strong></p>` +
       (KTX("scale." + art + ".text", true) ? `<p class="pb-sub">${kt("text")}</p>` : "") +
       (doppel
         ? `<p class="pb-sub">${esc(state.info.nameA)}</p>` + slider("scA") +
-          `<p class="pb-sub" style="margin-top:10px">${esc(state.info.nameB)}</p>` + slider("scB")
+          `<p class="pb-sub rz-oben-3">${esc(state.info.nameB)}</p>` + slider("scB")
         : slider("scA")) +
-      `<button class="pb-btn primary" id="scOk" style="margin-top:10px">${t("scale.ok")}</button>`;
+      `<button class="pb-btn primary rz-oben-3" id="scOk">${t("scale.ok")}</button>`;
     for (const id of doppel ? ["scA", "scB"] : ["scA"]) {
       p.querySelector("#" + id).addEventListener("input", e =>
         (p.querySelector("#" + id + "W").textContent = e.target.value));
@@ -1262,9 +1262,9 @@ export function createApp({ doc, backend, root, diktat }) {
       : ["o1", "o2", "o3", "o4"].map(k => opt(k)).filter(Boolean);
     const titel = (daten && daten.title) || opt("titel");
     p.innerHTML =
-      `<p style="font-size:15px"><strong>${esc(titel)}</strong></p>` +
-      karten.map((txt, i) => `<button class="pb-btn" data-ch="${i}" style="display:block;width:100%;text-align:left;margin:6px 0">${esc(txt)}</button>`).join("") +
-      `<button class="pb-btn" data-ch="ohne" style="display:block;width:100%;text-align:left;margin:10px 0 0;opacity:.85">${esc(opt("ohne"))}</button>`;
+      `<p class="rz-text"><strong>${esc(titel)}</strong></p>` +
+      karten.map((txt, i) => `<button class="pb-btn rz-blockknopf" data-ch="${i}">${esc(txt)}</button>`).join("") +
+      `<button class="pb-btn rz-blockknopf-leise" data-ch="ohne">${esc(opt("ohne"))}</button>`;
     for (const b of p.querySelectorAll("[data-ch]")) {
       b.addEventListener("click", async () => {
         const wahl = b.getAttribute("data-ch") === "ohne" ? opt("ohne") : karten[Number(b.getAttribute("data-ch"))];
@@ -1294,9 +1294,9 @@ export function createApp({ doc, backend, root, diktat }) {
       }
       p.innerHTML =
         `<div class="pb-sub">${t("kw.bereich", { i: i + 1, n: K().DOMAINS.length })}</div>` +
-        `<p style="font-size:14px;margin:6px 0"><strong>${esc(d.t)}</strong><br><span class="pb-sub">${esc(d.d)}</span></p>` +
-        `<label style="display:block;font-size:13px;margin:8px 0">${esc(lw)}<br><input id="kwW" type="range" min="1" max="10" value="${vals[i].w}" style="width:100%"></label>` +
-        `<label style="display:block;font-size:13px;margin:8px 0">${esc(lz)}<br><input id="kwZ" type="range" min="1" max="10" value="${vals[i].z}" style="width:100%"></label>` +
+        `<p class="rz-klein-abstand"><strong>${esc(d.t)}</strong><br><span class="pb-sub">${esc(d.d)}</span></p>` +
+        `<label class="rz-fein-block">${esc(lw)}<br><input id="kwW" type="range" min="1" max="10" value="${vals[i].w}" class="rz-voll"></label>` +
+        `<label class="rz-fein-block">${esc(lz)}<br><input id="kwZ" type="range" min="1" max="10" value="${vals[i].z}" class="rz-voll"></label>` +
         `<button class="pb-btn" id="kwBack"${i === 0 ? " disabled" : ""}>${t("allg.zurueck")}</button>` +
         `<button class="pb-btn primary" id="kwNext" disabled>${i === K().DOMAINS.length - 1 ? t("allg.fertig") : t("allg.weiter")}</button>`;
       const auf = () => { p.querySelector("#kwNext").disabled = !(vals[i].tw && vals[i].tz); };
@@ -1349,14 +1349,14 @@ export function createApp({ doc, backend, root, diktat }) {
       const titel = typeof cfg.title === "function" ? cfg.title(ctx) : cfg.title;
       const desc = typeof cfg.desc === "function" ? cfg.desc(ctx) : cfg.desc;
       p.innerHTML =
-        `<div class="pb-sub">${esc(titel)}</div><p style="font-size:13px">${esc(desc)}</p>` +
+        `<div class="pb-sub">${esc(titel)}</div><p class="rz-fein">${esc(desc)}</p>` +
         `<div id="kwStack">` +
         Array.from({ length: cfg.topN }, (_, pos) => {
           const ri = order[pos];
           return ri === undefined
             ? `<div class="pb-item pb-platz leer" data-platz="${pos}">${pos + 1}. <span class="pb-sub">${t("rank.frei")}</span></div>`
-            : `<div class="pb-item pb-platz${gewaehlt === pos ? " gewaehlt" : ""}" data-platz="${pos}" draggable="true">${pos + 1}. ${esc(ITEMS[ri].label)} <button class="pb-btn" data-raus="${ri}" style="padding:2px 8px;float:right">✕</button></div>`;
-        }).join("") + `</div><div id="kwPool" style="margin:8px 0">` +
+            : `<div class="pb-item pb-platz${gewaehlt === pos ? " gewaehlt" : ""}" data-platz="${pos}" draggable="true">${pos + 1}. ${esc(ITEMS[ri].label)} <button class="pb-btn rz-rechts-pille" data-raus="${ri}">✕</button></div>`;
+        }).join("") + `</div><div id="kwPool" class="rz-abstand-2">` +
         ITEMS.map((it, ri) => order.includes(ri) ? "" :
           `<button class="pb-btn" data-rein="${ri}" draggable="true">${esc(it.label)}</button>`
         ).join("") + `</div>` +
@@ -1424,9 +1424,9 @@ export function createApp({ doc, backend, root, diktat }) {
     function frage(idx) {
       p.innerHTML =
         `<div class="pb-sub">${t("sw.titel", { name: esc(namen[idx]) })}</div>` +
-        `<p style="font-size:14px">${t("sw.frage", { name: esc(namen[idx]) })}</p>` +
-        `<input id="kwSW" type="range" min="1" max="10" value="5" style="width:100%">` +
-        `<div class="pb-sub" style="text-align:center" id="kwSWv">5</div>` +
+        `<p class="rz-klein">${t("sw.frage", { name: esc(namen[idx]) })}</p>` +
+        `<input id="kwSW" type="range" min="1" max="10" value="5" class="rz-voll">` +
+        `<div class="pb-sub rz-mitte" id="kwSWv">5</div>` +
         `<button class="pb-btn primary" id="kwSWok">${t("sw.ok")}</button>`;
       const inp = p.querySelector("#kwSW");
       inp.addEventListener("input", () => { p.querySelector("#kwSWv").textContent = inp.value; });
@@ -1449,7 +1449,7 @@ export function createApp({ doc, backend, root, diktat }) {
       data.items.map((it, i) =>
         `<label class="rz-wahl"><input type="checkbox" data-fg="${i}" checked> <strong>${esc(it.id)}</strong> ${esc(it.text)}</label>`
       ).join("") +
-      `${wieder ? `<p style="font-size:14px">${t("fg.wieder", { partner: esc(state.info.partner) })}</p><label class="rz-wahl"><input type="checkbox" id="kwFgAufdeck"> ${t("fg.check")}</label>` : ""}<button class="rz-zeile rz-knopf-flach" id="kwFgOk"><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
+      `${wieder ? `<p class="rz-klein">${t("fg.wieder", { partner: esc(state.info.partner) })}</p><label class="rz-wahl"><input type="checkbox" id="kwFgAufdeck"> ${t("fg.check")}</label>` : ""}<button class="rz-zeile rz-knopf-flach" id="kwFgOk"><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
       `<button class="rz-zeile rz-knopf-flach" id="kwFgNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
     p.querySelector("#kwFgOk").addEventListener("click", async () => {
       const items = [...p.querySelectorAll("input[data-fg]:checked")].map(x => {

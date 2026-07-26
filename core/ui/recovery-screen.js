@@ -87,7 +87,7 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     const hinterlegt = !!(state.info && state.info.recoveryEmail);
     box.innerHTML =
       `<div class="pb-sub">${t("rec.titel")}</div>` +
-      `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:6px 0">` +
+      `<p class="rz-fein-leise">` +
       (hinterlegt ? t("rec.hinterlegt") : t("rec.neu")) +
       `</p>`;
     if (hinterlegt) {
@@ -121,8 +121,8 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     karte.className = "pb-card";
     karte.style.cssText = "max-width:440px;width:100%;background:var(--card,#fff);border-radius:14px;padding:20px";
     karte.innerHTML =
-      `<div style="font-size:16px;font-weight:650;margin-bottom:6px">${t("rec.pflicht.titel")}</div>` +
-      `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:0 0 10px">${t("rec.pflicht.text")}</p>`;
+      `<div class="rz-zwischentitel">${t("rec.pflicht.titel")}</div>` +
+      `<p class="rz-fein-leise-unten">${t("rec.pflicht.text")}</p>`;
     const wirt = doc.createElement("div");
     karte.appendChild(wirt);
     overlay.appendChild(karte);

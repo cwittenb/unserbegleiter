@@ -45,8 +45,8 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
           return `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}` +
             (det.length
               ? `<br><span class="pb-link" data-zl="${i}">${t("zeitleiste.detailsAuf")}</span>` +
-                `<div class="pb-hidden" id="zlDet${i}" style="margin-top:6px">` +
-                det.map(dd => `<div style="font-size:14px;color:var(--ink-soft)"><strong>${esc(dd.id)}</strong> ${esc(dd.text)}</div>`).join("") +
+                `<div class="pb-hidden rz-oben-1" id="zlDet${i}">` +
+                det.map(dd => `<div class="rz-klein-leise"><strong>${esc(dd.id)}</strong> ${esc(dd.text)}</div>`).join("") +
                 `</div>`
               : "") + `</div>`;
         }).join("")
@@ -80,14 +80,14 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
             regalKoerper(i) +
             (i.wish ? `<br><span class="pb-sub">${t("gate.wish")}${esc(i.wish)}</span>` : "") +
             `${i.read || i.gehoben ? `<br><span class="pb-sub">${i.read ? t("regal.stGelesen") : ""}${i.read && i.gehoben ? " · " : ""}${i.gehoben ? t(i.alsZiel ? "regal.stZielVorschlag" : "regal.stInAgenda") : ""}</span>` : ""}` +
-            (fremd && !i.read ? ` <button class="pb-btn" data-gelesen="${i.id}" style="padding:3px 10px">${t("regal.btnGelesen")}</button>` : "") +
-            (fremd && !i.gehoben ? ` <button class="pb-btn" data-heben="${i.id}" style="padding:3px 10px">${t("regal.btnBesprechen")}</button>` +
-              ` <button class="pb-btn" data-ziel="${i.id}" style="padding:3px 10px">${t("regal.btnZiel")}</button>` : "") +
+            (fremd && !i.read ? ` <button class="pb-btn rz-pille-eng" data-gelesen="${i.id}">${t("regal.btnGelesen")}</button>` : "") +
+            (fremd && !i.gehoben ? ` <button class="pb-btn rz-pille-eng" data-heben="${i.id}">${t("regal.btnBesprechen")}</button>` +
+              ` <button class="pb-btn rz-pille-eng" data-ziel="${i.id}">${t("regal.btnZiel")}</button>` : "") +
             // D5 · Der Owner sieht einen RUHIGEN Zustand, keinen Countdown —
             // ein tickender Timer erzeugt genau die Anspannung, gegen die die
             // Karenz gedacht ist.
             (!fremd && inKarenz(i) ? `<br><span class="pb-sub">${t("regal.stZurueckziehbar")}</span>` +
-              ` <button class="pb-btn" data-zurueck="${esc(i.freigabe || "")}" style="padding:3px 10px">${t("regal.btnZurueckziehen")}</button>` : "") +
+              ` <button class="pb-btn rz-pille-eng" data-zurueck="${esc(i.freigabe || "")}">${t("regal.btnZurueckziehen")}</button>` : "") +
             `</div>`;
         }).join("")
       : `<div class="pb-item">${t("regal.leer")}</div>`;
@@ -112,9 +112,9 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       `<div class="pb-sub rz-denkarbeit">${esc(fuelle(t("ausschnitt.denkarbeit"), { name: i.by }))}</div>` +
       (i.frame ? `<p class="rz-regal-text rz-rahmensatz">${esc(i.frame)}</p>` : "") +
       i.pairs.map(pr =>
-        (pr.gapBefore ? `<div class="rz-luecke" style="text-align:center;opacity:.6">…</div>` : "") +
-        `<div class="rz-paar-lesen" style="padding:4px 0">` +
-        `<div class="pb-sub" style="margin-bottom:2px">${esc(pr.question)}</div>` +
+        (pr.gapBefore ? `<div class="rz-luecke rz-mitte-leise">…</div>` : "") +
+        `<div class="rz-paar-lesen rz-polster-y">` +
+        `<div class="pb-sub rz-unten-1">${esc(pr.question)}</div>` +
         `<span class="rz-regal-text">${esc(pr.answer)}</span></div>`).join("") +
       `</div>`;
   }
@@ -143,8 +143,8 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       `<div class="pb-item">${esc(i.text)}<br><span class="pb-sub">${t("allg.von", { name: esc(i.by) })} · ${t("agenda.st." + i.state)}` +
       `${i.zielKandidat ? " · " + t("agenda.stKandidat") : ""}${i.vormerkung ? " · " + t("agenda.stVor") : ""}</span>` +
       (i.state === "open"
-        ? (i.vormerkung ? "" : ` <button class="pb-btn" data-vor="${i.id}" style="padding:3px 10px">${t("agenda.btnVor")}</button>`) +
-          ` <button class="pb-btn" data-abr="${i.id}" style="padding:3px 10px">${t("agenda.btnAbr")}</button>`
+        ? (i.vormerkung ? "" : ` <button class="pb-btn rz-pille-eng" data-vor="${i.id}">${t("agenda.btnVor")}</button>`) +
+          ` <button class="pb-btn rz-pille-eng" data-abr="${i.id}">${t("agenda.btnAbr")}</button>`
         : "") + `</div>`;
     // S76 · Ziele und Gesprächspunkte deutlich getrennt: je Gruppe ein eigener
     // Kartenblock (Ziele mit Akzentleiste, Punkte neutral); das Backlog ruht
@@ -154,8 +154,8 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       `<div class="pb-ag-kopf">${t("agenda.gruppeAuftraege")}</div>` +
       (aktiv.length ? aktiv.map(auftragZeile).join("") : `<div class="pb-item">${t("agenda.auftraegeLeer")}</div>`) +
       (ruht.length
-        ? `<div class="pb-ag-kopf" style="margin-top:10px">${t("agenda.gruppeBacklog")}</div>` +
-          `<p class="pb-sub" style="margin:2px 0 4px">${t("agenda.backlogHinweis")}</p>` +
+        ? `<div class="pb-ag-kopf rz-oben-3">${t("agenda.gruppeBacklog")}</div>` +
+          `<p class="pb-sub rz-eng">${t("agenda.backlogHinweis")}</p>` +
           ruht.map(auftragZeile).join("")
         : "") +
       `</div>` +
@@ -186,7 +186,7 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
     ]);
     const offen = ((mr && mr.items) || []).find(r => r.status === "open");
     if (offen && offen.values[state.info.role]) {
-      box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.abgegeben")}</p>`;
+      box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p class="rz-klein">${t("mess.abgegeben")}</p>`;
       return;
     }
     // S39 · Rhythmus-Fenster: eine NEUE Runde öffnet erst nach dem vereinbarten
@@ -195,7 +195,7 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       const fenster = messFenster(mr, state.info.role, iv.days);
       if (!fenster.offen) {
         box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div>` +
-          `<p style="font-size:14px">${t("mess.gesperrt", { rhythmus: rhythmusText(iv.days), datum: esc((fenster.naechsteAb || "").slice(0, 10)) })}</p>`;
+          `<p class="rz-klein">${t("mess.gesperrt", { rhythmus: rhythmusText(iv.days), datum: esc((fenster.naechsteAb || "").slice(0, 10)) })}</p>`;
         return;
       }
     }
@@ -203,15 +203,15 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
     const aktive = (((goals && goals.items) || [])).filter(a => a.status === "active" && a.art === "shared");
     box.innerHTML =
       `<div class="pb-sub">${t("mess.verdeckt", { partner: esc(state.info.partner) })}</div>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.closeness", { partner: esc(state.info.partner), zeitraum })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
-      `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.guess", { partner: esc(state.info.partner), zeitraum })}<br><input id="msZweit" type="range" min="1" max="10" value="5" style="width:100%"></label>` +
+      `<label class="rz-fein-block">${t("mess.closeness", { partner: esc(state.info.partner), zeitraum })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
+      `<label class="rz-fein-block">${t("mess.guess", { partner: esc(state.info.partner), zeitraum })}<br><input id="msZweit" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
       // S88 · Themen-Regler: Gruppenzeile sagt die Herkunft (und implizit,
       // warum individuelle Ziele hier fehlen); die Frage traegt KEINE Wire-ID
       // mehr — die ID bleibt im data-pass-Attribut und im fit-Objekt (Wire
       // unberuehrt: formatiereMessrunde/Agenda zeigen sie weiter als Referenz).
-      (aktive.length ? `<div class="pb-sub" style="margin-top:12px">${t("mess.gruppeThemen")}</div>` : "") +
+      (aktive.length ? `<div class="pb-sub rz-oben-3">${t("mess.gruppeThemen")}</div>` : "") +
       aktive.map(a =>
-        `<label style="display:block;font-size:13px;margin:8px 0">${t("mess.fit", { text: esc(a.text) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" style="width:100%"></label>`
+        `<label class="rz-fein-block">${t("mess.fit", { text: esc(a.text) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" class="rz-voll"></label>`
       ).join("") +
       `<button class="pb-btn primary" id="msOk">${t("mess.abgeben")}</button>`;
     box.querySelector("#msOk").addEventListener("click", async () => {
@@ -223,7 +223,7 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
         fit,
       });
       await zeitleistenEintrag(t("zeitleiste.tpMess"), t("zeitleiste.eintragMess"));
-      box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p style="font-size:14px">${t("mess.danke")}` +
+      box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p class="rz-klein">${t("mess.danke")}` +
         (runde.status === "ready" ? t("mess.bereit") : "") + `</p>`;
     });
   }
@@ -251,11 +251,11 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       eintraege.push({ at: revealLog.at, art: t("momente.artAufdeck"), text: revealLog.summary || t("momente.aufdeckStandard"), themen: "", impuls: null });
     eintraege.sort((a, b) => (a.at < b.at ? -1 : 1));
     box.innerHTML = `<div class="pb-sub">${t("momente.titel")}</div>` +
-      `<p class="pb-sub" style="margin:6px 0 4px">${t("momente.intro")}</p>` +
+      `<p class="pb-sub rz-eng">${t("momente.intro")}</p>` +
       (eintraege.length ? eintraege.map(e2 =>
         `<div class="pb-item"><span class="pb-sub">${esc((e2.at || "").slice(0, 10))} · ${esc(e2.art)}${e2.themen ? " · " + esc(e2.themen) : ""}</span><br>${esc(e2.text)}` +
         (e2.impuls ? `<br><span class="pb-sub">${t("momente.impuls")} ${esc(e2.impuls)}</span>` : "") + `</div>`
-      ).join("") : `<p style="font-size:14px">${t("momente.leer")}</p>`);
+      ).join("") : `<p class="rz-klein">${t("momente.leer")}</p>`);
   }
   return { zeigeZeitleiste, zeigeRegal, regalKoerper, zeigeAgenda, zeigeMess, zeigeMomente };
 }

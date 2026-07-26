@@ -98,12 +98,12 @@ export function machePanels({ $, el, state, backend, err, renderMsgs, warteAntwo
     const dots = "●".repeat(n) + "○".repeat(4 - n);
     const gateOffen = n === 3 && !engine.chat.minigate;
     const gateHtml = !gateOffen ? "" :
-      `<p style="font-size:14px"><strong>${t("kapitel.frageTitel")}</strong> ${t("kapitel.frage")}</p>` +
+      `<p class="rz-klein"><strong>${t("kapitel.frageTitel")}</strong> ${t("kapitel.frage")}</p>` +
       `<p class="pb-sub">${t("kapitel.frageSub", { partner: esc(state.info.partner) })}</p>` +
       `<button class="pb-btn primary" id="kapJa">${t("kapitel.ja")}</button><button class="pb-btn primary" id="kapNein">${t("allg.nochNicht")}</button>`;
     p.innerHTML =
       `<div class="pb-sub">${t("kapitel.geschafft", { n, titel: esc(K().KAPITEL_TITEL[n - 1]) })}</div>` +
-      `<div style="letter-spacing:5px;font-size:16px;margin:4px 0 10px">${dots}</div>` + gateHtml +
+      `<div class="rz-code">${dots}</div>` + gateHtml +
       `<div id="kapWeiter"${gateOffen ? ' class="pb-hidden"' : ""}>` +
       `<button class="pb-btn primary" id="kapNext">${t("kapitel.weitermachen", { n: n + 1, titel: esc(K().KAPITEL_TITEL[n]) })}</button></div>` +
       `<p class="pb-sub pb-hidden" id="kapNote"></p>`;
@@ -163,12 +163,12 @@ export function machePanels({ $, el, state, backend, err, renderMsgs, warteAntwo
       (danach ist die Tafel-Nachricht nicht mehr die letzte). */
   function baueTafelKarte(tafel, mitWeiter, ersteTafel) {
     const spalte = (titel, liste, marks) =>
-      `<div style="flex:1;min-width:150px"><div class="pb-sub">${esc(titel)}</div>` +
-      (liste || []).map((x, i) => `<div class="pb-item"${(marks || []).includes(x) ? ' style="font-weight:700;border-left:3px solid var(--accent,#0f766e);padding-left:8px"' : ""}>${i + 1}. ${esc(x)}</div>`).join("") + `</div>`;
+      `<div class="rz-flex-spalte"><div class="pb-sub">${esc(titel)}</div>` +
+      (liste || []).map((x, i) => `<div class="pb-item rz-marke-links"${(marks || []).includes(x) ? '' : ""}>${i + 1}. ${esc(x)}</div>`).join("") + `</div>`;
     const richtungHtml = (tipper, owner) => {
       const treff = beruehrungen(tipper.guess3, owner.top5);
-      return `<div style="margin-top:12px"><div class="pb-sub">${t("aufdeck.getippt", { tipper: esc(tipper.name), owner: esc(owner.name) })}</div>` +
-        `<div style="display:flex;gap:10px;flex-wrap:wrap">` + spalte(t("aufdeck.tippVon", { name: tipper.name }), tipper.guess3, treff) + spalte(t("aufdeck.topVon", { name: owner.name }), owner.top5, treff) + `</div>` +
+      return `<div class="rz-oben-3"><div class="pb-sub">${t("aufdeck.getippt", { tipper: esc(tipper.name), owner: esc(owner.name) })}</div>` +
+        `<div class="rz-reihe-umbruch">` + spalte(t("aufdeck.tippVon", { name: tipper.name }), tipper.guess3, treff) + spalte(t("aufdeck.topVon", { name: owner.name }), owner.top5, treff) + `</div>` +
         (treff.length ? `<p class="pb-sub">${t("aufdeck.beruehrungen")}${treff.map(esc).join(" · ")}</p>`
                       : `<p class="pb-sub">${t("aufdeck.verschieden")}</p>`) + `</div>`;
     };
@@ -177,7 +177,7 @@ export function machePanels({ $, el, state, backend, err, renderMsgs, warteAntwo
     const tipper = tafel.richtung === "B" ? tafel.gA : tafel.gB;
     const karte = el("div", "pb-card pb-tafel",
       `<div class="pb-sub">${einzel ? t("aufdeck.titelTeil", { owner: esc(owner.name) }) : t("aufdeck.titel")}</div>` +
-      (ersteTafel ? `<p style="font-size:13px">${t("aufdeck.intro")}</p>` : "") +
+      (ersteTafel ? `<p class="rz-fein">${t("aufdeck.intro")}</p>` : "") +
       (einzel ? richtungHtml(tipper, owner) : richtungHtml(tafel.gB, tafel.gA) + richtungHtml(tafel.gA, tafel.gB)));
     karte.setAttribute("style", "align-self:stretch;max-width:none");
     if (mitWeiter) {

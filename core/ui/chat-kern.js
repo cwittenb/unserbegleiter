@@ -105,7 +105,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     let d = box.querySelector("#pbStream");
     if (!d) { d = el("div", "pb-msg ai"); d.id = "pbStream"; box.appendChild(d); }
     d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>' +
-      '<span class="pb-sub" style="display:block;margin-top:4px">' + t("chat.ausgelastetWarte") + '</span>';
+      '<span class="pb-sub rz-block-oben-1">' + t("chat.ausgelastetWarte") + '</span>';
   }
 
   /* S62 · Scroll-Disziplin (löst den harten S53-Sprung ans Seitenende ab):

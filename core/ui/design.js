@@ -1,4 +1,6 @@
 import { t as uiText } from "../i18n/index.js";
+import { THEME_CSS, SCHRIFT_IMPORT } from "./theme.js";
+import { zeichen } from "./kulisse.js";
 // Design auf Dokument-Ebene: <style> + Kulisse + Theme-Umschalter, einmalig
 // beim Booten angewendet (idempotent), damit ALLE Screens dasselbe Theme tragen.
 
@@ -6,102 +8,112 @@ import { t as uiText } from "../i18n/index.js";
 // Literal): Textfelder nie unter 16px (iOS-Fokus-Zoom), Composer hält per
 // scroll-margin Abstand zur Tastatur, Haupt-Aktionen min. 44px Touch-Höhe,
 // Safe-Area-Insets an #app und fixiertem Chrome (Theme/Busy).
-export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&family=Instrument+Sans:wght@400;500;600&display=swap');
-      :root{
-        /* D1 · Design-Tokens (Handoff Turn 17) — Namensraum rz-. Die alten
-           pb-Variablen bleiben bestehen, bis D2–D5 die Screens umziehen. */
-        --rz-serif:'Source Serif 4',Georgia,'Times New Roman',serif;
-        --rz-sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
-        --rz-papier:#faf8f2;
-        --rz-hairline:#e3dfd0;--rz-hairline-gruen:rgba(157,176,143,.28);
-        --rz-tiefgruen:#1e2a22;
-        --rz-ink:#23291f;--rz-ink-auf-gruen:#eef0e7;--rz-ink2-auf-gruen:#e6e9d9;
-        --rz-sek:#6b7261;--rz-sek2:#8b917d;--rz-sek-auf-gruen:#b9c3ac;--rz-sek2-auf-gruen:#8a9e7c;
-        --rz-gedimmt:#a3a894;--rz-marke:#5c6653;--rz-marke-auf-gruen:#6f8062;
-        --rz-akzent:#8fae74;--rz-akzent-text:#14201a;--rz-akzent-hell:#7d9b62;
-        --rz-pfeil:#7d9b62;--rz-pfeil-auf-gruen:#a9c88b;
-        --rz-label:#7d9b62;--rz-label-auf-gruen:#9db08f;--rz-nutzer:#41562c;
-        --bg1:#f7f4ea;--bg2:#edf1e2;--ink:#313c31;--ink-soft:#64705c;--ink-faint:#909a86;
-        --accent:#7ba05b;--accent-ink:#41562c;--on-accent:#ffffff;--me-bg:#7ba05b;--me-ink:#ffffff;
-        --card:rgba(255,255,255,.60);--card-bd:rgba(90,110,80,.15);
-        --ai-bg:rgba(255,255,255,.72);--ai-bd:rgba(90,110,80,.13);
-        --field:rgba(255,255,255,.74);--field-bd:rgba(90,110,80,.22);
-      }
-      html[data-theme=dark]{
-        /* D1 · Dark-Tokens: Papier wird Dark-Papier, Tiefgruen wird tiefer. */
-        --rz-papier:#242b21;
-        --rz-hairline:#39412f;
-        --rz-tiefgruen:#101b14;
-        --rz-ink:#ece9da;--rz-sek:#b9c3ac;--rz-sek2:#9aa38c;
-        --rz-gedimmt:#7f8672;--rz-marke:#99a189;
-        --rz-akzent-hell:#8fae74;--rz-pfeil:#a9c88b;
-        --rz-label:#aeca8d;--rz-nutzer:#c4d8ab;
-        --bg1:#2a3a34;--bg2:#151f1c;--ink:#edf1e8;--ink-soft:#b3c1aa;--ink-faint:#889481;
-        --accent:#aeca8d;--accent-ink:#e2ecd4;--on-accent:#1d2a1a;--me-bg:#42583b;--me-ink:#f4f7ef;
-        --card:rgba(255,255,255,.055);--card-bd:rgba(255,255,255,.10);
-        --ai-bg:rgba(255,255,255,.06);--ai-bd:rgba(255,255,255,.09);
-        --field:rgba(255,255,255,.06);--field-bd:rgba(255,255,255,.16);
-      }
-      html{height:100%}
+export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
+`
+  + THEME_CSS
+  + String.raw`      html{height:100%}
       body{margin:0;min-height:100%;background:var(--rz-papier);transition:background .5s}
       #app{max-width:660px;position:relative;z-index:1;font-family:var(--rz-sans);
-           color:var(--ink);font-size:16px;line-height:1.65;
+           color:var(--ink);font-size:var(--rz-fs-text);line-height:1.65;
            padding:calc(46px + env(safe-area-inset-top,0px)) calc(22px + env(safe-area-inset-right,0px))
                    calc(34vh + env(safe-area-inset-bottom,0px)) calc(22px + env(safe-area-inset-left,0px))}
       .pb-baeume{display:block} html[data-theme=dark] .pb-baeume{display:none}
       .pb-seerosen{display:none} html[data-theme=dark] .pb-seerosen{display:block}
       .pb-hidden{display:none!important}
+
+      /* ---- T1c · Kleinteile aus den Templates -------------------------
+         Bis hierher standen 70 style="…"-Attribute in den Screen-Modulen —
+         fuer ein Theme unerreichbar, weil kein Selektor sie findet. Sie sind
+         jetzt Klassen und ziehen ihre Werte aus der Skala. Die Namen sagen
+         die Rolle, nicht die Zahl: rz-fein ist "leise Nebenzeile", nicht
+         "13px" — sonst waere nur der Ort des Literals verschoben. */
+      .rz-voll{width:100%}
+      .rz-mitte{text-align:center}
+      .rz-mitte-leise{text-align:center;opacity:.6}
+      .rz-nowrap{white-space:nowrap}
+      .rz-fein{font-size:var(--rz-fs-fein)}
+      .rz-klein{font-size:var(--rz-fs-fein)}
+      .rz-text{font-size:var(--rz-fs-text)}
+      .rz-fein-block{display:block;font-size:var(--rz-fs-fein);margin:var(--rz-r-2) 0}
+      .rz-fein-abstand{font-size:var(--rz-fs-fein);margin:var(--rz-r-2) 0}
+      .rz-fein-betont{font-size:var(--rz-fs-fein);margin:var(--rz-r-2) 0 0;font-weight:650}
+      .rz-fein-leise{font-size:var(--rz-fs-fein);color:var(--ink-soft);margin:var(--rz-r-2) 0}
+      .rz-fein-leise-unten{font-size:var(--rz-fs-fein);color:var(--ink-soft);margin:0 0 var(--rz-r-3)}
+      .rz-klein-abstand{font-size:var(--rz-fs-fein);margin:var(--rz-r-2) 0}
+      .rz-klein-leise{font-size:var(--rz-fs-fein);color:var(--ink-soft)}
+      .rz-zwischentitel{font-size:var(--rz-fs-text);font-weight:650;margin-bottom:var(--rz-r-2)}
+      .rz-eng{margin:var(--rz-r-1) 0}
+      .rz-abstand-2{margin:var(--rz-r-2) 0}
+      .rz-oben-1{margin-top:var(--rz-r-1)}
+      .rz-oben-2{margin-top:var(--rz-r-2)}
+      .rz-oben-3{margin-top:var(--rz-r-3)}
+      .rz-unten-1{margin-bottom:var(--rz-r-1)}
+      .rz-block-oben-1{display:block;margin-top:var(--rz-r-1)}
+      .rz-polster-y{padding:var(--rz-r-1) 0}
+      .rz-pille-eng{padding:3px 10px}
+      .rz-rechts-pille{padding:2px var(--rz-r-2);float:right}
+      .rz-reihe-verteilt{display:flex;justify-content:space-between}
+      .rz-reihe-umbruch{display:flex;gap:var(--rz-r-3);flex-wrap:wrap}
+      .rz-flex-spalte{flex:1;min-width:150px}
+      .rz-blockknopf{display:block;width:100%;text-align:left;margin:var(--rz-r-2) 0}
+      .rz-blockknopf-leise{display:block;width:100%;text-align:left;margin:var(--rz-r-3) 0 0;opacity:.85}
+      .rz-code{letter-spacing:5px;font-size:var(--rz-fs-text);margin:var(--rz-r-1) 0 var(--rz-r-3)}
+      .rz-marke-links{font-weight:700;border-left:3px solid var(--accent);padding-left:var(--rz-r-2)}
+      .rz-hinweis-blatt{border-color:var(--rz-hinweis-rand);background:var(--rz-hinweis-flaeche);
+                        font-size:var(--rz-fs-fein)}
+      .rz-zahlfeld{width:64px;padding:var(--rz-r-2);border:var(--rz-hairline-staerke) solid var(--field-bd);
+                   border-radius:var(--rz-r-2);background:var(--field);color:var(--ink);font:inherit}
       .pb-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
       .pb-brand{display:flex;flex-direction:column;gap:3px}
-      .pb-h1{font-family:var(--rz-serif);font-size:30px;font-weight:300;margin:0;letter-spacing:.005em;line-height:1.18}
-      .pb-sub{color:var(--ink-faint);font-size:13px}
-      .pb-brand .pb-sub{letter-spacing:.2em;text-transform:uppercase;font-size:12px}
-      .pb-card{background:var(--card);border:1px solid var(--card-bd);border-radius:18px;padding:24px 26px;margin:16px 0;
+      .pb-h1{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;margin:0;letter-spacing:.005em;line-height:1.18}
+      .pb-sub{color:var(--ink-faint);font-size:var(--rz-fs-fein)}
+      .pb-brand .pb-sub{letter-spacing:.2em;text-transform:uppercase;font-size:var(--rz-fs-caps)}
+      .pb-card{background:var(--card);border:1px solid var(--card-bd);border-radius:var(--rz-rund-karte);padding:24px 26px;margin:16px 0;
                backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .pb-btn{display:inline-block;border:1px solid var(--accent);background:transparent;color:var(--accent-ink);
-              border-radius:999px;padding:10px 22px;font-family:inherit;font-size:16px;cursor:pointer;margin:6px 8px 0 0;transition:.22s}
+              border-radius:var(--rz-rund-pille);padding:10px 22px;font-family:inherit;font-size:var(--rz-fs-text);cursor:pointer;margin:6px 8px 0 0;transition:.22s}
       .pb-btn:hover{background:var(--accent);color:var(--on-accent)}
       .pb-btn.primary{background:var(--accent);color:var(--on-accent)}
       .pb-btn[disabled]{opacity:.45;cursor:not-allowed}
       .pb-btn[disabled]:hover{background:transparent;color:var(--accent-ink)}
       .pb-btn.primary:hover{filter:brightness(1.05)}
       .pb-msgs{display:flex;flex-direction:column;gap:13px;margin:16px 0}
-      .pb-msg{max-width:82%;padding:14px 19px;border-radius:19px;font-size:17px;line-height:1.62;white-space:pre-wrap}
+      .pb-msg{max-width:82%;padding:14px 19px;border-radius:var(--rz-rund-karte);font-size:var(--rz-fs-zeile);line-height:1.62;white-space:pre-wrap}
       .pb-msg.ai{background:var(--ai-bg);border:1px solid var(--ai-bd);align-self:flex-start;border-bottom-left-radius:6px;
                  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .pb-msg.me{background:var(--me-bg);color:var(--me-ink);align-self:flex-end;border-bottom-right-radius:6px}
       .pb-composer{display:flex;gap:8px;margin-top:6px}
       .pb-composer textarea{flex:1;border:1px solid var(--field-bd);background:var(--field);color:var(--ink);
-              border-radius:14px;padding:12px 14px;font:inherit;font-size:17px;min-height:46px}
+              border-radius:var(--rz-rund-blatt);padding:12px 14px;font:inherit;font-size:var(--rz-fs-zeile);min-height:46px}
       input,select,textarea{font-size:max(16px,1em)}
       .pb-composer textarea{scroll-margin-block:80px 40vh}
       .pb-btn{min-height:44px;box-sizing:border-box}
-      .rz-ecke button{min-height:36px}
+      .rz-ecke button{min-height:var(--rz-tapziel)}
       .pb-typing{display:inline-flex;gap:5px;align-items:center;min-height:14px}
       .pb-typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
       .pb-typing span:nth-child(2){animation-delay:.2s}.pb-typing span:nth-child(3){animation-delay:.4s}
       @keyframes pbBlink{0%,80%,100%{opacity:.25}40%{opacity:1}}
       .pb-skala{display:none;gap:12px;align-items:center;background:var(--card);border:1px solid var(--card-bd);
-                border-radius:16px;padding:12px 16px;margin:0 0 10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+                border-radius:var(--rz-rund-blatt);padding:12px 16px;margin:0 0 10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .pb-skala.offen{display:flex}
       .pb-skala input[type=range]{flex:1;accent-color:var(--accent)}
-      .pb-skala .wert{font-weight:500;min-width:26px;text-align:center;color:var(--accent-ink);font-size:19px}
+      .pb-skala .wert{font-weight:500;min-width:26px;text-align:center;color:var(--accent-ink);font-size:var(--rz-fs-zeile)}
       .pb-msg.ai strong{font-weight:500}
-      .pb-msg.ai code{background:var(--ai-bd);border-radius:4px;padding:0 4px;font-family:ui-monospace,Menlo,monospace;font-size:14px}
-      .pb-err{background:rgba(188,74,74,.12);border:1px solid rgba(188,74,74,.34);border-radius:12px;padding:11px 15px;font-size:15px;margin:12px 0}
-      .pb-item{border-bottom:1px solid var(--card-bd);padding:11px 0;font-size:16px}
+      .pb-msg.ai code{background:var(--ai-bd);border-radius:var(--rz-rund-fein);padding:0 4px;font-family:ui-monospace,Menlo,monospace;font-size:var(--rz-fs-fein)}
+      .pb-err{background:rgba(188,74,74,.12);border:1px solid rgba(188,74,74,.34);border-radius:var(--rz-rund-knopf);padding:11px 15px;font-size:var(--rz-fs-text);margin:12px 0}
+      .pb-item{border-bottom:1px solid var(--card-bd);padding:11px 0;font-size:var(--rz-fs-text)}
       .pb-busydots{display:inline-flex;gap:4px;align-items:center}
       .pb-busydots span{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
       .pb-busydots span:nth-child(2){animation-delay:.2s}.pb-busydots span:nth-child(3){animation-delay:.4s}
       .pb-busy{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:7;display:flex;gap:9px;align-items:center;
-               background:var(--card);border:1px solid var(--card-bd);border-radius:999px;padding:7px 16px;font-size:13px;
+               background:var(--card);border:1px solid var(--card-bd);border-radius:var(--rz-rund-pille);padding:7px 16px;font-size:var(--rz-fs-fein);
                color:var(--ink-soft);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
       .pb-zwei{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:stretch}
       .pb-zwei .pb-card{display:flex;flex-direction:column;gap:6px}
       @media(max-width:540px){.pb-zwei{grid-template-columns:1fr}}
       .pb-gruppe{margin:14px 0 2px}
       .pb-gruppe>.pb-sub{display:block;margin-bottom:2px}
-      .pb-weg .pb-item{border-bottom:0;padding:5px 0;font-size:14px;color:var(--ink-soft)}
+      .pb-weg .pb-item{border-bottom:0;padding:5px 0;font-size:var(--rz-fs-fein);color:var(--ink-soft)}
       .pb-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
       .pb-mitte{margin:26px 0}
       .pb-mitte .pb-card{align-items:center;text-align:center;padding:32px 26px}
@@ -113,14 +125,14 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-drei{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
       .pb-mit-lz{position:relative;overflow:visible}
       .pb-lz-leiste{position:absolute;top:-9px;right:10px;display:flex;gap:6px;pointer-events:none}
-      .pb-lz{display:inline-block;min-width:16px;padding:3px 4px 8px;font-size:10px;font-weight:650;line-height:1;
+      .pb-lz{display:inline-block;min-width:16px;padding:3px 4px 8px;font-size:var(--rz-fs-caps);font-weight:650;line-height:1;
              text-align:center;letter-spacing:.02em;background:var(--accent);color:var(--on-accent);
-             border-radius:2px 2px 0 0;clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 5px),0 100%);
+             border-radius:var(--rz-rund-mini) var(--rz-rund-mini) 0 0;clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 5px),0 100%);
              box-shadow:0 1px 2px rgba(0,0,0,.18)}
-      .pb-ag-block{border:1px solid var(--card-bd);border-radius:12px;padding:8px 12px 10px;margin-top:10px;background:var(--card)}
+      .pb-ag-block{border:1px solid var(--card-bd);border-radius:var(--rz-rund-knopf);padding:8px 12px 10px;margin-top:10px;background:var(--card)}
       .pb-ag-ziele{border-left:4px solid var(--accent)}
-      .pb-ag-kopf{font-size:13px;font-weight:650;color:var(--ink-soft);letter-spacing:.02em}
-      .pb-platz{border:1px solid var(--card-bd);border-radius:12px;padding:9px 13px;margin:6px 0;cursor:grab}
+      .pb-ag-kopf{font-size:var(--rz-fs-fein);font-weight:650;color:var(--ink-soft);letter-spacing:.02em}
+      .pb-platz{border:1px solid var(--card-bd);border-radius:var(--rz-rund-knopf);padding:9px 13px;margin:6px 0;cursor:grab}
       .pb-platz.leer{border-style:dashed;color:var(--ink-faint);cursor:default}
       .pb-platz.gewaehlt{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
       #kwPool [draggable]{cursor:grab}
@@ -151,7 +163,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-zeile{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
                 width:100%;box-sizing:border-box;min-height:44px;padding:15px 0;margin:0;
                 border:0;border-top:1px solid var(--rz-hairline);background:none;text-align:left;
-                font-family:var(--rz-serif);font-size:20px;font-weight:400;line-height:1.3;
+                font-family:var(--rz-serif);font-size:var(--rz-fs-sektion);font-weight:400;line-height:1.3;
                 color:inherit;cursor:pointer;border-radius:0}
       .rz-zeile:disabled,.rz-zeile.rz-gedimmt{color:var(--rz-gedimmt);cursor:default}
       /* S93 · HANDLUNG vs. NAVIGATION. Die Hairline-Zeile bleibt die Sprache
@@ -164,19 +176,19 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-knopf-flach+.rz-knopf-flach{margin-top:8px}
       .rz-tiefgruen .rz-knopf-flach{border-color:var(--rz-hairline-gruen)}
       .rz-knopf-flach:disabled,.rz-knopf-flach.rz-gedimmt{cursor:not-allowed;opacity:.55}
-      .rz-zeile .rz-pfeil{flex:none;font-family:var(--rz-sans);font-size:15px;color:var(--rz-pfeil)}
+      .rz-zeile .rz-pfeil{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-text);color:var(--rz-pfeil)}
       .rz-tiefgruen .rz-zeile{border-top-color:var(--rz-hairline-gruen)}
       .rz-tiefgruen .rz-zeile .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
-      .rz-tiefgruen .rz-zeile{font-size:19px}
+      .rz-tiefgruen .rz-zeile{font-size:var(--rz-fs-zeile)}
       .rz-zeile.rz-unten{border-top:0;border-bottom:1px solid var(--rz-hairline-gruen)}
-      .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:12px;color:var(--rz-gedimmt);
+      .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
                             max-width:38%;text-align:right;line-height:1.4}
       .rz-balken{height:2px;background:var(--rz-hairline);margin-top:8px}
       .rz-balken>i{display:block;height:2px;background:var(--rz-akzent-hell)}
       .rz-initial{width:22px;height:22px;flex:none;border-radius:50%;background:var(--rz-akzent);
-                  color:var(--rz-akzent-text);font-family:var(--rz-sans);font-size:11px;font-weight:600;
+                  color:var(--rz-akzent-text);font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
                   display:inline-flex;align-items:center;justify-content:center;align-self:center}
-      .rz-caps{font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.2em;
+      .rz-caps{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.2em;
                text-transform:uppercase;color:var(--rz-label)}
       .rz-tiefgruen .rz-caps{color:var(--rz-label-auf-gruen)}
 
@@ -185,11 +197,11 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          Screen die Paar-Signatur (eigener Name zuerst), der Ortsname wandert
          ins Wegweiser-Badge, und die Wortmarke ist Signet am Fuss. Sperrung
          .34em (nicht .2em wie .rz-caps) haelt beide Zeilen auseinander. */
-      .rz-signatur{font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.34em;
+      .rz-signatur{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.34em;
                    text-transform:uppercase;color:var(--rz-gedimmt);text-align:center}
       .rz-tiefgruen .rz-signatur{color:var(--rz-sek2-auf-gruen)}
       .rz-fussmarke{display:block;margin-top:28px;text-align:center;
-                    font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.34em;
+                    font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.34em;
                     text-transform:uppercase;color:var(--rz-gedimmt)}
       .rz-tiefgruen .rz-fussmarke{color:var(--rz-marke-auf-gruen)}
       /* Das Wegweiser-Zeichen (Pfosten mit Schild) steht IMMER neben dem
@@ -200,8 +212,9 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                right:calc(16px + env(safe-area-inset-right,0px));z-index:7;
                display:flex;gap:4px;align-items:flex-start}
       .rz-einst{position:relative;border:0;background:none;margin:0;padding:6px;cursor:pointer;
-                line-height:0;min-width:36px;min-height:36px;color:var(--rz-marke)}
-      .rz-einst svg{width:20px;height:20px;display:block;margin:auto}
+                line-height:0;min-width:36px;min-height:var(--rz-tapziel);color:var(--rz-marke)}
+      .rz-einst span[class^="rz-einst-"]{display:block;margin:auto;line-height:0}
+      .rz-einst svg{display:block;margin:auto}
       /* D12-2f · Das Zeichen ist das WECHSELZIEL, nicht der Ist-Zustand: auf
          Hell steht die Seerose (der dunkle Teich), auf Dunkel der Baum. */
       .rz-einst-baum{display:none}
@@ -211,39 +224,39 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                           border-radius:50%;background:var(--rz-akzent)}
       .rz-einst-blatt{position:absolute;top:42px;right:0;width:min(272px,calc(100vw - 32px));
                       background:var(--rz-papier);color:var(--rz-ink);
-                      border:1px solid var(--rz-hairline);border-radius:14px;padding:14px 16px;
-                      box-shadow:0 12px 34px rgba(0,0,0,.14);text-align:left}
+                      border:1px solid var(--rz-hairline);border-radius:var(--rz-rund-blatt);padding:14px 16px;
+                      box-shadow:var(--rz-blatt-schatten);text-align:left}
       html[data-theme=dark] .rz-einst-blatt{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
                                             border-color:var(--rz-hairline-gruen)}
       .rz-einst-blatt .rz-caps{margin:0 0 6px}
       .rz-einst-blatt .rz-caps+.rz-caps,.rz-einst-gruppe+.rz-einst-gruppe{margin-top:16px}
       .rz-einst-wahl{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;
                      border:0;background:none;padding:8px 0;margin:0;cursor:pointer;text-align:left;
-                     font-family:var(--rz-sans);font-size:15px;color:inherit;
+                     font-family:var(--rz-sans);font-size:var(--rz-fs-text);color:inherit;
                      border-bottom:1px solid var(--rz-hairline)}
       html[data-theme=dark] .rz-einst-wahl{border-bottom-color:var(--rz-hairline-gruen)}
       .rz-einst-wahl:last-child{border-bottom:0}
-      .rz-einst-wahl .rz-haken{color:var(--rz-akzent-hell);font-size:14px;opacity:0}
+      .rz-einst-wahl .rz-haken{color:var(--rz-akzent-hell);font-size:var(--rz-fs-fein);opacity:0}
       .rz-einst-wahl.an .rz-haken{opacity:1}
-      .rz-einst-fuss{font-size:13px;color:var(--rz-sek2);margin:10px 0 0;line-height:1.45}
+      .rz-einst-fuss{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin:10px 0 0;line-height:1.45}
       html[data-theme=dark] .rz-einst-fuss{color:var(--rz-sek2-auf-gruen)}
       /* Nur auf dem Startscreen steht das Ortsetikett ueber der Betreten-Zeile;
          in den Vorraeumen traegt das Badge den Ort (Turn 27, §1). */
       .rz-caps-ueber{margin-bottom:11px}
       /* Der Sessionname verlaesst den Kopf und wird zur leisen Zeile ueber der
          ersten Nachricht — der Ort steht im Badge, die Session hier. */
-      .rz-sessionname{font-family:var(--rz-serif);font-size:15px;font-weight:300;
+      .rz-sessionname{font-family:var(--rz-serif);font-size:var(--rz-fs-text);font-weight:300;
                       color:var(--rz-sek2);margin:0 0 4px}
 
       /* ============ D1 · Grundbaustein C — Wegweiser-Badge / -Panel ============
          Badge sitzt exakt auf der Naht (rz-auf-naht), Punkt = etwas wartet.
          Panel faltet sich aus der Naht (scaleY + opacity, ~300ms,
-         cubic-bezier(.2,.8,.2,1)), ueberdeckt als Overlay, Klick irgendwohin
+         var(--rz-kurve)), ueberdeckt als Overlay, Klick irgendwohin
          schliesst. Inhalt: nur Text, 2–3 Optionen, Serif, Raumnamen kursiv. */
       /* Der Knopf liegt UNTER dem Textpanel: klappt das Panel aus der Mitte
          auf, verschwindet der Knopf dahinter (Tap aufs Panel schliesst). */
       .rz-weg-badge{z-index:3;background:var(--rz-akzent);color:var(--rz-akzent-text);border:0;cursor:pointer;
-                    font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.16em;
+                    font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.16em;
                     text-transform:uppercase;padding:9px 18px;display:flex;align-items:center;gap:8px;
                     border-radius:0;min-height:0}
       .rz-weg-badge .rz-punkt{width:6px;height:6px;border-radius:50%;background:var(--rz-akzent-text);
@@ -254,12 +267,12 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                     border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
                     transform:translateY(-50%) scaleY(0);transform-origin:center center;
                     opacity:0;pointer-events:none;
-                    transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s cubic-bezier(.2,.8,.2,1)}
+                    transition:transform .3s var(--rz-kurve),opacity .3s var(--rz-kurve)}
       .rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}
-      .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:17px;font-weight:300;
+      .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;
                                line-height:1.55;margin:0 0 14px}
       .rz-weg-panel .rz-option em{font-style:italic}
-      .rz-weg-fuss{font-family:var(--rz-sans);font-size:11px;color:var(--rz-gedimmt);
+      .rz-weg-fuss{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
                    text-align:center;padding-top:8px}
       @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
 
@@ -281,13 +294,13 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-screen .rz-half:first-child{padding-top:calc(30px + env(safe-area-inset-top,0px))}
       .rz-screen .rz-half:last-child{padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
       .rz-kopf{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
-      .rz-marke{font-family:var(--rz-sans);font-size:12px;font-weight:600;letter-spacing:.16em;
+      .rz-marke{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.16em;
                 text-transform:uppercase;color:var(--rz-marke)}
-      .rz-h1{font-family:var(--rz-serif);font-size:30px;font-weight:300;line-height:1.18;margin:12px 0 0}
-      .rz-h2{font-family:var(--rz-serif);font-size:26px;font-weight:300;line-height:1.2;margin:0 0 6px}
-      .rz-sub{font-family:var(--rz-sans);font-size:13px;line-height:1.6;color:var(--rz-sek2);margin:8px 0 0}
+      .rz-h1{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;line-height:1.18;margin:12px 0 0}
+      .rz-h2{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;line-height:1.2;margin:0 0 6px}
+      .rz-sub{font-family:var(--rz-sans);font-size:var(--rz-fs-fein);line-height:1.6;color:var(--rz-sek2);margin:8px 0 0}
       .rz-fuss{margin-top:auto}
-      .rz-still{font-size:13px;margin-top:10px}
+      .rz-still{font-size:var(--rz-fs-fein);margin-top:10px}
       .rz-lz-leiste{display:inline-flex;gap:6px;margin-left:auto}
       .rz-zeile .rz-lz-leiste+.rz-pfeil{margin-left:0}
       .rz-zeile>span:first-child{flex:1}
@@ -307,7 +320,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          Spiegel-Pfeil rechts. */
       .rz-kopf-mitte{justify-content:space-between}
       .rz-zurueck{border:0;background:none;padding:4px 8px;margin:-4px -8px;cursor:pointer;
-                  font-family:var(--rz-sans);font-size:13.5px;color:var(--rz-marke);min-height:0}
+                  font-family:var(--rz-sans);font-size:var(--rz-fs-fein);color:var(--rz-marke);min-height:0}
       .rz-tiefgruen .rz-zurueck{color:var(--rz-sek-auf-gruen)}
       .rz-blind{visibility:hidden;cursor:default}
       .rz-intro{margin:4px 0 0;max-width:46ch}
@@ -318,12 +331,12 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-zeile-haupt>span:first-child{flex:1}
       .rz-zeile .rz-balken{margin-top:8px}
       .rz-regal-reihen{display:flex;flex-direction:column}
-      .rz-regal-inhalt{font-size:13px;padding:12px 0;border-bottom:1px solid var(--rz-hairline-gruen)}
-      .rz-regal-inhalt .pb-item{border-bottom:1px solid var(--rz-hairline-gruen);font-size:14px}
+      .rz-regal-inhalt{font-size:var(--rz-fs-fein);padding:12px 0;border-bottom:1px solid var(--rz-hairline-gruen)}
+      .rz-regal-inhalt .pb-item{border-bottom:1px solid var(--rz-hairline-gruen);font-size:var(--rz-fs-fein)}
       .rz-eine-zone{display:flex;flex-direction:column}
       .rz-eine-zone .rz-half{flex:1;padding-top:calc(30px + env(safe-area-inset-top,0px));
                              padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
-      .rz-eine-zone #boxMess{margin-top:18px;font-size:14px}
+      .rz-eine-zone #boxMess{margin-top:18px;font-size:var(--rz-fs-fein)}
 
       /* ============ D4 · Chat ohne Blasen (Design 17e) ============
          Begleitung: Serif 17/300 links (Label als leise Caps-Marke beim
@@ -335,12 +348,12 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         calc(24px + env(safe-area-inset-bottom,0px))}
       .rz-chat-innen{max-width:640px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100dvh - 60px)}
       #scrChat .pb-msgs{gap:22px;flex:1}
-      #scrChat .rz-sprecher{font-family:var(--rz-sans);font-size:10px;font-weight:600;
+      #scrChat .rz-sprecher{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
         letter-spacing:.16em;text-transform:uppercase;color:var(--rz-sek2);margin-bottom:-17px}
       #scrChat .pb-msg{background:none;border:0;border-radius:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none}
-      #scrChat .pb-msg.ai{font-family:var(--rz-serif);font-size:17px;font-weight:300;line-height:1.55;
+      #scrChat .pb-msg.ai{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;line-height:1.55;
         align-self:flex-start;max-width:88%;color:var(--rz-ink)}
-      #scrChat .pb-msg.me{font-family:var(--rz-sans);font-size:14.5px;line-height:1.6;
+      #scrChat .pb-msg.me{font-family:var(--rz-sans);font-size:var(--rz-fs-text);line-height:1.6;
         align-self:flex-end;max-width:82%;text-align:right;color:var(--rz-nutzer)}
       #scrChat .pb-composer{border-top:1px solid var(--rz-hairline);padding-top:16px;margin-top:24px;align-items:center}
       #scrChat .pb-composer textarea{border:0;background:none;border-radius:0;padding:6px 0;
@@ -351,9 +364,9 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       #scrChat #btnSend{width:34px;height:34px;min-height:34px;padding:0;border:0;border-radius:0;
         background:var(--rz-akzent-hell);color:var(--rz-papier);display:inline-flex;align-items:center;justify-content:center}
       #scrChat .rz-panel{border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
-        padding:14px 0;margin:10px 0;font-size:14px}
+        padding:14px 0;margin:10px 0;font-size:var(--rz-fs-fein)}
       #scrChat .pb-skala{background:none;border:1px solid var(--rz-hairline);border-radius:0}
-      #scrChat #btnChatEnde{font-size:16px;margin-top:6px}
+      #scrChat #btnChatEnde{font-size:var(--rz-fs-text);margin-top:6px}
       /* ---- D12-2b (Turn 27, 27e) · der Chat bekommt dieselbe Grammatik wie
          die uebrigen Screens: oben der Verlauf, unten die Schreibkante als
          eigene Zone, dazwischen die Naht mit dem Wegweiser-Badge. Das Badge
@@ -392,15 +405,15 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-teilen-block{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
         padding:18px 20px;margin:12px 0}
       .rz-teilen-block .rz-von{color:var(--rz-label-auf-gruen);margin-bottom:8px}
-      .rz-teilen-text{font-family:var(--rz-serif);font-size:16.5px;font-weight:300;
+      .rz-teilen-text{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;
         line-height:1.55;margin:0}
       .rz-teilen-text::before{content:'„'}
       .rz-teilen-text::after{content:'“'}
-      .rz-wahl{display:block;font-size:14px;margin:0;padding:10px 0;
+      .rz-wahl{display:block;font-size:var(--rz-fs-fein);margin:0;padding:10px 0;
         border-top:1px solid var(--rz-hairline)}
-      .rz-von .rz-initial{width:18px;height:18px;font-size:10px;vertical-align:middle}
+      .rz-von .rz-initial{width:18px;height:18px;font-size:var(--rz-fs-caps);vertical-align:middle}
       .rz-regal-eintrag .rz-von{margin-bottom:4px}
-      .rz-regal-text{font-family:var(--rz-serif);font-size:15.5px;font-weight:300;line-height:1.5}
+      .rz-regal-text{font-family:var(--rz-serif);font-size:var(--rz-fs-text);font-weight:300;line-height:1.5}
 
       /* ============ D8 · Sprachwechsel als Eckknopf + Aufwaerts-Dialog ============
          Kleiner DE/EN-Wechsler unten rechts; der Dialog faehrt von unten
@@ -411,20 +424,20 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
         right:calc(18px + env(safe-area-inset-right,0px));
         bottom:calc(18px + env(safe-area-inset-bottom,0px));
         display:flex;align-items:center;gap:8px}
-      .rz-sprach-hinweis{font-family:var(--rz-sans);font-size:11px;color:var(--rz-sek2);
+      .rz-sprach-hinweis{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-sek2);
         max-width:16ch;text-align:right;line-height:1.35}
       .rz-sprachknopf{border:1px solid var(--rz-hairline);background:var(--rz-papier);
         color:var(--rz-gedimmt);cursor:pointer;border-radius:0;padding:6px 10px;min-height:0;
-        font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.1em;
+        font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.1em;
         display:inline-flex;align-items:center;gap:5px}
       .rz-sprachknopf .an{color:var(--rz-akzent-hell)}
       .rz-sprachknopf .rz-punkt{width:5px;height:5px;border-radius:50%;background:var(--rz-akzent)}
       #boxPaarsprache.rz-sprachdialog{position:fixed;left:0;right:0;bottom:0;z-index:25;
         display:block;margin:0;border:0;border-top:1px solid var(--rz-hairline);border-radius:0;
-        background:var(--rz-papier);color:var(--rz-ink);font-size:13px;
+        background:var(--rz-papier);color:var(--rz-ink);font-size:var(--rz-fs-fein);
         padding:22px 24px calc(64px + env(safe-area-inset-bottom,0px));
         transform:translateY(100%);opacity:0;pointer-events:none;
-        transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s cubic-bezier(.2,.8,.2,1)}
+        transition:transform .3s var(--rz-kurve),opacity .3s var(--rz-kurve)}
       #boxPaarsprache.rz-sprachdialog:not(.pb-hidden){transform:translateY(0);opacity:1;pointer-events:auto}
       .rz-sprachdialog .pb-btn{margin:6px 8px 0 0}
       @media(prefers-reduced-motion:reduce){#boxPaarsprache.rz-sprachdialog{transition:none}}
@@ -448,8 +461,8 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          steht als Ueberschrift oben — mit ihrem Pfeil, jetzt nach oben. */
       .rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}
       .rz-regal-offen .rz-zeile.rz-auf{border:0;padding:0;font-family:var(--rz-serif);
-        font-size:24px;font-weight:300;line-height:1.2;align-items:baseline}
-      .rz-regal-offen .rz-zeile.rz-auf .rz-pfeil{font-size:13px}
+        font-size:var(--rz-fs-sektion);font-weight:300;line-height:1.2;align-items:baseline}
+      .rz-regal-offen .rz-zeile.rz-auf .rz-pfeil{font-size:var(--rz-fs-fein)}
       .rz-regal-offen{position:relative;height:100dvh;overflow:hidden}
       /* Der obere Teil bleibt EXAKT stehen: statt ihn vom Flex-Layout neu
          verteilen zu lassen, wird er auf sein gemessenes Mass festgesetzt.
@@ -458,7 +471,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-regal-offen>.rz-half:first-child{position:absolute;top:0;left:0;right:0;height:var(--rz-oben-h,50%)}
       .rz-regal-offen>.rz-half:last-child{position:absolute;left:0;right:0;bottom:0;
         top:var(--rz-regal-top,0px);z-index:2}
-      .rz-half{transition:transform .36s cubic-bezier(.2,.8,.2,1)}
+      .rz-half{transition:transform .36s var(--rz-kurve)}
       /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht
          an der Oberkante der Regal-Zone und faehrt mit ihr nach oben, bis er
          unter der Kopfzeile sitzt. Nur die Kulisse tritt ab — sie haengt am
@@ -470,7 +483,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-regal-offen .rz-regal-reihen{flex:1 1 auto}
       /* Akkordeon: der Inhalt waechst aus dem Trennstrich unter seiner Zeile
          hervor — freigelegt per clip-path, ohne den Text zu verzerren. */
-      .rz-regal-inhalt:not(.pb-hidden){animation:rzAufklappen .32s cubic-bezier(.2,.8,.2,1) both}
+      .rz-regal-inhalt:not(.pb-hidden){animation:rzAufklappen .32s var(--rz-kurve) both}
       .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){
         flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;border-bottom:0}
       @keyframes rzAufklappen{
@@ -555,7 +568,8 @@ export function verdrahteWegweiser(doc, badge, panel) {
    Die Klasse .rz-ecke ist zugleich der Wirt fuer die Push-Glocke (M7a). */
 export const CHROME_HTML = String.raw`<div class="rz-ecke pb-theme" role="group">
       <button id="pbEinst" class="rz-einst" type="button" aria-haspopup="dialog" aria-expanded="false">
-        <svg class="rz-einst-baum" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 6.6 10.6h3L5.4 17.4h5.5V22h2.2v-4.6h5.5l-4.2-6.8h3z"/></svg>
+        <span class="rz-einst-baum">${zeichen("baum", { groesse: 20 })}</span>
+        <span class="rz-einst-seerose">${zeichen("bluete", { groesse: 20 })}</span>
         <svg class="rz-einst-seerose" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.4c1.7 1.8 2.5 3.5 2.5 5.3 0 1.7-.8 3.1-2.5 4.2-1.7-1.1-2.5-2.5-2.5-4.2 0-1.8.8-3.5 2.5-5.3z"/><path d="M2.4 14h7.4l-2.5 3.6H5a4.2 4.2 0 0 1-2.6-3.6zm19.2 0h-7.4l2.5 3.6H19a4.2 4.2 0 0 0 2.6-3.6z"/></svg>
         <span class="rz-punkt pb-hidden" id="pbEinstPunkt"></span>
       </button>

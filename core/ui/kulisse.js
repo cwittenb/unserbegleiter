@@ -1,6 +1,6 @@
 // D6 · Kulisse — leise Silhouetten am Rand der Wahrnehmung (Design Turn 15-17).
 // Rein additiv: Opacity .07-.28, pointer-events:none, eigener Clipping-Halter.
-// Hell traegt Baeume (#7d9b62), Dunkel den Seerosenteich (#8fae74) — beide
+// Hell traegt Baeume, Dunkel den Seerosenteich (Toene als Theme-Token) — beide
 // Fassungen werden gerendert, das Theme blendet per CSS genau eine ein.
 //
 // Wachstum (Spez Turn 16): getrennte Zaehler pro Raum. Onboarding-Meilensteine
@@ -88,6 +88,30 @@ function baum(p) {
     `<rect x="${x - 1.5}" y="${grund - 1}" width="3" height="6"></rect></g>`;
 }
 
+/* ---- T1d · Derselbe Zeichensatz, einzeln benutzbar ----------------------
+   Die Bausteine oben sind parametrisch und flaechenbasiert — als Symbole taugen
+   sie unveraendert. Bisher waren sie modulprivat, weshalb Baum und Seerose in
+   der Bedien-Ecke NOCHMAL und anders gezeichnet waren. zeichen() gibt sie als
+   eigenstaendiges SVG heraus, damit ein Motiv genau einmal existiert.
+
+   `schlicht` (Vorgabe ab Kantenlaenge < 28) laesst die innere Blattlage und
+   die Fruchtstand-Punkte weg: bei r ~ .9 Einheiten werden sie subpixelig. Die
+   Knospen-Fassung des Kelchs leistet das bereits. */
+export function zeichen(art, { groesse = 24, schlicht = null, kennung = "z" } = {}) {
+  const fein = schlicht == null ? groesse >= 28 : !schlicht;
+  const svg = inhalt => `<svg viewBox="0 0 40 40" width="${groesse}" height="${groesse}" ` +
+    `fill="currentColor" aria-hidden="true">${inhalt}</svg>`;
+  if (art === "baum")
+    return svg(baum({ x: 20, grund: 34, kopf: 6, breite: 9, o: 1 }));
+  if (art === "bluete" || art === "knospe")
+    return svg(kelch(20, 20, fein ? 1.55 : 1.35, 1, art === "knospe" || !fein ? "knospe" : "bluete"));
+  if (art === "blatt")
+    return svg(schwimmblatt(20, 20, 15, 1, -30));
+  if (art === "ring")
+    return svg(`<g fill="none">` + wasserring(20, 20, 15, 1) + `</g>`);
+  return svg("");
+}
+
 /** Beide Theme-Fassungen einer Kulisse mit n Elementen.
  *  D11 · Der geschwungene Untergrund (Huegellinie bzw. Wasserlinie) gehoert
  *  NICHT zum Wachstum — er ist immer da, auch bei n = 0. Nur die Baeume bzw.
@@ -120,6 +144,6 @@ export function baueKulisse(n, kennung = "k") {
     `<svg class="${klasse}" viewBox="0 0 390 84" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"${extra}>${inhalt}</svg>`;
   return lage("rz-kulisse-hell", `<path d="M0 60 Q100 48 195 58 T390 54 V84 H0Z" fill="currentColor" opacity=".07"></path>`) +
     figuren("rz-kulisse-hell", baeume) +
-    lage("rz-kulisse-dunkel", `<path d="M0 66 Q100 60 195 66 T390 64 V84 H0Z" fill="#ffffff" opacity=".04"></path>`) +
-    figuren("rz-kulisse-dunkel", teich, ` fill="currentColor" color="#8fae74"`);
+    lage("rz-kulisse-dunkel", `<path d="M0 66 Q100 60 195 66 T390 64 V84 H0Z" fill="var(--rz-kulisse-wasser)" opacity=".04"></path>`) +
+    figuren("rz-kulisse-dunkel", teich, ` fill="currentColor" color="var(--rz-kulisse-teich)"`);
 }

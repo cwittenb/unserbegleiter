@@ -69,7 +69,7 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
       (offen
         ? `<p class="rz-einst-fuss">${t("einst.antragOffen", { sprache: sprachName(offen.target) })}</p>`
         : backend.language
-        ? `<button class="pb-btn" id="einstSprachAntrag" style="margin-top:8px">` +
+        ? `<button class="pb-btn rz-oben-2" id="einstSprachAntrag">` +
           `${t("einst.vorschlagen", { sprache: sprachName(paar === "en" ? "de" : "en") })}</button>` +
           `<p class="rz-einst-fuss">${t("einst.paarspracheHinweis")}</p>`
         : "") +
@@ -150,9 +150,9 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
     }
     box.innerHTML =
       `<div class="pb-ag-kopf">${t("paarspr.agendaKopf")}</div>` +
-      `<p style="font-size:13px;margin:6px 0">${mitte}</p>` + knoepfe +
-      (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650" id="psMeldung">${meldung}</p>` : "") +
-      `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>`;
+      `<p class="rz-fein-abstand">${mitte}</p>` + knoepfe +
+      (meldung ? `<p class="rz-fein-betont" id="psMeldung">${meldung}</p>` : "") +
+      `<p class="pb-sub rz-oben-2">${t("paarspr.hinweisLaufend")}</p>`;
     const anwenden = r => {
       state.info.locale = r.locale;
       state.info.languageRequest = r.languageRequest;

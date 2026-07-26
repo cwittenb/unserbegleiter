@@ -85,11 +85,13 @@ describe("D1 · Grundbaustein C — Wegweiser-Badge/Panel", () => {
     expect(DESIGN_CSS).toContain(".rz-weg-badge.rz-wartet .rz-punkt{display:block}");
   });
 
+  // T1b · Die Uebergangskurve ist ein Theme-Baustein (--rz-kurve) statt eines
+  // wiederholten Literals.
   it("Panel klappt aus der MITTE der Naht auf — nach oben und unten gleichermassen (D8)", () => {
     // Verankert auf der Nahtlinie (top:0 + translateY(-50%)), Ursprung Mitte:
     // die Flaeche waechst symmetrisch in beide Haelften.
     expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*transform:translateY\(-50%\) scaleY\(0\);transform-origin:center center/);
-    expect(DESIGN_CSS).toContain("transition:transform .3s cubic-bezier(.2,.8,.2,1),opacity .3s cubic-bezier(.2,.8,.2,1)");
+    expect(DESIGN_CSS).toContain("transition:transform .3s var(--rz-kurve),opacity .3s var(--rz-kurve)");
     expect(DESIGN_CSS).toContain(".rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}");
   });
 
