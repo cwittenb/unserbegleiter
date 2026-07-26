@@ -274,6 +274,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-weg-panel .rz-option em{font-style:italic}
       .rz-weg-fuss{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
                    text-align:center;padding-top:8px}
+      /* Quick-Lane · Auf dem Desktop liegt die Naht senkrecht in der Mitte.
+         Das Panel haengt in der ZWEITEN Haelfte und klappte deshalb nur ueber
+         deren Oberkante auf: halbe Breite, falsche Hoehe. Es soll auch hier ein
+         Band sein — voller Breite, durch die Mitte.
+         200% / -100% statt 100vw / -50vw: Prozente rechnen gegen die Haelfte
+         (genau halbe Breite, da beide flex:1 tragen) und bringen keinen
+         Scrollbalken mit, wie vw es taete.
+         Der Block steht bewusst HINTER der Grundregel — gleiche Spezifitaet,
+         also entscheidet die Reihenfolge. */
+      @media(min-width:900px){
+        .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}
+      }
       @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
 
       /* ============ D2 · Screen-Rahmen + Startscreen ============

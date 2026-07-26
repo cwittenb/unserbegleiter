@@ -162,6 +162,31 @@ describe("D8/D12-2d · Sprache im Einstellungs-Blatt", () => {
 
 const klick = async el => { el.click(); await ruhe(); };
 
+describe("Quick-Lane · Wegweiser auf dem Desktop", () => {
+  it("das Panel klappt in der Mitte auf und geht über die volle Breite", async () => {
+    const { DESIGN_CSS } = await import("../../core/ui/design.js");
+    // Der Desktop-Block muss HINTER der Grundregel stehen, sonst gewinnt sie.
+    const iGrund = DESIGN_CSS.indexOf(".rz-weg-panel{position:absolute");
+    const iDesktop = DESIGN_CSS.indexOf("@media(min-width:900px){", iGrund);
+    expect(iDesktop).toBeGreaterThan(iGrund);
+    const desktop = DESIGN_CSS.slice(iDesktop);
+    const regel = desktop.slice(desktop.indexOf(".rz-weg-panel{"),
+                                desktop.indexOf("}", desktop.indexOf(".rz-weg-panel{")) + 1);
+    expect(regel).toContain("top:50%");        // Mitte statt Oberkante
+    expect(regel).toContain("width:200%");     // beide Hälften
+    expect(regel).toContain("margin-left:-100%");
+    expect(regel).toContain("right:auto");     // sonst gewinnt right:0 aus der Grundregel
+  });
+
+  it("am Handy bleibt es das Band an der waagerechten Naht", async () => {
+    const { DESIGN_CSS } = await import("../../core/ui/design.js");
+    // Die Grundregel steht VOR dem Desktop-Block — dort greift sie allein.
+    const grund = DESIGN_CSS.slice(DESIGN_CSS.indexOf(".rz-weg-panel{position:absolute"));
+    expect(grund.slice(0, grund.indexOf("}"))).toContain("left:0;right:0;top:0");
+  });
+});
+
+
 describe("D12-2f · Der Vorschlag aus dem Blatt landet in der Agenda", () => {
   it("Klick stellt den Antrag; danach nennt das Blatt den Stand statt eines zweiten Knopfs", async () => {
     document.getElementById("pbEinst").click();
