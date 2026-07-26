@@ -40,6 +40,15 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
     client.outputFiles[0].text.replace(/__CORE_HASH__/g, hash)
   );
 
+  // Korpus EN (R5): eigenständige Datei, damit der Client sie NUR bei Bedarf
+  // holt. Deutsch bleibt im Bundle (Referenz und Fallback, F2); Englisch waren
+  // 115 kB, die jedes deutschsprachige Paar bisher mitgeladen hat.
+  const korpusEn = await build({
+    entryPoints: [path.join(ROOT, "platforms/cloudflare/pages/korpus-en-entry.js")],
+    bundle: true, format: "iife", write: false, target: "es2021",
+  });
+  await writeFile(path.join(outDir, "public/korpus.en.js"), korpusEn.outputFiles[0].text);
+
   // Service Worker (M2): eigener Bundle-Schritt, Kern-Hash wird zum Cache-Namen —
   // jeder Deploy invalidiert die Shell von selbst (activate räumt Altstände weg).
   const sw = await build({

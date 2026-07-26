@@ -11,24 +11,18 @@ import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, WEGE_FUER, inKarenz 
 import { paareAusVerlauf, baueAusschnitt, paarWaehlbar, paarGrund, waehleUm,
   fuelleSpanne, ueberRichtwert, hatStilleLuecken } from "../engine/ausschnitt.js";
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
-import { K, setKorpusSprache } from "../prompts/prompts.js";
+import { K, setKorpusSprache, stelleKorpusBereit } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf, pruefeLeserichtung, formatiereLeseMarker } from "./prozess.js";
 import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser } from "./design.js";
 import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
-import { esc } from "./html.js";   // R3: eine Fassung fuer alle
+import { esc, mdRender, IKON, lesezeichenLabels } from "./html.js";   // R3/R4a
+import { schneideStreamText } from "./stream-anzeige.js";   // R4a
+import { zeitraumText, rhythmusText } from "./zeit-texte.js";   // R4a
+import { macheRecoveryScreen } from "./recovery-screen.js";   // R4b
+import { macheEinstellungenScreen } from "./einstellungen-screen.js";   // R4b
 
-// Kürzel für die zwei Notifikations-Badges: beide Partner schauen ggf.
-// gemeinsam auf den Screen, deshalb je eine Badge. Das Präfix wächst nur so
-// weit, wie nötig, um die Namen unterscheidbar zu machen (Anna/Andreas → AN/AND).
-function lesezeichenLabels(a, b) {
-  a = String(a ?? "").trim(); b = String(b ?? "").trim();
-  const up = (s, k) => s.slice(0, k).toLocaleUpperCase();
-  let n = 1;
-  while (n < Math.max(a.length, b.length) && up(a, n) === up(b, n)) n++;
-  return [up(a, n) || up(a, 1), up(b, n) || up(b, 1)];
-}
 
 /* S35 · Ladeanzeige: dünner Zähl-Proxy um die Backend-Fassade. Jede laufende
    asynchrone Anfrage (Backend ODER LLM) hebt einen Zähler; solange er >0 ist,
@@ -57,16 +51,6 @@ function umhuelleBackend(roh, tick) {
   return aus;
 }
 
-/* Flache Icons (S36): einfarbig über currentColor, keine Emoji, keine
-   Schattierung. Auf primary-Knöpfen erscheinen sie weiß (--on-accent). */
-const IKON = {
-  mic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="21"/></svg>',
-  stop: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
-  send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9z"/></svg>',
-  // D12-2 · Wegweiser: Pfosten mit Schild. Flaechen statt Striche, damit das
-  // Zeichen auch bei 9 px scharf bleibt; faerbt sich ueber currentColor.
-  wegweiser: '<svg class="rz-weg-ikon" viewBox="0 0 9 11" fill="currentColor" aria-hidden="true"><rect x="0" y="0" width="1.5" height="11"/><rect x="0" y="1" width="9" height="3"/></svg>',
-};
 
 /* S41 · Anzeige-Wächter: Ergebnis-Nachrichten der Panels sind Wire — seit
    S35/S37 gehen sie hidden über den Draht, aber Sessions aus der Zeit davor
@@ -815,16 +799,6 @@ export function createApp({ doc, backend, root, diktat }) {
   /* Kompaktes, sicheres Inline-Markdown: erst HTML-escapen, dann **fett**,
      *kursiv*, \`code\`, Überschriften als fett, "- " als Aufzählungspunkt.
      white-space:pre-wrap erhält die Zeilenstruktur — kein Block-Parser nötig. */
-  function mdRender(roh) {
-    let t = esc(roh);
-    t = t.replace(/^#{1,4}\s+(.+)$/gm, "<strong>$1</strong>");
-    t = t.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
-    t = t.replace(/(^|[\s(>])\*([^*\n]+)\*(?=[\s.,;:!?)]|$)/gm, "$1<em>$2</em>");
-    t = t.replace(/\`([^\`\n]+)\`/g, "<code>$1</code>");
-    t = t.replace(/^(\s*)[-*]\s+/gm, "$1• ");
-    return t;
-  }
-
   /** Skalenfrage? Dann Schnellantwort-Slider zeigen (freies Tippen bleibt möglich). */
   function aktualisiereSkala() {
     const boxS = $("pbSkala");
@@ -851,25 +825,10 @@ export function createApp({ doc, backend, root, diktat }) {
      Artefakte (Block ohne Ende, "[["-Marker, angerissenes Start-Token am
      Textende) werden abgeschnitten, damit während des Stroms nie rohe
      Protokollzeichen sichtbar werden (S34-Lehre, auf Teiltexte übertragen). */
+  /* R4a: Der Rumpf liegt jetzt als reine Funktion in stream-anzeige.js —
+     hier bleibt nur die Bindung an den Zustand der laufenden Session. */
   function streamAnzeige(roh) {
-    const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
-    let txt = cleanDisplay(roh, mkListe, ALLE_BLOECKE);
-    let schnitt = txt.length;
-    for (const b of ALLE_BLOECKE) {
-      const i = txt.indexOf(b.start);
-      if (i >= 0 && i < schnitt) schnitt = i;        // Block begonnen, Ende fehlt noch
-    }
-    const iM = txt.indexOf("[[");
-    if (iM >= 0 && iM < schnitt) schnitt = iM;        // Marker im Entstehen
-    // S93: ein Steuer-Token im Entstehen ("[CLOSE SESS…") darf nie aufblitzen.
-    const iS = offeneKlammerAbIndex(txt);
-    if (iS >= 0 && iS < schnitt) schnitt = iS;
-    txt = txt.slice(0, schnitt);
-    if (txt.endsWith("[")) txt = txt.slice(0, -1);    // halbe Marker-Klammer
-    for (const tok of ALLE_BLOECKE.map(b => b.start)) // angerissenes Start-Token
-      for (let l = tok.length - 1; l >= 4; l--)
-        if (txt.endsWith(tok.slice(0, l))) { txt = txt.slice(0, -l); l = 0; }
-    return txt.replace(/\s+$/, "");
+    return schneideStreamText(roh, (state.engine && state.engine.def && state.engine.def.markerOrder) || []);
   }
 
   /** Live-Update der Stream-Blase — gezielt, ohne Voll-Rerender je Delta. */
@@ -1511,6 +1470,10 @@ export function createApp({ doc, backend, root, diktat }) {
     // und pausierte behalten ihre Sprache (Resume bricht nicht mitten im
     // Gespräch um). Der Schnappschuss steuert ALLE Korpus-Zugriffe via K().
     const paarSprache = info && info.locale === "en" ? "en" : "de";
+    // R5 · Tor: Der Korpus MUSS da sein, bevor die Sprache gesetzt wird —
+    // sonst faellt setKorpusSprache lautlos auf Deutsch zurueck und ein
+    // englischsprachiges Paar bekaeme deutsche Prompts, ohne jedes Anzeichen.
+    await stelleKorpusBereit(paarSprache);
     setKorpusSprache(paarSprache);
     // S87 · Nachzügler-Zaun auch für die Def-Hooks: Eine spät eintreffende
     // Antwort der ALTEN Session dispatcht ihre Blöcke — und würde Panels in
@@ -1623,6 +1586,7 @@ export function createApp({ doc, backend, root, diktat }) {
       chat.status === "running" && zugFrei && langeGenugPausiert ? def.wiedereinstieg : null;
     chat.pausedAt = null;   // die nun aktive Session trägt keinen Pausenstempel mehr
     const korpusSprache = (gespeichert && gespeichert.language) || paarSprache;
+    await stelleKorpusBereit(korpusSprache);   // R5 · Tor, s. o.
     setKorpusSprache(korpusSprache);
     if (!gespeichert) chat.language = korpusSprache;
     const ctx = { me: info.name, partner: info.partner, nameA: info.nameA, nameB: info.nameB };
@@ -1890,239 +1854,15 @@ export function createApp({ doc, backend, root, diktat }) {
      am Dokument, nicht in der App-Wurzel: es soll auf jedem Screen erreichbar
      sein, auch wenn die Wurzel gerade neu gebaut wird. ---- */
   const chrome = id => doc.getElementById(id);
-
-  /** Der Punkt am Zeichen ist der einzige Ort, an dem ein offener Sprach-
-   *  antrag des Partners noch auffällt, seit die Karte in der Agenda wohnt. */
-  function aktualisierePunkt() {
-    const punkt = chrome("pbEinstPunkt");
-    if (!punkt) return;
-    const w = state.info && state.info.languageRequest;
-    const offenFuerMich = !!(w && w.by !== state.info.role);
-    punkt.classList.toggle("pb-hidden", !offenFuerMich);
-  }
-
-  async function waehleAnsicht(wahl) {
-    const w = setzeAnsicht(doc, wahl);
-    merkeAnsicht(w);
-    try { await backend.pstate.set("theme", w); } catch { /* Umgebungen ohne pstate */ }
-    zeigeEinstellungen();
-  }
-
-  function zeigeEinstellungen() {
-    const blatt = chrome("pbEinstBlatt");
-    if (!blatt || blatt.classList.contains("pb-hidden")) return;
-    const ansicht = doc.documentElement.getAttribute("data-ansicht") || "auto";
-    const ui = getLocale();
-    const paar = state.info && state.info.locale === "en" ? "en" : "de";
-    const wahl = (gruppe, wert, text, aktiv) =>
-      `<button class="rz-einst-wahl${aktiv ? " an" : ""}" data-${gruppe}="${wert}">` +
-      `<span>${text}</span><span class="rz-haken" aria-hidden="true">✓</span></button>`;
-    blatt.innerHTML =
-      `<div class="rz-einst-gruppe">` +
-      `<div class="rz-caps">${t("einst.ansicht")}</div>` +
-      wahl("ansicht", "light", t("theme.hell"), ansicht === "light") +
-      wahl("ansicht", "dark", t("theme.dunkel"), ansicht === "dark") +
-      wahl("ansicht", "auto", t("theme.auto"), ansicht === "auto") +
-      `</div>` +
-      `<div class="rz-einst-gruppe">` +
-      `<div class="rz-caps">${t("einst.sprache")}</div>` +
-      wahl("ui", "de", t("paarspr.name.de"), ui === "de") +
-      wahl("ui", "en", t("paarspr.name.en"), ui === "en") +
-      `<p class="rz-einst-fuss">${t("einst.paarsprache", { sprache: sprachName(paar) })} ` +
-      `${t("einst.paarspracheHinweis")}</p>` +
-      `</div>`;
-    for (const b of blatt.querySelectorAll("[data-ansicht]"))
-      b.addEventListener("click", () => waehleAnsicht(b.getAttribute("data-ansicht")));
-    for (const b of blatt.querySelectorAll("[data-ui]"))
-      b.addEventListener("click", async () => {
-        const l = b.getAttribute("data-ui");
-        if (l === getLocale()) return;
-        setLocale(l);
-        try { await backend.pstate.set("language", l); } catch { /* Umgebungen ohne pstate */ }
-        relaunch();     // die Oberfläche wird in der neuen Sprache neu gebaut
-      });
-  }
-
-  function verdrahteEinstellungen() {
-    const knopf = chrome("pbEinst"), blatt = chrome("pbEinstBlatt");
-    if (!knopf || !blatt || knopf.dataset.rzVerdrahtet) return;
-    knopf.dataset.rzVerdrahtet = "1";
-    knopf.addEventListener("click", ev => {
-      ev.stopPropagation();
-      const zu = blatt.classList.toggle("pb-hidden");
-      knopf.setAttribute("aria-expanded", String(!zu));
-      if (!zu) zeigeEinstellungen();
-    });
-    doc.addEventListener("click", ev => {
-      if (blatt.classList.contains("pb-hidden")) return;
-      if (blatt.contains(ev.target) || knopf.contains(ev.target)) return;
-      blatt.classList.add("pb-hidden");
-      knopf.setAttribute("aria-expanded", "false");
-    });
-  }
-
-  /* ---- Paarsprache: beidseitig bestätigter Wechsel (S30·C3).
-     Die Karte ist reine Ansicht auf den Backend-Zustand — die Invariante
-     (Wechsel nur bei zwei gleichlautenden Anträgen verschiedener Rollen)
-     erzwingt der Worker bzw. das lokale Backend, nie die UI. ---- */
-  function sprachName(l) { return t("paarspr.name." + (l === "en" ? "en" : "de")); }
-  function zeigePaarsprache(meldung) {
-    // D12-2d · Die Karte lebt jetzt in der Agenda unter den Absprachen. Kein
-    // Aufklapp-Link mehr: wer die Agenda offen hat, sieht den Stand sofort.
-    // Der Wartepunkt bei einem offenen Antrag sitzt am Einstellungs-Zeichen
-    // (aktualisierePunkt) — sonst bliebe ein Antrag ungesehen liegen.
-    const box = $("agendaSprache");
-    if (!box) return;                      // Agenda gerade nicht gerendert
-    if (!backend.language) { box.classList.add("pb-hidden"); return; }
-    box.classList.remove("pb-hidden");
-    const aktuell = state.info.locale === "en" ? "en" : "de";
-    const wunsch = state.info.languageRequest;
-    aktualisierePunkt();
-    const ziel = aktuell === "en" ? "de" : "en";
-    const w = wunsch;
-    const meins = w && w.by === state.info.role;
-    let mitte, knoepfe;
-    if (!w) {
-      mitte = t("paarspr.aktuell", { sprache: sprachName(aktuell) });
-      knoepfe = `<button class="pb-btn" id="psAntrag">${t("paarspr.vorschlagen", { sprache: sprachName(ziel) })}</button>`;
-    } else if (meins) {
-      mitte = t("paarspr.wartet", { sprache: sprachName(w.target), partner: esc(state.info.partner) });
-      knoepfe = `<button class="pb-btn" id="psZurueck">${t("paarspr.zurueckziehen")}</button>`;
-    } else {
-      mitte = t("paarspr.vorschlag", { partner: esc(state.info.partner), sprache: sprachName(w.target) });
-      knoepfe = `<button class="pb-btn primary" id="psJa">${t("paarspr.bestaetigen")}</button> ` +
-                `<button class="pb-btn" id="psNein">${t("paarspr.ablehnen")}</button>`;
-    }
-    box.innerHTML =
-      `<div class="pb-ag-kopf">${t("paarspr.agendaKopf")}</div>` +
-      `<p style="font-size:13px;margin:6px 0">${mitte}</p>` + knoepfe +
-      (meldung ? `<p style="font-size:13px;margin:8px 0 0;font-weight:650" id="psMeldung">${meldung}</p>` : "") +
-      `<p class="pb-sub" style="margin:8px 0 0">${t("paarspr.hinweisLaufend")}</p>`;
-    const anwenden = r => {
-      state.info.locale = r.locale;
-      state.info.languageRequest = r.languageRequest;
-      zeigePaarsprache(r.status === "confirmed"
-        ? t("paarspr.gewechselt", { sprache: sprachName(r.locale) })
-        : "");
-    };
-    const knopf = (id, fn) => { const b = box.querySelector(id); if (b) b.addEventListener("click", () => fn().then(anwenden).catch(e => err(fehlerText(e)))); };
-    knopf("#psAntrag", () => backend.language.request(ziel));
-    knopf("#psJa", () => backend.language.request(w.target));
-    knopf("#psZurueck", () => backend.language.withdraw());
-    knopf("#psNein", () => backend.language.withdraw());
-  }
-
-  /* ---- Wiedereinstieg per E-Mail — zweistufig mit Bestätigungscode (S45).
-   *  Ein Bauelement für beide Orte (Karte im Raum, Pflicht-Modal): Adresse →
-   *  Code anfordern → 6-stelligen Code eingeben → bestätigt. DOM per
-   *  createElement, damit es keine ID-Kollisionen zwischen Karte und Modal
-   *  gibt; Tests greifen über data-rec-Attribute zu. ---- */
-  function baueVerifikation(wirt, { onFertig }) {
-    wirt.innerHTML = "";
-    const el = (tag, attrs, stil) => {
-      const x = doc.createElement(tag);
-      for (const [k, v] of Object.entries(attrs || {})) x.setAttribute(k, v);
-      if (stil) x.style.cssText = stil;
-      return x;
-    };
-    const mail = el("input", { type: "email", placeholder: t("rec.platzhalter"), "data-rec": "mail", autocomplete: "email" },
-      "display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit");
-    const senden = el("button", { class: "pb-btn primary", "data-rec": "senden" }, "margin-top:8px");
-    senden.textContent = t("rec.codeSenden");
-    const pin = el("input", { type: "text", inputmode: "numeric", placeholder: t("rec.codeLabel"), "data-rec": "pin", autocomplete: "one-time-code" },
-      "display:none;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit;margin-top:8px;letter-spacing:.2em");
-    const ok = el("button", { class: "pb-btn primary", "data-rec": "ok" }, "display:none;margin-top:8px");
-    ok.textContent = t("rec.bestaetigen");
-    const note = el("span", { class: "pb-sub", "data-rec": "note" }, "display:block;margin-top:8px");
-    for (const x of [mail, senden, pin, ok, note]) wirt.appendChild(x);
-
-    let gesendetAn = null;   // Adresse aus Schritt 1 — reist bei der Bestätigung mit (D6.1a)
-    const schritt2 = email => {
-      gesendetAn = email;
-      note.textContent = t("rec.codeUnterwegs", { email });
-      pin.style.display = "block";
-      ok.style.display = "inline-block";
-      senden.textContent = t("rec.neuAnfordern");
-    };
-    senden.addEventListener("click", async () => {
-      const email = mail.value.trim();
-      if (!email) { note.textContent = t("rec.bitte"); return; }
-      senden.disabled = true;
-      try { await backend.recovery.beginVerify(email); schritt2(email); }
-      catch (e) { note.textContent = fehlerText(e); }
-      finally { senden.disabled = false; }
-    });
-    ok.addEventListener("click", async () => {
-      ok.disabled = true;
-      try {
-        await backend.recovery.confirm(pin.value.trim(), gesendetAn);
-        onFertig();
-      } catch (e) {
-        note.textContent = fehlerText(e);
-        // Abgelaufen/zu viele Versuche: zurück auf Schritt 1 — neuer Code nötig.
-        if (e && (e.code === "pin_expired" || e.code === "pin_tries" || e.code === "pin_none")) {
-          pin.value = ""; pin.style.display = "none"; ok.style.display = "none";
-          senden.textContent = t("rec.codeSenden");
-        }
-      } finally { ok.disabled = false; }
-    });
-  }
-
-  function zeigeRecovery() {
-    const box = $("boxRecovery");
-    if (!backend.recovery) { box.classList.add("pb-hidden"); return; }
-    box.classList.remove("pb-hidden");
-    const hinterlegt = !!(state.info && state.info.recoveryEmail);
-    box.innerHTML =
-      `<div class="pb-sub">${t("rec.titel")}</div>` +
-      `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:6px 0">` +
-      (hinterlegt ? t("rec.hinterlegt") : t("rec.neu")) +
-      `</p>`;
-    if (hinterlegt) {
-      const aendern = doc.createElement("button");
-      aendern.className = "pb-btn";
-      aendern.setAttribute("data-rec", "aendern");
-      aendern.textContent = t("rec.aendern");
-      box.appendChild(aendern);
-      aendern.addEventListener("click", () => {
-        aendern.remove();
-        const wirt = doc.createElement("div");
-        box.appendChild(wirt);
-        baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
-      });
-    } else {
-      const wirt = doc.createElement("div");
-      box.appendChild(wirt);
-      baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
-    }
-  }
-
-  /* ---- Pflicht-Modal (S45, Flag EMAIL_PFLICHT): Ohne bestätigte Adresse geht
-   *  es nicht weiter — Zugangsverlust wäre kritischer als die kleine Hürde.
-   *  Bewusst nicht wegklickbar: kein Schließen-Knopf, kein Klick-außerhalb,
-   *  kein Escape. Verschwindet ausschließlich durch erfolgreiche Bestätigung. ---- */
-  function zeigeEmailPflicht() {
-    const overlay = doc.createElement("div");
-    overlay.id = "pbEmailPflicht";
-    overlay.style.cssText = "position:fixed;inset:0;background:rgba(20,26,34,.55);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:48px 18px;overflow:auto";
-    const karte = doc.createElement("div");
-    karte.className = "pb-card";
-    karte.style.cssText = "max-width:440px;width:100%;background:var(--card,#fff);border-radius:14px;padding:20px";
-    karte.innerHTML =
-      `<div style="font-size:16px;font-weight:650;margin-bottom:6px">${t("rec.pflicht.titel")}</div>` +
-      `<p style="font-size:13px;color:var(--ink-soft,#5a6675);margin:0 0 10px">${t("rec.pflicht.text")}</p>`;
-    const wirt = doc.createElement("div");
-    karte.appendChild(wirt);
-    overlay.appendChild(karte);
-    (doc.body || wurzel).appendChild(overlay);
-    baueVerifikation(wirt, {
-      onFertig: () => {
-        state.info.recoveryEmail = true;
-        overlay.remove();
-        zeigeRecovery();
-      },
-    });
-  }
+  /* R4b · Einstellungsblatt und Paarsprache leben jetzt in
+     einstellungen-screen.js — Abhaengigkeiten explizit statt ueber die Closure. */
+  const { aktualisierePunkt, zeigeEinstellungen, verdrahteEinstellungen, zeigePaarsprache } =
+    macheEinstellungenScreen({ doc, $, chrome, backend, state, err, relaunch });
+  /* R4b · Die Wiedereinstiegs-Gruppe (Karte, Pflicht-Modal, Bauelement) lebt
+     jetzt in recovery-screen.js. Ihre Abhaengigkeiten sind dort explizit statt
+     ueber die Closure eingesammelt. */
+  const { zeigeRecovery, zeigeEmailPflicht } =
+    macheRecoveryScreen({ doc, $, backend, state, wurzel });
 
   // S71 · Verlässt jemand den Chat, stempeln wir den Pausenbeginn auf die
   // laufende Session — so bleibt eine kurze Rückkehr (< 5 Min) nahtlos, während
@@ -2173,17 +1913,6 @@ export function createApp({ doc, backend, root, diktat }) {
 
   /* ---- Prozessreflexion (Mess-Runde, verdeckt — Aufdeckung im Moment) ---- */
   /* S39 · Sprach-Helfer für den vereinbarten Rhythmus. */
-  function zeitraumText(days) {
-    if (days === 7) return t("mess.zrWoche");
-    if (days % 7 === 0) return t("mess.zrWochen", { w: days / 7 });
-    return t("mess.zrTage", { n: days });
-  }
-  function rhythmusText(days) {
-    if (days === 7) return t("messiv.rhWoche");
-    if (days % 7 === 0) return t("messiv.rhWochen", { w: days / 7 });
-    return t("messiv.rhTage", { n: days });
-  }
-
   async function zeigeMess() {
     const box = $("boxMess");
     if (!box) return;

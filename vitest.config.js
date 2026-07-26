@@ -16,6 +16,9 @@ export default defineConfig({
   },
   test: {
     include: ["tests/**/*.spec.js"],
+    // R5: Der EN-Korpus liegt nicht mehr statisch in prompts.js — die Plattform
+    // reicht ihren Lader herein. Fuer Tests tut das dieses Setup, einmal zentral.
+    setupFiles: ["./tests/fixtures/korpus-setup.js"],
     exclude: ["tests/fixtures/**", "node_modules/**"],
     // Standard-Reporter für Details, dazu die deutsche Familien-Zusammenfassung
     reporters: ["default", new ReporterDE()],

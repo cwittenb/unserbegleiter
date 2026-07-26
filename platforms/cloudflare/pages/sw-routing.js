@@ -27,6 +27,11 @@ export function cacheEntscheidung(pfad) {
   if (pfad === "/admin.html") return "nie";
   if (pfad === "/sw.js") return "nie";
   if (pfad === "/" || pfad === "/index.html") return "netz-zuerst";
+  // R5: Der nachgeladene Korpus gehört bewusst NICHT in SHELL_PFADE — sonst
+  // würde ihn jedes deutschsprachige Paar beim Installieren mitziehen, also
+  // genau das, was das Nachladen vermeidet. Wer ihn einmal geholt hat, soll
+  // ihn aber offline behalten.
+  if (/^\/korpus\.[a-z]{2}\.js$/.test(pfad)) return "cache-zuerst";
   if (SHELL_PFADE.includes(pfad)) return "cache-zuerst";
   return "netz";
 }

@@ -6,6 +6,8 @@ import { CORE_VERSION, APP_NAME } from "../../core/index.js";
 import { ArtifactStore } from "./artifact-store.js";
 import { localBackend } from "./local-backend.js";
 import { createApp } from "../../core/ui/app.js";
+import { registerKorpus, setKorpusLader } from "../../core/prompts/prompts.js";   // R5
+import * as korpusEn from "../../core/prompts/prompts.en.js";   // R5: Artefakt bleibt EINE Datei
 import { applyDesign } from "../../core/ui/design.js";
 import { t, setLocale, getLocale } from "../../core/i18n/index.js";
 import { runSelftest } from "./selftest.js";
@@ -17,6 +19,12 @@ const wurzel = doc.getElementById("app");
 // Zwei feste Bereiche: die App oben, das Entwickler-Panel dauerhaft darunter.
 wurzel.innerHTML = '<div id="pbMain"></div><div id="pbDevHost"></div>';
 const app = doc.getElementById("pbMain");
+/* R5 · Das Artefakt muss eine einzige Datei bleiben — hier wird nichts
+   nachgeladen. Beide Korpora liegen bei; der Lader ist ein synchroner
+   „liegt schon vor", damit das Tor in app.js denselben Weg geht. */
+registerKorpus("en", korpusEn);
+setKorpusLader(async () => korpusEn);
+
 applyDesign(doc);   // Design ab Start — auch Einrichtung, Rollenwahl, Dev-Panel
 
 /* localBackend lebt seit S67 in ./local-backend.js — von der Selbstfahrt

@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { Miniflare } from "miniflare";
+import { leseTokenStand, tokenPraefix } from "../../platforms/cloudflare/worker/tokenstat.js";
 import { build } from "esbuild";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -90,16 +91,20 @@ describe("Worker · Token-Statistik (S61)", () => {
     await bernd.call("POST", "/api/enroll", { token: r.data.links.B });
     await bernd.call("POST", "/api/llm", { system: "S", messages: [{ role: "user", content: "hallo" }] });
 
+    // F4: Ein Satz JE AUFRUF; die Summe entsteht beim Lesen. Geprueft wird
+    // deshalb der Vertrag (leseTokenStand), nicht mehr das Schluesselformat.
     const kv = await mf.getKVNamespace("PAARE");
-    const total = JSON.parse(await kv.get("sys/tokens/" + code + "/total"));
+    const { total, monat } = await leseTokenStand(kv, code, MONAT);
     expect(total).toMatchObject({ calls: 2, in: 14, out: 4, cacheRead: 6, cacheWrite: 2 });
-    const monat = JSON.parse(await kv.get("sys/tokens/" + code + "/" + MONAT));
     expect(monat).toMatchObject({ calls: 2, in: 14, out: 4, cacheRead: 6, cacheWrite: 2 });
+    // zwei Aufrufe = zwei Saetze, keine Ueberschreibung
+    const liste = await kv.list({ prefix: tokenPraefix(code) });
+    expect(liste.keys.length).toBe(2);
   });
 
   it("Stream-Aufruf → usage aus dem done-Event wird ebenfalls erfasst", async () => {
     const kvVorher = await mf.getKVNamespace("PAARE");
-    const vorher = JSON.parse(await kvVorher.get("sys/tokens/" + code + "/total"));
+    const { total: vorher } = await leseTokenStand(kvVorher, code, MONAT);
 
     const anna = client();
     // Frische Session über Betreiber-Link (Stufe 2), da der Enroll-Link verbraucht ist.
@@ -112,7 +117,7 @@ describe("Worker · Token-Statistik (S61)", () => {
     // erfasseUsage läuft NACH dem done-Event — dem Testlauf einen Tick geben.
     await new Promise(res => setTimeout(res, 50));
     const kv = await mf.getKVNamespace("PAARE");
-    const total = JSON.parse(await kv.get("sys/tokens/" + code + "/total"));
+    const { total } = await leseTokenStand(kv, code, MONAT);
     expect(total.calls).toBe(vorher.calls + 1);
     expect(total.in).toBe(vorher.in + 7);
     expect(total.out).toBe(vorher.out + 2);

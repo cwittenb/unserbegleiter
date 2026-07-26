@@ -6,6 +6,7 @@ import { CORE_VERSION, APP_NAME } from "../../../core/index.js";
 import { makeAdapter } from "../../../core/llm/adapter.js";
 import { createApp } from "../../../core/ui/app.js";
 import { applyDesign } from "../../../core/ui/design.js";
+import { setKorpusLader } from "../../../core/prompts/prompts.js";   // R5
 import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../../core/i18n/index.js";
 import { apiBasis, istNativeShell } from "./api-basis.js";
 import { lauscheAppLinks } from "./deep-link.js";
@@ -87,6 +88,23 @@ export function remoteBackend() {
 }
 
 export async function boot() {
+  /* R5 · Korpus-Lader. Deutsch liegt im Bundle; Englisch wird als eigene
+     Datei nachgezogen (Script-Tag statt import(), weil der Client als IIFE
+     gebaut wird — siehe korpus-en-entry.js). Ein Fehlschlag ist laut: das Tor
+     in app.js soll NICHT stillschweigend auf Deutsch zurückfallen. */
+  setKorpusLader(locale => new Promise((fertig, scheitern) => {
+    if (locale !== "en") return scheitern(new Error("Unbekannte Korpus-Sprache: " + locale));
+    const da = globalThis.__KORPUS_EN__;
+    if (da) return fertig(da);
+    const s = doc.createElement("script");
+    s.src = "/korpus." + locale + ".js";
+    s.onload = () => globalThis.__KORPUS_EN__
+      ? fertig(globalThis.__KORPUS_EN__)
+      : scheitern(new Error("Korpus geladen, aber leer: " + locale));
+    s.onerror = () => scheitern(new Error("Korpus nicht erreichbar: " + locale));
+    doc.head.appendChild(s);
+  }));
+
   applyDesign(doc);
   registriereServiceWorker();
   // Native Hülle (M5): Universal/App Link liefert das Magic-Token als Ereignis —

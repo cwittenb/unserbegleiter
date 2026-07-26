@@ -13,7 +13,15 @@
 // Engine (Vertrag 2), und im Transkript steht danach nur die revidierte
 // Fassung — genau das, was die Person in der App zu sehen bekaeme.
 
-import { getPrompts } from "../core/prompts/prompts.js";
+import { getPrompts, registerKorpus } from "../core/prompts/prompts.js";
+import * as korpusEn from "../core/prompts/prompts.en.js";
+
+/* R5 · Der EN-Korpus liegt seit R5 nicht mehr statisch in prompts.js (die
+   Pages-Auslieferung holt ihn nach). Der Eval-Pfad kennt keine Plattform, die
+   einen Lader reicht — und hier zaehlt keine Bundle-Groesse: EN-Szenarien
+   (evals/szenarien/start-katalog.en.js, --sprache en) muessen ihren Korpus
+   verlaesslich vorfinden, sonst liefe die Auswertung still auf Deutsch. */
+registerKorpus("en", korpusEn);
 import { richte } from "./judge/judge.js";
 // S94 · Die Waechter werden IMPORTIERT, nicht nachgebaut. Ein Eval, das eine
 // eigene Kopie der Regel prueft, misst sich selbst.

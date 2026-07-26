@@ -33,3 +33,27 @@ export function addiereUsage(stand, usage, jetzt) {
     aktualisiert: jetzt === undefined ? Date.now() : jetzt,
   };
 }
+
+/**
+ * F4 · Mehrere Staende zu einem verschmelzen.
+ *
+ * Seit F4 legt jeder LLM-Aufruf einen eigenen Satz ab (statt auf einen
+ * gemeinsamen Schluessel zu addieren, wo zwei gleichzeitige Aufrufe einander
+ * ueberschreiben konnten). Summiert wird deshalb beim Lesen. `aktualisiert`
+ * ist der juengste Zeitstempel, nicht die Summe.
+ *
+ * Leere Liste -> null (wie ein nie beschriebener Eimer).
+ */
+export function summiereStaende(staende) {
+  const liste = (staende || []).filter(Boolean);
+  if (!liste.length) return null;
+  const z = v => (Number.isFinite(Number(v)) ? Number(v) : 0);
+  return liste.reduce((a, s) => ({
+    calls: z(a.calls) + z(s.calls),
+    in: z(a.in) + z(s.in),
+    out: z(a.out) + z(s.out),
+    cacheRead: z(a.cacheRead) + z(s.cacheRead),
+    cacheWrite: z(a.cacheWrite) + z(s.cacheWrite),
+    aktualisiert: Math.max(z(a.aktualisiert), z(s.aktualisiert)),
+  }));
+}
