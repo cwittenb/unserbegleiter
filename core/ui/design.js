@@ -152,8 +152,34 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-naht-anker{position:relative}
       .rz-auf-naht{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:5}
       @media(min-width:900px){
-        .rz-split{flex-direction:row}
-        .rz-auf-naht{left:0;top:50%;transform:translate(-50%,-50%)}
+        .rz-split{flex-direction:row;position:relative}
+        .rz-split .rz-auf-naht{left:0;top:50%;transform:translate(-50%,-50%)}
+        /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Grundregel
+           spannt die offene Zone ueber die volle Breite — am Handy richtig
+           (die Naht liegt waagerecht), auf dem Desktop faelscht sie das
+           Layout: das Regal legte sich ueber beide Spalten. Die Bewegung
+           selbst ist dieselbe wie mobil, nur eben rechts. */
+        .rz-regal-offen>.rz-half:last-child{left:50%}
+        /* Q3 · Die Zone faehrt hoch, der Wegweiser nicht: auf dem Desktop
+           markiert er die Naht, und die bleibt in der Mitte stehen. Mobil
+           faehrt er weiterhin mit der Kante (D12-2b) — dort IST die Kante
+           die Naht. */
+        .rz-regal-offen .rz-split .rz-auf-naht,
+        .rz-split.rz-regal-offen .rz-auf-naht{top:50dvh}
+        /* Q3a · Die Linkgruppen flankieren den Wegweiser, statt am Spaltenfuss
+           zu kleben: links endet knapp ueber der Naht, rechts beginnt knapp
+           darunter. Die Ueberschriften bleiben, wo sie sind.
+           dvh statt Prozent: Prozent-Margins rechnen in einer Spalte gegen die
+           BREITE, nicht gegen die Hoehe. Solange die Haelfte 100dvh hoch ist
+           — und das ist sie, solange der Inhalt nicht ueberlaeuft —, trifft
+           50dvh dieselbe Linie wie das top:50% des Badges.
+           Im aufgeklappten Regal gilt das nicht: dort ordnet die Zone neu. */
+        .rz-split:not(.rz-regal-offen)>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile,
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen{
+          margin-top:calc(50dvh - 30px)}
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile~.rz-zeile,
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen~*{margin-top:0}
       }
 
       /* ============ D1 · Grundbaustein B — Hairline-Zeile ============
@@ -163,7 +189,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-zeile{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
                 width:100%;box-sizing:border-box;min-height:44px;padding:15px 0;margin:0;
                 border:0;border-top:1px solid var(--rz-hairline);background:none;text-align:left;
-                font-family:var(--rz-serif);font-size:var(--rz-fs-sektion);font-weight:400;line-height:var(--rz-lh-caps);
+                font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:400;line-height:var(--rz-lh-caps);
                 color:inherit;cursor:pointer;border-radius:0}
       .rz-zeile:disabled,.rz-zeile.rz-gedimmt{color:var(--rz-gedimmt);cursor:default}
       /* S93 · HANDLUNG vs. NAVIGATION. Die Hairline-Zeile bleibt die Sprache
@@ -179,7 +205,6 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-zeile .rz-pfeil{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-text);color:var(--rz-pfeil)}
       .rz-tiefgruen .rz-zeile{border-top-color:var(--rz-hairline-gruen)}
       .rz-tiefgruen .rz-zeile .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
-      .rz-tiefgruen .rz-zeile{font-size:var(--rz-fs-zeile)}
       .rz-zeile.rz-unten{border-top:0;border-bottom:1px solid var(--rz-hairline-gruen)}
       .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
                             max-width:38%;text-align:right;line-height:var(--rz-lh-zeile)}
@@ -582,7 +607,6 @@ export const CHROME_HTML = String.raw`<div class="rz-ecke pb-theme" role="group"
       <button id="pbEinst" class="rz-einst" type="button" aria-haspopup="dialog" aria-expanded="false">
         <span class="rz-einst-baum">${zeichen("baum", { groesse: 20 })}</span>
         <span class="rz-einst-seerose">${zeichen("bluete", { groesse: 20 })}</span>
-        <svg class="rz-einst-seerose" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.4c1.7 1.8 2.5 3.5 2.5 5.3 0 1.7-.8 3.1-2.5 4.2-1.7-1.1-2.5-2.5-2.5-4.2 0-1.8.8-3.5 2.5-5.3z"/><path d="M2.4 14h7.4l-2.5 3.6H5a4.2 4.2 0 0 1-2.6-3.6zm19.2 0h-7.4l2.5 3.6H19a4.2 4.2 0 0 0 2.6-3.6z"/></svg>
         <span class="rz-punkt pb-hidden" id="pbEinstPunkt"></span>
       </button>
       <div class="rz-einst-blatt pb-hidden" id="pbEinstBlatt" role="dialog"></div>

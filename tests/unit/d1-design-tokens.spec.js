@@ -56,7 +56,9 @@ describe("D1 · Grundbaustein A — Zweiteilung/Naht", () => {
   it("zwei Hälften je flex:1, mobil gestapelt, ab 900px vertikale Naht", () => {
     expect(DESIGN_CSS).toMatch(/\.rz-split\{display:flex;flex-direction:column;min-height:100dvh\}/);
     expect(DESIGN_CSS).toMatch(/\.rz-half\{flex:1;/);
-    expect(DESIGN_CSS).toMatch(/@media\(min-width:900px\)\{\s*\.rz-split\{flex-direction:row\}/);
+    // Q2: der Split traegt auf dem Desktop zusaetzlich position:relative —
+    // die offene Regal-Zone soll gegen IHN rechnen, nicht gegen den Schirm.
+    expect(DESIGN_CSS).toMatch(/@media\(min-width:900px\)\{\s*\.rz-split\{flex-direction:row;position:relative\}/);
   });
 
   it("Auf-der-Naht-Anker: an der zweiten Hälfte, translate(-50%,-50%)", () => {

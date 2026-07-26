@@ -197,3 +197,59 @@ describe("D12-2f · Der Vorschlag aus dem Blatt landet in der Agenda", () => {
     expect(blatt.textContent).toContain("Agenda");
   });
 });
+
+describe("Q2 · Desktop: Zeilenschrift und Regal", () => {
+  it("die Zeilen über und unter der Naht tragen dieselbe, kleinere Schrift", async () => {
+    const { DESIGN_CSS } = await import("../../core/ui/design.js");
+    const grund = DESIGN_CSS.slice(DESIGN_CSS.indexOf(".rz-zeile{"));
+    expect(grund.slice(0, grund.indexOf("}"))).toContain("font-size:var(--rz-fs-zeile)");
+    // Kein Sonder-Grad mehr für die Zeilen auf Tiefgrün.
+    expect(DESIGN_CSS).not.toContain(".rz-tiefgruen .rz-zeile{font-size:");
+  });
+
+  it("das offene Regal bleibt auf dem Desktop in seiner Hälfte", async () => {
+    const { DESIGN_CSS } = await import("../../core/ui/design.js");
+    const desktop = DESIGN_CSS.slice(DESIGN_CSS.indexOf("@media(min-width:900px){"));
+    expect(desktop.slice(0, desktop.indexOf("\n      }"))).toContain(
+      ".rz-regal-offen>.rz-half:last-child{left:50%}");
+    // Die Bewegung selbst ist dieselbe wie mobil.
+    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:last-child{position:absolute");
+  });
+});
+
+describe("Q3 · Desktop-Feinschliff", () => {
+  const css = async () => (await import("../../core/ui/design.js")).DESIGN_CSS;
+  const desktop = async () => {
+    const c = await css();
+    return c.slice(c.indexOf("@media(min-width:900px){"));
+  };
+
+  it("der Trigger trägt genau zwei Zeichnungen — Baum und Seerose, sonst nichts", async () => {
+    const { CHROME_HTML } = await import("../../core/ui/design.js");
+    expect((CHROME_HTML.match(/<svg/g) || [])).toHaveLength(2);
+    const d = document.createElement("div");
+    d.innerHTML = CHROME_HTML;
+    expect(d.querySelectorAll(".rz-einst-baum")).toHaveLength(1);
+    expect(d.querySelectorAll(".rz-einst-seerose")).toHaveLength(1);
+  });
+
+  it("die senkrechte Naht gilt nur im Split — der Chat bleibt gestapelt", async () => {
+    const d = await desktop();
+    expect(d).toContain(".rz-split .rz-auf-naht{left:0;top:50%");
+    // Ohne die Einschränkung hätte es das Chat-Badge an die linke Kante gezogen:
+    // die Regel darf NICHT unqualifiziert am Zeilenanfang stehen.
+    expect(d).not.toMatch(/\n\s*\.rz-auf-naht\{/);
+  });
+
+  it("aufgeklappt bleibt der Wegweiser auf der Nahtmitte stehen", async () => {
+    expect(await desktop()).toContain(".rz-split.rz-regal-offen .rz-auf-naht{top:50dvh}");
+  });
+
+  it("die Linkgruppen flankieren die Naht — links darüber, rechts darunter", async () => {
+    const d = await desktop();
+    expect(d).toContain(">.rz-half:first-child .rz-fuss{margin-bottom:50dvh}");
+    expect(d).toContain("margin-top:calc(50dvh - 30px)");
+    // Im offenen Regal ordnet die Zone neu — dort darf die Regel nicht greifen.
+    expect(d).toContain(".rz-split:not(.rz-regal-offen)");
+  });
+});
