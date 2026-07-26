@@ -102,6 +102,8 @@ describe("Kontingent · gleitendes Fenster mit weichem Rand (Limit 5, Karenz 2)"
     const acht = await llm(anna, "Nachricht 9");
     expect(acht.status).toBe(429);
     expect(acht.data.error).toContain("Kontingent");
+    // R0: der stabile Code traegt die Unterscheidung zur Auslastung bis in die Anzeige
+    expect(acht.data.code).toBe("quota_limit");
     expect(upstreamCalls).toBe(vorher);
   });
 

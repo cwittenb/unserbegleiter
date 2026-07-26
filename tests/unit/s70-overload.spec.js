@@ -198,10 +198,26 @@ describe("S70 · fehlerText lokalisiert Auslastung", () => {
     expect(txt).not.toContain("529");
   });
 
-  it("nackter Status 429/503/529 (ohne code) → dieselbe Meldung; 404 bleibt roh", () => {
-    for (const s of [429, 503, 529])
+  /* R0/F5 · VERTRAGSAENDERUNG, bewusst: Bis R0 galt jeder nackte 429 als
+     Auslastung. Der Kontingent-Waechter antwortet aber ebenfalls mit 429 —
+     seine drei Meldungen verschwanden deshalb hinter der Auslastungs-Meldung,
+     und die App bot die Wiederholung an, die Ratenlimit und Duplikat-Waechter
+     gerade verhindern sollen. Seit R0 traegt jede Waechter-Ablehnung ihren
+     eigenen Code; 429 ohne Code ist damit kein bekannter Fall mehr und bleibt
+     roh. 503/529 haben keinen anderen Absender und bleiben zugeordnet. */
+  it("nackter Status 503/529 (ohne code) → Auslastungs-Meldung; 429 und 404 bleiben roh", () => {
+    for (const s of [503, 529])
       expect(fehlerText({ status: s, message: "LLM HTTP " + s })).toBe(de["fehler.code.llm_overloaded"]);
+    expect(fehlerText({ status: 429, message: "LLM HTTP 429" })).toBe("LLM HTTP 429");
     expect(fehlerText({ status: 404, message: "LLM HTTP 404" })).toBe("LLM HTTP 404");
+  });
+
+  it("R0 · die drei Waechter-Codes haben eigene, von der Auslastung verschiedene Texte", () => {
+    for (const c of ["quota_limit", "quota_rate", "quota_duplikat"]) {
+      const txt = fehlerText({ status: 429, code: c, message: "roh" });
+      expect(txt).toBe(de["fehler.code." + c]);
+      expect(txt).not.toBe(de["fehler.code.llm_overloaded"]);
+    }
   });
 
   it("englische Locale liefert die englische Parität", () => {

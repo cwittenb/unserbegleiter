@@ -20,9 +20,7 @@ export const de = {
   // Startübersicht
   "start.hallo": "Schön, dass du da bist, {name}.",
   "start.intro": "Zwei Räume, eine einfache Regel: Was bei dir bleibt, bleibt bei dir — geteilt wird nur, was du ausdrücklich freigibst.",
-  "start.meinRaum": "Mein Raum",
   "start.meinSub": "Hier begleite ich dich. Zum Reflektieren, zum Sortieren, Üben und Ablegen. Nichts von hier erreicht {partner}, außer du gibst es frei.",
-  "start.teilRaum": "Gemeinsamer Raum",
   "start.teilSub": "Euer Raum für eure gemeinsame Zeit. Austausch, Begegnung, Reflexion — und zum Lesen, was einer von euch lesbar gemacht hat.",
   // D2 · Startscreen als Zweiteilung (Design Turn 17a/b; Texte lt. Handoff)
   "start.capsMein": "Raum für mich",
@@ -45,16 +43,13 @@ export const de = {
   "mein.einzelWeiter": "Auftragsklärung fortsetzen",
   "mein.zeitleiste": "Meine Zeitleiste",
   "mein.mess": "Prozessreflexion",
-  "mein.soloSub": "Dein privater Raum zum Sortieren — frei erzählen, in Ruhe hinschauen.",
   "mein.einzelSub": "Wo wünschst du dir Entwicklung — und wohin darf ich euch begleiten?",
   "mein.messSub": "Ein kurzer, verdeckter Blick auf eure Nähe und eure Aufträge — aufgedeckt wird gemeinsam.",
   "mein.gruppeRegale": "Mein Weg.",
   // Gemeinsamer Raum
   "teil.intro": "Für alles, was ihr zu zweit macht. In den Regalen liegt nur, was freigegeben wurde — die Räume betretet ihr bewusst.",
-  "teil.gruppeRaeume": "Räume — betreten und beginnen",
   "teil.gruppeRegale": "Euer gemeinsamer Boden.",
   "teil.moment": "Qualitätszeit beginnen",
-  "teil.momentSub": "Eure begleitete gemeinsame Zeit — ob ihr etwas besprechen oder einfach Zeit miteinander verbringen wollt.",
   "teil.momentWeiter": "Qualitätszeit fortsetzen",
   "chat.abschliessen": "Session abschließen",
   "momente.titel": "Gemeinsame Momente",
@@ -225,8 +220,6 @@ export const de = {
   "mess.zrWochen": "in den letzten {w} Wochen",
   "mess.zrTage": "in den letzten {n} Tagen",
   "messiv.titel": "Prozessreflexions-Rhythmus",
-  "messiv.link": "Prozessreflexions-Rhythmus: {rhythmus}",
-  "messiv.linkOffen": "Prozessreflexions-Rhythmus: {rhythmus} (Vorschlag offen)",
   "messiv.aktuell": "Aktuell: {rhythmus}. Die Frage der Prozessreflexion bezieht diesen Abstand ein.",
   "messiv.eingabe": "Abstand in Tagen:",
   "messiv.vorschlagen": "Neuen Rhythmus vorschlagen",
@@ -284,7 +277,6 @@ export const de = {
   "rec.neu": "Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Über diese Adresse erhältst du außerdem wichtige Betriebsmitteilungen (z. B. geplante Wartung oder Sicherheitshinweise) — keine Werbung. Nimm ein Postfach, auf das nur du Zugriff hast.",
   "rec.platzhalter": "dein@postfach.de",
   "rec.aendern": "Adresse ändern",
-  "rec.hinterlegen": "Adresse hinterlegen",
   "rec.bitte": "Bitte eine Adresse eingeben.",
   "rec.codeSenden": "Bestätigungscode senden",
   "rec.codeLabel": "6-stelliger Code",
@@ -340,6 +332,20 @@ export const de = {
   "fehler.code.mail_failed": "Der Versand ist gerade nicht möglich. Bitte versuche es später erneut.",
   "fehler.code.verify_rate": "Zu viele Anfragen. Bitte etwas später erneut.",
   "fehler.code.email_mismatch": "Die Adresse passt nicht zur offenen Bestätigung. Bitte fordere einen neuen Code an.",
+  // R0 · Kontingent-Waechter: eigene Codes, damit eine bewusste Grenze
+  // nicht als Stoerung erscheint (und kein Wiederholen angeboten wird).
+  "fehler.code.quota_limit": "In den letzten Tagen ist hier viel Raum genutzt worden — mehr, als der Begleitung guttut. Das Kontingent füllt sich von selbst wieder auf; vielleicht ist bis dahin auch ein guter Moment, etwas davon ins echte Gespräch zu tragen.",
+  "fehler.code.quota_rate": "Das ging gerade sehr schnell hintereinander. Lass uns kurz durchatmen — in einer Minute geht es hier weiter.",
+  "fehler.code.quota_duplikat": "Diese Nachricht kam gerade mehrfach identisch an. Wenn du sie wirklich noch einmal meinst, formuliere sie bitte leicht anders — dann geht es hier normal weiter.",
+  // R7 · Worker-Mails: Push war laengst uebersetzt (paar.locale), die Mails nicht.
+  "mail.relink.betreff": "Neuer Zugangslink für dein Konto erzeugt",
+  "mail.relink.text": "Für deinen Zugang zu raumzuzweit wurde soeben vom Betreiber ein neuer Zugangslink erzeugt.\n\nWarst du das nicht bzw. hast du das nicht angefragt, melde dich bitte umgehend beim Betreiber.",
+  "mail.resend.betreff": "Dein neuer Zugangslink",
+  "mail.resend.text": "Hier ist dein neuer Zugangslink zu raumzuzweit:\n\n{link}\n\nDer Link ist etwa 15 Minuten gültig und nur einmal verwendbar.",
+  "mail.recover.betreff": "Dein Zugang zu raumzuzweit",
+  "mail.recover.text": "Hier ist dein neuer persönlicher Zugangslink:\n\n{link}\n\nEr ist etwa 15 Minuten gültig und nur einmal verwendbar. Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
+  "mail.pin.betreff": "Dein Bestätigungscode",
+  "mail.pin.text": "Dein Bestätigungscode für raumzuzweit lautet:\n\n{pin}\n\nEr ist etwa 15 Minuten gültig. Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
   "fehler.code.llm_overloaded": "Der Dienst ist gerade stark ausgelastet. Deine Nachricht ist nicht verloren \u2014 bitte sende sie gleich noch einmal.",
 
   // Theme-Umschalter

@@ -41,9 +41,14 @@ export function hatKey(key) {
 // (429/503/529) — Fehler aus Altpfaden oder direktem Transport tragen nur
 // .status, sollen aber dieselbe freundliche Meldung bekommen.
 export function fehlerText(e) {
+  /* R0/F5: Frueher galt JEDER 429/503/529 blind als Auslastung. Der
+     Kontingent-Waechter antwortet aber ebenfalls mit 429 — seine drei warmen
+     Meldungen verschwanden dadurch hinter der Auslastungs-Meldung. Seit R0
+     traegt jede Waechter-Ablehnung ihren eigenen Code; die Statuszuordnung
+     bleibt nur fuer 503/529, wo es keinen anderen Absender gibt. */
   const status = e && typeof e.status === "number" ? e.status : null;
   const code = (e && e.code) ||
-    ((status === 429 || status === 503 || status === 529) ? "llm_overloaded" : null);
+    ((status === 503 || status === 529) ? "llm_overloaded" : null);
   const k = code ? "fehler.code." + code : null;
   if (k && hatKey(k)) return t(k);
   return (e && e.message) || String(e);

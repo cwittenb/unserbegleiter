@@ -17,8 +17,8 @@ import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, mess
 import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser } from "./design.js";
 import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
+import { esc } from "./html.js";   // R3: eine Fassung fuer alle
 
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // Kürzel für die zwei Notifikations-Badges: beide Partner schauen ggf.
 // gemeinsam auf den Screen, deshalb je eine Badge. Das Präfix wächst nur so
 // weit, wie nötig, um die Namen unterscheidbar zu machen (Anna/Andreas → AN/AND).
@@ -1009,8 +1009,11 @@ export function createApp({ doc, backend, root, diktat }) {
      war ein globales Problem, das hier zentral gelöst ist. */
   /** S70 · Auslastung erkennen: stabiler Code (Proxy-Grenze) ODER nackter
    *  HTTP-Status aus Altpfaden — beide bekommen dieselbe freundliche Meldung. */
+  /* R0: 429 allein reicht nicht mehr — der Kontingent-Waechter antwortet
+     ebenfalls mit 429, und bei ihm waere „Erneut senden" der FALSCHE Rat:
+     die Wiederholung laeuft ins Ratenlimit bzw. in den Duplikat-Waechter. */
   const istUeberlastet = e => !!e &&
-    (e.code === "llm_overloaded" || e.status === 429 || e.status === 503 || e.status === 529);
+    (e.code === "llm_overloaded" || ((e.status === 503 || e.status === 529) && !e.code));
 
   /** S70 · „Erneut senden": der gescheiterte Zug liegt vollständig im Verlauf
    *  (die User-Nachricht ist gespeichert) — resume() beantwortet den offenen
@@ -1039,8 +1042,11 @@ export function createApp({ doc, backend, root, diktat }) {
     try { await (typeof lauf === "function" ? lauf() : lauf); }
     catch (e) {
       if (gen !== state.chatGen) { /* alte Session: Fehler nicht in den neuen Raum tragen */ }
-      else if (istUeberlastet(e)) { err(fehlerText(e)); zeigeErneutSenden(); }   // S70
-      else err(e.message);
+      /* R0: Frueher lief NUR der Auslastungsfall ueber fehlerText — jeder
+         andere Fehler zeigte e.message roh, also den serverseitigen deutschen
+         Klartext, unuebersetzt. fehlerText faellt selbst auf e.message
+         zurueck; der zentrale Weg ist damit ausnahmslos der richtige. */
+      else { err(fehlerText(e)); if (istUeberlastet(e)) zeigeErneutSenden(); }   // S70/R0
     }
     finally {
       // S87: Ein Nachzügler darf die NEUE Session nicht aus dem Warten kippen

@@ -55,7 +55,11 @@ export function normalisiere(text) {
 /**
  * Alle drei Schichten prüfen und (bei Freigabe) zählen.
  * @returns {{ok:true, hinweis:string|null, rest:number} |
- *           {ok:false, status:429, meldung:string}}
+ *           {ok:false, status:429, code:string, meldung:string}}
+ *
+ * R0: Jede Ablehnung trägt einen stabilen `code` (quota_limit | quota_rate |
+ * quota_duplikat). Der Client übersetzt darüber; `meldung` bleibt als
+ * deutschsprachiger Klartext für Logs und Nicht-App-Verbraucher bestehen.
  */
 export async function pruefeUndZaehle(kv, session, letzteUserNachricht, cfg, now = Date.now) {
   const wer = session.code + "/" + session.role;
@@ -69,7 +73,7 @@ export async function pruefeUndZaehle(kv, session, letzteUserNachricht, cfg, now
   await kv.put(wdhKey, JSON.stringify({ hash, anzahl }));
   if (anzahl >= cfg.duplikatSchwelle) {
     return {
-      ok: false, status: 429,
+      ok: false, status: 429, code: "quota_duplikat",
       meldung: "Diese Nachricht kam gerade mehrfach identisch an. Wenn du sie wirklich noch einmal meinst, formuliere sie bitte leicht anders — dann geht es hier normal weiter.",
     };
   }
@@ -81,7 +85,7 @@ export async function pruefeUndZaehle(kv, session, letzteUserNachricht, cfg, now
   await kv.put(rateKey, JSON.stringify(rate), { expirationTtl: 120 });
   if (rate > cfg.ratePromMinute) {
     return {
-      ok: false, status: 429,
+      ok: false, status: 429, code: "quota_rate",
       meldung: "Das ging gerade sehr schnell hintereinander. Lass uns kurz durchatmen — in einer Minute geht es hier weiter.",
     };
   }
@@ -94,7 +98,7 @@ export async function pruefeUndZaehle(kv, session, letzteUserNachricht, cfg, now
 
   if (verbrauch >= cfg.limit + cfg.karenz) {
     return {
-      ok: false, status: 429,
+      ok: false, status: 429, code: "quota_limit",
       meldung: "Für die letzten " + cfg.fensterTage + " Tage ist hier viel Raum genutzt worden — mehr, als der Begleitung guttut. " +
         "Das Kontingent füllt sich von selbst wieder auf; vielleicht ist bis dahin auch ein guter Moment, etwas davon ins echte Gespräch zu tragen.",
     };

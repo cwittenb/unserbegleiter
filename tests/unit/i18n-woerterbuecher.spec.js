@@ -32,7 +32,7 @@ describe("i18n-Wörterbücher de/en", () => {
     expect(t("allg.hallo", { name: "Anna" })).toBe("Hallo Anna");
     setLocale("en");
     expect(t("allg.hallo", { name: "Anna" })).toBe("Hello Anna");
-    expect(t("start.meinRaum")).toBe("My Private Space");
+    expect(t("start.capsMein")).toBe("Room for me");   // R1: lebender Schluessel als Vorrichtung
     expect(t("sprache.diktat")).toBe("en-US");
     setLocale("xx");                                  // unbekannt → bleibt en
     expect(getLocale()).toBe("en");

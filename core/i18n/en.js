@@ -22,9 +22,7 @@ export const en = {
   // Start overview
   "start.hallo": "Good to see you, {name}.",
   "start.intro": "Two spaces, one simple rule: what stays with you, stays with you — only what you explicitly share is shared.",
-  "start.meinRaum": "My Private Space",
   "start.meinSub": "This is where I accompany you. To reflect, to sort, to practice and to set things down. Nothing from here reaches {partner} unless you release it.",
-  "start.teilRaum": "Our Shared Space",
   "start.teilSub": "Your space for your shared time. Exchange, encounter, reflection — and for reading what one of you has made readable.",
   // D2 · Start screen as split (design turn 17a/b/g; EN term is "Guidepost")
   "start.capsMein": "Room for me",
@@ -47,16 +45,13 @@ export const en = {
   "mein.einzelWeiter": "Continue Clarifying Your Focus",
   "mein.zeitleiste": "My Timeline",
   "mein.mess": "Process Reflection",
-  "mein.soloSub": "Your private space for sorting things out — speak freely, look closely, at your pace.",
   "mein.einzelSub": "Where do you wish for growth — and where may I accompany the two of you?",
   "mein.messSub": "A brief, hidden look at your closeness and your mandates — revealed together.",
   "mein.gruppeRegale": "My path.",
   // Our Shared Space
   "teil.intro": "For everything the two of you do together. The shelves hold only what has been released — the rooms you enter deliberately.",
-  "teil.gruppeRaeume": "Rooms — enter and begin",
   "teil.gruppeRegale": "Your common ground.",
   "teil.moment": "Begin quality time",
-  "teil.momentSub": "Your accompanied time together — whether you want to talk something through or simply spend time with each other.",
   "teil.momentWeiter": "Continue quality time",
   "chat.abschliessen": "Close session",
   "momente.titel": "Shared moments",
@@ -227,8 +222,6 @@ export const en = {
   "mess.zrWochen": "over the last {w} weeks",
   "mess.zrTage": "over the last {n} days",
   "messiv.titel": "Process reflection rhythm",
-  "messiv.link": "Process reflection rhythm: {rhythmus}",
-  "messiv.linkOffen": "Process reflection rhythm: {rhythmus} (proposal pending)",
   "messiv.aktuell": "Currently: {rhythmus}. The process reflection question refers to this interval.",
   "messiv.eingabe": "Interval in days:",
   "messiv.vorschlagen": "Propose a new rhythm",
@@ -286,7 +279,6 @@ export const en = {
   "rec.neu": "Add an email address so you can request a new access link when needed — including for a second device. This address also receives important service notices (e.g. planned maintenance or security alerts) — never advertising. Use a mailbox only you can access.",
   "rec.platzhalter": "you@mailbox.com",
   "rec.aendern": "Change address",
-  "rec.hinterlegen": "Add address",
   "rec.bitte": "Please enter an address.",
   "rec.codeSenden": "Send confirmation code",
   "rec.codeLabel": "6-digit code",
@@ -342,6 +334,20 @@ export const en = {
   "fehler.code.mail_failed": "Sending is not possible right now. Please try again later.",
   "fehler.code.verify_rate": "Too many requests. Please try again a little later.",
   "fehler.code.email_mismatch": "The address does not match the pending confirmation. Please request a new code.",
+  // R0 · Kontingent-Waechter: eigene Codes, damit eine bewusste Grenze
+  // nicht als Stoerung erscheint (und kein Wiederholen angeboten wird).
+  "fehler.code.quota_limit": "A lot of room has been used here over the past few days — more than the accompaniment is good for. The allowance refills on its own; until then, this might also be a good moment to carry some of it into the actual conversation.",
+  "fehler.code.quota_rate": "That came in very quickly one after another. Let's take a breath — things continue here in a minute.",
+  "fehler.code.quota_duplikat": "That same message just arrived several times. If you really mean it again, please phrase it slightly differently — then things continue here as usual.",
+  // R7 · Worker-Mails: Push war laengst uebersetzt (paar.locale), die Mails nicht.
+  "mail.relink.betreff": "A new access link was created for your account",
+  "mail.relink.text": "A new access link to your roomfortwo account has just been created by the operator.\n\nIf that was not you, or you did not request it, please contact the operator right away.",
+  "mail.resend.betreff": "Your new access link",
+  "mail.resend.text": "Here is your new access link to roomfortwo:\n\n{link}\n\nThe link is valid for about 15 minutes and can be used once.",
+  "mail.recover.betreff": "Your access to roomfortwo",
+  "mail.recover.text": "Here is your new personal access link:\n\n{link}\n\nIt is valid for about 15 minutes and can be used once. If you did not request it, you can ignore this message.",
+  "mail.pin.betreff": "Your confirmation code",
+  "mail.pin.text": "Your confirmation code for roomfortwo is:\n\n{pin}\n\nIt is valid for about 15 minutes. If you did not request it, you can ignore this message.",
   "fehler.code.llm_overloaded": "The service is under heavy load right now. Your message is not lost \u2014 please send it again in a moment.",
 
   // Theme toggle

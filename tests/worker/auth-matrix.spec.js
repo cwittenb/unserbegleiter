@@ -123,7 +123,13 @@ describe("Session · 15 Minuten, touch-to-extend", () => {
     expect((await anna.call("GET", "/api/me")).status).toBe(401);
   });
 
-  it("jede Anfrage verlängert (touch): expiresAt wandert nach vorn", async () => {
+  /* R6 · VERTRAGSAENDERUNG, bewusst: Bis R6 schrieb JEDE Anfrage den
+     Session-Schluessel. Ein Bildschirmaufbau feuert zwoelf Anfragen parallel —
+     also zwoelf Schreibvorgaenge auf denselben KV-Schluessel, auf dem
+     kritischen Pfad. Verlaengert wird jetzt nur noch bei Bedarf. Die Zusage,
+     auf die es ankommt, ist unveraendert und wird hier direkt geprueft: Wer
+     aktiv ist, verliert seine Session nicht. */
+  it("frische Session wird NICHT bei jeder Anfrage neu geschrieben", async () => {
     const { anna } = await frischesPaar();
     const kv = await mf.getKVNamespace("PAARE");
     const sid = (await anna.call("GET", "/api/me")).jar.pb_sid;
@@ -132,7 +138,32 @@ describe("Session · 15 Minuten, touch-to-extend", () => {
     await new Promise(r => setTimeout(r, 15));
     await anna.call("GET", "/api/me");
     const s2 = JSON.parse(await kv.get(k));
-    expect(s2.expiresAt).toBeGreaterThan(s1.expiresAt);
+    expect(s2.expiresAt).toBe(s1.expiresAt);            // noch weit von der Schwelle
+  });
+
+  it("angebrochene Session wird verlängert — wer aktiv ist, bleibt drin", async () => {
+    const { anna } = await frischesPaar();
+    const kv = await mf.getKVNamespace("PAARE");
+    const sid = (await anna.call("GET", "/api/me")).jar.pb_sid;
+    const k = "sys/session/" + sid;
+    const s1 = JSON.parse(await kv.get(k));
+    // Zustand herstellen, als waere mehr als die halbe Laufzeit verstrichen:
+    // eine Minute Restlaufzeit statt fuenfzehn.
+    await kv.put(k, JSON.stringify({ ...s1, expiresAt: Date.now() + 60000 }));
+    const r = await anna.call("GET", "/api/me");
+    expect(r.status).toBe(200);                         // Session traegt weiter
+    const s2 = JSON.parse(await kv.get(k));
+    expect(s2.expiresAt).toBeGreaterThan(Date.now() + 10 * 60000);   // frisch verlaengert
+  });
+
+  it("abgelaufene Session wird NICHT wiederbelebt", async () => {
+    const { anna } = await frischesPaar();
+    const kv = await mf.getKVNamespace("PAARE");
+    const sid = (await anna.call("GET", "/api/me")).jar.pb_sid;
+    const k = "sys/session/" + sid;
+    const s1 = JSON.parse(await kv.get(k));
+    await kv.put(k, JSON.stringify({ ...s1, expiresAt: Date.now() - 1000 }));
+    expect((await anna.call("GET", "/api/me")).status).toBe(401);
   });
 });
 

@@ -25,7 +25,8 @@ import { erfasseUsage, leseTokenStand, leseTokenHistorie, leseTokenExport, monat
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
          mintMagic, RECOVER_MS, beginRecoveryEmail, confirmRecoveryEmail,
          hasRecoveryEmail, lookupRecovery } from "./auth.js";
-import { randomToken, sha256Hex } from "./util.js";
+import { randomToken, sha256Hex, leseJson, holePaar, schreibeAudit } from "./util.js";
+import { mailText } from "./mail-texte.js";   // R7
 import { importEmailKey, entschluessele, emailAad } from "./krypto.js";
 import { makeMailer } from "./mailer.js";
 
@@ -37,7 +38,7 @@ const json = (data, status = 200, headers = {}) =>
 const fehler = (msg, status, code) => json(code ? { error: msg, code } : { error: msg }, status);
 
 const leseEmailFor = (kv, code, role) =>
-  kv.get("sys/emailfor/" + code + "/" + role).then(v => (v ? JSON.parse(v) : null));
+  leseJson(kv, "sys/emailfor/" + code + "/" + role);
 
 const BSTATE_FELDER = new Set(Bstate.FIELDS);
 // S91 · I12: Mess-Logik kommt aus dem Kern — Worker und App teilen dieselbe Wahrheit.
@@ -59,7 +60,7 @@ const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "lan
 const pushKey = (code, role) => "push/" + code + "/" + role;
 
 async function lesePushAbos(kv, code, role) {
-  return kv.get(pushKey(code, role)).then(v => (v ? JSON.parse(v) : []));
+  return (await leseJson(kv, pushKey(code, role))) || [];
 }
 
 function gueltigesAbo(sub) {
@@ -72,7 +73,7 @@ async function benachrichtigePartner(kv, env, code, empfaengerRolle) {
   if (!vapid) return;                                    // Feature aus — Freigabe läuft normal weiter
   const abos = await lesePushAbos(kv, code, empfaengerRolle);
   if (!abos.length) return;
-  const paar = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+  const paar = await holePaar(kv, code);
   const dict = (paar?.locale === "en") ? woerterbuchEn : woerterbuchDe;
   const nutzlast = { titel: dict["pwa.pushTitel"], text: dict["pwa.pushText"], url: "/" };
   const bleiben = [];
@@ -156,7 +157,12 @@ async function route(request, env) {
     do {
       const r = await kv.list({ prefix: "sys/couple/", cursor });
       for (const k of r.keys) {
-        const c = JSON.parse(await kv.get(k.name));
+        // R2.3: Verschwindet ein Schluessel zwischen list und get (oder ist sein
+        // Inhalt beschaedigt), fehlt EIN Eintrag — frueher riss der Wurf die
+        // gesamte Betreiber-Liste mit 500 mit, und damit den einzigen Weg,
+        // einen verlorenen Paar-Code wiederzufinden.
+        const c = await leseJson(kv, k.name);
+        if (!c) continue;
         paare.push({
           code: c.code, nameA: c.nameA, nameB: c.nameB, createdAt: c.createdAt,
           emailA: await hasRecoveryEmail(kv, c.code, "A"),
@@ -180,7 +186,7 @@ async function route(request, env) {
     if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
     const { code, role } = await request.json().catch(() => ({}));
     if (role !== "A" && role !== "B") return fehler("Unbekannte Rolle.", 400, "role_invalid");
-    const couple = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+    const couple = await holePaar(kv, code);
     if (!couple) return fehler("Unbekannter Paar-Code.", 404);
     const token = await mintMagic(kv, code, role, now, RECOVER_MS);
     // Missbrauchs-Transparenz (D6): Die betroffene Person erfährt per Mail,
@@ -191,16 +197,15 @@ async function route(request, env) {
     try {
       const adresse = await entschluessele(await importEmailKey(env),
         (await leseEmailFor(kv, code, role))?.enc, emailAad(code, role));
+      const mt = mailText(await holePaar(kv, code));   // R7: Sprache des Paars
       await makeMailer(env).sendMail({
         to: adresse,
-        subject: "Neuer Zugangslink für dein Konto erzeugt",
-        text: "Für deinen Zugang zu raumzuzweit wurde soeben vom Betreiber ein neuer Zugangslink erzeugt.\n\n" +
-              "Warst du das nicht bzw. hast du das nicht angefragt, melde dich bitte umgehend beim Betreiber.",
+        subject: mt("mail.relink.betreff"),
+        text: mt("mail.relink.text"),
       });
       benachrichtigt = true;
     } catch (e) { console.error("relink-mail:", code, role, e && e.message); }
-    await kv.put("sys/audit/" + now() + "-" + randomToken(4),
-      JSON.stringify({ typ: "relink", code, role, benachrichtigt, at: now() }));
+    await schreibeAudit(kv, now, "relink", { code, role, benachrichtigt });
     return json({ token, name: role === "A" ? couple.nameA : couple.nameB, benachrichtigt });
   }
 
@@ -213,7 +218,7 @@ async function route(request, env) {
     if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
     const { code, role } = await request.json().catch(() => ({}));
     if (role !== "A" && role !== "B") return fehler("Unbekannte Rolle.", 400, "role_invalid");
-    const couple = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+    const couple = await holePaar(kv, code);
     if (!couple) return fehler("Unbekannter Paar-Code.", 404);
     const rlKey = "sys/resendlimit/" + code + "/" + role;
     const cnt = Number((await kv.get(rlKey)) || 0);
@@ -229,15 +234,13 @@ async function route(request, env) {
     await kv.put(rlKey, String(cnt + 1), { expirationTtl: 86400 });
     const token = await mintMagic(kv, code, role, now, RECOVER_MS);
     const url = new URL(request.url);
+    const mt = mailText(await holePaar(kv, code));   // R7
     await makeMailer(env).sendMail({
       to: adresse,
-      subject: "Dein neuer Zugangslink",
-      text: "Hier ist dein neuer Zugangslink zu raumzuzweit:\n\n" +
-            url.origin + "/#t=" + token + "\n\n" +
-            "Der Link ist etwa 15 Minuten gültig und nur einmal verwendbar.",
+      subject: mt("mail.resend.betreff"),
+      text: mt("mail.resend.text", { link: url.origin + "/#t=" + token }),
     });
-    await kv.put("sys/audit/" + now() + "-" + randomToken(4),
-      JSON.stringify({ typ: "resend", code, role, at: now() }));
+    await schreibeAudit(kv, now, "resend", { code, role });
     return json({ ok: true, name: role === "A" ? couple.nameA : couple.nameB });
   }
 
@@ -257,7 +260,7 @@ async function route(request, env) {
       const r = await kv.list({ prefix: "sys/emailfor/", cursor });
       for (const k of r.keys) {
         const teile = k.name.split("/");                     // sys emailfor code role
-        const e = JSON.parse(await kv.get(k.name));
+        const e = await leseJson(kv, k.name);                // R2.3: tolerant
         if (e && e.verified && e.enc) empfaenger.push({ code: teile[2], role: teile[3], enc: e.enc });
       }
       cursor = r.list_complete ? undefined : r.cursor;
@@ -269,7 +272,7 @@ async function route(request, env) {
       return json({ empfaenger: empfaenger.length, nonce: frisch });
     }
     const nKey = "sys/broadcastnonce/" + String(nonce || "");
-    const nEintrag = nonce ? await kv.get(nKey).then(v => (v ? JSON.parse(v) : null)) : null;
+    const nEintrag = nonce ? await leseJson(kv, nKey) : null;
     if (!nEintrag) return fehler("Senden erfordert eine gültige Vorschau (dryRun) — Nonce fehlt, ist abgelaufen oder verbraucht.", 400, "nonce_invalid");
     if (nEintrag.inhaltHash !== inhaltHash) return fehler("Der Inhalt wurde seit der Vorschau geändert — bitte erneut prüfen.", 409, "nonce_mismatch");
     await kv.delete(nKey);                                   // VOR dem Versand verbrauchen: kein Doppel-Versand bei Retry
@@ -286,8 +289,7 @@ async function route(request, env) {
         console.error("broadcast-mail:", e.code, e.role, err && err.message);   // nie die Adresse
       }
     }
-    await kv.put("sys/audit/" + now() + "-" + randomToken(4),
-      JSON.stringify({ typ: "broadcast", subject, empfaenger: empfaenger.length, gesendet, fehlgeschlagen, at: now() }));
+    await schreibeAudit(kv, now, "broadcast", { subject, empfaenger: empfaenger.length, gesendet, fehlgeschlagen });
     return json({ empfaenger: empfaenger.length, gesendet, fehlgeschlagen });
   }
 
@@ -310,7 +312,7 @@ async function route(request, env) {
   if (mExp && request.method === "GET") {
     if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
     const code = mExp[1];
-    const couple = await kv.get("sys/couple/" + code).then(v => (v ? JSON.parse(v) : null));
+    const couple = await holePaar(kv, code);
     if (!couple) return fehler("Unbekannter Paar-Code.", 404);
     const store = new KVStore(kv);
     const praefix = "p:" + (env.NS || "PB") + ":" + code + ":";
@@ -336,12 +338,11 @@ async function route(request, env) {
       const token = await mintMagic(kv, treffer.code, treffer.role, now, RECOVER_MS);
       const link = new URL(request.url).origin + "/#t=" + token;
       try {
+        const mt = mailText(await holePaar(kv, treffer.code));   // R7
         await makeMailer(env).sendMail({
           to: String(email).trim(),
-          subject: "Dein Zugang zu raumzuzweit",
-          text: "Hier ist dein neuer persönlicher Zugangslink:\n\n" + link +
-                "\n\nEr ist etwa 15 Minuten gültig und nur einmal verwendbar. " +
-                "Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
+          subject: mt("mail.recover.betreff"),
+          text: mt("mail.recover.text", { link }),
         });
       } catch (e) {
         // Versandfehler nie nach außen offenlegen — aber fürs Betreiber-Log
@@ -362,7 +363,7 @@ async function route(request, env) {
   const pstate = new Pstate(repo);
 
   if (p === "/api/me") {
-    const couple = JSON.parse(await kv.get("sys/couple/" + session.code));
+    const couple = await holePaar(kv, session.code);
     return json({
       role: session.role,
       name: session.role === "A" ? couple.nameA : couple.nameB,
@@ -385,7 +386,7 @@ async function route(request, env) {
    *  Die Rolle kommt aus der Session, nie aus dem Request. ---- */
   if (p === "/api/language" && (request.method === "POST" || request.method === "DELETE")) {
     const coupleKey = "sys/couple/" + session.code;
-    const paar = JSON.parse(await kv.get(coupleKey));
+    const paar = await leseJson(kv, coupleKey);
     if (request.method === "DELETE") {
       // Zurückziehen (Vorschlagende) oder Ablehnen (Partner) — beide Rollen dürfen.
       if (paar.languageRequest) { delete paar.languageRequest; await kv.put(coupleKey, JSON.stringify(paar)); }
@@ -427,11 +428,11 @@ async function route(request, env) {
     const { email } = await request.json().catch(() => ({}));
     try {
       const { pin, email: clean } = await beginRecoveryEmail(kv, session, email, now);
+      const mt = mailText(await holePaar(kv, session.code));   // R7
       await makeMailer(env).sendMail({
         to: clean,
-        subject: "Dein Bestätigungscode",
-        text: "Dein Bestätigungscode für raumzuzweit lautet:\n\n" + pin +
-              "\n\nEr ist etwa 15 Minuten gültig. Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
+        subject: mt("mail.pin.betreff"),
+        text: mt("mail.pin.text", { pin }),
       });
       return json({ ok: true });
     } catch (e) {
@@ -481,7 +482,7 @@ async function route(request, env) {
     const erlaubt = new Set(WEGE_FUER(b.kind));
     const wege = (Array.isArray(b.paths) ? b.paths : []).filter(w => erlaubt.has(w));
     if (!wege.length) return fehler("Kein gueltiger Weg gewaehlt.", 400, "regal_weg");
-    const paar = JSON.parse(await kv.get("sys/couple/" + session.code));
+    const paar = await holePaar(kv, session.code);
     // Bewusst: id/at/visibleFrom/role/by kommen NIE aus dem Body - sonst waere
     // die Karenz clientseitig abwaehlbar.
     const gemeinsam = {
@@ -666,7 +667,7 @@ async function route(request, env) {
     }
     const letzte = [...messages].reverse().find(x => x.role === "user");
     const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
-    if (!q.ok) return fehler(q.meldung, q.status);
+    if (!q.ok) return fehler(q.meldung, q.status, q.code);   // R0: Code traegt die Unterscheidung zur Auslastung
     const fetchFn = env.UPSTREAM ? env.UPSTREAM.fetch.bind(env.UPSTREAM) : globalThis.fetch;
     // Provider-Schalter (S47) unter Konfigurationspflicht (S35d): EIN Wert wählt
     // den Provider — LLM_PROVIDER. Key und Modell liegen pro Provider getrennt

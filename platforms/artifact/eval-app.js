@@ -9,12 +9,12 @@
 
 import { laufeSzenario } from "../../evals/runner-kern.js";
 import { JUDGE_PROMPT_VERSION } from "../../evals/judge/judge.js";
+import { esc } from "../../core/ui/html.js";   // R3: vollstaendige Maskierung
 
 export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
   const nun = jetzt || (() => new Date());
   const state = { laeuft: false, bericht: null };
   const $ = id => root.querySelector("#" + id);
-  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   root.innerHTML = `
     <style>

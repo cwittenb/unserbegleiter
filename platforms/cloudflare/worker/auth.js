@@ -185,12 +185,29 @@ export async function createSession(kv, code, role, now = Date.now) {
   return sid;
 }
 
-/** Prüft die Session und verlängert sie (touch-to-extend). null = ungültig. */
+/** Prüft die Session und verlängert sie (touch-to-extend). null = ungültig.
+ *
+ * R6 · Die Verlaengerung schreibt nur noch, wenn sie es noetig hat.
+ *
+ * Vorher schrieb JEDE authentifizierte Anfrage den Session-Schluessel. Der
+ * Bildschirmaufbau feuert zwoelf Anfragen parallel (ladeLage) — also zwoelf
+ * gleichzeitige Schreibvorgaenge auf DENSELBEN KV-Schluessel, bei jedem
+ * Raumwechsel. Workers KV ist fuer viele Lese- und wenige Schreibvorgaenge
+ * ausgelegt; mehrfaches Schreiben desselben Schluessels je Sekunde ist nicht
+ * sein Einsatzprofil, und Schreibvorgaenge liegen hier auf dem kritischen Pfad.
+ *
+ * Die Touch-to-extend-Semantik bleibt: Wer aktiv ist, behaelt eine gueltige
+ * Session. Nur das Schreiben wartet, bis wirklich Zeit verstrichen ist. */
+export const TOUCH_SCHWELLE_MS = SESSION_MS / 2;
+
 export async function requireSession(kv, sid, now = Date.now) {
   if (!sid) return null;
   const s = await J(kv, "sys/session/" + sid);
   if (!s || now() > s.expiresAt) return null;
-  s.expiresAt = now() + SESSION_MS;                     // touch
-  await W(kv, "sys/session/" + sid, s);
+  const rest = s.expiresAt - now();
+  if (rest < TOUCH_SCHWELLE_MS) {                       // touch, aber nur bei Bedarf
+    s.expiresAt = now() + SESSION_MS;
+    await W(kv, "sys/session/" + sid, s);
+  }
   return { code: s.code, role: s.role };
 }

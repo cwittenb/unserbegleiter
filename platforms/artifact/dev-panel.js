@@ -13,6 +13,7 @@
 
 import { ladeTokenStaende, wipeTokenStaende, formatTokens, TOKEN_PREFIX } from "./token-zaehler.js";
 import { baueKulisse, KULISSE_DECKEL } from "../../core/ui/kulisse.js";
+import { esc } from "../../core/ui/html.js";   // R3: vollstaendige Maskierung
 
 export const DUMP_VERSION = 1;
 const NS = "PBDEV";
@@ -457,7 +458,6 @@ export const SZENEN = [
 export const quittung = { text: null };
 
 export function createDevPanel({ doc, host, store, reboot }) {
-  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   host.innerHTML = `
     <details style="margin-top:26px;border-top:1px dashed var(--card-bd);padding-top:10px">
       <summary style="cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:600">Entwickler-Panel</summary>
