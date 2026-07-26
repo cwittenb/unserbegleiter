@@ -69,13 +69,15 @@ describe("D12-2c/e · Raumtoene im Chat", () => {
     expect(root.querySelector("#scrChat .rz-chat-oben").classList.contains("rz-tiefgruen")).toBe(false);
   });
 
-  it("nur die Schreibkante folgt dem Raum", async () => {
+  it("die Schreibkante ist in beiden Raeumen dieselbe Flaeche", async () => {
+    // T1a · Der Ort steht im Badge, nicht in der Farbe: oben Papier, unten
+    // Tiefgruen — auf allen Screens gleich.
     await inDenChat("solo");
-    expect(root.querySelector("#scrChat .rz-chat-unten").classList.contains("rz-regal")).toBe(true);
+    expect(root.querySelector("#scrChat .rz-chat-unten").classList.contains("rz-tiefgruen")).toBe(true);
     await inDenChat("moment");
     const unten = root.querySelector("#scrChat .rz-chat-unten");
-    expect(unten.classList.contains("rz-regal-dunkel")).toBe(true);
-    expect(unten.classList.contains("rz-regal")).toBe(false);
+    expect(unten.classList.contains("rz-tiefgruen")).toBe(true);
+    expect(unten.className).not.toContain("regal");
   });
 
   it("kein Screen faerbt sich als Ganzes ein", async () => {
@@ -86,8 +88,8 @@ describe("D12-2c/e · Raumtoene im Chat", () => {
 
   it("die Zonen erben die bestehenden Regeln statt sie zu verdoppeln", async () => {
     await inDenChat("moment");
-    expect(DESIGN_CSS).toContain(".rz-tiefgruen .rz-signatur,.rz-regal-dunkel .rz-signatur");
-    expect(root.querySelector("#scrChat .rz-regal-dunkel .rz-fussmarke")).toBeTruthy();
+    expect(DESIGN_CSS).toContain(".rz-tiefgruen .rz-signatur{");
+    expect(root.querySelector("#scrChat .rz-tiefgruen .rz-fussmarke")).toBeTruthy();
   });
 });
 

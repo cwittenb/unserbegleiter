@@ -24,10 +24,19 @@ describe("D1 · Fonts", () => {
 });
 
 describe("D1 · Farb-Tokens (Handoff Turn 17)", () => {
-  it("Light-Palette vollständig: Papier, Regal, Hairlines, Tiefgrün, Akzent", () => {
-    for (const wert of ["#faf8f2", "#f0ece0", "#e3dfd0", "#ddd8c6", "#1e2a22",
-      "#141f18", "#8fae74", "#14201a", "#7d9b62", "#a9c88b", "#23291f", "#a3a894", "#41562c"])
+  // T1a · Die Palette ist um die Regal-Flaechen kleiner geworden: das Regal ist
+  // ein Moebel IN der Zone, keine eigene Flaeche. #f0ece0 (helles Regal),
+  // #141f18 (dunkles Regal) und #ddd8c6 (Regal-Hairline) sind entfallen —
+  // dunkler wird es ausschliesslich ueber das Dark-Theme.
+  it("Light-Palette vollständig: Papier, Hairlines, Tiefgrün, Akzent", () => {
+    for (const wert of ["#faf8f2", "#e3dfd0", "#1e2a22",
+      "#8fae74", "#14201a", "#7d9b62", "#a9c88b", "#23291f", "#a3a894", "#41562c"])
       expect(DESIGN_CSS).toContain(wert);
+  });
+
+  it("die Regal-Flaechentoken sind zurueckgebaut", () => {
+    for (const tok of ["--rz-papier-regal", "--rz-regal-dunkel", "--rz-hairline-regal"])
+      expect(DESIGN_CSS).not.toContain(tok);
   });
 
   it("Dark-Palette vollständig: Dark-Papier, Dark-Tiefgrün, Dark-Hairline, helle Labels", () => {

@@ -115,7 +115,7 @@ describe("S36 · Mein Raum (4 Zeilen)", () => {
     const oben = raum.querySelector(".rz-papier .rz-fuss");
     expect(oben.querySelector("#btnSolo")).toBeTruthy();
     expect(oben.querySelector("#btnEinzel")).toBeTruthy();
-    const regale = raum.querySelector(".rz-regal .rz-regal-reihen");
+    const regale = raum.querySelector(".rz-tiefgruen .rz-regal-reihen");
     expect(regale.querySelector("#btnZeitleiste")).toBeTruthy();
     expect(regale.querySelector("#btnMess")).toBeFalsy();     // S44: nicht in der Regal-Zone
     expect(oben.querySelector("#btnMess")).toBeTruthy();      // S44: (verdeckt) im Auftragsklärungs-Slot

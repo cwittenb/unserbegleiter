@@ -77,7 +77,7 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     expect(sessions.querySelector("#btnMoment")).toBeTruthy();
     expect(sessions.querySelector("#btnGemeinsam")).toBeTruthy();
     expect(sessions.querySelector("#btnAufdeck")).toBeFalsy();   // S43: Aufdeckung ist Auftakt der Auflösung
-    const regale = raum.querySelector(".rz-regal-dunkel .rz-regal-reihen");
+    const regale = raum.querySelector(".rz-tiefgruen .rz-regal-reihen");
     expect(regale.querySelector("#btnRegal")).toBeTruthy();
     expect(raum.querySelector(".rz-kopf #btnZurueck2")).toBeTruthy();
   });

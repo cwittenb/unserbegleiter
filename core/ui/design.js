@@ -12,9 +12,9 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
            pb-Variablen bleiben bestehen, bis D2–D5 die Screens umziehen. */
         --rz-serif:'Source Serif 4',Georgia,'Times New Roman',serif;
         --rz-sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
-        --rz-papier:#faf8f2;--rz-papier-regal:#f0ece0;
-        --rz-hairline:#e3dfd0;--rz-hairline-regal:#ddd8c6;--rz-hairline-gruen:rgba(157,176,143,.28);
-        --rz-tiefgruen:#1e2a22;--rz-regal-dunkel:#141f18;
+        --rz-papier:#faf8f2;
+        --rz-hairline:#e3dfd0;--rz-hairline-gruen:rgba(157,176,143,.28);
+        --rz-tiefgruen:#1e2a22;
         --rz-ink:#23291f;--rz-ink-auf-gruen:#eef0e7;--rz-ink2-auf-gruen:#e6e9d9;
         --rz-sek:#6b7261;--rz-sek2:#8b917d;--rz-sek-auf-gruen:#b9c3ac;--rz-sek2-auf-gruen:#8a9e7c;
         --rz-gedimmt:#a3a894;--rz-marke:#5c6653;--rz-marke-auf-gruen:#6f8062;
@@ -29,9 +29,9 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       }
       html[data-theme=dark]{
         /* D1 · Dark-Tokens: Papier wird Dark-Papier, Tiefgruen wird tiefer. */
-        --rz-papier:#242b21;--rz-papier-regal:#20261d;
-        --rz-hairline:#39412f;--rz-hairline-regal:#39412f;
-        --rz-tiefgruen:#101b14;--rz-regal-dunkel:#0c1510;
+        --rz-papier:#242b21;
+        --rz-hairline:#39412f;
+        --rz-tiefgruen:#101b14;
         --rz-ink:#ece9da;--rz-sek:#b9c3ac;--rz-sek2:#9aa38c;
         --rz-gedimmt:#7f8672;--rz-marke:#99a189;
         --rz-akzent-hell:#8fae74;--rz-pfeil:#a9c88b;
@@ -134,9 +134,9 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-half{flex:1;display:flex;flex-direction:column;position:relative;
                padding:30px 24px;box-sizing:border-box}
       .rz-half.rz-papier{background:var(--rz-papier);color:var(--rz-ink)}
-      .rz-half.rz-regal{background:var(--rz-papier-regal);color:var(--rz-ink)}
+
       .rz-half.rz-tiefgruen{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen)}
-      .rz-half.rz-regal-dunkel{background:var(--rz-regal-dunkel);color:var(--rz-ink-auf-gruen)}
+
       .rz-naht-anker{position:relative}
       .rz-auf-naht{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:5}
       @media(min-width:900px){
@@ -162,12 +162,12 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          Kanten-Sprache zu verlassen. */
       .rz-knopf-flach{border:1px solid var(--rz-hairline);padding:13px 16px;margin-top:10px}
       .rz-knopf-flach+.rz-knopf-flach{margin-top:8px}
-      .rz-tiefgruen .rz-knopf-flach,.rz-regal-dunkel .rz-knopf-flach{border-color:var(--rz-hairline-gruen)}
+      .rz-tiefgruen .rz-knopf-flach{border-color:var(--rz-hairline-gruen)}
       .rz-knopf-flach:disabled,.rz-knopf-flach.rz-gedimmt{cursor:not-allowed;opacity:.55}
       .rz-zeile .rz-pfeil{flex:none;font-family:var(--rz-sans);font-size:15px;color:var(--rz-pfeil)}
-      .rz-tiefgruen .rz-zeile,.rz-regal-dunkel .rz-zeile{border-top-color:var(--rz-hairline-gruen)}
-      .rz-tiefgruen .rz-zeile .rz-pfeil,.rz-regal-dunkel .rz-zeile .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
-      .rz-regal .rz-zeile{border-top-color:var(--rz-hairline-regal);font-size:19px}
+      .rz-tiefgruen .rz-zeile{border-top-color:var(--rz-hairline-gruen)}
+      .rz-tiefgruen .rz-zeile .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
+      .rz-tiefgruen .rz-zeile{font-size:19px}
       .rz-zeile.rz-unten{border-top:0;border-bottom:1px solid var(--rz-hairline-gruen)}
       .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:12px;color:var(--rz-gedimmt);
                             max-width:38%;text-align:right;line-height:1.4}
@@ -178,7 +178,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                   display:inline-flex;align-items:center;justify-content:center;align-self:center}
       .rz-caps{font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.2em;
                text-transform:uppercase;color:var(--rz-label)}
-      .rz-tiefgruen .rz-caps,.rz-regal-dunkel .rz-caps{color:var(--rz-label-auf-gruen)}
+      .rz-tiefgruen .rz-caps{color:var(--rz-label-auf-gruen)}
 
       /* ============ D12-2 · Kopf-Signatur, Fussmarke, Wegweiser-Ikon (Turn 27) ============
          Turn 27 raeumt die Etiketten-Dopplung auf: der Kopf traegt auf JEDEM
@@ -187,11 +187,11 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          .34em (nicht .2em wie .rz-caps) haelt beide Zeilen auseinander. */
       .rz-signatur{font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.34em;
                    text-transform:uppercase;color:var(--rz-gedimmt);text-align:center}
-      .rz-tiefgruen .rz-signatur,.rz-regal-dunkel .rz-signatur{color:var(--rz-sek2-auf-gruen)}
+      .rz-tiefgruen .rz-signatur{color:var(--rz-sek2-auf-gruen)}
       .rz-fussmarke{display:block;margin-top:28px;text-align:center;
                     font-family:var(--rz-sans);font-size:11px;font-weight:600;letter-spacing:.34em;
                     text-transform:uppercase;color:var(--rz-gedimmt)}
-      .rz-tiefgruen .rz-fussmarke,.rz-regal-dunkel .rz-fussmarke{color:var(--rz-marke-auf-gruen)}
+      .rz-tiefgruen .rz-fussmarke{color:var(--rz-marke-auf-gruen)}
       /* Das Wegweiser-Zeichen (Pfosten mit Schild) steht IMMER neben dem
          Badge-Text — auch dort, wo das Badge einen Ortsnamen traegt. */
       .rz-weg-ikon{flex:none;width:9px;height:11px;display:block;color:currentColor}
@@ -213,7 +213,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
                       background:var(--rz-papier);color:var(--rz-ink);
                       border:1px solid var(--rz-hairline);border-radius:14px;padding:14px 16px;
                       box-shadow:0 12px 34px rgba(0,0,0,.14);text-align:left}
-      html[data-theme=dark] .rz-einst-blatt{background:var(--rz-regal-dunkel);color:var(--rz-ink-auf-gruen);
+      html[data-theme=dark] .rz-einst-blatt{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
                                             border-color:var(--rz-hairline-gruen)}
       .rz-einst-blatt .rz-caps{margin:0 0 6px}
       .rz-einst-blatt .rz-caps+.rz-caps,.rz-einst-gruppe+.rz-einst-gruppe{margin-top:16px}
@@ -308,20 +308,18 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-kopf-mitte{justify-content:space-between}
       .rz-zurueck{border:0;background:none;padding:4px 8px;margin:-4px -8px;cursor:pointer;
                   font-family:var(--rz-sans);font-size:13.5px;color:var(--rz-marke);min-height:0}
-      .rz-tiefgruen .rz-zurueck,.rz-regal-dunkel .rz-zurueck{color:var(--rz-sek-auf-gruen)}
+      .rz-tiefgruen .rz-zurueck{color:var(--rz-sek-auf-gruen)}
       .rz-blind{visibility:hidden;cursor:default}
       .rz-intro{margin:4px 0 0;max-width:46ch}
-      .rz-tiefgruen .rz-sub,.rz-regal-dunkel .rz-sub{color:var(--rz-sek2-auf-gruen)}
+      .rz-tiefgruen .rz-sub{color:var(--rz-sek2-auf-gruen)}
       .rz-still-aus{display:none!important}
       .rz-zeile.rz-spalte{flex-direction:column;align-items:stretch;gap:0}
       .rz-zeile-haupt{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
       .rz-zeile-haupt>span:first-child{flex:1}
       .rz-zeile .rz-balken{margin-top:8px}
       .rz-regal-reihen{display:flex;flex-direction:column}
-      .rz-regal-inhalt{font-size:13px;padding:12px 0;border-bottom:1px solid var(--rz-hairline-regal)}
-      .rz-regal-dunkel .rz-regal-inhalt{border-bottom-color:var(--rz-hairline-gruen)}
-      .rz-regal-inhalt .pb-item{border-bottom:1px solid var(--rz-hairline-regal);font-size:14px}
-      .rz-regal-dunkel .rz-regal-inhalt .pb-item{border-bottom-color:var(--rz-hairline-gruen)}
+      .rz-regal-inhalt{font-size:13px;padding:12px 0;border-bottom:1px solid var(--rz-hairline-gruen)}
+      .rz-regal-inhalt .pb-item{border-bottom:1px solid var(--rz-hairline-gruen);font-size:14px}
       .rz-eine-zone{display:flex;flex-direction:column}
       .rz-eine-zone .rz-half{flex:1;padding-top:calc(30px + env(safe-area-inset-top,0px));
                              padding-bottom:calc(34px + env(safe-area-inset-bottom,0px))}
@@ -361,7 +359,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          eigene Zone, dazwischen die Naht mit dem Wegweiser-Badge. Das Badge
          ist hier eine MARKE, kein Knopf — es nennt den Ort, es oeffnet nichts. */
       #scrChat .rz-chat-oben{flex:1;display:flex;flex-direction:column;min-height:0;padding:0}
-      #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-papier-regal);
+      #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-tiefgruen);
         margin:24px -24px calc(-24px - env(safe-area-inset-bottom,0px));
         padding:40px 24px calc(22px + env(safe-area-inset-bottom,0px));
         display:flex;flex-direction:column}
@@ -378,14 +376,13 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
          damit Qualitaetszeit und Gespraech dort lesbar auf hellem Grund
          stehen. Die Naht darf wandern, die Farben nicht. */
       #scrChat .rz-chat-oben.rz-papier{background:transparent}
-      #scrChat .rz-chat-unten.rz-regal{background:var(--rz-papier-regal)}
-      #scrChat .rz-chat-unten.rz-regal-dunkel{background:var(--rz-regal-dunkel);color:var(--rz-ink2-auf-gruen)}
-      #scrChat .rz-regal-dunkel .pb-composer textarea{color:var(--rz-ink-auf-gruen)}
-      #scrChat .rz-regal-dunkel .pb-composer textarea::placeholder{color:var(--rz-sek2-auf-gruen)}
-      #scrChat .rz-regal-dunkel .pb-skala{border-color:var(--rz-hairline-gruen)}
+      #scrChat .rz-chat-unten{color:var(--rz-ink2-auf-gruen)}
+      #scrChat .rz-tiefgruen .pb-composer textarea{color:var(--rz-ink-auf-gruen)}
+      #scrChat .rz-tiefgruen .pb-composer textarea::placeholder{color:var(--rz-sek2-auf-gruen)}
+      #scrChat .rz-tiefgruen .pb-skala{border-color:var(--rz-hairline-gruen)}
       #scrChat .rz-tiefgruen .rz-panel{border-color:var(--rz-hairline-gruen)}
-      #scrChat .rz-regal-dunkel .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
-      #scrChat .rz-chat-unten.rz-regal-dunkel #btnSend{color:var(--rz-tiefgruen)}
+      #scrChat .rz-tiefgruen .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
+      #scrChat .rz-chat-unten #btnSend{color:var(--rz-tiefgruen)}
       html[data-theme=dark] #scrChat #btnSend{color:var(--rz-tiefgruen)}
 
       /* ============ D5 · Teilen-Flow (Design 17f) ============
@@ -482,8 +479,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       @keyframes rzEinblenden{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
       /* Die Erklaerzeile am Fuss des offenen Kastens (regal.intro): leise,
          ueber einer Hairline, unter den Eintraegen. */
-      .rz-regal-fussnote{border-top:1px solid var(--rz-hairline-regal);padding-top:14px;margin-top:18px}
-      .rz-regal-dunkel .rz-regal-fussnote{border-top-color:var(--rz-hairline-gruen)}
+      .rz-regal-fussnote{border-top:1px solid var(--rz-hairline-gruen);padding-top:14px;margin-top:18px}
       @media(prefers-reduced-motion:reduce){
         .rz-half{transition:none}
         .rz-regal-inhalt:not(.pb-hidden){animation:none}
@@ -500,9 +496,17 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-kulisse-naht{top:0;transform:translateY(-100%)}
       .rz-kulisse-fuss{bottom:0}
       .rz-kulisse-naht svg,.rz-kulisse-fuss svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
+      /* T1a/F2 · Die Fassung folgt dem UNTERGRUND, nicht dem Theme.
+         Naht-Kulissen stehen auf Papier — dort sind Theme und Untergrund
+         dasselbe, die Theme-Bindung stimmt. Fuss-Kulissen stehen IM Tiefgruen,
+         das in beiden Themes dunkel ist: dort gilt immer der Teich. Vorher
+         standen im gemeinsamen Vorraum dunkle Baumsilhouetten (Deckkraft
+         <= .22) auf fast schwarzem Grund — unsichtbar, seit D6. */
       .rz-kulisse-dunkel{display:none}
       html[data-theme=dark] .rz-kulisse-hell{display:none}
       html[data-theme=dark] .rz-kulisse-dunkel{display:block}
+      .rz-kulisse-fuss .rz-kulisse-hell{display:none}
+      .rz-kulisse-fuss .rz-kulisse-dunkel{display:block}
     `;
 
 /* D6 · Die alte fixe Hintergrund-Kulisse ist Geschichte — die Kulisse

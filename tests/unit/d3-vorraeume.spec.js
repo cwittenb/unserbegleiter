@@ -55,7 +55,7 @@ describe("D3 · Zwei Zonen", () => {
     expect(raum.classList.contains("rz-split")).toBe(true);
     const zonen = raum.querySelectorAll(":scope > .rz-half");
     expect(zonen[0].classList.contains("rz-papier")).toBe(true);
-    expect(zonen[1].classList.contains("rz-regal")).toBe(true);
+    expect(zonen[1].classList.contains("rz-tiefgruen")).toBe(true);
     expect(zonen[0].querySelector(".rz-h1").textContent).toBe("Der Raum.");
     // D12-2 · Turn 27: ein Titel je Zone — unten traegt die Regalgruppe.
     expect(zonen[1].querySelector(".rz-fuss .rz-h2").textContent).toBe("Mein Weg.");
@@ -70,7 +70,7 @@ describe("D3 · Zwei Zonen", () => {
     const zonen = raum.querySelectorAll(":scope > .rz-half");
     expect(zonen[0].classList.contains("rz-papier")).toBe(true);
     expect(zonen[0].classList.contains("rz-tiefgruen")).toBe(false);
-    expect(zonen[1].classList.contains("rz-regal-dunkel")).toBe(true);
+    expect(zonen[1].classList.contains("rz-tiefgruen")).toBe(true);
     const intro = zonen[0].querySelector("#sharedIntro");
     expect(intro.classList.contains("rz-intro")).toBe(true);
     expect(intro.textContent).toContain("Für alles, was ihr zu zweit macht");
@@ -115,7 +115,7 @@ describe("D3 · Wegweiser auf der Zonengrenze", () => {
     await bootApp(memoryBackend());
     await klick(root.querySelector("#btnMyRoom"));
     const badge = root.querySelector("#wegBadgeMein"), panel = root.querySelector("#wegMein");
-    expect(badge.closest(".rz-half").classList.contains("rz-regal")).toBe(true);
+    expect(badge.closest(".rz-half").classList.contains("rz-tiefgruen")).toBe(true);
     badge.click();
     expect(panel.classList.contains("rz-offen")).toBe(true);
     root.querySelector("#scrMyRoom .rz-papier").click();

@@ -148,7 +148,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <button class="rz-zeile pb-hidden" id="btnMess"><span>${t("mein.mess")}</span><span class="rz-pfeil">↑</span></button>
         </div>
       </div>
-      <div class="rz-half rz-regal rz-naht-anker">
+      <div class="rz-half rz-tiefgruen rz-naht-anker">
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein">${IKON.wegweiser}<span>${t("start.capsMein")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegMein"></div>
         <div class="rz-regal-reihen">
@@ -178,7 +178,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <p class="rz-sub" id="gemeinsamSub">${t("teil.gemeinsamSub")}</p>
         </div>
       </div>
-      <div class="rz-half rz-regal-dunkel rz-naht-anker">
+      <div class="rz-half rz-tiefgruen rz-naht-anker">
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil">${IKON.wegweiser}<span>${t("start.capsTeil")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
@@ -219,7 +219,7 @@ export function createApp({ doc, backend, root, diktat }) {
      Verlassen restlos abgebaut. Funktion statt Konstante: t() liest erst beim
      Bauen — ein Sprachwechsel greift so auch auf einer bereits einmal
      gebauten Oberfläche. */
-  const CHAT_HTML = (gemeinsam = false) => `
+  const CHAT_HTML = () => `
       <div class="rz-chat-innen">
         <div class="rz-chat-oben rz-papier">
           <div class="rz-kopf rz-kopf-mitte">
@@ -233,7 +233,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <div id="ausschnittPanel" class="rz-panel pb-hidden"></div>
           <div id="kwPanel" class="rz-panel pb-hidden"></div>
         </div>
-        <div class="rz-chat-unten rz-naht-anker ${gemeinsam ? "rz-regal-dunkel" : "rz-regal"}">
+        <div class="rz-chat-unten rz-naht-anker rz-tiefgruen">
           <div class="rz-kulisse-naht" id="kulisseChat"></div>
           <span class="rz-weg-badge rz-auf-naht" id="chatOrt">${IKON.wegweiser}<span id="chatOrtName"></span></span>
           <div class="pb-skala" id="pbSkala">
@@ -309,9 +309,9 @@ export function createApp({ doc, backend, root, diktat }) {
      direkter Chat→Chat-Übergang — heute existiert keiner, aber die Invariante
      soll Konstruktion sein, nicht Topologie-Zufall — sichert erst Entwurf,
      Diktat und Pausenstempel der alten Session. */
-  function baueChatOberflaeche(gemeinsam = false) {
+  function baueChatOberflaeche() {
     raeumeChatOberflaeche();
-    $("scrChat").innerHTML = CHAT_HTML(gemeinsam);
+    $("scrChat").innerHTML = CHAT_HTML();
     setzeSignatur(); setzeMarke();   // D12-2: die Vorlage bringt leere Huellen mit
     verdrahteChat();
   }
@@ -990,7 +990,7 @@ export function createApp({ doc, backend, root, diktat }) {
     // gezogen. Hooks alter Sessions (Nachzügler: laufende Antworten, Retries)
     // kehren am Zaun wortlos um; onSave bleibt bewusst UNGEZÄUNT, damit die
     // alte Sitzung zu Ende gespeichert wird und beim Wiederbetreten vollständig ist.
-    baueChatOberflaeche(def.shared);
+    baueChatOberflaeche();
     // Der konstruktive Abbau in baueChatOberflaeche hat die Sessionfelder
     // genullt — für DIESE Session neu setzen (nach dem Abbau, vor der Engine).
     state.chatId = art;

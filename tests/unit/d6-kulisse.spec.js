@@ -108,8 +108,8 @@ describe("D6 · App-Verdrahtung", () => {
   it("Halter sitzen an ihren Orten: Start auf der Naht, Vorraeume im Regal-Fuss, Chat keiner", async () => {
     await bootApp(memoryBackend());
     expect(root.querySelector("#scrStart .rz-tiefgruen > .rz-kulisse-naht#kulisseStart")).toBeTruthy();
-    expect(root.querySelector("#scrMyRoom .rz-regal .rz-kulisse-fuss#kulisseMein")).toBeTruthy();
-    expect(root.querySelector("#scrShared .rz-regal-dunkel .rz-kulisse-fuss#kulisseTeil")).toBeTruthy();
+    expect(root.querySelector("#scrMyRoom .rz-tiefgruen .rz-kulisse-fuss#kulisseMein")).toBeTruthy();
+    expect(root.querySelector("#scrShared .rz-tiefgruen .rz-kulisse-fuss#kulisseTeil")).toBeTruthy();
     expect(root.querySelector("#scrChat .rz-kulisse-naht, #scrChat .rz-kulisse-fuss")).toBeFalsy();
   });
 
