@@ -460,35 +460,35 @@ export const quittung = { text: null };
 export function createDevPanel({ doc, host, store, reboot }) {
   host.innerHTML = `
     <details style="margin-top:26px;border-top:1px dashed var(--rz-karte-rand);padding-top:10px">
-      <summary style="cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--rz-leise);font-weight:600">Entwickler-Panel</summary>
+      <summary style="cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--rz-sek);font-weight:600">Entwickler-Panel</summary>
       <div style="background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:14px;padding:16px;margin-top:10px;font-size:13px;backdrop-filter:blur(8px)">
 
-        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-knopf-ink);font-weight:600;margin-bottom:6px">Szenen anspringen</div>
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-akzent-ink);font-weight:600;margin-bottom:6px">Szenen anspringen</div>
         <div id="devSzenen">${SZENEN.map(s =>
           `<div style="display:flex;gap:10px;align-items:baseline;padding:4px 0">
-             <button data-szene="${esc(s.id)}" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-feld-ink);border-radius:999px;padding:5px 12px;white-space:nowrap">${esc(s.titel)}</button>
-             <span style="color:var(--rz-leise)">${esc(s.beschreibung)}</span>
+             <button data-szene="${esc(s.id)}" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:5px 12px;white-space:nowrap">${esc(s.titel)}</button>
+             <span style="color:var(--rz-sek)">${esc(s.beschreibung)}</span>
            </div>`).join("")}
         </div>
 
-        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-knopf-ink);font-weight:600;margin:14px 0 6px">Kulisse — Wachstumsstufe</div>
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-akzent-ink);font-weight:600;margin:14px 0 6px">Kulisse — Wachstumsstufe</div>
         <div style="display:flex;align-items:center;gap:10px;padding:2px 0 6px">
           <input id="devKulisse" type="range" min="0" max="${KULISSE_DECKEL}" step="1" value="-1" style="flex:1">
-          <span id="devKulisseWert" style="min-width:5.5em;color:var(--rz-leise)">gewachsen</span>
-          <button id="devKulisseAus" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-feld-ink);border-radius:999px;padding:4px 10px;white-space:nowrap">Zurück zu echt</button>
+          <span id="devKulisseWert" style="min-width:5.5em;color:var(--rz-sek)">gewachsen</span>
+          <button id="devKulisseAus" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:4px 10px;white-space:nowrap">Zurück zu echt</button>
         </div>
-        <div style="font-size:12px;color:var(--rz-leise);padding-bottom:4px">Nur Vorschau: überschreibt die gewachsene Anzahl, bis „Zurück zu echt“. Der Untergrund bleibt immer.</div>
+        <div style="font-size:12px;color:var(--rz-sek);padding-bottom:4px">Nur Vorschau: überschreibt die gewachsene Anzahl, bis „Zurück zu echt“. Der Untergrund bleibt immer.</div>
 
-        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-knopf-ink);font-weight:600;margin:14px 0 6px">Token-Zähler (echte usage, pro Paar)</div>
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-akzent-ink);font-weight:600;margin:14px 0 6px">Token-Zähler (echte usage, pro Paar)</div>
         <div id="devTokens" style="padding:2px 0 6px"></div>
-        <button id="devTokensReset" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-feld-ink);border-radius:999px;padding:5px 12px">Token-Zähler zurücksetzen</button>
+        <button id="devTokensReset" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:5px 12px">Token-Zähler zurücksetzen</button>
 
-        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-knopf-ink);font-weight:600;margin:14px 0 6px">Zustand sichern &amp; laden</div>
-        <button id="devSave" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-feld-ink);border-radius:999px;padding:6px 14px">Zustand speichern (JSON)</button>
-        <button id="devLoad" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-feld-ink);border-radius:999px;padding:6px 14px">Zustand aus Textfeld laden</button>
-        <button id="devWipe" style="font:inherit;cursor:pointer;border:1px solid rgba(188,74,74,.4);background:rgba(188,74,74,.14);color:var(--rz-feld-ink);border-radius:999px;padding:6px 14px;float:right">Alles zurücksetzen</button>
-        <textarea id="devDump" rows="5" placeholder="Hierhin einen gespeicherten Zustand einfügen — oder hier erscheint der gespeicherte." style="display:block;width:100%;box-sizing:border-box;margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;border:1px solid var(--rz-feld-rand);background:var(--rz-feld);color:var(--rz-feld-ink);border-radius:9px;padding:8px"></textarea>
-        <div id="devMsg" style="min-height:18px;margin-top:6px;color:var(--rz-leise)"></div>
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-akzent-ink);font-weight:600;margin:14px 0 6px">Zustand sichern &amp; laden</div>
+        <button id="devSave" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:6px 14px">Zustand speichern (JSON)</button>
+        <button id="devLoad" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:6px 14px">Zustand aus Textfeld laden</button>
+        <button id="devWipe" style="font:inherit;cursor:pointer;border:1px solid rgba(188,74,74,.4);background:rgba(188,74,74,.14);color:var(--rz-ink);border-radius:999px;padding:6px 14px;float:right">Alles zurücksetzen</button>
+        <textarea id="devDump" rows="5" placeholder="Hierhin einen gespeicherten Zustand einfügen — oder hier erscheint der gespeicherte." style="display:block;width:100%;box-sizing:border-box;margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:11px;border:1px solid var(--rz-feld-rand);background:var(--rz-feld);color:var(--rz-ink);border-radius:9px;padding:8px"></textarea>
+        <div id="devMsg" style="min-height:18px;margin-top:6px;color:var(--rz-sek)"></div>
       </div>
     </details>`;
 
@@ -501,12 +501,12 @@ export function createDevPanel({ doc, host, store, reboot }) {
   function zeigeTokens() {
     const el = $("devTokens");
     const codes = Object.keys(tokenStaende).sort();
-    if (!codes.length) { el.innerHTML = '<span style="color:var(--rz-leise)">Noch keine LLM-Aufrufe gezählt.</span>'; return; }
+    if (!codes.length) { el.innerHTML = '<span style="color:var(--rz-sek)">Noch keine LLM-Aufrufe gezählt.</span>'; return; }
     el.innerHTML = codes.map(code => {
       const s = tokenStaende[code] || {};
       return `<div data-token-code="${esc(code)}" style="padding:3px 0">
         <b>${esc(code)}</b>
-        <span style="color:var(--rz-leise)"> · ${s.calls || 0} Aufrufe · in ${formatTokens(s.in)} · out ${formatTokens(s.out)} · Cache-Lesen ${formatTokens(s.cacheRead)} · Cache-Schreiben ${formatTokens(s.cacheWrite)}</span>
+        <span style="color:var(--rz-sek)"> · ${s.calls || 0} Aufrufe · in ${formatTokens(s.in)} · out ${formatTokens(s.out)} · Cache-Lesen ${formatTokens(s.cacheRead)} · Cache-Schreiben ${formatTokens(s.cacheWrite)}</span>
       </div>`;
     }).join("");
   }

@@ -102,6 +102,58 @@ describe("T1e · ein Namensraum", () => {
   });
 });
 
+describe("T1g · eine Palette, keine Doppelgänger", () => {
+  const werte = () => {
+    const root = THEME_CSS.slice(THEME_CSS.indexOf(":root{"), THEME_CSS.indexOf("html[data-theme=dark]"));
+    const map = new Map();
+    for (const m of root.matchAll(/(--rz-[a-z0-9-]+):\s*(#[0-9a-f]{3,8}|rgba?\([^)]*\))/gi))
+      map.set(m[1], m[2].toLowerCase());
+    return map;
+  };
+
+  it("die abgelösten Token sind fort — Verbraucher wie Definitionen", () => {
+    for (const tot of ["--rz-feld-ink", "--rz-leise", "--rz-leiser", "--rz-knopf:",
+      "--rz-knopf-ink-invers", "--rz-blase-ich"]) {
+      expect(THEME_CSS, tot).not.toContain(tot);
+      expect(KOMPONENTEN_CSS, tot).not.toContain(tot);
+    }
+  });
+
+  it("die Rollen, die verschmolzen wurden, teilen jetzt wirklich einen Ton", () => {
+    const v = werte();
+    // Knopffläche und eigene Sprechblase sind die Akzentfläche.
+    expect(KOMPONENTEN_CSS).toContain(".pb-msg.me{background:var(--rz-akzent)");
+    expect(v.get("--rz-akzent")).toBe("#8fae74");
+    // Text im Feld ist Text.
+    expect(KOMPONENTEN_CSS).toMatch(/textarea\{[^}]*color:var\(--rz-ink\)/);
+  });
+
+  it("kein Farbwert steht doppelt unter zwei Namen", () => {
+    const v = werte();
+    const gesehen = new Map();
+    const doppelt = [];
+    for (const [name, wert] of v) {
+      // Gleiche Töne mit verschiedener ROLLE sind erlaubt (Pfeil/Label/Baum);
+      // geprüft wird, dass es dafür eine benannte Ausnahme gibt.
+      if (gesehen.has(wert)) doppelt.push(`${gesehen.get(wert)} = ${name} (${wert})`);
+      else gesehen.set(wert, name);
+    }
+    // Gleiche Töne unter verschiedenen ROLLEN sind erlaubt und benannt:
+    // der Baum trägt den hellen Akzent, der Teich den Akzent, die eigene
+    // Stimme die Akzentschrift. Was NICHT erlaubt ist: zwei Namen für
+    // dieselbe Rolle — genau das hat T1g abgeräumt.
+    const erlaubt = [
+      "--rz-akzent-hell = --rz-pfeil (#7d9b62)",
+      "--rz-akzent-hell = --rz-label (#7d9b62)",
+      "--rz-akzent-hell = --rz-kulisse-baum (#7d9b62)",
+      "--rz-akzent = --rz-kulisse-teich (#8fae74)",
+      "--rz-nutzer = --rz-akzent-ink (#41562c)",
+      "--rz-kulisse-wasser = --rz-auf-akzent (#ffffff)",
+    ];
+    expect(doppelt.filter(d => !erlaubt.includes(d))).toEqual([]);
+  });
+});
+
 describe("T1b · die Schicht ist wirklich vorangestellt", () => {
   it("DESIGN_CSS enthält den Theme-Block genau einmal und zuerst", () => {
     const i = DESIGN_CSS.indexOf(THEME_CSS);

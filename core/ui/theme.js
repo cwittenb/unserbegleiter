@@ -15,11 +15,11 @@ export const SCHRIFT_IMPORT =
 
 export const THEME_CSS = String.raw`
       :root{
-        /* D1/T1e · EIN Namensraum: rz-. Der alte pb-Bestand (--ink, --accent,
-           --card, --field ...) ist umbenannt, nicht umgefaerbt — die Werte
-           stehen Zeichen fuer Zeichen wie zuvor. Ob z. B. --rz-feld-ink und
-           --rz-ink kuenftig derselbe Ton sein sollen, ist eine Gestaltungs-
-           frage und bewusst offen (siehe Sprintprotokoll T1e). */
+        /* D1/T1e/T1g · EIN Namensraum, EINE Palette. Der alte pb-Bestand ist
+           nicht nur umbenannt, sondern nach ROLLE verschmolzen: Feldtinte ist
+           Tinte, Knopfflaeche ist Akzentflaeche, die eigene Sprechblase traegt
+           denselben Akzent. Wo zwei Token dieselbe Rolle spielten, hat der
+           D1-Wert gewonnen — die Aenderungen stehen im Protokoll T1g. */
         --rz-serif:'Source Serif 4',Georgia,'Times New Roman',serif;
         --rz-sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
         --rz-papier:#faf8f2;
@@ -35,8 +35,7 @@ export const THEME_CSS = String.raw`
         --rz-kulisse-baum:#7d9b62;--rz-kulisse-teich:#8fae74;--rz-kulisse-wasser:#ffffff;
         /* Hinweisblatt (Wiedereinstieg): warmes Papier mit eigenem Rand. */
         --rz-hinweis-flaeche:#fbf7e4;--rz-hinweis-rand:#e2d9a8;
-        --rz-feld-ink:#313c31;--rz-leise:#64705c;--rz-leiser:#909a86;
-        --rz-knopf:#7ba05b;--rz-knopf-ink:#41562c;--rz-knopf-ink-invers:#ffffff;--rz-blase-ich:#7ba05b;--rz-blase-ich-ink:#ffffff;
+        --rz-akzent-ink:#41562c;--rz-auf-akzent:#ffffff;
         --rz-karte:rgba(255,255,255,.60);--rz-karte-rand:rgba(90,110,80,.15);
         --rz-blase-du:rgba(255,255,255,.72);--rz-blase-du-rand:rgba(90,110,80,.13);
         --rz-feld:rgba(255,255,255,.74);--rz-feld-rand:rgba(90,110,80,.22);
@@ -84,8 +83,7 @@ export const THEME_CSS = String.raw`
         --rz-akzent-hell:#8fae74;--rz-pfeil:#a9c88b;
         --rz-label:#aeca8d;--rz-nutzer:#c4d8ab;
         --rz-hinweis-flaeche:#2b2f20;--rz-hinweis-rand:#4a4b2f;
-        --rz-feld-ink:#edf1e8;--rz-leise:#b3c1aa;--rz-leiser:#889481;
-        --rz-knopf:#aeca8d;--rz-knopf-ink:#e2ecd4;--rz-knopf-ink-invers:#1d2a1a;--rz-blase-ich:#42583b;--rz-blase-ich-ink:#f4f7ef;
+        --rz-akzent:#aeca8d;--rz-akzent-ink:#e2ecd4;--rz-auf-akzent:#1d2a1a;
         --rz-karte:rgba(255,255,255,.055);--rz-karte-rand:rgba(255,255,255,.10);
         --rz-blase-du:rgba(255,255,255,.06);--rz-blase-du-rand:rgba(255,255,255,.09);
         --rz-feld:rgba(255,255,255,.06);--rz-feld-rand:rgba(255,255,255,.16);

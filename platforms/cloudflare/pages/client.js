@@ -155,7 +155,7 @@ export async function boot() {
 }
 
 function fehlerBox(text) {
-  return `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--rz-feld-ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px);margin-bottom:14px">${text}</div>`;
+  return `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--rz-ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px);margin-bottom:14px">${text}</div>`;
 }
 
 /** Sackgassen-Ersatz: Wer keinen gültigen Zugang (Cookie) hat, kann sich einen
@@ -170,13 +170,13 @@ export function zeigeWiedereinstieg(enrollFehler) {
     '<span data-wspr="de" style="cursor:pointer;font-weight:' + (getLocale() === "de" ? 700 : 400) + '">DE</span> · ' +
     '<span data-wspr="en" style="cursor:pointer;font-weight:' + (getLocale() === "en" ? 700 : 400) + '">EN</span></div>' +
     '<h2 style="font-family:inherit;font-weight:400;font-size:26px">' + t("wieder.titel") + '</h2>' +
-    '<p style="font-size:14px;color:var(--rz-leise)">' + t("wieder.intro") + '</p>' +
+    '<p style="font-size:14px;color:var(--rz-sek)">' + t("wieder.intro") + '</p>' +
     '<div style="background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:14px;padding:18px;backdrop-filter:blur(8px)">' +
     '<label style="display:block;font-size:13px;font-weight:550;margin-bottom:5px">' + t("wieder.email") + '</label>' +
     '<input id="recMail" type="email" autocomplete="email" placeholder="' + t("rec.platzhalter") + '" ' +
-    'style="display:block;width:100%;padding:10px 12px;border:1px solid var(--rz-feld-rand);background:var(--rz-feld);color:var(--rz-feld-ink);border-radius:9px;font:inherit;box-sizing:border-box">' +
+    'style="display:block;width:100%;padding:10px 12px;border:1px solid var(--rz-feld-rand);background:var(--rz-feld);color:var(--rz-ink);border-radius:9px;font:inherit;box-sizing:border-box">' +
     '<button id="recGo" style="width:100%;margin-top:10px;padding:12px;font:inherit;cursor:pointer;' +
-    'background:var(--rz-knopf);color:var(--rz-blase-ich-ink,#fff);border:0;border-radius:999px">' + t("wieder.anfordern") + '</button>' +
+    'background:var(--rz-akzent);color:var(--rz-auf-akzent,#fff);border:0;border-radius:999px">' + t("wieder.anfordern") + '</button>' +
     '<div id="recMsg" style="font-size:13px;margin-top:10px"></div>' +
     '</div></div>';
   for (const el of app.querySelectorAll("[data-wspr]"))
@@ -195,7 +195,7 @@ export function zeigeWiedereinstieg(enrollFehler) {
     go.disabled = true; go.textContent = t("wieder.sendet");
     try { await api("POST", "/api/recover", { email }); }
     catch { /* Status wird bewusst nicht offengelegt */ }
-    msg.innerHTML = '<span style="color:var(--rz-knopf-ink)">' + t("wieder.unterwegs") + '</span>';
+    msg.innerHTML = '<span style="color:var(--rz-akzent-ink)">' + t("wieder.unterwegs") + '</span>';
     go.textContent = t("wieder.gesendet");
   });
 }
@@ -250,7 +250,7 @@ export function zeigeUpdateHinweis() {
   box.id = "swUpdate";
   box.setAttribute("role", "status");
   box.style.cssText = "position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:99;" +
-    "background:var(--rz-karte,#fff);border:1px solid var(--rz-karte-rand,#d8dee5);color:var(--rz-feld-ink);border-radius:999px;" +
+    "background:var(--rz-karte,#fff);border:1px solid var(--rz-karte-rand,#d8dee5);color:var(--rz-ink);border-radius:999px;" +
     "padding:10px 16px;font:inherit;font-size:14px;display:flex;gap:12px;align-items:center;" +
     "box-shadow:0 6px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px)";
   const txt = doc.createElement("span");
@@ -258,7 +258,7 @@ export function zeigeUpdateHinweis() {
   const btn = doc.createElement("button");
   btn.textContent = t("pwa.neuLaden");
   btn.style.cssText = "font:inherit;font-size:14px;cursor:pointer;border:0;border-radius:999px;" +
-    "padding:6px 14px;background:var(--rz-knopf);color:var(--rz-blase-ich-ink,#fff)";
+    "padding:6px 14px;background:var(--rz-akzent);color:var(--rz-auf-akzent,#fff)";
   btn.addEventListener("click", () => location.reload());
   box.append(txt, btn);
   doc.body.appendChild(box);
