@@ -153,7 +153,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
         if (m.echo) {
           const e2 = el("div", "pb-echo");
           e2.textContent = m.echo;
-          e2.setAttribute("style", "align-self:flex-end;font-size:12px;color:var(--ink-faint);background:var(--card);border:1px solid var(--card-bd);border-radius:999px;padding:3px 12px;max-width:82%");
+          e2.setAttribute("style", "align-self:flex-end;font-size:12px;color:var(--rz-leiser);background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:999px;padding:3px 12px;max-width:82%");
           box.appendChild(e2);
           continue;
         }

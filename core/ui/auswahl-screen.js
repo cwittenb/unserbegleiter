@@ -70,7 +70,7 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     box.innerHTML = "";
     const kopf = el("div", "pb-echo");
     kopf.textContent = ausw.luecken ? t("ausschnitt.luecken") : t("ausschnitt.anleitung");
-    kopf.setAttribute("style", "align-self:center;font-size:12px;color:var(--ink-faint);padding:6px 0;text-align:center");
+    kopf.setAttribute("style", "align-self:center;font-size:12px;color:var(--rz-leiser);padding:6px 0;text-align:center");
     box.appendChild(kopf);
 
     for (const paar of ausw.paare) {
@@ -85,18 +85,18 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
       // Kein Häkchen, kein Badge an bestandenen Paaren: Wer seine Auswahl
       // abgenommen bekommt, sitzt in einer Klassenarbeit.
       b.setAttribute("style",
-        "border:1px solid " + (an ? "var(--rz-tiefgruen)" : "var(--card-bd)") +
-        ";background:" + (an ? "var(--card)" : "transparent") +
+        "border:1px solid " + (an ? "var(--rz-tiefgruen)" : "var(--rz-karte-rand)") +
+        ";background:" + (an ? "var(--rz-karte)" : "transparent") +
         ";border-radius:14px;padding:10px 12px;margin:6px 0;" +
         (wahlbar ? "cursor:pointer" : "opacity:.45"));
       const f = el("div"); f.textContent = kuerze(paar.frage.text);
-      f.setAttribute("style", "font-size:13px;color:var(--ink-faint);margin-bottom:6px");
+      f.setAttribute("style", "font-size:13px;color:var(--rz-leiser);margin-bottom:6px");
       const a = el("div"); a.textContent = kuerze(paar.antwort.text);
       a.setAttribute("style", "font-size:14px");
       b.appendChild(f); b.appendChild(a);
       if (!wahlbar && ausw.gruende.has(paar.id)) {
         const g = el("div"); g.textContent = paarGrund(ausw.eignung, paar.id) || "";
-        g.setAttribute("style", "font-size:12px;color:var(--ink-faint);margin-top:6px;font-style:italic");
+        g.setAttribute("style", "font-size:12px;color:var(--rz-leiser);margin-top:6px;font-style:italic");
         b.appendChild(g);
       }
       verdrahtePaar(b, paar, wahlbar);
@@ -105,17 +105,17 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
 
     const n = ausw.gewaehlt.size;
     const leiste = el("div");
-    leiste.setAttribute("style", "position:sticky;bottom:0;background:var(--bg);padding:8px 0 2px");
+    leiste.setAttribute("style", "position:sticky;bottom:0;background:var(--rz-papier);padding:8px 0 2px");
     const zaehler = el("div");
     zaehler.id = "auswZaehler";
     // Zähler schlicht: keine Lesezeit-Schätzung — das wäre eine Aussage über
     // den Empfänger, und für den spricht die Begleitung nicht.
     zaehler.textContent = fuelle(t("ausschnitt.zaehler"), { n });
-    zaehler.setAttribute("style", "font-size:12px;color:var(--ink-faint);text-align:center;padding-bottom:6px");
+    zaehler.setAttribute("style", "font-size:12px;color:var(--rz-leiser);text-align:center;padding-bottom:6px");
     leiste.appendChild(zaehler);
     if (ausw.hinweis) {
       const h = el("div"); h.id = "auswHinweis"; h.textContent = t("ausschnitt.richtwert");
-      h.setAttribute("style", "font-size:12px;color:var(--ink-faint);text-align:center;padding-bottom:6px");
+      h.setAttribute("style", "font-size:12px;color:var(--rz-leiser);text-align:center;padding-bottom:6px");
       leiste.appendChild(h);
     }
     const weiter = el("button", "rz-zeile rz-knopf-flach" + (n ? "" : " rz-gedimmt"));

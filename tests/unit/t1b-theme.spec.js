@@ -80,6 +80,21 @@ describe("T1c · die Templates malen nicht mehr selbst", () => {
   });
 });
 
+describe("T1e · ein Namensraum", () => {
+  it("kein var(--x) außerhalb von rz- — auch nicht in Hüllen und Panels", () => {
+    for (const rel of ["../../core/ui/design.js", "../../core/ui/recovery-screen.js",
+      "../../core/ui/auswahl-screen.js", "../../core/ui/chat-kern.js",
+      "../../platforms/cloudflare/pages/client.js", "../../platforms/artifact/dev-panel.js", "../../platforms/artifact/main.js"]) {
+      const fremd = (lies(rel).match(/var\(--(?!rz-)[a-z][a-z0-9-]*/g) || []);
+      expect(fremd, rel).toEqual([]);
+    }
+  });
+
+  it("das Theme definiert keine Token außerhalb von rz- mehr", () => {
+    expect(THEME_CSS.match(/--(?!rz-)[a-z][a-z0-9-]*:/g) || []).toEqual([]);
+  });
+});
+
 describe("T1b · die Schicht ist wirklich vorangestellt", () => {
   it("DESIGN_CSS enthält den Theme-Block genau einmal und zuerst", () => {
     const i = DESIGN_CSS.indexOf(THEME_CSS);

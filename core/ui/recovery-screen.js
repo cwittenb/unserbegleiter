@@ -119,7 +119,7 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     overlay.style.cssText = "position:fixed;inset:0;background:rgba(20,26,34,.55);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:48px 18px;overflow:auto";
     const karte = doc.createElement("div");
     karte.className = "pb-card";
-    karte.style.cssText = "max-width:440px;width:100%;background:var(--card,#fff);border-radius:14px;padding:20px";
+    karte.style.cssText = "max-width:440px;width:100%;background:var(--rz-karte,#fff);border-radius:14px;padding:20px";
     karte.innerHTML =
       `<div class="rz-zwischentitel">${t("rec.pflicht.titel")}</div>` +
       `<p class="rz-fein-leise-unten">${t("rec.pflicht.text")}</p>`;
