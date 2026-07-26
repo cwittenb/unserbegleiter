@@ -12,6 +12,7 @@
 import { t, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 import { esc } from "./html.js";
 import { setzeAnsicht, merkeAnsicht } from "./design.js";
+import { verlaufEinstellung, EINST_VERLAUF, loescheAlleVerlaeufe } from "./verlauf-ablage.js";   // S95.7b
 
 /**
  * @param {object} ctx
@@ -23,7 +24,7 @@ import { setzeAnsicht, merkeAnsicht } from "./design.js";
  * @param {(msg:string)=>void} ctx.err        Fehleranzeige der App
  * @param {()=>void} ctx.relaunch             Neuaufbau nach Sprachwechsel der Oberfläche
  */
-export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, relaunch }) {
+export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, relaunch, bestaetige }) {
 
   /** Der Punkt am Zeichen ist der einzige Ort, an dem ein offener Sprach-
    *  antrag des Partners noch auffällt, seit die Karte in der Agenda wohnt. */
@@ -42,7 +43,8 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
     zeigeEinstellungen();
   }
 
-  function zeigeEinstellungen() {
+  async function zeigeEinstellungen() {
+    const verlaufModus = await verlaufEinstellung(backend);   // S95.7b
     const blatt = chrome("pbEinstBlatt");
     if (!blatt || blatt.classList.contains("pb-hidden")) return;
     const ansicht = doc.documentElement.getAttribute("data-ansicht") || "auto";
@@ -73,7 +75,31 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
           `${t("einst.vorschlagen", { sprache: sprachName(paar === "en" ? "de" : "en") })}</button>` +
           `<p class="rz-einst-fuss">${t("einst.paarspracheHinweis")}</p>`
         : "") +
+      `</div>` +
+      /* S95.7b · Aufbewahrung der Gespraechsverlaeufe. Vorgabe ist
+         "aufbewahren" (F0) — deshalb steht hier keine Empfehlung und keine
+         Aussage darueber, was andere tun. Der Fusstext sagt, was passiert,
+         nicht was gut waere. */
+      `<div class="rz-einst-gruppe">` +
+      `<div class="rz-caps">${t("verlauf.einstTitel")}</div>` +
+      wahl("verlauf", "immer", t("verlauf.einstImmer"), verlaufModus === "immer") +
+      wahl("verlauf", "fragen", t("verlauf.einstFragen"), verlaufModus === "fragen") +
+      `<p class="rz-einst-fuss">${t("verlauf.einstErklaerung")}</p>` +
+      `<button class="pb-btn rz-oben-2" id="einstVerlaeufeWeg">${t("verlauf.alleLoeschen")}</button>` +
       `</div>`;
+    for (const b of blatt.querySelectorAll("[data-verlauf]"))
+      b.addEventListener("click", async () => {
+        const v = b.getAttribute("data-verlauf");
+        try { await backend.pstate.set(EINST_VERLAUF, v); } catch { /* still */ }
+        zeigeEinstellungen();
+      });
+    const weg = blatt.querySelector("#einstVerlaeufeWeg");
+    /* K3: Aufraeumen stellt die Vorgabe NICHT um — zwei Dinge, zwei Entscheidungen. */
+    if (weg) weg.addEventListener("click", async () => {
+      if (!(await bestaetige(t("verlauf.loeschFrage")))) return;
+      await loescheAlleVerlaeufe(backend);
+      zeigeEinstellungen();
+    });
     for (const b of blatt.querySelectorAll("[data-ansicht]"))
       b.addEventListener("click", () => waehleAnsicht(b.getAttribute("data-ansicht")));
     const antrag = blatt.querySelector("#einstSprachAntrag");

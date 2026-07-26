@@ -39,16 +39,17 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
   /** Ruhiger Zugang nach dem Eignungsbericht — nie aufgedrängt. */
   function ausschnittAngebot(eignung, engine) {
     const p = $("ausschnittPanel");
-    if (!p) return;
+    if (!p) return false;
     const paare = paareAusVerlauf(engine.chat.messages);
     const wahl = paare.filter(x => paarWaehlbar(eignung, x.id));
-    if (!wahl.length) return;            // keine Tür statt einer verschlossenen
+    if (!wahl.length) return false;      // keine Tür statt einer verschlossenen
     p.classList.remove("pb-hidden");
     p.innerHTML = `<button class="rz-zeile rz-knopf-flach" id="btnAuswStart"><span>${esc(t("ausschnitt.zugang"))}</span><span class="rz-pfeil">→</span></button>`;
     p.querySelector("#btnAuswStart").addEventListener("click", () => {
       p.classList.add("pb-hidden");
       starteAuswahl(paare, eignung, engine);
     });
+    return true;   // S95.7: die Verlaufs-Zeile haengt an derselben Bedingung
   }
 
   function starteAuswahl(paare, eignung, engine) {

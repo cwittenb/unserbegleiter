@@ -73,6 +73,20 @@ export const en = {
   "teil.qz": "Shared Moments",
 
   // Timeline
+  // S95.7 · Kept conversation record and replay entry.
+  "verlauf.einstTitel": "Conversation records",
+  "verlauf.einstImmer": "Keep",
+  "verlauf.einstFragen": "Ask every time",
+  "verlauf.einstErklaerung": "Kept records let you share an excerpt later on. They stay in your space and can be deleted individually.",
+  "verlauf.erstInfo": "This conversation record stays in your space — so you can still share an excerpt from it later. Only you can see it. You can change this or delete it in settings.",
+  "verlauf.frage": "Keep this conversation record in your space?",
+  "verlauf.frageJa": "Keep",
+  "verlauf.frageNein": "Don't keep",
+  "verlauf.zlEingang": "Share an excerpt from this conversation",
+  "verlauf.zlLoeschen": "Delete record",
+  "verlauf.zlLaeuft": "While a conversation is running, an excerpt is released where it arises.",
+  "verlauf.loeschFrage": "Delete this record for good? The timeline entry stays.",
+  "verlauf.alleLoeschen": "Delete all kept records",
   "zeitleiste.titel": "Timeline",
   "rank.frei": "free — drag here or tap",
   "zeitleiste.tpAuftrag": "Mandate clarification",

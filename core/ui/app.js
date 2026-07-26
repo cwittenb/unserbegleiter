@@ -26,6 +26,7 @@ import { macheAnsichtenScreen } from "./ansichten-screen.js";   // R4b
 import { macheAuswahlScreen } from "./auswahl-screen.js";   // R4b
 import { machePanels } from "./panels.js";   // R4b
 import { macheChatKern } from "./chat-kern.js";   // R4b
+import { legeVerlaufAb, verlaufEinstellung } from "./verlauf-ablage.js";   // S95.7a
 
 
 /* S35 · Ladeanzeige: dünner Zähl-Proxy um die Backend-Fassade. Jede laufende
@@ -882,7 +883,17 @@ export function createApp({ doc, backend, root, diktat }) {
     const lebend = fn => (...a) => { if (gen === state.chatGen) return fn(...a); };
     const hooks = {
       onGate: lebend((d, e2) => gatePanel(d, e2)),
-      onAusschnitt: lebend((paare, e2) => ausschnittAngebot(paare, e2)),
+      /* S95.7a · Der EXCERPT-BLOCK ist der einzige Moment, in dem Eignung UND
+         Verlauf zugleich vorliegen. Hier wird abgelegt (F0: Vorgabe
+         aufbewahren), damit sich spaeter noch ein Ausschnitt schneiden laesst.
+         Best-Effort — ein Fehlschlag kostet die Teilbarkeit, nie die Session. */
+      onAusschnitt: lebend((eignung, e2) => {
+        /* S95.7 · Erst die Tuer, dann die Verlaufs-Zeile darunter — sie haengt
+           an derselben Bedingung: Wo es nichts Teilbares gibt, wird weder eine
+           Tuer gezeigt noch etwas gefragt oder aufbewahrt. */
+        if (!ausschnittAngebot(eignung, e2)) return;
+        verlaufSchritt(eignung, e2);
+      }),
       onRegler: lebend(e2 => reglerPanel(e2)),
       onRanking: lebend((mode, e2) => rankPanel(mode, e2)),
       onStartwerte: lebend(e2 => startwertePanel(e2)),
@@ -1113,12 +1124,33 @@ export function createApp({ doc, backend, root, diktat }) {
   /* R4b · Einstellungsblatt und Paarsprache leben jetzt in
      einstellungen-screen.js — Abhaengigkeiten explizit statt ueber die Closure. */
   const { aktualisierePunkt, zeigeEinstellungen, verdrahteEinstellungen, zeigePaarsprache } =
-    macheEinstellungenScreen({ doc, $, chrome, backend, state, err, relaunch });
+    macheEinstellungenScreen({ doc, $, chrome, backend, state, err, relaunch, bestaetige });
   /* R4b · Die Wiedereinstiegs-Gruppe (Karte, Pflicht-Modal, Bauelement) lebt
      jetzt in recovery-screen.js. Ihre Abhaengigkeiten sind dort explizit statt
      ueber die Closure eingesammelt. */
   const { zeigeRecovery, zeigeEmailPflicht } =
     macheRecoveryScreen({ doc, $, backend, state, wurzel });
+
+  /* S95.7c · Replay: dasselbe Auswahl-Panel wie am Sessionende, nur ohne
+     Session. starteAuswahl nimmt engine = null; der Freigabepfad laeuft bis
+     quereGate durch und ueberspringt die Quittung ans Modell. Der
+     Richtwert-Hinweis faellt erneut — es ist eine neue Auswahl. */
+  function oeffneReplay(verlauf) {
+    const paare = paareAusVerlauf(verlauf.messages || []);
+    if (!paare.length) return;
+    starteAuswahl(paare, verlauf.eignung, null);
+  }
+
+  /** Laeuft gerade ein Gespraech? Dann gehoert eine Freigabe in dessen Fluss. */
+  function laeuftGespraech() {
+    return !!(state.engine && state.engine.chat && state.engine.chat.status === "running");
+  }
+
+  /** Rueckfrage. Loeschen ist endgueltig und wird als solches benannt. */
+  function bestaetige(text) {
+    const w = doc.defaultView;
+    return Promise.resolve(w && typeof w.confirm === "function" ? w.confirm(text) : true);
+  }
 
   /* R4b · Die fuenf Vorraum-Ansichten (Zeitleiste, Regal, Agenda,
      Prozessreflexion, Gemeinsame Momente) leben jetzt in ansichten-screen.js.
@@ -1127,7 +1159,8 @@ export function createApp({ doc, backend, root, diktat }) {
      stammt aus der Einstellungs-Gruppe und muss vorher initialisiert sein. */
   const { zeigeZeitleiste, zeigeRegal, zeigeAgenda, zeigeMess, zeigeMomente } =
     macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
-                           zeitleistenEintrag, zeigePaarsprache });
+                           zeitleistenEintrag, zeigePaarsprache,
+                           oeffneReplay, laeuftGespraech, hinweis: hint, bestaetige });
 
   // S71 · Verlässt jemand den Chat, stempeln wir den Pausenbeginn auf die
   // laufende Session — so bleibt eine kurze Rückkehr (< 5 Min) nahtlos, während
@@ -1199,11 +1232,79 @@ export function createApp({ doc, backend, root, diktat }) {
 
   /* S38 · Persönliche Zeitleiste fortschreiben (Auftragsklärung, Prozess-
      reflexion). Fehlertolerant — die Zeitleiste ist Chronik, kein Muss. */
+  /* S95.7a · Ablage des Verlaufs.
+     Die Reihenfolge von EXCERPT-BLOCK und Freigabe der Auftragsklaerung ist
+     nicht garantiert. Statt sie zu erraten, deckt der Code BEIDE Faelle ab:
+     Liegt die Kennung beim Schreiben des Eintrags vor, wird sie mitgegeben;
+     trifft sie danach ein, wird der juengste Eintrag nachtraeglich ergaenzt. */
+  async function ablegen(eignung, engine) {
+    const id = await legeVerlaufAb(backend, {
+      messages: engine && engine.chat ? engine.chat.messages : null, eignung,
+    });
+    if (!id) return null;
+    state.verlaufId = id;
+    await hefteVerlaufAn(id);
+    return id;
+  }
+
+  /* S95.7b · Zeile statt Flaeche (K2): Eine eigene Flaeche machte aus einer
+     Mitteilung ein Ereignis. Die Zeile haengt unter der Ausschnitt-Tuer. */
+  function verlaufZeile(inhalt) {
+    const p = $("ausschnittPanel");
+    if (!p) return null;
+    const z = el("div", "rz-klein-leise rz-oben-1");
+    z.id = "verlaufZeile";
+    z.innerHTML = inhalt;
+    p.appendChild(z);
+    return z;
+  }
+
+  async function verlaufSchritt(eignung, engine) {
+    try {
+      const modus = await verlaufEinstellung(backend);
+      if (modus === "fragen") {
+        /* Vorgabe der FRAGE ist nein: kein vorausgewaehltes Ja, keine Empfehlung. */
+        const z = verlaufZeile(
+          `${esc(t("verlauf.frage"))} ` +
+          `<button class="pb-link" id="vlJa">${esc(t("verlauf.frageJa"))}</button> · ` +
+          `<button class="pb-link" id="vlNein">${esc(t("verlauf.frageNein"))}</button>`);
+        if (!z) return;
+        z.querySelector("#vlNein").addEventListener("click", () => z.remove());
+        z.querySelector("#vlJa").addEventListener("click", async () => {
+          await ablegen(eignung, engine);
+          z.remove();
+        });
+        return;
+      }
+      const id = await ablegen(eignung, engine);
+      if (!id) return;
+      /* Erst-Information: genau einmal, im selben Moment, in dem es zum ersten
+         Mal geschieht — nicht rueckwirkend und nicht als Einladung. */
+      if (await backend.pstate.get("verlaufInfoGezeigt")) return;
+      verlaufZeile(esc(t("verlauf.erstInfo")));
+      await backend.pstate.set("verlaufInfoGezeigt", true);
+    } catch { /* Aufbewahren ist Komfort, kein Muss */ }
+  }
+
+  /** Kennung an den juengsten Zeitleisten-Eintrag heften, falls es ihn schon gibt. */
+  async function hefteVerlaufAn(id) {
+    try {
+      const zl = await backend.pstate.get("timeline");
+      if (!zl || !zl.entries || !zl.entries.length) return;      // Eintrag kommt noch
+      const letzter = zl.entries[zl.entries.length - 1];
+      if (letzter.vid) return;                                    // schon versorgt
+      letzter.vid = id;
+      await backend.pstate.set("timeline", zl);
+      state.verlaufId = null;
+    } catch { /* still */ }
+  }
+
   async function zeitleistenEintrag(topic, summary, details) {
     try {
       const zl = (await backend.pstate.get("timeline")) || { entries: [] };
       const eintrag = { topics: [topic], summary, at: new Date().toISOString() };
       if (details && details.length) eintrag.details = details;   // S44: aufklappbare Punkte
+      if (state.verlaufId) { eintrag.vid = state.verlaufId; state.verlaufId = null; }   // S95.7a
       zl.entries.push(eintrag);
       await backend.pstate.set("timeline", zl);
     } catch { /* Chronik ist Komfort, kein Muss */ }

@@ -21,6 +21,7 @@ import { markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZu
 import { formatiereVerlauf, formatiereMessrunde, holeMessIntervall, messFenster,
          trageMessbeitragEin } from "./prozess.js";
 import { zeitraumText, rhythmusText } from "./zeit-texte.js";
+import { holeVerlauf, loescheVerlauf } from "./verlauf-ablage.js";   // S95.7c
 
 /**
  * @param {object} ctx
@@ -33,7 +34,8 @@ import { zeitraumText, rhythmusText } from "./zeit-texte.js";
  * @param {Function} ctx.zeigePaarsprache
  */
 export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
-                                       zeitleistenEintrag, zeigePaarsprache }) {
+                                       zeitleistenEintrag, zeigePaarsprache,
+                                       oeffneReplay, laeuftGespraech, hinweis, bestaetige }) {
   async function zeigeZeitleiste() {
     const zl = (await backend.pstate.get("timeline")) || { entries: [] };
     zeigeNur("boxZeitleiste");
@@ -48,6 +50,14 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
                 `<div class="pb-hidden rz-oben-1" id="zlDet${i}">` +
                 det.map(dd => `<div class="rz-klein-leise"><strong>${esc(dd.id)}</strong> ${esc(dd.text)}</div>`).join("") +
                 `</div>`
+              : "") +
+            /* S95.7c · Eingang NUR wo ein Verlauf liegt — keine ausgegraute Tuer
+               und kein Hinweis auf Fehlendes. Und still wie das Regal: kein
+               Zaehler, kein Badge. Wer hinschaut, findet ihn; wer die Zeitleiste
+               liest, wird nicht daran erinnert. */
+            (e2.vid
+              ? `<br><span class="pb-link" data-zlteil="${esc(e2.vid)}">${t("verlauf.zlEingang")}</span>` +
+                ` <span class="pb-link rz-klein-leise" data-zlweg="${esc(e2.vid)}">${t("verlauf.zlLoeschen")}</span>`
               : "") + `</div>`;
         }).join("")
       : `<div class="pb-item">${t("zeitleiste.leer")}</div>`;
@@ -57,6 +67,25 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
         if (!det) return;
         const zu = det.classList.toggle("pb-hidden");   // true = jetzt verborgen
         b.textContent = zu ? t("zeitleiste.detailsAuf") : t("zeitleiste.detailsZu");
+      });
+
+    /* S95.7c · Der Replay-Eingang. Er oeffnet DASSELBE Panel wie am
+       Sessionende — engine = null, weil eine abgeschlossene Session inert ist.
+       Der Freigabepfad laeuft dann bis quereGate durch und ueberspringt nur die
+       Quittung ans Modell (Bauvorschrift aus S96.1). */
+    for (const b of items.querySelectorAll("[data-zlteil]"))
+      b.addEventListener("click", async () => {
+        if (laeuftGespraech && laeuftGespraech()) { hinweis(t("verlauf.zlLaeuft")); return; }
+        const v = await holeVerlauf(backend, b.getAttribute("data-zlteil"));
+        if (!v) { hinweis(t("verlauf.zlLaeuft")); return; }
+        oeffneReplay(v);
+      });
+
+    for (const b of items.querySelectorAll("[data-zlweg]"))
+      b.addEventListener("click", async () => {
+        if (!(await bestaetige(t("verlauf.loeschFrage")))) return;
+        await loescheVerlauf(backend, b.getAttribute("data-zlweg"));
+        await zeigeZeitleiste();          // Eingang verschwindet mit dem Verlauf
       });
   }
 

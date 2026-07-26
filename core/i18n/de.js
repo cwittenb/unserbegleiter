@@ -71,6 +71,20 @@ export const de = {
   "teil.qz": "Gemeinsame Momente",
 
   // Zeitleiste
+  // S95.7 · Aufbewahrter Gesprächsverlauf und Replay-Eingang.
+  "verlauf.einstTitel": "Gesprächsverläufe",
+  "verlauf.einstImmer": "Aufbewahren",
+  "verlauf.einstFragen": "Jedes Mal fragen",
+  "verlauf.einstErklaerung": "Aufbewahrte Verläufe kannst du später noch für einen Ausschnitt nutzen. Sie liegen in deinem Raum und sind einzeln löschbar.",
+  "verlauf.erstInfo": "Dieser Gesprächsverlauf bleibt in deinem Raum — so kannst du auch später noch einen Ausschnitt daraus teilen. Nur du siehst ihn. In den Einstellungen kannst du das umstellen oder ihn löschen.",
+  "verlauf.frage": "Diesen Gesprächsverlauf in deinem Raum aufbewahren?",
+  "verlauf.frageJa": "Aufbewahren",
+  "verlauf.frageNein": "Nicht aufbewahren",
+  "verlauf.zlEingang": "Ausschnitt aus diesem Gespräch teilen",
+  "verlauf.zlLoeschen": "Verlauf löschen",
+  "verlauf.zlLaeuft": "Während ein Gespräch läuft, wird ein Ausschnitt dort freigegeben, wo er entsteht.",
+  "verlauf.loeschFrage": "Diesen Verlauf endgültig löschen? Der Zeitleisten-Eintrag bleibt.",
+  "verlauf.alleLoeschen": "Alle aufbewahrten Verläufe löschen",
   "zeitleiste.titel": "Zeitleiste",
   "rank.frei": "frei — hierhin ziehen oder antippen",
   "zeitleiste.tpAuftrag": "Auftragsklärung",
