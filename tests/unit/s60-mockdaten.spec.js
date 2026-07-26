@@ -201,16 +201,22 @@ describe("S60 · Szenen-Quittung überlebt den reboot", () => {
 });
 
 describe("S60 · Backlog-Filter (Beifang F1a)", () => {
-  it("app.js filtert das Backlog auf 'resting' — den Wert, den der Writer speichert", async () => {
+  it("der Leser filtert das Backlog auf 'resting' — den Wert, den der Writer speichert", async () => {
     // Quelle der Wahrheit ist der Writer (sessions.js: op 'rest' → status 'resting');
     // dieser Test bewacht den Gleichklang per Quelltext-Blick (Grep-Wächter-Muster).
+    //
+    // R4b · PFADANPASSUNG, keine Verhaltensänderung: Der Leser (zeigeAgenda) ist
+    // mit der Vorraum-Ansichten-Gruppe von app.js nach ansichten-screen.js
+    // gewandert. Geprüft wird unverändert dieselbe Zeile mit demselben Wert —
+    // nur eben dort, wo sie jetzt steht. Der Wächter bewacht den Gleichklang
+    // zwischen Schreiber und Leser, nicht die Datei, in der der Leser wohnt.
     const { readFile } = await import("node:fs/promises");
     const path = await import("node:path");
     // happy-dom überschreibt URL — Auflösung daher über den Vitest-Root (Repo-Wurzel).
-    const app = await readFile(path.join(process.cwd(), "core/ui/app.js"), "utf8");
+    const leser = await readFile(path.join(process.cwd(), "core/ui/ansichten-screen.js"), "utf8");
     const sessions = await readFile(path.join(process.cwd(), "core/ui/sessions.js"), "utf8");
     expect(sessions).toContain('it.status = "resting"');
-    expect(app).toContain('a.status === "resting"');
-    expect(app).not.toContain('a.status === "rest")');
+    expect(leser).toContain('a.status === "resting"');
+    expect(leser).not.toContain('a.status === "rest")');
   });
 });
