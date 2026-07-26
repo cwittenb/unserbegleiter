@@ -76,7 +76,7 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       input,select,textarea{font-size:max(16px,1em)}
       .pb-composer textarea{scroll-margin-block:80px 40vh}
       .pb-btn{min-height:44px;box-sizing:border-box}
-      .pb-theme button{min-height:36px}
+      .rz-ecke button{min-height:36px}
       .pb-typing{display:inline-flex;gap:5px;align-items:center;min-height:14px}
       .pb-typing span{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
       .pb-typing span:nth-child(2){animation-delay:.2s}.pb-typing span:nth-child(3){animation-delay:.4s}
@@ -90,11 +90,6 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .pb-msg.ai code{background:var(--ai-bd);border-radius:4px;padding:0 4px;font-family:ui-monospace,Menlo,monospace;font-size:14px}
       .pb-err{background:rgba(188,74,74,.12);border:1px solid rgba(188,74,74,.34);border-radius:12px;padding:11px 15px;font-size:15px;margin:12px 0}
       .pb-item{border-bottom:1px solid var(--card-bd);padding:11px 0;font-size:16px}
-      .pb-theme{position:fixed;top:calc(18px + env(safe-area-inset-top,0px));right:calc(16px + env(safe-area-inset-right,0px));z-index:6;display:flex;gap:3px;background:var(--card);
-                border:1px solid var(--card-bd);border-radius:999px;padding:4px;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
-      .pb-theme button{font-family:inherit;font-size:14px;border:0;background:transparent;color:var(--ink-soft);
-                border-radius:999px;padding:6px 14px;cursor:pointer;transition:.2s}
-      .pb-theme button.an{background:var(--accent);color:var(--on-accent)}
       .pb-busydots{display:inline-flex;gap:4px;align-items:center}
       .pb-busydots span{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);animation:pbBlink 1.2s infinite}
       .pb-busydots span:nth-child(2){animation-delay:.2s}.pb-busydots span:nth-child(3){animation-delay:.4s}
@@ -207,9 +202,11 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       .rz-einst{position:relative;border:0;background:none;margin:0;padding:6px;cursor:pointer;
                 line-height:0;min-width:36px;min-height:36px;color:var(--rz-marke)}
       .rz-einst svg{width:20px;height:20px;display:block;margin:auto}
-      .rz-einst-seerose{display:none}
-      html[data-theme=dark] .rz-einst-baum{display:none}
-      html[data-theme=dark] .rz-einst-seerose{display:block}
+      /* D12-2f · Das Zeichen ist das WECHSELZIEL, nicht der Ist-Zustand: auf
+         Hell steht die Seerose (der dunkle Teich), auf Dunkel der Baum. */
+      .rz-einst-baum{display:none}
+      html[data-theme=dark] .rz-einst-baum{display:block}
+      html[data-theme=dark] .rz-einst-seerose{display:none}
       .rz-einst .rz-punkt{position:absolute;top:3px;right:3px;width:6px;height:6px;
                           border-radius:50%;background:var(--rz-akzent)}
       .rz-einst-blatt{position:absolute;top:42px;right:0;width:min(272px,calc(100vw - 32px));
@@ -297,13 +294,11 @@ export const DESIGN_CSS = String.raw`      @import url('https://fonts.googleapis
       /* Theme-Umschalter als leises Glyphen-Paar im Sinne des Kopfes: nur der
          jeweils INAKTIVE Zustand ist sichtbar (= Wechselziel), Beschriftung
          bleibt fuer Screenreader erhalten. */
-      .rz-app~.pb-theme,.pb-theme{background:none;border:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none}
-      .pb-theme button{font-size:0;padding:6px 10px;color:var(--rz-marke)}
-      .pb-theme button::before{font-size:15px;line-height:1;color:var(--rz-marke)}
-      #pbHell::before{content:'\2600\FE0E'}
-      #pbDunkel::before{content:'\263E\FE0E'}
-      .pb-theme button.an{display:none}
-      html[data-theme=dark] .pb-theme button{color:var(--rz-marke)}
+      /* D12-2f · Die Pillen-Regeln aus D10 sind entfallen. Sie trugen
+         font-size:0 (der sichtbare Text war ein ::before-Zeichen) und
+         .an{display:none} — beides schlug auf die Zeilen im Einstellungs-Blatt
+         durch, das am selben Element haengt: anklickbar, aber unsichtbar.
+         .pb-theme bleibt reine Haltemarke fuer die Push-Glocke, ohne Aussehen. */
 
       /* ============ D3 · Vorraeume als Zwei-Zonen-Layout (Design 17c/d) ============
          Obere Zone: der Raum (Sessions als Zeilen unten an der Zonengrenze).

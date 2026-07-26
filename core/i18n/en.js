@@ -358,6 +358,8 @@ export const en = {
   "einst.ansicht": "Appearance",
   "einst.sprache": "Interface language",
   "einst.paarsprache": "Your companion speaks {sprache}.",
+  "einst.vorschlagen": "Propose a language change ({sprache})",
+  "einst.antragOffen": "A change to {sprache} is on the agenda.",
   "einst.paarspracheHinweis": "You change that together — in the agenda in your shared room.",
   "paarspr.agendaKopf": "Companion language",
   // PWA (M1): manifest & home screen

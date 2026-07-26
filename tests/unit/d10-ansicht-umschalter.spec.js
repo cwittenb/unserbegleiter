@@ -31,9 +31,11 @@ describe("D10 · Die Bedien-Ecke existiert", () => {
     expect(k.querySelector(".rz-einst-baum")).toBeTruthy();
     expect(k.querySelector(".rz-einst-seerose")).toBeTruthy();
     expect(k.getAttribute("aria-label")).toBeTruthy();
-    // CSS tauscht sie am Theme, nicht JavaScript.
-    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-baum{display:none}");
-    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-seerose{display:block}");
+    // D12-2f · Gezeigt wird das WECHSELZIEL: auf Hell die Seerose, auf Dunkel
+    // der Baum. CSS tauscht sie am Theme, nicht JavaScript.
+    expect(DESIGN_CSS).toContain(".rz-einst-baum{display:none}");
+    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-baum{display:block}");
+    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-seerose{display:none}");
   });
 
   it("legt NICHT doppelt an, wenn die Huelle das Zeichen schon mitbringt", () => {
@@ -95,6 +97,13 @@ describe("D12-2d · Die Ansicht ist dreiwertig", () => {
     expect(gemerkteAnsicht()).toBe("dark");
     merkeAnsicht("quatsch");
     expect(gemerkteAnsicht()).toBe("auto");
+  });
+
+  it("keine alte Pillen-Regel macht die Zeilen im Blatt unsichtbar", () => {
+    // D12-2f · font-size:0 und .an{display:none} stammten aus dem Pillen-Paar
+    // und schlugen auf das Blatt durch: anklickbar, aber nicht zu sehen.
+    expect(DESIGN_CSS).not.toContain(".pb-theme button");
+    expect(DESIGN_CSS).not.toContain("#pbHell::before");
   });
 
   it("die Ecke steht oben rechts und traegt den Punkt fuer offene Antraege", () => {

@@ -122,14 +122,17 @@ describe("D8/D12-2d · Sprache im Einstellungs-Blatt", () => {
     expect(blatt.querySelector('[data-ui="en"]').classList.contains("an")).toBe(false);
   });
 
-  it("es nennt die Paarsprache und verweist fuer die Aenderung auf die Agenda", async () => {
+  it("es nennt die Paarsprache und bietet den Wechsel-Vorschlag an", async () => {
     document.getElementById("pbEinst").click();
     await ruhe();
-    const fuss = document.getElementById("pbEinstBlatt").querySelector(".rz-einst-fuss");
-    expect(fuss.textContent).toContain("Deutsch");
-    expect(fuss.textContent).toContain("Agenda");
-    // Der Antrag selbst wird hier NICHT gestellt — er ist eine Absprache.
-    expect(document.getElementById("pbEinstBlatt").querySelector("#psAntrag")).toBeNull();
+    const blatt = document.getElementById("pbEinstBlatt");
+    const fuesse = [...blatt.querySelectorAll(".rz-einst-fuss")].map(e => e.textContent).join(" ");
+    expect(fuesse).toContain("Deutsch");
+    expect(fuesse).toContain("Agenda");     // verhandelt wird dort
+    // D12-2f · Gestellt wird der Antrag hier — der Eintrag entsteht in der Agenda.
+    const knopf = blatt.querySelector("#einstSprachAntrag");
+    expect(knopf).toBeTruthy();
+    expect(knopf.textContent).toContain("Englisch");
   });
 
   it("die Ansicht steht als drei Zeilen im Blatt", async () => {
@@ -154,5 +157,18 @@ describe("D8/D12-2d · Sprache im Einstellungs-Blatt", () => {
   it("der alte Sprachknopf auf dem Startscreen ist weg", () => {
     expect(root.querySelector("#psZeile")).toBeNull();
     expect(root.querySelector("#psLink")).toBeNull();
+  });
+});
+
+const klick = async el => { el.click(); await ruhe(); };
+
+describe("D12-2f · Der Vorschlag aus dem Blatt landet in der Agenda", () => {
+  it("Klick stellt den Antrag; danach nennt das Blatt den Stand statt eines zweiten Knopfs", async () => {
+    document.getElementById("pbEinst").click();
+    await ruhe();
+    const blatt = document.getElementById("pbEinstBlatt");
+    await klick(blatt.querySelector("#einstSprachAntrag"));
+    expect(blatt.querySelector("#einstSprachAntrag")).toBeNull();
+    expect(blatt.textContent).toContain("Agenda");
   });
 });

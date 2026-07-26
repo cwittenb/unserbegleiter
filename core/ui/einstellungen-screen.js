@@ -48,6 +48,7 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
     const ansicht = doc.documentElement.getAttribute("data-ansicht") || "auto";
     const ui = getLocale();
     const paar = state.info && state.info.locale === "en" ? "en" : "de";
+    const offen = state.info && state.info.languageRequest;
     const wahl = (gruppe, wert, text, aktiv) =>
       `<button class="rz-einst-wahl${aktiv ? " an" : ""}" data-${gruppe}="${wert}">` +
       `<span>${text}</span><span class="rz-haken" aria-hidden="true">✓</span></button>`;
@@ -62,11 +63,31 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
       `<div class="rz-caps">${t("einst.sprache")}</div>` +
       wahl("ui", "de", t("paarspr.name.de"), ui === "de") +
       wahl("ui", "en", t("paarspr.name.en"), ui === "en") +
-      `<p class="rz-einst-fuss">${t("einst.paarsprache", { sprache: sprachName(paar) })} ` +
-      `${t("einst.paarspracheHinweis")}</p>` +
+      `<p class="rz-einst-fuss">${t("einst.paarsprache", { sprache: sprachName(paar) })}</p>` +
+      // D12-2f · Der Antrag wird hier gestellt, verhandelt wird er in der
+      // Agenda: der Knopf legt den Eintrag an, die Absprache lebt dort.
+      (offen
+        ? `<p class="rz-einst-fuss">${t("einst.antragOffen", { sprache: sprachName(offen.target) })}</p>`
+        : backend.language
+        ? `<button class="pb-btn" id="einstSprachAntrag" style="margin-top:8px">` +
+          `${t("einst.vorschlagen", { sprache: sprachName(paar === "en" ? "de" : "en") })}</button>` +
+          `<p class="rz-einst-fuss">${t("einst.paarspracheHinweis")}</p>`
+        : "") +
       `</div>`;
     for (const b of blatt.querySelectorAll("[data-ansicht]"))
       b.addEventListener("click", () => waehleAnsicht(b.getAttribute("data-ansicht")));
+    const antrag = blatt.querySelector("#einstSprachAntrag");
+    if (antrag) antrag.addEventListener("click", async () => {
+      const ziel = paar === "en" ? "de" : "en";
+      try {
+        const r = await backend.language.request(ziel);
+        state.info.locale = r.locale;
+        state.info.languageRequest = r.languageRequest;
+        aktualisierePunkt();
+        zeigePaarsprache();          // falls die Agenda gerade offen liegt
+        zeigeEinstellungen();
+      } catch (e) { err(fehlerText(e)); }
+    });
     for (const b of blatt.querySelectorAll("[data-ui]"))
       b.addEventListener("click", async () => {
         const l = b.getAttribute("data-ui");

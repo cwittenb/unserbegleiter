@@ -359,6 +359,8 @@ export const de = {
   "einst.ansicht": "Ansicht",
   "einst.sprache": "Sprache der Oberfläche",
   "einst.paarsprache": "Die Begleitung spricht {sprache}.",
+  "einst.vorschlagen": "Sprachwechsel vorschlagen ({sprache})",
+  "einst.antragOffen": "Ein Wechsel zu {sprache} steht in der Agenda.",
   "einst.paarspracheHinweis": "Das ändert ihr gemeinsam — in der Agenda im gemeinsamen Raum.",
   "paarspr.agendaKopf": "Sprache der Begleitung",
   // PWA (M1): Manifest & Home-Bildschirm
