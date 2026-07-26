@@ -14,7 +14,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
   + String.raw`      html{height:100%}
       body{margin:0;min-height:100%;background:var(--rz-papier);transition:background .5s}
       #app{max-width:660px;position:relative;z-index:1;font-family:var(--rz-sans);
-           color:var(--rz-feld-ink);font-size:var(--rz-fs-text);line-height:1.65;
+           color:var(--rz-feld-ink);font-size:var(--rz-fs-text);line-height:var(--rz-lh-text);
            padding:calc(46px + env(safe-area-inset-top,0px)) calc(22px + env(safe-area-inset-right,0px))
                    calc(34vh + env(safe-area-inset-bottom,0px)) calc(22px + env(safe-area-inset-left,0px))}
       .pb-baeume{display:block} html[data-theme=dark] .pb-baeume{display:none}
@@ -65,7 +65,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
                    border-radius:var(--rz-r-2);background:var(--rz-feld);color:var(--rz-feld-ink);font:inherit}
       .pb-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
       .pb-brand{display:flex;flex-direction:column;gap:3px}
-      .pb-h1{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;margin:0;letter-spacing:.005em;line-height:1.18}
+      .pb-h1{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;margin:0;letter-spacing:.005em;line-height:var(--rz-lh-titel)}
       .pb-sub{color:var(--rz-leiser);font-size:var(--rz-fs-fein)}
       .pb-brand .pb-sub{letter-spacing:.2em;text-transform:uppercase;font-size:var(--rz-fs-caps)}
       .pb-card{background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:var(--rz-rund-karte);padding:24px 26px;margin:16px 0;
@@ -78,7 +78,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .pb-btn[disabled]:hover{background:transparent;color:var(--rz-knopf-ink)}
       .pb-btn.primary:hover{filter:brightness(1.05)}
       .pb-msgs{display:flex;flex-direction:column;gap:13px;margin:16px 0}
-      .pb-msg{max-width:82%;padding:14px 19px;border-radius:var(--rz-rund-karte);font-size:var(--rz-fs-zeile);line-height:1.62;white-space:pre-wrap}
+      .pb-msg{max-width:82%;padding:14px 19px;border-radius:var(--rz-rund-karte);font-size:var(--rz-fs-zeile);line-height:var(--rz-lh-text);white-space:pre-wrap}
       .pb-msg.ai{background:var(--rz-blase-du);border:1px solid var(--rz-blase-du-rand);align-self:flex-start;border-bottom-left-radius:6px;
                  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .pb-msg.me{background:var(--rz-blase-ich);color:var(--rz-blase-ich-ink);align-self:flex-end;border-bottom-right-radius:6px}
@@ -163,7 +163,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-zeile{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
                 width:100%;box-sizing:border-box;min-height:44px;padding:15px 0;margin:0;
                 border:0;border-top:1px solid var(--rz-hairline);background:none;text-align:left;
-                font-family:var(--rz-serif);font-size:var(--rz-fs-sektion);font-weight:400;line-height:1.3;
+                font-family:var(--rz-serif);font-size:var(--rz-fs-sektion);font-weight:400;line-height:var(--rz-lh-caps);
                 color:inherit;cursor:pointer;border-radius:0}
       .rz-zeile:disabled,.rz-zeile.rz-gedimmt{color:var(--rz-gedimmt);cursor:default}
       /* S93 · HANDLUNG vs. NAVIGATION. Die Hairline-Zeile bleibt die Sprache
@@ -182,7 +182,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-tiefgruen .rz-zeile{font-size:var(--rz-fs-zeile)}
       .rz-zeile.rz-unten{border-top:0;border-bottom:1px solid var(--rz-hairline-gruen)}
       .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
-                            max-width:38%;text-align:right;line-height:1.4}
+                            max-width:38%;text-align:right;line-height:var(--rz-lh-zeile)}
       .rz-balken{height:2px;background:var(--rz-hairline);margin-top:8px}
       .rz-balken>i{display:block;height:2px;background:var(--rz-akzent-hell)}
       .rz-initial{width:22px;height:22px;flex:none;border-radius:50%;background:var(--rz-akzent);
@@ -238,7 +238,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-einst-wahl:last-child{border-bottom:0}
       .rz-einst-wahl .rz-haken{color:var(--rz-akzent-hell);font-size:var(--rz-fs-fein);opacity:0}
       .rz-einst-wahl.an .rz-haken{opacity:1}
-      .rz-einst-fuss{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin:10px 0 0;line-height:1.45}
+      .rz-einst-fuss{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin:10px 0 0;line-height:var(--rz-lh-fein)}
       html[data-theme=dark] .rz-einst-fuss{color:var(--rz-sek2-auf-gruen)}
       /* Nur auf dem Startscreen steht das Ortsetikett ueber der Betreten-Zeile;
          in den Vorraeumen traegt das Badge den Ort (Turn 27, §1). */
@@ -270,7 +270,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
                     transition:transform .3s var(--rz-kurve),opacity .3s var(--rz-kurve)}
       .rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}
       .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;
-                               line-height:1.55;margin:0 0 14px}
+                               line-height:var(--rz-lh-fein);margin:0 0 14px}
       .rz-weg-panel .rz-option em{font-style:italic}
       .rz-weg-fuss{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
                    text-align:center;padding-top:8px}
@@ -296,9 +296,9 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-kopf{display:flex;justify-content:space-between;align-items:center;margin-bottom:26px}
       .rz-marke{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.16em;
                 text-transform:uppercase;color:var(--rz-marke)}
-      .rz-h1{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;line-height:1.18;margin:12px 0 0}
-      .rz-h2{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;line-height:1.2;margin:0 0 6px}
-      .rz-sub{font-family:var(--rz-sans);font-size:var(--rz-fs-fein);line-height:1.6;color:var(--rz-sek2);margin:8px 0 0}
+      .rz-h1{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;line-height:var(--rz-lh-titel);margin:12px 0 0}
+      .rz-h2{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;line-height:var(--rz-lh-sektion);margin:0 0 6px}
+      .rz-sub{font-family:var(--rz-sans);font-size:var(--rz-fs-fein);line-height:var(--rz-lh-text);color:var(--rz-sek2);margin:8px 0 0}
       .rz-fuss{margin-top:auto}
       .rz-still{font-size:var(--rz-fs-fein);margin-top:10px}
       .rz-lz-leiste{display:inline-flex;gap:6px;margin-left:auto}
@@ -351,9 +351,9 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       #scrChat .rz-sprecher{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
         letter-spacing:.16em;text-transform:uppercase;color:var(--rz-sek2);margin-bottom:-17px}
       #scrChat .pb-msg{background:none;border:0;border-radius:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none}
-      #scrChat .pb-msg.ai{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;line-height:1.55;
+      #scrChat .pb-msg.ai{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;line-height:var(--rz-lh-fein);
         align-self:flex-start;max-width:88%;color:var(--rz-ink)}
-      #scrChat .pb-msg.me{font-family:var(--rz-sans);font-size:var(--rz-fs-text);line-height:1.6;
+      #scrChat .pb-msg.me{font-family:var(--rz-sans);font-size:var(--rz-fs-text);line-height:var(--rz-lh-text);
         align-self:flex-end;max-width:82%;text-align:right;color:var(--rz-nutzer)}
       #scrChat .pb-composer{border-top:1px solid var(--rz-hairline);padding-top:16px;margin-top:24px;align-items:center}
       #scrChat .pb-composer textarea{border:0;background:none;border-radius:0;padding:6px 0;
@@ -406,14 +406,14 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         padding:18px 20px;margin:12px 0}
       .rz-teilen-block .rz-von{color:var(--rz-label-auf-gruen);margin-bottom:8px}
       .rz-teilen-text{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;
-        line-height:1.55;margin:0}
+        line-height:var(--rz-lh-fein);margin:0}
       .rz-teilen-text::before{content:'„'}
       .rz-teilen-text::after{content:'“'}
       .rz-wahl{display:block;font-size:var(--rz-fs-fein);margin:0;padding:10px 0;
         border-top:1px solid var(--rz-hairline)}
       .rz-von .rz-initial{width:18px;height:18px;font-size:var(--rz-fs-caps);vertical-align:middle}
       .rz-regal-eintrag .rz-von{margin-bottom:4px}
-      .rz-regal-text{font-family:var(--rz-serif);font-size:var(--rz-fs-text);font-weight:300;line-height:1.5}
+      .rz-regal-text{font-family:var(--rz-serif);font-size:var(--rz-fs-text);font-weight:300;line-height:var(--rz-lh-fein)}
 
       /* ============ D8 · Sprachwechsel als Eckknopf + Aufwaerts-Dialog ============
          Kleiner DE/EN-Wechsler unten rechts; der Dialog faehrt von unten
@@ -425,7 +425,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         bottom:calc(18px + env(safe-area-inset-bottom,0px));
         display:flex;align-items:center;gap:8px}
       .rz-sprach-hinweis{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-sek2);
-        max-width:16ch;text-align:right;line-height:1.35}
+        max-width:16ch;text-align:right;line-height:var(--rz-lh-zeile)}
       .rz-sprachknopf{border:1px solid var(--rz-hairline);background:var(--rz-papier);
         color:var(--rz-gedimmt);cursor:pointer;border-radius:0;padding:6px 10px;min-height:0;
         font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.1em;
@@ -461,7 +461,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          steht als Ueberschrift oben — mit ihrem Pfeil, jetzt nach oben. */
       .rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}
       .rz-regal-offen .rz-zeile.rz-auf{border:0;padding:0;font-family:var(--rz-serif);
-        font-size:var(--rz-fs-sektion);font-weight:300;line-height:1.2;align-items:baseline}
+        font-size:var(--rz-fs-sektion);font-weight:300;line-height:var(--rz-lh-sektion);align-items:baseline}
       .rz-regal-offen .rz-zeile.rz-auf .rz-pfeil{font-size:var(--rz-fs-fein)}
       .rz-regal-offen{position:relative;height:100dvh;overflow:hidden}
       /* Der obere Teil bleibt EXAKT stehen: statt ihn vom Flex-Layout neu

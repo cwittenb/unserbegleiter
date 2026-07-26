@@ -49,6 +49,9 @@ export const THEME_CSS = String.raw`
         --rz-fs-zeile:17px;     --rz-lh-zeile:1.4;
         --rz-fs-sektion:24px;   --rz-lh-sektion:1.2;
         --rz-fs-titel:30px;     --rz-lh-titel:1.18;
+        /* line-height:0 und :1 bleiben rohe Werte: das sind Layout-Angaben
+           (Icon-Zeilen, Knopfhoehen), keine Lesetypografie. Der Waechter
+           laesst genau diese beiden durch. */
 
         /* ---- Abstaende. Alles Vielfache von 4; --rz-rand ist der Screenrand. ---- */
         --rz-r-1:4px;  --rz-r-2:8px;  --rz-r-3:12px;

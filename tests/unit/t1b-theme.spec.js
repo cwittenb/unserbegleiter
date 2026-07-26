@@ -48,6 +48,13 @@ describe("T1b · Skalen statt Streuung", () => {
     expect(roh).toEqual([]);
   });
 
+  it("Zeilenhöhen kommen aus der Skala — außer den reinen Layout-Werten", () => {
+    // 0 und 1 sind Layout (Icon-Zeile, Knopfhöhe), keine Lesetypografie.
+    const roh = (KOMPONENTEN_CSS.match(/line-height:\s*[0-9.]+/g) || [])
+      .filter(r => !/line-height:\s*[01]$/.test(r.trim()));
+    expect(roh).toEqual([]);
+  });
+
   it("die Übergangskurve steht einmal, nicht überall", () => {
     expect(KOMPONENTEN_CSS).not.toContain("cubic-bezier(");
     expect(THEME_CSS).toContain("--rz-kurve:cubic-bezier(");
