@@ -154,6 +154,32 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       @media(min-width:900px){
         .rz-split{flex-direction:row;position:relative}
         .rz-split .rz-auf-naht{left:0;top:50%;transform:translate(-50%,-50%)}
+        /* ---- T2d (Handover Turn 40 §3.3) · EIN Anker statt zweier Rechnungen ----
+           Vorher rechneten drei Dinge, die auf einer Linie liegen sollen, gegen
+           ZWEI verschiedene Bezugsrahmen: das Badge gegen die Spaltenhoehe
+           (top:50% in .rz-naht-anker), die beiden Linkgruppen gegen die
+           Fensterhoehe (50dvh). Gleich sind die nur, solange die Spalte exakt
+           100dvh hoch ist — sobald eine ueberlaeuft (lange Regalliste,
+           zweizeiliger Zustandstext, niedriges Fenster), driften sie.
+
+           Der Wechsel: die Zweiteilung wird auf dem Desktop hoehenfest, die
+           Spalten rollen INNERHALB ihrer Haelfte, und die Naht-Aufbauten
+           haengen nicht mehr an der Haelfte, sondern am .rz-split. Damit ist
+           50dvh per Definition die Mitte derselben Box, gegen die auch das
+           Badge misst.
+
+           Warum das Badge dabei nicht mitrollt: .rz-naht-anker wird static,
+           der abs. positionierte Aufbau loest sein Containing Block also am
+           .rz-split auf — einem VORFAHREN des Rollbereichs. Solche Kinder
+           werden vom Rollbereich weder beschnitten noch verschoben.
+
+           Alles hier ist auf :not(.rz-regal-offen) beschraenkt. Im
+           aufgeklappten Regal gelten Q2/Q3 unveraendert: dort ist die Haelfte
+           wieder position:absolute und das Badge ankert an ihr (left:0). */
+        .rz-split:not(.rz-regal-offen){height:100dvh}
+        .rz-split:not(.rz-regal-offen)>.rz-half{min-height:0;overflow:auto}
+        .rz-split:not(.rz-regal-offen)>.rz-naht-anker{position:static}
+        .rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}
         /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Grundregel
            spannt die offene Zone ueber die volle Breite — am Handy richtig
            (die Naht liegt waagerecht), auf dem Desktop faelscht sie das
@@ -170,10 +196,17 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            zu kleben: links endet knapp ueber der Naht, rechts beginnt knapp
            darunter. Die Ueberschriften bleiben, wo sie sind.
            dvh statt Prozent: Prozent-Margins rechnen in einer Spalte gegen die
-           BREITE, nicht gegen die Hoehe. Solange die Haelfte 100dvh hoch ist
-           — und das ist sie, solange der Inhalt nicht ueberlaeuft —, trifft
-           50dvh dieselbe Linie wie das top:50% des Badges.
-           Im aufgeklappten Regal gilt das nicht: dort ordnet die Zone neu. */
+           BREITE, nicht gegen die Hoehe.
+           Seit T2d ist die Haelfte auf dem Desktop IMMER 100dvh hoch (siehe
+           oben), 50dvh trifft also dieselbe Linie wie das Badge — der alte
+           Vorbehalt "solange der Inhalt nicht ueberlaeuft" ist erledigt.
+           Ein Rest bleibt: margin-top:auto verteilt nur FREIEN Raum. Ist der
+           obere Block zusammen mit dem Zonenfuss hoeher als 50dvh (sehr
+           niedrige Fenster), gibt es keinen freien Raum mehr, die Gruppe
+           landet frueher und die Spalte rollt. Fluss-Inhalt laesst sich ohne
+           ein Huellelement nicht an eine Fensterposition heften; das steht
+           als T2d-2 im Protokoll.
+           Im aufgeklappten Regal gilt das alles nicht: dort ordnet die Zone neu. */
         .rz-split:not(.rz-regal-offen)>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile,
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen{
@@ -325,6 +358,10 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          also entscheidet die Reihenfolge. */
       @media(min-width:900px){
         .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}
+        /* T2d · im zugeklappten Zustand ankert das Panel am .rz-split und ist
+           damit ohnehin schon volle Breite — die 200%/-100%-Kruecke von oben
+           wuerde es auf die doppelte Fensterbreite ziehen. */
+        .rz-split:not(.rz-regal-offen) .rz-weg-panel{right:0;width:auto;margin-left:0}
       }
       @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
 
