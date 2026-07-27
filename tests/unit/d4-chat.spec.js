@@ -64,11 +64,16 @@ describe("D4 · Sprecherlabel", () => {
     await tick();
     llm.antworte("Magst du erzählen, worum es für dich ging?");
     await ruhe();
+    const art = k => k.classList.contains("rz-sprechgruppe") ? "G"
+      : k.classList.contains("rz-sprecher") ? "L"
+      : k.classList.contains("pb-msg") ? (k.classList.contains("ai") ? "ai" : "me") : "?";
     const kinder = [...root.querySelectorAll("#pbMsgs > *")];
-    const arten = kinder.map(k => k.classList.contains("rz-sprecher") ? "L"
-      : k.classList.contains("pb-msg") ? (k.classList.contains("ai") ? "ai" : "me") : "?");
+    // T2g · Label und Antwort stehen seit T2 in einer .rz-sprechgruppe; auf
+    // der obersten Ebene liegt deshalb die Gruppe, nicht mehr das Label.
+    expect(kinder.map(art)).toEqual(["G", "me", "G"]);
     // Label vor JEDER zusammenhaengenden Begleitungs-Passage, nie doppelt:
-    expect(arten).toEqual(["L", "ai", "me", "L", "ai"]);
+    for (const g of kinder.filter(k => k.classList.contains("rz-sprechgruppe")))
+      expect([...g.children].map(art)).toEqual(["L", "ai"]);
     const labels = root.querySelectorAll("#pbMsgs .rz-sprecher");
     for (const l of labels) expect(l.textContent).toBe("Begleitung");
   });

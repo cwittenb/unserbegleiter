@@ -45,10 +45,14 @@ export function zeichneReplay(wirt, verlauf, el) {
     // Wire-Nachrichten und Verstecktes bleiben verborgen — wie im Verlauf.
     if (m.hidden || istWireNachricht(m)) continue;
 
+    // T2g · dieselbe Gruppierung wie im lebenden Verlauf (chat-kern.js).
+    let gruppe = null;
     if (m.role === "assistant" && letzteRolle !== "assistant") {
+      gruppe = el("div", "rz-sprechgruppe");
       const lbl = el("div", "rz-sprecher");
       lbl.textContent = t("chat.begleitung");
-      wirt.appendChild(lbl);
+      gruppe.appendChild(lbl);
+      wirt.appendChild(gruppe);
     }
     letzteRolle = m.role;
 
@@ -56,7 +60,7 @@ export function zeichneReplay(wirt, verlauf, el) {
     const rein = cleanDisplay(m.content, [], ALLE_BLOECKE);
     if (m.role === "assistant") d.innerHTML = mdRender(rein);
     else d.textContent = rein;
-    wirt.appendChild(d);
+    (gruppe || wirt).appendChild(d);
     gezeichnet++;
 
     // KEINE Aufdeck-Tafeln: Sie tragen einen Weiter-Knopf und gehoeren in

@@ -151,9 +151,8 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
         // S44 · Panel-Echo: geschlossene Regler/Slider hinterlassen eine
         // kompakte Zusammenfassungszeile im Verlauf (statt spurlos zu verschwinden).
         if (m.echo) {
-          const e2 = el("div", "pb-echo");
+          const e2 = el("div", "pb-echo rz-echo");   // T2j: Aussehen lebt in design.js
           e2.textContent = m.echo;
-          e2.setAttribute("style", "align-self:flex-end;font-size:12px;color:var(--rz-sek2);background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:999px;padding:3px 12px;max-width:82%");
           box.appendChild(e2);
           continue;
         }
@@ -161,17 +160,22 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
         // D4 · Kein Blasen-Layout mehr: die Begleitung traegt bei jedem
         // Rollenwechsel ein leises Caps-Label (Design 17e), Nutzertext steht
         // rechtsbuendig in Sans — beides via CSS, hier nur das Label.
+        // T2g · Label und die zugehoerige Antwort stehen in EINEM Behaelter,
+        // statt ueber einen negativen Rand gegen den Listen-Gap zu rechnen.
+        let gruppe = null;
         if (m.role === "assistant" && letzteRolle !== "assistant") {
+          gruppe = el("div", "rz-sprechgruppe");
           const lbl = el("div", "rz-sprecher");
           lbl.textContent = t("chat.begleitung");
-          box.appendChild(lbl);
+          gruppe.appendChild(lbl);
+          box.appendChild(gruppe);
         }
         letzteRolle = m.role;
         const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
         const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
         if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, mkListe, ALLE_BLOECKE));
         else d.textContent = cleanDisplay(m.content, mkListe, ALLE_BLOECKE);
-        box.appendChild(d);
+        (gruppe || box).appendChild(d);
         // S62 · Aufdeck-Tafel als Karte im Verlauf, direkt unter der
         // auslösenden Nachricht; der Weiter-Knopf nur an der jüngsten.
         if (m.role === "assistant" && m.tafel) {

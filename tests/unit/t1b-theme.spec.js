@@ -21,10 +21,22 @@ describe("T1b · Farbe lebt nur im Theme", () => {
   });
 
   it("auch die UI-Module malen nicht selbst", () => {
-    for (const rel of ["../../core/ui/kulisse.js", "../../core/ui/html.js", "../../core/ui/sessions.js"]) {
+    for (const rel of ["../../core/ui/kulisse.js", "../../core/ui/html.js",
+                       "../../core/ui/sessions.js", "../../core/ui/chat-kern.js"]) {
       const quelle = lies(rel).replace(/^\s*\/\/.*$/gm, "");     // Kommentare dürfen Werte nennen
       expect(quelle.match(/#[0-9a-fA-F]{6}\b/g) || [], rel).toEqual([]);
     }
+  });
+
+  // T2j · chat-kern.js ist seit T2 in der Liste oben. Damit die Datei nicht
+  // über einen Inline-Style wieder ausschert, verbietet dieser Test das
+  // Setzen ganzer Stilblöcke dort. Laufzeitwerte (style.transform, gemessene
+  // Höhen über setProperty) bleiben erlaubt — sie gehören nicht in ein
+  // Stylesheet.
+  it("chat-kern.js setzt keine kompletten Stilblöcke inline", () => {
+    const quelle = lies("../../core/ui/chat-kern.js");
+    expect(quelle).not.toContain('setAttribute("style"');
+    expect(quelle).not.toContain("style.cssText");
   });
 
   it("jeder im Dark-Block überschriebene Token ist im Root-Block angelegt", () => {

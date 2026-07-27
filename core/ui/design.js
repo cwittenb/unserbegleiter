@@ -444,8 +444,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         calc(var(--rz-rand) + env(safe-area-inset-bottom,0px))}
       .rz-chat-innen{max-width:640px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100dvh - 60px)}
       #scrChat .pb-msgs{gap:22px;flex:1}
+      /* T2g (Handover Turn 40 §3.8) · Die Sprecher-Marke hing mit
+         margin-bottom:-17px gegen den gap:22px der Nachrichtenliste — zwei
+         Zahlen, die sich gegenseitig voraussetzen. Aendert sich der Gap,
+         klebt das Label an der Nachricht oder schwebt. Jetzt stehen Label und
+         Antwort in einem eigenen Behaelter OHNE Gap; der Abstand ist eine
+         Rasterstufe statt einer Differenzrechnung.
+         Die max-width wandert an die Gruppe — bliebe sie zusaetzlich an der
+         Nachricht, waeren es 88% von 88%. */
       #scrChat .rz-sprecher{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
-        letter-spacing:.16em;text-transform:uppercase;color:var(--rz-sek2);margin-bottom:-17px}
+        letter-spacing:.16em;text-transform:uppercase;color:var(--rz-sek2);margin-bottom:var(--rz-r-1)}
+      #scrChat .rz-sprechgruppe{display:flex;flex-direction:column;align-self:flex-start;max-width:88%}
+      #scrChat .rz-sprechgruppe .pb-msg.ai{max-width:none}
       #scrChat .pb-msg{background:none;border:0;border-radius:0;padding:0;backdrop-filter:none;-webkit-backdrop-filter:none}
       #scrChat .pb-msg.ai{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;line-height:var(--rz-lh-fein);
         align-self:flex-start;max-width:88%;color:var(--rz-ink)}
@@ -455,10 +465,30 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       #scrChat .pb-composer textarea{border:0;background:none;border-radius:0;padding:6px 0;
         font-family:var(--rz-serif);color:var(--rz-ink)}
       #scrChat .pb-composer textarea::placeholder{font-style:italic;color:var(--rz-gedimmt)}
-      #scrChat #btnMic{border:0;background:none;color:var(--rz-akzent-hell);padding:0 6px;min-height:34px}
+      /* T2f (Handover Turn 40 §3.8) · Sende-Knopf und Mikrofon ueberschrieben die
+         44px aus .pb-btn auf 34px — ausgerechnet die meistbenutzte Aktion der
+         App lag damit unter dem Mindest-Tapziel. Trefferflaeche jetzt 44px,
+         das sichtbare Akzent-Quadrat bleibt 34px: 5px Polster plus
+         background-clip:content-box faerben nur den Inhaltskasten
+         (44 - 2*5 = 34). Die 5px sind ein ABGELEITETER Wert, keine
+         Rasterstufe — sie ergeben sich aus der Differenz beider Masse. */
+      #scrChat #btnMic{border:0;background:none;color:var(--rz-akzent-hell);padding:0 6px;
+        min-height:var(--rz-tapziel-finger)}
       #scrChat #btnMic svg{stroke-width:1.6}
-      #scrChat #btnSend{width:34px;height:34px;min-height:34px;padding:0;border:0;border-radius:0;
-        background:var(--rz-akzent-hell);color:var(--rz-papier);display:inline-flex;align-items:center;justify-content:center}
+      #scrChat #btnSend{width:var(--rz-tapziel-finger);height:var(--rz-tapziel-finger);
+        min-height:var(--rz-tapziel-finger);padding:5px;box-sizing:border-box;border:0;border-radius:0;
+        background:var(--rz-akzent-hell);background-clip:content-box;
+        color:var(--rz-papier);display:inline-flex;align-items:center;justify-content:center}
+      /* T2j · Die Echo-Pille (S44) war als kompletter Inline-Style in
+         chat-kern.js gesetzt — mit den rohen Werten 12px und 999px an genau
+         der Stelle, die der T1b-Waechter nicht las. 12px ist keine Stufe der
+         Skala (Nachbarn: 11 und 13), 999px gibt es als --rz-rund-pille.
+         Bewusst .rz-echo und nicht .pb-echo: die Klasse .pb-echo tragen auch
+         die Leseansicht und der Auswahl-Screen, wo sie heute UNGESTYLT ist —
+         eine Regel darauf waere eine stille Aenderung an zwei fremden Orten. */
+      #scrChat .rz-echo{align-self:flex-end;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);
+        color:var(--rz-sek2);background:var(--rz-karte);border:1px solid var(--rz-karte-rand);
+        border-radius:var(--rz-rund-pille);padding:var(--rz-r-1) var(--rz-r-3);max-width:82%}
       #scrChat .rz-panel{border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
         padding:14px 0;margin:10px 0;font-size:var(--rz-fs-fein)}
       #scrChat .pb-skala{background:none;border:1px solid var(--rz-hairline);border-radius:0}

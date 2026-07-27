@@ -70,6 +70,10 @@ export const THEME_CSS = String.raw`
 
         /* ---- Bausteine ---- */
         --rz-tapziel:36px;              /* Mindesthoehe fuer Finger */
+        /* T2f (Handover Turn 40 §3.8) · Die Bedien-Ecke darf mit 36px leise
+           bleiben; die Hauptaktionen im Chat (Senden, Mikrofon) brauchen die
+           volle Trefferflaeche. Optisch bleibt das Sende-Quadrat 34px. */
+        --rz-tapziel-finger:44px;
         --rz-hairline-staerke:1px;
         --rz-blatt-schatten:0 12px 34px rgba(0,0,0,.14);
         --rz-kurve:cubic-bezier(.2,.8,.2,1);
