@@ -144,7 +144,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          translate -50%). */
       .rz-split{display:flex;flex-direction:column;min-height:100dvh}
       .rz-half{flex:1;display:flex;flex-direction:column;position:relative;
-               padding:30px 24px;box-sizing:border-box}
+               padding:30px var(--rz-rand);box-sizing:border-box}
       .rz-half.rz-papier{background:var(--rz-papier);color:var(--rz-ink)}
 
       .rz-half.rz-tiefgruen{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen)}
@@ -287,7 +287,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-weg-badge .rz-punkt{width:6px;height:6px;border-radius:50%;background:var(--rz-akzent-text);
                               display:none}
       .rz-weg-badge.rz-wartet .rz-punkt{display:block}
-      .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px 24px;
+      .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px var(--rz-rand);
                     background:var(--rz-papier);color:var(--rz-ink);
                     border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
                     transform:translateY(-50%) scaleY(0);transform-origin:center center;
@@ -337,6 +337,13 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-h2{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;line-height:var(--rz-lh-sektion);margin:0 0 6px}
       .rz-sub{font-family:var(--rz-sans);font-size:var(--rz-fs-fein);line-height:var(--rz-lh-text);color:var(--rz-sek2);margin:8px 0 0}
       .rz-fuss{margin-top:auto}
+      /* T2b (Handover Turn 40 §3.2/§3.6) · Freiraum an der Naht. Das Badge
+         ist 32px hoch und sitzt zur Haelfte ueber der Naht; die Naht-Kulisse
+         steht per translateY(-100%) ebenfalls in der oberen Zone. Ohne
+         Polster laeuft die letzte Hairline-Zeile darunter. Nur die ERSTE
+         Haelfte einer Zweiteilung — der Zonenfuss der zweiten Haelfte steht
+         am Screenrand, nicht an der Naht. */
+      .rz-split>.rz-half:first-child .rz-fuss{padding-bottom:var(--rz-nahtfrei)}
       .rz-still{font-size:var(--rz-fs-fein);margin-top:10px}
       .rz-lz-leiste{display:inline-flex;gap:6px;margin-left:auto}
       .rz-zeile .rz-lz-leiste+.rz-pfeil{margin-left:0}
@@ -381,8 +388,8 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Composer als Hairline-Zeile mit kursivem Serif-Platzhalter,
          Send-Quadrat 34x34. Desktop: ruhige 640px-Mittelspalte. */
       .rz-app #scrChat{max-width:none;margin:0;background:var(--rz-papier);color:var(--rz-ink);
-        min-height:100dvh;padding:calc(30px + env(safe-area-inset-top,0px)) 24px
-        calc(24px + env(safe-area-inset-bottom,0px))}
+        min-height:100dvh;padding:calc(30px + env(safe-area-inset-top,0px)) var(--rz-rand)
+        calc(var(--rz-rand) + env(safe-area-inset-bottom,0px))}
       .rz-chat-innen{max-width:640px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100dvh - 60px)}
       #scrChat .pb-msgs{gap:22px;flex:1}
       #scrChat .rz-sprecher{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
@@ -410,8 +417,9 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          ist hier eine MARKE, kein Knopf — es nennt den Ort, es oeffnet nichts. */
       #scrChat .rz-chat-oben{flex:1;display:flex;flex-direction:column;min-height:0;padding:0}
       #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-tiefgruen);
-        margin:24px -24px calc(-24px - env(safe-area-inset-bottom,0px));
-        padding:40px 24px calc(22px + env(safe-area-inset-bottom,0px));
+        margin:var(--rz-r-5) calc(-1 * var(--rz-rand))
+               calc(-1 * var(--rz-rand) - env(safe-area-inset-bottom,0px));
+        padding:40px var(--rz-rand) calc(22px + env(safe-area-inset-bottom,0px));
         display:flex;flex-direction:column}
       #scrChat .rz-chat-unten .pb-composer{margin-top:0;border-top:0;padding-top:0}
       #scrChat .rz-chat-unten .rz-weg-badge{cursor:default}
@@ -489,6 +497,22 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          nach oben, und der Inhalt rollt INNERHALB der Zone, statt die Seite
          wachsen zu lassen. Beim Zuklappen laeuft alles rueckwaerts. */
       .rz-screen .rz-half:first-child{overflow:hidden}
+      /* T2c (Handover Turn 40 §3.1) · Hoehenbudget der oberen Zone.
+         Gemessen bei 390px Breite braucht der Inhalt der oberen Vorraum-Zone
+         397px; bei flex:1 auf beiden Haelften traegt das erst ab ~800px
+         Screenhoehe. Auf 667-740px hohen Geraeten laufen die Zeilen sonst in
+         die Naht und unter das Badge.
+         min-height:0 steht hier NIE allein: allein schrumpft die Zone still
+         unter ihren Inhalt, margin-top:auto verliert seinen Spielraum und die
+         letzte Zeile wandert erst recht ueber die Naht. Erst zusammen mit
+         overflow entsteht ein Rollbereich.
+         Die Einschraenkung auf :not(.rz-regal-offen) laesst die Regal-Mechanik
+         (D9/D12-2b) unberuehrt: dort bleibt overflow:hidden richtig, weil die
+         Zone auf ihr gemessenes Mass festgesetzt wird.
+         Der Zonenfuss liegt INNERHALB des Rollbereichs — sein T2b-Polster
+         haelt den Badge-Abstand deshalb auch am Rollende. */
+      .rz-split:not(.rz-regal-offen)>.rz-half:first-child{
+        min-height:0;overflow:auto;overscroll-behavior:contain}
       .rz-regal-reihen{display:flex;flex-direction:column;min-height:0}
       .rz-fuss-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
       /* ---- D12-2b (Turn 27) · die geklickte Zeile IST die Sektion ----

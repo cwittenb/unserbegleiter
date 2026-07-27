@@ -55,7 +55,10 @@ export const THEME_CSS = String.raw`
         /* ---- Abstaende. Alles Vielfache von 4; --rz-rand ist der Screenrand. ---- */
         --rz-r-1:4px;  --rz-r-2:8px;  --rz-r-3:12px;
         --rz-r-4:16px; --rz-r-5:24px; --rz-r-6:32px;
-        --rz-rand:22px;
+        --rz-rand:24px;
+        /* T2b · Freiraum an der Naht: das Badge ragt 16px in die obere
+           Zone, die Naht-Kulisse 84px. Der Zonenfuss haelt Abstand. */
+        --rz-nahtfrei:32px;
 
         /* ---- Radien. Rund ist das Blatt, eckig die Zeile. ---- */
         --rz-rund-knopf:12px;
