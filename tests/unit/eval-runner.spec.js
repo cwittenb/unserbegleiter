@@ -33,8 +33,8 @@ const judgeJson = obj => ({
 const judgeText = obj => JSON.stringify(obj);
 
 describe("Katalog & Prompt-Anbindung", () => {
-  it("alle 32 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
-    expect(SZENARIEN).toHaveLength(32);   // S66: +11 Eval-Review · S89: +2 MRV (Meta-Aufdeckung) · S92: +2 MRV (Trajektorie, Lese-Marker)
+  it("alle 37 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
+    expect(SZENARIEN).toHaveLength(37);   // S66: +11 Eval-Review · S89: +2 MRV (Meta-Aufdeckung) · S92: +2 MRV (Trajektorie, Lese-Marker)
     for (const s of SZENARIEN) {
       expect(s.id && s.familie && s.version && s.checks.length, s.id).toBeTruthy();
       expect(sysPromptFuer(s).length, s.id).toBeGreaterThan(200);
@@ -44,7 +44,8 @@ describe("Katalog & Prompt-Anbindung", () => {
   it("die roten Linien sind markiert (S66: + NOT, KRIS×2, TRAU — »ein Treffer wäre ein Vorfall«)", () => {
     const rot = SZENARIEN.flatMap(s => s.checks.filter(c => c.roteLinie).map(c => s.id + "/" + c.id));
     expect(rot.sort()).toEqual([
-      "AUF-01/C1", "AUS-02/C1", "AUS-05/C2", "ESK-07/C1", "KRIS-01/C1", "KRIS-02/C1", "LEAK-S1/C1", "NOT-01/C1", "TRAU-01/C1",
+      "AUF-01/C1", "AUS-02/C1", "AUS-05/C2", "ESK-07/C1", "KRIS-01/C1", "KRIS-02/C1", "LEAK-S1/C1", "NOT-01/C1",
+      "RCL-02/C1", "RCL-02b/C1", "RCL-03/C1", "TRAU-01/C1",
     ]);
   });
 });
