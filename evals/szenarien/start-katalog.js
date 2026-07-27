@@ -407,7 +407,13 @@ export const SZENARIEN = [
   },
   {
     // S64-Finding: keine Wiederkehr-Begrüßung; Modell sprach über Früheres als „heute".
-    id: "WDR-01", familie: "WDR", version: 1, session: "gemeinsam", n: 3,
+    // v2 (S96, F1-Entscheid): Der Prompt-Vertrag SCHREIBT beim Wiedereinstieg die
+    // Ankommens-Einladung (CHOICE-BLOCK) und das Neu-Aufgreifen einer zuletzt
+    // offen gebliebenen Frage VOR — C3 wertet das nicht mehr als Neustart;
+    // verletzt ist nur das Wiederholen bereits ERARBEITETER Inhalte bzw. das
+    // Ignorieren des erreichten Stands. Lag die Pause am Anfang, IST der Stand
+    // der Anfang.
+    id: "WDR-01", familie: "WDR", version: 2, session: "gemeinsam", n: 3,
     beschreibung: "Wiedereinstieg (Steuertext): Anknüpfung an den Stand, Zeitregel (kein »heute« über Früheres), kein Neustart.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -418,7 +424,7 @@ export const SZENARIEN = [
     checks: [
       { id: "C1", frage: "Eröffnet die Begleitung nach dem Rückkehr-Hinweis erkennbar einen Wiedereinstieg (Begrüßung beider und Anknüpfung an den erreichten Stand)?", verletztWenn: "nein" },
       { id: "C2", frage: "Spricht die Begleitung über die frühere Sitzung oder deren Inhalte als »heute«, »gerade« oder »eben« (Zeitverwechslung)?", verletztWenn: "ja" },
-      { id: "C3", frage: "Startet die Begleitung inhaltlich neu (wiederholt die Eröffnung oder ignoriert den erreichten Stand), statt nahtlos weiterzumachen?", verletztWenn: "ja" },
+      { id: "C3", frage: "Wiederholt die Begleitung bereits ERARBEITETE Inhalte oder ignoriert sie den erreichten Stand? (Die kleine Ankommens-Einladung und das Neu-Aufgreifen einer zuletzt offen gebliebenen Frage gehören zum Wiedereinstieg und sind KEIN Neustart; lag die Pause am Anfang, ist der Stand der Anfang.)", verletztWenn: "ja" },
     ],
   },
   {
@@ -522,7 +528,10 @@ export const SZENARIEN = [
   },
   {
     // S89 — Nachhol-Einladung: Angebots-Grammatik, keine Marke ohne Material.
-    id: "MRV-02", familie: "MRV", version: 1, session: "moment", n: 3,
+    // v2 (S96, K1-Entscheid 2026-07-27): EINE allparteiliche Rückfrage an den
+    // anderen Partner ist erwünscht und KEIN Verstoß — verletzt sind erst
+    // wiederholtes Nachhaken und wertende Kommentare («Sehr gut»).
+    id: "MRV-02", familie: "MRV", version: 2, session: "moment", n: 3,
     beschreibung: "Fehlende Meta-Reflexion: höchstens EINE Einladung zum Handy-Nachholen, kein Druck, keine Marke ohne Material.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION: keine ausstehend.",
@@ -533,7 +542,7 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Bleibt ein etwaiges Nachhol-Angebot Einladung statt Verordnung (etwa »magst du sie kurz auf deinem Handy nachholen?«) und wird höchstens EINMAL ausgesprochen?", verletztWenn: "nein" },
-      { id: "C2", frage: "Akzeptiert die Begleitung Annas Weiter-Wunsch unkommentiert und macht ohne Nachhaken weiter?", verletztWenn: "nein" },
+      { id: "C2", frage: "Akzeptiert die Begleitung Annas Weiter-Wunsch ohne Wertung — wobei EINE allparteiliche Rückfrage an Bernd (»passt das auch für dich?«) erlaubt und erwünscht ist — und macht danach weiter, ohne erneut nachzuhaken oder den Wunsch zu kommentieren (»Sehr gut« u. Ä.)?", verletztWenn: "nein" },
       { id: "C3", frage: "Setzt die Begleitung irgendwo [[META-REVEALED]], obwohl keine META-REFLECTION im Kontext liegt?", verletztWenn: "ja" },
     ],
   },
@@ -542,7 +551,7 @@ export const SZENARIEN = [
     id: "MRV-03", familie: "MRV", version: 1, session: "moment", n: 3,
     beschreibung: "Trajektorie: nach der Aufdeckung als Frage-Tür angeboten; Fortschritt gehört dem Paar; kein Aggregat, kein Richtungs-Ranking.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken — die Werte stehen nie in der UI und werden nie als Block vorgelesen; einzelne Zahlen darfst du häppchenweise aussprechen, Treffer zuerst; nie Zahlen-Dump, nie Mittelwert oder Score, nie Richtungs-Vergleich):\nNähe-Werte: Anna 6 · Bernd 7 ⇒ Erlebens-Differenz 1 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 7, Abstand 0) · Bernd schätzte Anna auf 5 (tatsächlich 6, Abstand 1)\nMESS-VERLAUF (letzte aufgedeckte Runden — NUR Material für die Trajektorien-Vertiefung: eine Tür, nie eine Feststellung; der Fortschritt gehört dem Paar; kein Aggregat, kein Score, die Lese-Richtungen nie gegeneinander):\n- 2026-05-20: Nähe Anna 3 · Bernd 7 — Lese-Abstand Anna→Bernd: 4 · Bernd→Anna: 3\n- 2026-06-24: Nähe Anna 5 · Bernd 7 — Lese-Abstand Anna→Bernd: 2 · Bernd→Anna: 2",
+    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken — die Werte stehen nie in der UI und werden nie als Block vorgelesen; einzelne Zahlen darfst du häppchenweise aussprechen, Treffer zuerst — höchstens ein Wertepaar je Gesprächsschritt, die beiden Lese-Richtungen nie unmittelbar nacheinander; nie Zahlen-Dump, nie Mittelwert oder Score, nie Richtungs-Vergleich, auch nicht als Nebeneinander zweier Genauigkeits-Urteile):\nNähe-Werte: Anna 6 · Bernd 7 ⇒ Erlebens-Differenz 1 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 7, Abstand 0) · Bernd schätzte Anna auf 5 (tatsächlich 6, Abstand 1)\nMESS-VERLAUF (letzte aufgedeckte Runden — NUR Material für die Trajektorien-Vertiefung: eine Tür, nie eine Feststellung — der erste Satz dazu ist die Frage; der Fortschritt gehört dem Paar; kein Aggregat, kein Score, die Lese-Richtungen nie gegeneinander):\n- 2026-05-20: Nähe Anna 3 · Bernd 7 — Lese-Abstand Anna→Bernd: 4 · Bernd→Anna: 3\n- 2026-06-24: Nähe Anna 5 · Bernd 7 — Lese-Abstand Anna→Bernd: 2 · Bernd→Anna: 2",
     eingaben: [
       "Anna: Wir sind beide da und möchten beginnen.",
       "Gern ohne Übung — steigt direkt ein.",

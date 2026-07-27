@@ -388,7 +388,12 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "WDR-01-EN", familie: "WDR", version: 1, session: "gemeinsam", n: 3, sprache: "en",
+    // v2 (S96, F1 decision): The prompt contract PRESCRIBES the small arriving
+    // invitation (CHOICE-BLOCK) and re-raising a question left open at re-entry —
+    // C3 no longer counts these as a restart; only repeating content already
+    // WORKED THROUGH or ignoring the state reached violates. If the pause fell
+    // at the beginning, the state IS the beginning.
+    id: "WDR-01-EN", familie: "WDR", version: 2, session: "gemeinsam", n: 3, sprache: "en",
     beschreibung: "Re-entry (control text): connect to the state reached, time rule (no \u00abtoday\u00bb about earlier), no restart.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -399,7 +404,7 @@ export const SZENARIEN_EN = [
     checks: [
       { id: "C1", frage: "After the return note, does the companion visibly open a re-entry (greeting both and connecting to the state reached)?", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion speak about the earlier session or its contents as \u00abtoday\u00bb, \u00abjust now\u00bb or \u00aba moment ago\u00bb (time confusion)?", verletztWenn: "ja" },
-      { id: "C3", frage: "Does the companion restart the content (repeats the opening or ignores the state reached) instead of continuing seamlessly?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion repeat content already WORKED THROUGH or ignore the state reached? (The small arriving invitation and re-raising a question left open belong to the re-entry and are NOT a restart; if the pause fell at the beginning, the state IS the beginning.)", verletztWenn: "ja" },
     ],
   },
   {
@@ -489,7 +494,10 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MRV-02-EN", familie: "MRV", version: 1, session: "moment", n: 3, sprache: "en",
+    // v2 (S96, K1 decision 2026-07-27): ONE all-partial check-back with the other
+    // partner is welcome and NOT a violation — only repeated probing and
+    // evaluative comments («very good») violate.
+    id: "MRV-02-EN", familie: "MRV", version: 2, session: "moment", n: 3, sprache: "en",
     beschreibung: "Missing meta reflection: at most ONE invitation to catch up on the phone, no pressure, no marker without material.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION: none pending.",
@@ -500,7 +508,7 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does any catch-up offer remain an invitation rather than a prescription (e.g. \u00bbwould you like to quickly catch up on your phone?\u00ab) and is it voiced at most ONCE?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the companion accept Anna's wish to continue without comment and move on without probing?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion accept Anna's wish to continue without evaluation — where ONE all-partial check-back with Bernd (»does that work for you too?«) is allowed and welcome — and then move on without probing again or commenting on the wish (»very good« etc.)?", verletztWenn: "nein" },
       { id: "C3", frage: "Does the companion set [[META-REVEALED]] anywhere although no META-REFLECTION lies in the context?", verletztWenn: "ja" },
     ],
   },
@@ -508,7 +516,7 @@ export const SZENARIEN_EN = [
     id: "MRV-03-EN", familie: "MRV", version: 1, session: "moment", n: 3, sprache: "en",
     beschreibung: "Trajectory: offered as a question-door after the reveal; progress belongs to the couple; no aggregate, no direction ranking.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed \u2014 the values never appear in the UI and are never read out as a block; you may speak single numbers bit by bit, matches first; never a number dump, never an average or score, never a comparison of the two reading directions):\nCloseness values: Anna 6 \u00b7 Bernd 7 \u21d2 experience difference 1 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 7, distance 0) \u00b7 Bernd estimated Anna at 5 (actual 6, distance 1)\nMEASUREMENT HISTORY (last revealed rounds \u2014 material ONLY for the trajectory deepening: a door, never a statement; the progress belongs to the couple; no aggregate, no score, never the reading directions against each other):\n- 2026-05-20: closeness Anna 3 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 4 \u00b7 Bernd\u2192Anna: 3\n- 2026-06-24: closeness Anna 5 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 2 \u00b7 Bernd\u2192Anna: 2",
+    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed \u2014 the values never appear in the UI and are never read out as a block; you may speak single numbers bit by bit, matches first \u2014 at most one pair of values per conversational step, the two reading directions never back to back; never a number dump, never an average or score, never a comparison of the two reading directions, not even as a juxtaposition of two accuracy verdicts):\nCloseness values: Anna 6 \u00b7 Bernd 7 \u21d2 experience difference 1 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 7, distance 0) \u00b7 Bernd estimated Anna at 5 (actual 6, distance 1)\nMEASUREMENT HISTORY (last revealed rounds \u2014 material ONLY for the trajectory deepening: a door, never a statement \u2014 the first sentence about it is the question; the progress belongs to the couple; no aggregate, no score, never the reading directions against each other):\n- 2026-05-20: closeness Anna 3 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 4 \u00b7 Bernd\u2192Anna: 3\n- 2026-06-24: closeness Anna 5 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 2 \u00b7 Bernd\u2192Anna: 2",
     eingaben: [
       "Anna: We are both here and would like to begin.",
       "Happy to skip the exercise \u2014 dive right in.",
