@@ -35,7 +35,7 @@ import { holeVerlauf, loescheVerlauf } from "./verlauf-ablage.js";   // S95.7c
  */
 export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                                        zeitleistenEintrag, zeigePaarsprache,
-                                       oeffneReplay, laeuftGespraech, hinweis, bestaetige }) {
+                                       oeffneReplay, oeffneLeseansicht, laeuftGespraech, hinweis, bestaetige }) {
   async function zeigeZeitleiste() {
     const zl = (await backend.pstate.get("timeline")) || { entries: [] };
     zeigeNur("boxZeitleiste");
@@ -56,7 +56,8 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
                Zaehler, kein Badge. Wer hinschaut, findet ihn; wer die Zeitleiste
                liest, wird nicht daran erinnert. */
             (e2.vid
-              ? `<br><span class="pb-link" data-zlteil="${esc(e2.vid)}">${t("verlauf.zlEingang")}</span>` +
+              ? `<br><span class="pb-link" data-zllesen="${esc(e2.vid)}">${t("verlauf.zlLesen")}</span>` +
+                ` <span class="pb-link" data-zlteil="${esc(e2.vid)}">${t("verlauf.zlEingang")}</span>` +
                 ` <span class="pb-link rz-klein-leise" data-zlweg="${esc(e2.vid)}">${t("verlauf.zlLoeschen")}</span>`
               : "") + `</div>`;
         }).join("")
@@ -73,6 +74,14 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
        Sessionende — engine = null, weil eine abgeschlossene Session inert ist.
        Der Freigabepfad laeuft dann bis quereGate durch und ueberspringt nur die
        Quittung ans Modell (Bauvorschrift aus S96.1). */
+    /* S95.7e · Lesen. Anders als der Teilen-Eingang braucht das kein laufendes
+       Gespraech zu beruecksichtigen: Lesen aendert nichts. */
+    for (const b of items.querySelectorAll("[data-zllesen]"))
+      b.addEventListener("click", async () => {
+        const v = await holeVerlauf(backend, b.getAttribute("data-zllesen"));
+        oeffneLeseansicht(v);
+      });
+
     for (const b of items.querySelectorAll("[data-zlteil]"))
       b.addEventListener("click", async () => {
         if (laeuftGespraech && laeuftGespraech()) { hinweis(t("verlauf.zlLaeuft")); return; }

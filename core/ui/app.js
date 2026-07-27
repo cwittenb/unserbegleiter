@@ -27,6 +27,7 @@ import { macheAuswahlScreen } from "./auswahl-screen.js";   // R4b
 import { machePanels } from "./panels.js";   // R4b
 import { macheChatKern } from "./chat-kern.js";   // R4b
 import { legeVerlaufAb, verlaufEinstellung } from "./verlauf-ablage.js";   // S95.7a
+import { zeichneReplay } from "./replay-ansicht.js";   // S95.7e
 
 
 /* S35 · Ladeanzeige: dünner Zähl-Proxy um die Backend-Fassade. Jede laufende
@@ -156,6 +157,13 @@ export function createApp({ doc, backend, root, diktat }) {
           <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><div class="rz-caps">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
           <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
+          <!-- S95.7e · Leseansicht eines abgeschlossenen Gespraechs. Eigene
+               Flaeche, keine Eingabe, kein Panel — lesen aendert nichts. -->
+          <div class="rz-regal-inhalt pb-hidden" id="boxLesen">
+            <div class="rz-caps" id="lesenKopf"></div>
+            <div id="lesenInhalt"></div>
+            <button class="pb-btn rz-oben-2" id="lesenZu">${t("verlauf.leseZu")}</button>
+          </div>
         </div>
         <div class="rz-fuss">
           <h2 class="rz-h2">${t("mein.gruppeRegale")}</h2>
@@ -1131,6 +1139,38 @@ export function createApp({ doc, backend, root, diktat }) {
   const { zeigeRecovery, zeigeEmailPflicht } =
     macheRecoveryScreen({ doc, $, backend, state, wurzel });
 
+  /* S95.7e · Leseansicht. Eine eigene Flaeche ueber dem Vorraum, kein
+     wiederverwendeter Chat: renderMsgs zoege Auswahlflaeche, Aufdeck-Tafeln,
+     Stream-Blase, Skalen und Composer mit — nichts davon gehoert zu einem
+     abgeschlossenen Gespraech. Lesen aendert nichts, deshalb gibt es hier
+     weder Eingabe noch Knoepfe ausser dem Schliessen. */
+  function verdrahteLeseansicht() {
+    const zu = $("lesenZu");
+    if (zu && !zu.dataset.rzVerdrahtet) {
+      zu.dataset.rzVerdrahtet = "1";
+      zu.addEventListener("click", schliesseLeseansicht);
+    }
+  }
+
+  function oeffneLeseansicht(verlauf) {
+    const box = $("boxLesen");
+    if (!box) return;
+    const kopf = $("lesenKopf"), inhalt = $("lesenInhalt");
+    if (kopf) kopf.textContent = t("verlauf.leseTitel", {
+      datum: new Date((verlauf && verlauf.at) || Date.now()).toLocaleDateString(getLocale()),
+    });
+    verdrahteLeseansicht();
+    const n = zeichneReplay(inhalt, verlauf, el);
+    if (!n && inhalt) inhalt.textContent = t("verlauf.leseLeer");
+    box.classList.remove("pb-hidden");
+    if (inhalt) inhalt.scrollTop = 0;
+  }
+
+  function schliesseLeseansicht() {
+    const box = $("boxLesen");
+    if (box) box.classList.add("pb-hidden");
+  }
+
   /* S95.7c · Replay: dasselbe Auswahl-Panel wie am Sessionende, nur ohne
      Session. starteAuswahl nimmt engine = null; der Freigabepfad laeuft bis
      quereGate durch und ueberspringt die Quittung ans Modell. Der
@@ -1160,7 +1200,8 @@ export function createApp({ doc, backend, root, diktat }) {
   const { zeigeZeitleiste, zeigeRegal, zeigeAgenda, zeigeMess, zeigeMomente } =
     macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                            zeitleistenEintrag, zeigePaarsprache,
-                           oeffneReplay, laeuftGespraech, hinweis: hint, bestaetige });
+                           oeffneReplay, oeffneLeseansicht, laeuftGespraech,
+                           hinweis: hint, bestaetige });
 
   // S71 · Verlässt jemand den Chat, stempeln wir den Pausenbeginn auf die
   // laufende Session — so bleibt eine kurze Rückkehr (< 5 Min) nahtlos, während
