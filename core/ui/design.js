@@ -206,8 +206,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-tiefgruen .rz-zeile{border-top-color:var(--rz-hairline-gruen)}
       .rz-tiefgruen .rz-zeile .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
       .rz-zeile.rz-unten{border-top:0;border-bottom:1px solid var(--rz-hairline-gruen)}
-      .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
+      /* T2e (Handover Turn 40 §3.4) · --rz-gedimmt traegt auf Papier nur
+         2.3:1 und damit keinen Text. Der Zustandstext ("noch gesperrt") ist
+         Information, keine Dekoration — er bekommt --rz-sek (4.7:1).
+         --rz-gedimmt bleibt fuer rein dekorative Zustaende: die gesperrte
+         Zeile selbst, den Platzhalter, die Wortmarke.
+         Achtung, gemessene Falle: --rz-sek ist eine PAPIER-Rolle. Auf
+         Tiefgruen faellt sie im hellen Theme auf 2.98:1 und waere damit
+         schlechter als das, was sie ersetzt (--rz-gedimmt: 6.09:1). Deshalb
+         die Gegenregel fuer die gruene Zone — heute steht die einzige
+         .rz-zustand-Zeile auf Papier, morgen vielleicht nicht mehr. */
+      .rz-zeile .rz-zustand{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-sek);
                             max-width:38%;text-align:right;line-height:var(--rz-lh-zeile)}
+      .rz-tiefgruen .rz-zeile .rz-zustand{color:var(--rz-sek-auf-gruen)}
       .rz-balken{height:2px;background:var(--rz-hairline);margin-top:8px}
       .rz-balken>i{display:block;height:2px;background:var(--rz-akzent-hell)}
       .rz-initial{width:22px;height:22px;flex:none;border-radius:50%;background:var(--rz-akzent);
@@ -222,8 +233,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Screen die Paar-Signatur (eigener Name zuerst), der Ortsname wandert
          ins Wegweiser-Badge, und die Wortmarke ist Signet am Fuss. Sperrung
          .34em (nicht .2em wie .rz-caps) haelt beide Zeilen auseinander. */
+      /* T2e · dieselbe Begruendung wie bei .rz-zustand: die Paar-Signatur
+         nennt, wessen Raum das ist — 11px Caps mit .34em Sperrung brauchen
+         dafuer mehr als 2.3:1. Die Tiefgruen-Fassung darunter traegt bereits
+         5.15:1 und bleibt, wie sie ist. */
       .rz-signatur{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.34em;
-                   text-transform:uppercase;color:var(--rz-gedimmt);text-align:center}
+                   text-transform:uppercase;color:var(--rz-sek);text-align:center}
       .rz-tiefgruen .rz-signatur{color:var(--rz-sek2-auf-gruen)}
       .rz-fussmarke{display:block;margin-top:28px;text-align:center;
                     font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.34em;
