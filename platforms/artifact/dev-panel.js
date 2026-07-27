@@ -191,6 +191,33 @@ export function baueSoloChat(meta = MOCK_META) {
   return stempel({ status: "running", language: "de", messages });
 }
 
+/* S95.7a/8b · Ein AUFBEWAHRTER Verlauf einer abgeschlossenen Sitzung.
+ *
+ * Ohne den blieb alles unsichtbar, was seit S95.7 gebaut wurde: der
+ * Lese-Eingang haengt an vid, der Loeschweg ebenso, und der Begleiter faende
+ * beim Wortlaut-Abruf nichts. Man haette die Funktionen nur erleben koennen,
+ * indem man eine echte Sitzung komplett durchspielt und abschliesst.
+ *
+ * Material ist dasselbe wie im laufenden Solo-Chat — so laesst sich Gelesenes
+ * mit Erlebtem vergleichen. Die Eignung liegt bei, damit auch die AUSWAHL aus
+ * dem Replay heraus pruefbar ist und nicht nur das Lesen. */
+const MOCK_VID = "1750000000000-mock01";
+
+function baueAufbewahrtenVerlauf(meta) {
+  const chat = baueSoloChat(meta);
+  return {
+    messages: chat.messages,
+    // Ein Paar faellt bewusst durch — sonst zeigt die Auswahl nie, wie eine
+    // begruendete Nicht-Eignung aussieht.
+    eignung: { pairs: [
+      { id: "P1-2", ownerOk: true, companionOk: true, reason: null },
+      { id: "P3-4", ownerOk: false, companionOk: true, reason: "Charakterzuschreibung statt Situationsbezug" },
+      { id: "P5-6", ownerOk: true, companionOk: true, reason: null },
+    ]},
+    at: vor(6),
+  };
+}
+
 /** Ein bereits sichtbarer Ausschnitt im Regal — die LESESEITE (S96.3). */
 function ausschnittItem(meta) {
   return {
@@ -283,10 +310,16 @@ export function baueMockdaten(meta = MOCK_META) {
   privat[key(meta, "chat:A:solo")] = baueSoloChat(meta);
 
   privat[key(meta, "pstate:A")] = stempel({
-    timeline: { entries: [{ at: vor(6), topics: ["Rückzug"], summary: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat." }] },
+    // vid verknüpft den Eintrag mit dem aufbewahrten Verlauf (S95.7a).
+    timeline: { entries: [{ at: vor(6), topics: ["Rückzug"], summary: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat.", vid: MOCK_VID }] },
+    ["verlauf:" + MOCK_VID]: baueAufbewahrtenVerlauf(meta),
     selfDisclosures: { items: [{ at: vor(6), text: "„Mir ist unser Abend wichtig — wenn er kippt, sag es mir bitte früh.“" }] },
   });
   privat[key(meta, "pstate:B")] = stempel({
+    // B trägt BEWUSST keinen Verlauf: Im selben Datensatz stehen damit beide
+    // Fälle nebeneinander. Der zweite ist der wichtigere — er zeigt, dass dort
+    // keine ausgegraute Tür steht und der Begleiter ehrlich sagen muss, dass
+    // nichts zu holen ist.
     timeline: { entries: [{ at: vor(3), topics: ["Arbeitsdruck"], summary: "Der Arbeitsdruck frisst die Abende — das will ich nicht so lassen." }] },
     selfDisclosures: { items: [] },
   });

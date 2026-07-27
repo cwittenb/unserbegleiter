@@ -81,13 +81,53 @@ export function drehbuchFetch(texte, originalFetch) {
 
 const schlaf = ms => new Promise(r => setTimeout(r, ms));
 
-/** Pollt bis pruef() wahr ist (Rückgabe wird durchgereicht) — mit klarem Timeout-Text. */
-export async function warteAuf(pruef, was, { timeoutMs = 5000, schrittMs = 20 } = {}) {
-  const ende = Date.now() + timeoutMs;
+/* Was beim Aufgeben ueber den Zustand zu sehen ist.
+ *
+ * Zwei e2e-Vorfaelle sind ohne Befund verpufft: Die Meldung lautete
+ * "Timeout: <was>" und sonst nichts — nicht einmal, WELCHES von fuenf
+ * Wartefenstern es war, geschweige denn warum. Ein nicht reproduzierbarer
+ * Fehler, der nichts hinterlaesst, ist ein Fehler, den man nie findet.
+ *
+ * Deshalb kostenlos fuer alle Aufrufer: sichtbarer Fehlertext, Wartezustand,
+ * ein kurzer Textauszug. Wer mehr weiss, reicht `befund` herein. */
+function domBefund() {
+  const d = globalThis.document;
+  if (!d || !d.body) return null;
+  const teile = [];
+  const err = d.getElementById("pbErr");
+  if (err && err.textContent.trim()) teile.push("Fehlerbox: " + err.textContent.trim().slice(0, 160));
+  const send = d.getElementById("btnSend");
+  if (send) teile.push("btnSend " + (send.disabled ? "gesperrt (wartet)" : "frei"));
+  const stream = d.getElementById("pbStream");
+  if (stream) teile.push("Stream-Blase sichtbar");
+  const txt = (d.body.textContent || "").replace(/\s+/g, " ").trim();
+  if (txt) teile.push("Text: …" + txt.slice(-200));
+  return teile.length ? teile.join(" | ") : null;
+}
+
+/**
+ * Pollt bis pruef() wahr ist (Rückgabe wird durchgereicht) — mit klarem
+ * Timeout-Text UND einem Befund zum Zustand beim Aufgeben.
+ * @param {object} [opts]
+ * @param {number} [opts.timeoutMs]  Vorgabe 5000
+ * @param {number} [opts.schrittMs]  Vorgabe 20
+ * @param {Function} [opts.befund]   () => string — zusaetzlicher Kontext
+ */
+export async function warteAuf(pruef, was, { timeoutMs = 5000, schrittMs = 20, befund } = {}) {
+  const start = Date.now();
+  const ende = start + timeoutMs;
   for (;;) {
     const r = await pruef();
     if (r) return r;
-    if (Date.now() > ende) throw new Error("Timeout: " + was);
+    if (Date.now() > ende) {
+      const teile = ["Timeout: " + was + " (nach " + (Date.now() - start) + "ms)"];
+      let eigen = null;
+      try { eigen = befund ? befund() : null; } catch (e) { eigen = "befund() warf: " + (e && e.message); }
+      if (eigen) teile.push(eigen);
+      const dom = domBefund();
+      if (dom) teile.push(dom);
+      throw new Error(teile.join("\n  · "));
+    }
     await schlaf(schrittMs);
   }
 }

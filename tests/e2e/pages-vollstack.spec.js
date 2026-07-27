@@ -20,6 +20,19 @@ import { coreHash } from "../../scripts/core-hash.js";
 import { warteAuf, warteSendbereit } from "../../platforms/artifact/selbstfahrt.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+/* Wartefenster der e2e-Strecke.
+ *
+ * Frueher 60s je Fenster, fuenf hintereinander, mit 300s Wanduhr-Polster: Ein
+ * Fehlschlag lief damit bis zu fuenf Minuten, bevor er sich meldete — bei einer
+ * Suite, in der alles andere in Millisekunden fertig ist, sieht das aus wie ein
+ * toter Prozess statt wie ein roter Test.
+ *
+ * Real braucht die Strecke rund eine Sekunde. Zehn Sekunden sind das Zehnfache
+ * und immer noch grosszuegig fuer eine kalte, belastete Maschine — sie sind ein
+ * Polster, kein Korrektheits-Kriterium. Der Gewinn ist die Diagnosezeit:
+ * Sekunden statt Minuten bis zum Befund. */
+const E2E_FENSTER_MS = 10000;
+
 const ADMIN = "test-admin-geheim";
 let mf, clientCode, hash;
 
@@ -113,30 +126,30 @@ describe("E2E · Pages-Vollstack (Worker + gebauter Client)", () => {
     new Function(clientCode)();
 
     // 3 · Enrollment verbraucht den Token, die App bootet über die Worker-API.
-    await warteAuf(() => document.getElementById("btnMyRoom"), "App bootet bis zur Startseite", { timeoutMs: 60000 });
+    await warteAuf(() => document.getElementById("btnMyRoom"), "App bootet bis zur Startseite", { timeoutMs: E2E_FENSTER_MS });
     expect(window.PAARBEGLEITUNG.coreHash).toBe(hash);
     expect(location.hash).toBe("");                            // Token aus der Adresszeile entfernt
 
     // 4 · In den Solo-Raum und eine Nachricht durch den ECHTEN Proxy schicken.
     document.getElementById("btnMyRoom").click();
-    await warteAuf(() => !document.getElementById("scrMyRoom").classList.contains("pb-hidden"), "Mein Raum", { timeoutMs: 60000 });
+    await warteAuf(() => !document.getElementById("scrMyRoom").classList.contains("pb-hidden"), "Mein Raum", { timeoutMs: E2E_FENSTER_MS });
     document.getElementById("btnSolo").click();
-    await warteAuf(() => document.body.textContent.includes("[PF1]"), "Eröffnung über /api/llm gerendert", { timeoutMs: 60000 });
-    await warteSendbereit(document.body, { timeoutMs: 60000 });   // Stream zu Ende — sonst schluckt state.warten den Klick
+    await warteAuf(() => document.body.textContent.includes("[PF1]"), "Eröffnung über /api/llm gerendert", { timeoutMs: E2E_FENSTER_MS });
+    await warteSendbereit(document.body, { timeoutMs: E2E_FENSTER_MS });   // Stream zu Ende — sonst schluckt state.warten den Klick
     const inp = document.getElementById("pbInput");
     inp.value = "Mich beschäftigt, dass wir kaum noch gemeinsame Abende haben.";
     document.getElementById("btnSend").click();
-    await warteAuf(() => document.body.textContent.includes("[PF2]"), "Antwort (SSE→neutral) gerendert", { timeoutMs: 60000 });
+    await warteAuf(() => document.body.textContent.includes("[PF2]"), "Antwort (SSE→neutral) gerendert", { timeoutMs: E2E_FENSTER_MS });
 
     // 5 · Persistenz liegt im Worker-KV (Cookie-Session, derselbe Jar liest über
     //     die API). Das Rendern läuft dem save() der Antwort voraus — pollen.
     const roh = await warteAuf(async () => {
       const j = JSON.stringify(await bruecke("/api/chat/mine/solo").then(r => r.json()));
       return j.includes("[PF2]") ? j : null;
-    }, "Antwort im Worker-KV persistiert", { timeoutMs: 60000 });
+    }, "Antwort im Worker-KV persistiert", { timeoutMs: E2E_FENSTER_MS });
     expect(roh).toContain("[PF1]");
     expect(roh).toContain("gemeinsame Abende");
-  }, 300000);   // Wanduhr-Polster: Summe der 60s-Fenster, nie Korrektheits-Kriterium
+  }, 120000);   // Wanduhr-Polster: Summe der Fenster plus Luft, nie Korrektheits-Kriterium
 
   it("abgelaufener Link führt in den Wiedereinstieg statt in eine Sackgasse (voller Stack)", async () => {
     document.body.innerHTML = '<div id="app"></div>';
