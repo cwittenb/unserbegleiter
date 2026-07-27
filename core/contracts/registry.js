@@ -5,7 +5,7 @@
 import { blockDef } from "./block.js";
 import {
   gateSchema, befundSchema, zeitSchema, gateArtSchema, momentSchema, auftragBlockSchema, qzSchema, aufdeckSchema, choiceSchema, noteSchema,
-  ausschnittBlockSchema,
+  ausschnittBlockSchema, abrufBlockSchema,
 } from "./schemas.js";
 
 export const BLOECKE = {
@@ -80,6 +80,15 @@ export const BLOECKE = {
     start: "EXCERPT-BLOCK", end: "END EXCERPT-BLOCK",
     placeholder: "",
     dataset: "ausschnitt", schema: ausschnittBlockSchema,
+  }),
+  // Wortlaut-Abruf (S95.8b): Der Begleiter fordert den Verlauf einer frueheren
+  // Session an, um daran anzuknuepfen UND die Eignung ihrer Paare zu pruefen.
+  // Unsichtbar: Das Holen ist Mechanik, das Gespraech soll ungestoert bleiben —
+  // DASS es geschieht, sagt der Begleiter beim ersten Mal beilaeufig selbst.
+  abruf: blockDef({
+    start: "RECALL-BLOCK", end: "END RECALL-BLOCK",
+    placeholder: "",
+    dataset: "abruf", schema: abrufBlockSchema,
   }),
 };
 

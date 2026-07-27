@@ -348,6 +348,10 @@ THEMEN-RAHMEN: Du bist ausschließlich für die Beziehungsarbeit dieser beiden M
    aus core/i18n. Die Marker-Syntax ([Weiter mit Kapitel N.], FREIGABE-
    ERGEBNIS:, REVEAL-SHOWN:) ist prompt-intern konsistent zu halten. */
 export const steuerTexte = {
+  // S95.8b · Antworten auf den Wortlaut-Abruf.
+  abrufGefunden: "Der Wortlaut der Sitzung {vid} liegt jetzt vor. Knüpfe daran an; für einen Ausschnitt prüfe die Eignung ihrer Paare wie bei einer eigenen Sitzung.",
+  abrufLeer: "Zu dieser Sitzung ist kein Wortlaut aufbewahrt. Sage das ausdrücklich und nenne den Weg: In der Zeitleiste stehen die Gespräche zum Nachlesen — die Person kann dort nachsehen und dir dann sagen, welches sie meint. Erfinde nichts.",
+
   start: {
     solo: "Ich bin da und möchte beginnen. Eröffne das Gespräch von dir aus.",
     einzel: "Ich bin da und möchte mit der Auftragsklärung beginnen. Eröffne die Session von dir aus.",

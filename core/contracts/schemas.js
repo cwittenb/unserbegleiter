@@ -257,3 +257,20 @@ export function aufdeckSchema(d) {
     e.push("no quotas or scores in the protocol – touching points instead of counting");
   return e;
 }
+
+/* S95.8b · RECALL-BLOCK: Der Begleiter fordert den WORTLAUT einer frueheren
+   Session an. Er kennt die Zeitleiste (Zusammenfassungen), nicht die Saetze —
+   wie ein Mensch, der sich an den Kern erinnert und das Material dann holt.
+
+   EINE Kennung je Abruf, mit Absicht: Mehrere Verlaeufe waeren viel Kontext und
+   eine unuebersichtliche Auswahl. Wer mehrere meint, wird gefragt, welchen.
+
+   Die Aufloesung gehoert der APP: Der Begleiter nennt die Kennung, die er in
+   der Zeitleiste gesehen hat — er raet nicht, welches Gespraech gemeint war.
+   Bei "gestern" gegen "letzte Woche" ist eine Verwechslung teuer. */
+export function abrufBlockSchema(d) {
+  if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  if (typeof d.vid !== "string" || !d.vid.trim()) return ['"vid" is missing'];
+  if (Object.keys(d).length > 1) return ["only \"vid\" is allowed — one recall per block"];
+  return [];
+}

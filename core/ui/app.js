@@ -26,7 +26,7 @@ import { macheAnsichtenScreen } from "./ansichten-screen.js";   // R4b
 import { macheAuswahlScreen } from "./auswahl-screen.js";   // R4b
 import { machePanels } from "./panels.js";   // R4b
 import { macheChatKern } from "./chat-kern.js";   // R4b
-import { legeVerlaufAb, verlaufEinstellung } from "./verlauf-ablage.js";   // S95.7a
+import { legeVerlaufAb, verlaufEinstellung, holeVerlauf } from "./verlauf-ablage.js";   // S95.7a/8b
 import { zeichneReplay } from "./replay-ansicht.js";   // S95.7e
 
 
@@ -910,6 +910,10 @@ export function createApp({ doc, backend, root, diktat }) {
       onScale: lebend((art, e2) => scalePanel(art, e2)),
       onChoice: lebend((art, e2, daten) => choicePanel(art, e2, daten)),
       onAufdecken: lebend((e2, richtung) => aufdeckTafel(e2, richtung)),
+      /* S95.8b · Wortlaut-Abruf. Der Begleiter nennt die Kennung, die App loest
+         auf und liefert. Er raet NICHT, welches Gespraech gemeint war — bei
+         "gestern" gegen "letzte Woche" ist eine Verwechslung teuer. */
+      onAbruf: lebend((daten, e2) => holeWortlaut(daten, e2)),
       // S89 · Verbrauch der Messrunde hängt an der AUFDECKUNG, nicht am
       // Sessionende: [[META-REVEALED]] bucht ID-genau; ein MOMENT-BLOCK ohne
       // Aufdeckung lässt die Runde für die nächste Qualitätszeit liegen.
@@ -1171,19 +1175,21 @@ export function createApp({ doc, backend, root, diktat }) {
     if (box) box.classList.add("pb-hidden");
   }
 
-  /* S95.7c · Replay: dasselbe Auswahl-Panel wie am Sessionende, nur ohne
-     Session. starteAuswahl nimmt engine = null; der Freigabepfad laeuft bis
-     quereGate durch und ueberspringt die Quittung ans Modell. Der
-     Richtwert-Hinweis faellt erneut — es ist eine neue Auswahl. */
-  function oeffneReplay(verlauf) {
-    const paare = paareAusVerlauf(verlauf.messages || []);
-    if (!paare.length) return;
-    starteAuswahl(paare, verlauf.eignung, null);
-  }
-
-  /** Laeuft gerade ein Gespraech? Dann gehoert eine Freigabe in dessen Fluss. */
-  function laeuftGespraech() {
-    return !!(state.engine && state.engine.chat && state.engine.chat.status === "running");
+  /* S95.8b · Den angeforderten Verlauf in den Kontext geben.
+     Die Antwort geht als Protokoll-Nachricht zurueck (RECALL-RESULT) — wie bei
+     allen anderen App-Antworten. Findet sich nichts, sagt die Antwort das
+     ausdruecklich: Der Begleiter soll die Luecke NICHT fuellen, sondern
+     benennen und auf die Zeitleiste verweisen. */
+  async function holeWortlaut(daten, engine) {
+    const verlauf = await holeVerlauf(backend, daten && daten.vid);
+    const sichtbar = ((verlauf && verlauf.messages) || [])
+      .filter(m => !m.hidden && !istWireNachricht(m))
+      .map(m => (m.role === "assistant" ? "B: " : "I: ") + cleanDisplay(m.content, [], ALLE_BLOECKE))
+      .join("\n");
+    const antwort = sichtbar
+      ? "RECALL-RESULT\n" + fuelle(K().steuerTexte.abrufGefunden, { vid: daten.vid }) + "\n" + sichtbar
+      : "RECALL-RESULT\n" + K().steuerTexte.abrufLeer;
+    await warteAntwort(() => engine.submitToolResult(antwort));
   }
 
   /** Rueckfrage. Loeschen ist endgueltig und wird als solches benannt. */
@@ -1200,8 +1206,7 @@ export function createApp({ doc, backend, root, diktat }) {
   const { zeigeZeitleiste, zeigeRegal, zeigeAgenda, zeigeMess, zeigeMomente } =
     macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                            zeitleistenEintrag, zeigePaarsprache,
-                           oeffneReplay, oeffneLeseansicht, laeuftGespraech,
-                           hinweis: hint, bestaetige });
+                           oeffneLeseansicht, bestaetige });
 
   // S71 · Verlässt jemand den Chat, stempeln wir den Pausenbeginn auf die
   // laufende Session — so bleibt eine kurze Rückkehr (< 5 Min) nahtlos, während

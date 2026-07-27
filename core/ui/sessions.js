@@ -234,8 +234,15 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkpost
 
   const eintraege = ((timeline && timeline.entries) || []).slice(-5);
   if (eintraege.length)
+    /* S95.8b · Die Kennung macht sichtbar, welche Eintraege einen aufbewahrten
+       WORTLAUT haben. Ohne sie sagte der Begleiter "ja, gern" und faende
+       nichts — bei jemandem, der auf "jedes Mal fragen" steht und damals nein
+       gesagt hat, waere das eine leere Zusage. Eintraege ohne Kennung sind
+       damit auch als solche erkennbar: Er sieht, dass es dort nichts zu holen
+       gibt, und kann es sagen statt es zu versuchen. */
     teile.push(KT("sk.zeitleisteKopf") + "\n" + eintraege.map(e =>
-      "- " + (e.at || "").slice(0, 10) + " [" + ((e.topics || []).join(" · ")) + "]: " + (e.summary || "")).join("\n"));
+      "- " + (e.at || "").slice(0, 10) + " [" + ((e.topics || []).join(" · ")) + "]"
+      + (e.vid ? " {vid:" + e.vid + "}" : "") + ": " + (e.summary || "")).join("\n"));
 
   const fruehere = ((momentLog && momentLog.entries) || []).slice(-3);
   if (fruehere.length)

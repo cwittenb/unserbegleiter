@@ -351,6 +351,10 @@ TOPIC FRAME: You are here exclusively for the relationship work of these two peo
    ([Continue with chapter N.], SHARING-RESULT:, REVEAL-SHOWN:)
    is kept consistent within THIS bundle's prompts. */
 export const steuerTexte = {
+  // S95.8b · Replies to the wording recall.
+  abrufGefunden: "The wording of session {vid} is now available. Pick up from it; for an excerpt, check the suitability of its pairs as you would for your own session.",
+  abrufLeer: "No wording was kept for this session. Say so explicitly and name the way: the timeline lists the conversations for reading — the person can look there and then tell you which one they mean. Invent nothing.",
+
   start: {
     solo: "I'm here and would like to begin. Open the conversation from your side.",
     einzel: "I'm here and would like to begin clarifying my focus. Open the session from your side.",

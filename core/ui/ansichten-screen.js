@@ -35,7 +35,7 @@ import { holeVerlauf, loescheVerlauf } from "./verlauf-ablage.js";   // S95.7c
  */
 export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                                        zeitleistenEintrag, zeigePaarsprache,
-                                       oeffneReplay, oeffneLeseansicht, laeuftGespraech, hinweis, bestaetige }) {
+                                       oeffneLeseansicht, bestaetige }) {
   async function zeigeZeitleiste() {
     const zl = (await backend.pstate.get("timeline")) || { entries: [] };
     zeigeNur("boxZeitleiste");
@@ -51,13 +51,16 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
                 det.map(dd => `<div class="rz-klein-leise"><strong>${esc(dd.id)}</strong> ${esc(dd.text)}</div>`).join("") +
                 `</div>`
               : "") +
-            /* S95.7c · Eingang NUR wo ein Verlauf liegt — keine ausgegraute Tuer
-               und kein Hinweis auf Fehlendes. Und still wie das Regal: kein
-               Zaehler, kein Badge. Wer hinschaut, findet ihn; wer die Zeitleiste
-               liest, wird nicht daran erinnert. */
+            /* S95.8a · Die Zeitleiste ZEIGT, sie HANDELT nicht.
+               Der frühere Teilen-Eingang führte an M1-Bremse und Sorgen-Weiche
+               vorbei — beide leben im Gespräch, und hier gibt es keins. Wer
+               nachts wütend die Zeitleiste öffnete, konnte queren, ohne dass
+               etwas fragt. Geblieben sind Lesen und Löschen: Beides ändert
+               nichts am Partner.
+               Nur wo ein Verlauf liegt — keine ausgegraute Tür. Und still wie
+               das Regal: kein Zähler, kein Badge. */
             (e2.vid
               ? `<br><span class="pb-link" data-zllesen="${esc(e2.vid)}">${t("verlauf.zlLesen")}</span>` +
-                ` <span class="pb-link" data-zlteil="${esc(e2.vid)}">${t("verlauf.zlEingang")}</span>` +
                 ` <span class="pb-link rz-klein-leise" data-zlweg="${esc(e2.vid)}">${t("verlauf.zlLoeschen")}</span>`
               : "") + `</div>`;
         }).join("")
@@ -80,14 +83,6 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       b.addEventListener("click", async () => {
         const v = await holeVerlauf(backend, b.getAttribute("data-zllesen"));
         oeffneLeseansicht(v);
-      });
-
-    for (const b of items.querySelectorAll("[data-zlteil]"))
-      b.addEventListener("click", async () => {
-        if (laeuftGespraech && laeuftGespraech()) { hinweis(t("verlauf.zlLaeuft")); return; }
-        const v = await holeVerlauf(backend, b.getAttribute("data-zlteil"));
-        if (!v) { hinweis(t("verlauf.zlLaeuft")); return; }
-        oeffneReplay(v);
       });
 
     for (const b of items.querySelectorAll("[data-zlweg]"))

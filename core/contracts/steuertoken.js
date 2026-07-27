@@ -51,6 +51,7 @@ export function entferneSteuerToken(text) {
 export const WIRE_KOEPFE = [
   "SLIDERS-RESULT", "RANKING-RESULT", "PARTNER-GUESS-CHANGE", "PARTNER-GUESS",
   "BASELINE-RESULT", "SCALE-RESULT", "CHOICE-RESULT", "SHARING-RESULT", "REVEAL-SHOWN",
+  "RECALL-RESULT",   // S95.8b: die App liefert den angeforderten Wortlaut zurueck
 ];
 
 /** Ist die Nachricht eine Panel-Ergebnis-Nachricht (Wire, nie Anzeige)? */
