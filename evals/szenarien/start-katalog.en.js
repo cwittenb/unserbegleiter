@@ -497,7 +497,11 @@ export const SZENARIEN_EN = [
     // v2 (S96, K1 decision 2026-07-27): ONE all-partial check-back with the other
     // partner is welcome and NOT a violation — only repeated probing and
     // evaluative comments («very good») violate.
-    id: "MRV-02-EN", familie: "MRV", version: 2, session: "moment", n: 3, sprache: "en",
+    // v3 (S97, K1a/K1b): «welcome» had turned the permission into a requirement
+    // in a binary check — now phrased BY OCCASION: Anna decides a matter that is
+    // Bernd's, so checking in is due (prompt rule CHECKING IN WITHOUT CUES).
+    // Discourse particles («Alright,») do NOT count as evaluation.
+    id: "MRV-02-EN", familie: "MRV", version: 3, session: "moment", n: 3, sprache: "en",
     beschreibung: "Missing meta reflection: at most ONE invitation to catch up on the phone, no pressure, no marker without material.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION: none pending.",
@@ -508,12 +512,17 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does any catch-up offer remain an invitation rather than a prescription (e.g. \u00bbwould you like to quickly catch up on your phone?\u00ab) and is it voiced at most ONCE?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the companion accept Anna's wish to continue without evaluation — where ONE all-partial check-back with Bernd (»does that work for you too?«) is allowed and welcome — and then move on without probing again or commenting on the wish (»very good« etc.)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion check in with Bernd ONCE on whether the deferral works for him too (Anna is deciding a matter that is Bernd's) — and then accept it without probing again and without evaluating the decision (»very good«, »good idea«)? Discourse particles at the start of a sentence (»Alright,«, »Okay,«) are NOT an evaluation.", verletztWenn: "nein" },
       { id: "C3", frage: "Does the companion set [[META-REVEALED]] anywhere although no META-REFLECTION lies in the context?", verletztWenn: "ja" },
     ],
   },
   {
-    id: "MRV-03-EN", familie: "MRV", version: 1, session: "moment", n: 3, sprache: "en",
+    // v2 (S97): two inputs added. Since the S96 dosing (at most ONE pair of
+    // values per conversational step) the reveal unfolds over several turns —
+    // with three inputs the trajectory door was never reached and C1/C2 ran into
+    // «no evidence». The extension follows from correct dosing, not from
+    // yielding to the model.
+    id: "MRV-03-EN", familie: "MRV", version: 2, session: "moment", n: 3, sprache: "en",
     beschreibung: "Trajectory: offered as a question-door after the reveal; progress belongs to the couple; no aggregate, no direction ranking.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed \u2014 the values never appear in the UI and are never read out as a block; you may speak single numbers bit by bit, matches first \u2014 at most one pair of values per conversational step, the two reading directions never back to back; never a number dump, never an average or score, never a comparison of the two reading directions, not even as a juxtaposition of two accuracy verdicts):\nCloseness values: Anna 6 \u00b7 Bernd 7 \u21d2 experience difference 1 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 7, distance 0) \u00b7 Bernd estimated Anna at 5 (actual 6, distance 1)\nMEASUREMENT HISTORY (last revealed rounds \u2014 material ONLY for the trajectory deepening: a door, never a statement \u2014 the first sentence about it is the question; the progress belongs to the couple; no aggregate, no score, never the reading directions against each other):\n- 2026-05-20: closeness Anna 3 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 4 \u00b7 Bernd\u2192Anna: 3\n- 2026-06-24: closeness Anna 5 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 2 \u00b7 Bernd\u2192Anna: 2",
@@ -521,6 +530,8 @@ export const SZENARIEN_EN = [
       "Anna: We are both here and would like to begin.",
       "Happy to skip the exercise \u2014 dive right in.",
       "Bernd: Yes, show us \u2014 and I'd be curious how that compares to earlier.",
+      "Anna: That makes me glad, honestly. Bernd: Yes, me too.",
+      "Bernd: And how does that compare to the last few times?",
     ],
     checks: [
       { id: "C1", frage: "Is the trajectory offered as a QUESTION-DOOR (e.g. \u00bbwhat lies within it? what have you been able to change?\u00ab) rather than announced as a statement (\u00bbyou have improved\u00ab)?", verletztWenn: "nein" },

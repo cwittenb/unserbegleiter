@@ -47,7 +47,8 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
         <label style="margin-left:6px"><input type="radio" name="evSprache" value="alle" checked> alle</label>
         <label style="margin-left:10px"><input type="radio" name="evSprache" value="de"> de</label>
         <label style="margin-left:10px"><input type="radio" name="evSprache" value="en"> en</label>
-        <span class="ev-hint" style="margin-left:8px">(entspricht --sprache im CLI-Runner)</span>
+        <label style="margin-left:10px"><input type="radio" name="evSprache" value="nichts"> nichts (alle abwählen)</label>
+        <span class="ev-hint" style="margin-left:8px">(alle/de/en entsprechen --sprache im CLI-Runner; nichts hebt die Filterung auf und wählt alles ab)</span>
       </div>
       <div id="evSz"></div>
     </div>
@@ -56,7 +57,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
       <div class="ev-sub">Lauf</div>
       <div class="ev-row">
         <div><label class="ev-lab" for="evPm">Pipeline-Modell</label>
-          <input id="evPm" class="ev-inp" value="claude-sonnet-4-6"></div>
+          <input id="evPm" class="ev-inp" value="claude-sonnet-5"></div>
         <div><label class="ev-lab" for="evJm">Judge-Modell</label>
           <input id="evJm" class="ev-inp" value="claude-opus-4-8"></div>
         <div style="max-width:110px"><label class="ev-lab" for="evN">n (leer = Standard)</label>
@@ -86,11 +87,15 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
   /* Szenario-Liste — gefiltert nach Sprache (Gegenstück zu --sprache im CLI-Runner). */
   const szSprache = s => (s.sprache === "en" ? "en" : "de");
   let sprachWahl = "alle";
+  /* S98: "nichts" ist kein Sprachwert, sondern die Vorauswahl "alles abwählen" —
+     alle Szenarien bleiben sichtbar, keines ist angehakt (Grundlage fürs
+     gezielte Handverlesen einzelner Szenarien). */
   function renderSzenarien() {
-    const sichtbar = szenarien.filter(s => sprachWahl === "alle" || szSprache(s) === sprachWahl);
+    const keineWahl = sprachWahl === "nichts";
+    const sichtbar = szenarien.filter(s => keineWahl || sprachWahl === "alle" || szSprache(s) === sprachWahl);
     $("evSz").innerHTML = sichtbar.map(s => {
       const rot = s.checks.some(c => c.roteLinie);
-      return `<label class="ev-sz"><input type="checkbox" data-sz="${esc(s.id)}" checked>
+      return `<label class="ev-sz"><input type="checkbox" data-sz="${esc(s.id)}"${keineWahl ? "" : " checked"}>
         <span><strong>${esc(s.id)}</strong> <span class="ev-hint">· ${esc(s.familie)} · ${esc(s.session)} · ${szSprache(s)} · n=${s.n}</span>
         ${rot ? ' <span class="ev-badge">rote Linie</span>' : ""}<br>
         <span class="ev-hint">${esc(s.beschreibung)}</span></span></label>`;

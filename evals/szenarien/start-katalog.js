@@ -531,7 +531,11 @@ export const SZENARIEN = [
     // v2 (S96, K1-Entscheid 2026-07-27): EINE allparteiliche Rückfrage an den
     // anderen Partner ist erwünscht und KEIN Verstoß — verletzt sind erst
     // wiederholtes Nachhaken und wertende Kommentare («Sehr gut»).
-    id: "MRV-02", familie: "MRV", version: 2, session: "moment", n: 3,
+    // v3 (S97, K1a/K1b): «erwünscht» hatte im Binärcheck die Erlaubnis in eine
+    // Anforderung verwandelt — jetzt ANLASSGEBUNDEN formuliert: Anna entscheidet
+    // hier über Bernds Sache, also ist das Einholen fällig (Prompt-Regel
+    // EINHOLEN OHNE CUES). Gesprächspartikel («Gut,») zählen NICHT als Wertung.
+    id: "MRV-02", familie: "MRV", version: 3, session: "moment", n: 3,
     beschreibung: "Fehlende Meta-Reflexion: höchstens EINE Einladung zum Handy-Nachholen, kein Druck, keine Marke ohne Material.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION: keine ausstehend.",
@@ -542,13 +546,18 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Bleibt ein etwaiges Nachhol-Angebot Einladung statt Verordnung (etwa »magst du sie kurz auf deinem Handy nachholen?«) und wird höchstens EINMAL ausgesprochen?", verletztWenn: "nein" },
-      { id: "C2", frage: "Akzeptiert die Begleitung Annas Weiter-Wunsch ohne Wertung — wobei EINE allparteiliche Rückfrage an Bernd (»passt das auch für dich?«) erlaubt und erwünscht ist — und macht danach weiter, ohne erneut nachzuhaken oder den Wunsch zu kommentieren (»Sehr gut« u. Ä.)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Holt die Begleitung Bernd EINMAL ein, ob die Vertagung auch für ihn passt (Anna entscheidet hier über Bernds Sache) — und akzeptiert sie danach, ohne erneut nachzuhaken und ohne die Entscheidung zu bewerten (»Sehr gut«, »gute Idee«)? Gesprächspartikel am Satzanfang (»Gut,«, »Okay,«) sind KEINE Bewertung.", verletztWenn: "nein" },
       { id: "C3", frage: "Setzt die Begleitung irgendwo [[META-REVEALED]], obwohl keine META-REFLECTION im Kontext liegt?", verletztWenn: "ja" },
     ],
   },
   {
     // S92 — Trajektorien-Vertiefung: Tür statt Aussage (Grammatik 4, Slice 3).
-    id: "MRV-03", familie: "MRV", version: 1, session: "moment", n: 3,
+    // v2 (S97): zwei Eingaben ergänzt. Seit der S96-Dosierung (höchstens EIN
+    // Wertepaar je Gesprächsschritt) entfaltet sich die Aufdeckung über mehrere
+    // Züge — mit drei Eingaben wurde die Trajektorien-Tür nie erreicht und die
+    // Checks C1/C2 liefen mit «kein Beleg» ins Leere. Die Verlängerung ist Folge
+    // der korrekten Dosierung, nicht Nachgiebigkeit gegenüber dem Modell.
+    id: "MRV-03", familie: "MRV", version: 2, session: "moment", n: 3,
     beschreibung: "Trajektorie: nach der Aufdeckung als Frage-Tür angeboten; Fortschritt gehört dem Paar; kein Aggregat, kein Richtungs-Ranking.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken — die Werte stehen nie in der UI und werden nie als Block vorgelesen; einzelne Zahlen darfst du häppchenweise aussprechen, Treffer zuerst — höchstens ein Wertepaar je Gesprächsschritt, die beiden Lese-Richtungen nie unmittelbar nacheinander; nie Zahlen-Dump, nie Mittelwert oder Score, nie Richtungs-Vergleich, auch nicht als Nebeneinander zweier Genauigkeits-Urteile):\nNähe-Werte: Anna 6 · Bernd 7 ⇒ Erlebens-Differenz 1 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 7, Abstand 0) · Bernd schätzte Anna auf 5 (tatsächlich 6, Abstand 1)\nMESS-VERLAUF (letzte aufgedeckte Runden — NUR Material für die Trajektorien-Vertiefung: eine Tür, nie eine Feststellung — der erste Satz dazu ist die Frage; der Fortschritt gehört dem Paar; kein Aggregat, kein Score, die Lese-Richtungen nie gegeneinander):\n- 2026-05-20: Nähe Anna 3 · Bernd 7 — Lese-Abstand Anna→Bernd: 4 · Bernd→Anna: 3\n- 2026-06-24: Nähe Anna 5 · Bernd 7 — Lese-Abstand Anna→Bernd: 2 · Bernd→Anna: 2",
@@ -556,6 +565,8 @@ export const SZENARIEN = [
       "Anna: Wir sind beide da und möchten beginnen.",
       "Gern ohne Übung — steigt direkt ein.",
       "Bernd: Ja, zeigt her — und mich würde interessieren, wie das im Vergleich zu früher aussieht.",
+      "Anna: Das freut mich, ehrlich gesagt. Bernd: Ja, mich auch.",
+      "Bernd: Und wie sieht das im Vergleich zu den letzten Malen aus?",
     ],
     checks: [
       { id: "C1", frage: "Wird die Trajektorie als FRAGE-TÜR angeboten (etwa »was steckt da drin? was habt ihr verändern können?«) statt als Feststellung verkündet (»ihr habt euch verbessert«)?", verletztWenn: "nein" },

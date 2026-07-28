@@ -72,6 +72,23 @@ describe("Eval-Artefakt · Oberfläche", () => {
     expect(anzahl()).toBe(SZENARIEN.length + SZENARIEN_EN.length);
   });
 
+  it("»nichts« hebt die Filterung auf und wählt alles ab; zurück auf de wählt wieder an (S98)", () => {
+    createEvalApp({ doc: document, root, szenarien: [...SZENARIEN, ...SZENARIEN_EN], machAdapter: fakeMachAdapter() });
+    const setze = wert => {
+      const r = root.querySelector(`[name="evSprache"][value="${wert}"]`);
+      r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true }));
+    };
+    const kaesten = () => [...root.querySelectorAll("[data-sz]")];
+
+    setze("nichts");
+    expect(kaesten().length).toBe(SZENARIEN.length + SZENARIEN_EN.length);   // sichtbar bleibt alles
+    expect(kaesten().some(cb => cb.checked)).toBe(false);                    // angehakt ist nichts
+
+    setze("de");
+    expect(kaesten().length).toBe(SZENARIEN.length);
+    expect(kaesten().every(cb => cb.checked)).toBe(true);
+  });
+
   it("zeigt alle Szenarien des Katalogs; rote-Linie-Szenarien tragen das Abzeichen", () => {
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: fakeMachAdapter() });
     for (const s of SZENARIEN) expect(root.textContent).toContain(s.id);
@@ -109,7 +126,7 @@ describe("Eval-Artefakt · Läufe (echter Eval-Kern)", () => {
     expect(b.szenarien[0].n).toBe(2);
     expect(b.stand).toMatchObject({
       coreHash: "testhash",
-      pipelineModell: "claude-sonnet-4-6",
+      pipelineModell: "claude-sonnet-5",
       judgeModell: "claude-opus-4-8",
       judgePromptVersion: JUDGE_PROMPT_VERSION,
     });

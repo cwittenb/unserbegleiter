@@ -101,15 +101,10 @@ describe("S96 · Moment-Abschluss (QZ-01)", () => {
 describe("S96 · Katalog-Anpassungen (K1/F1-Entscheide)", () => {
   const byId = id => [...SZENARIEN, ...SZENARIEN_EN].find(s => s.id === id);
 
-  it("MRV-02 v2: eine allparteiliche Rückfrage ist erlaubt (de + en)", () => {
-    for (const id of ["MRV-02", "MRV-02-EN"]) {
-      const s = byId(id);
-      expect(s, id).toBeTruthy();
-      expect(s.version, id).toBe(2);
-      const c2 = s.checks.find(c => c.id === "C2");
-      expect(c2.frage, id).toMatch(id.endsWith("EN") ? /ONE all-partial check-back/ : /EINE allparteiliche Rückfrage/);
-    }
-  });
+  // MRV-02 wurde in S97 auf v3 gehoben (K1a: anlassgebunden statt pauschal
+  // «erwünscht» — im Binärcheck war daraus eine Anforderung geworden). Die
+  // Zusicherung dafür steht jetzt in s97-gabelung-einholen.spec.js; hier bleibt
+  // nur WDR-01, das S97 nicht berührt.
 
   it("WDR-01 v2: Ankommens-Einladung und offene Frage sind kein Neustart (de + en)", () => {
     for (const id of ["WDR-01", "WDR-01-EN"]) {
