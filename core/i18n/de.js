@@ -30,6 +30,29 @@ export const de = {
   "start.teilTitel": "Eure gemeinsame Zeit.",
   "weg.badge": "Wegweiser",
   "weg.fuss": "tippen zum Schließen",
+  // T2i/§3.7 · Eigene Adresse für die Badge-Beschriftung. Vorher liehen sich
+  // die Vorräume und der Chat dafür start.capsMein/capsTeil — änderte die
+  // Startseite ihr Label, wanderten stillschweigend drei Badges mit.
+  "weg.badgeMein": "Raum für mich",
+  "weg.badgeTeil": "Raum für uns",
+  // T2k/K7 · Einmalige Erklärung, was das Zeichen bedeutet. Steht IM Panel
+  // der Startseite (nicht auf der Zone): wer es öffnet, hat den Wegweiser
+  // schon gefunden und lernt nur noch, dass es ihn überall gibt.
+  "weg.hinweisStart": "Wo immer du das Wegweiser-Schild siehst, findest du einen Vorschlag für den nächsten Schritt.",
+  // T2i · Wegweiser IM Gespräch. Stufen nach der Prioritätskette der
+  // Haltungs-Charta: 1 Sicherheit · 2 Stabilität · 3 Kontakt · 4 Deutung.
+  "weg.chatVertraulich": "Was hier steht, bleibt bei dir. {partner} sieht nichts davon, außer du gibst es frei.",
+  "weg.chatGemeinsam": "Ihr seid hier zu zweit. Was geschrieben wird, lest ihr beide.",
+  "weg.chatPause": "Du kannst jederzeit aufhören — dein Stand bleibt stehen.",
+  "weg.chatPauseTeil": "Ihr könnt jederzeit aufhören — euer Stand bleibt stehen.",
+  "weg.chatPauseAbschluss": "Du kannst jederzeit aufhören — der Verlauf bleibt. Wenn es sich rund anfühlt, schließt du unten ab.",
+  "weg.chatPauseAbschlussTeil": "Ihr könnt jederzeit aufhören — der Verlauf bleibt. Wenn es sich rund anfühlt, schließt ihr unten ab.",
+  "weg.chatKapitel": "Kapitel {n} von {m}. Du kannst jederzeit pausieren, dein Stand bleibt stehen.",
+  "weg.chatTeilen": "Magst du etwas davon weitergeben? Ich helfe dir bei der Formulierung — frei ist es erst mit deinem Häkchen.",
+  "weg.chatFreigabe": "Am Ende entscheidest du, was von hier zu {partner} geht. Vorher geht nichts.",
+  "weg.chatQzRahmen": "Diese Zeit gehört euch. Ich halte nur den Rahmen und frage nach — entscheiden tut ihr.",
+  "weg.chatBefund": "Am Ende steht ein gemeinsamer Befund. Ihr müsst euch dafür nicht einig werden.",
+  "weg.chatAufdeck": "Aufgedeckt wird gemeinsam — erzählt, nicht abgelesen. Zahlen bleiben, wo sie sind.",
   // D3 · Vorraum-Zonen (Design Turn 17c/d)
   "zone.raum": "Der Raum.",
   "zone.regal": "Das Regal.",

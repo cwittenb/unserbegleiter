@@ -347,6 +347,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-weg-panel .rz-option em{font-style:italic}
       .rz-weg-fuss{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
                    text-align:center;padding-top:8px}
+      /* T2k (K7) · Einmalige Erklaerung des Zeichens, nur im Panel der
+         Startseite. Leiser als eine Option, lauter als die Fusszeile: sie
+         traegt Bedeutung, waehrend "tippen zum Schliessen" nur eine Geste
+         nennt. --rz-sek statt --rz-gedimmt, siehe T2e. */
+      .rz-weg-hinweis{font-family:var(--rz-sans);font-size:var(--rz-fs-fein);
+                      color:var(--rz-sek);text-align:center;padding-top:var(--rz-r-3)}
       /* Quick-Lane · Auf dem Desktop liegt die Naht senkrecht in der Mitte.
          Das Panel haengt in der ZWEITEN Haelfte und klappte deshalb nur ueber
          deren Oberkante auf: halbe Breite, falsche Hoehe. Es soll auch hier ein
@@ -442,7 +448,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-app #scrChat{max-width:none;margin:0;background:var(--rz-papier);color:var(--rz-ink);
         min-height:100dvh;padding:calc(30px + env(safe-area-inset-top,0px)) var(--rz-rand)
         calc(var(--rz-rand) + env(safe-area-inset-bottom,0px))}
-      .rz-chat-innen{max-width:640px;margin:0 auto;display:flex;flex-direction:column;min-height:calc(100dvh - 60px)}
+      .rz-chat-innen{max-width:var(--rz-chat-spalte);margin:0 auto;display:flex;flex-direction:column;min-height:calc(100dvh - 60px)}
       #scrChat .pb-msgs{gap:22px;flex:1}
       /* T2g (Handover Turn 40 §3.8) · Die Sprecher-Marke hing mit
          margin-bottom:-17px gegen den gap:22px der Nachrichtenliste — zwei
@@ -495,8 +501,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       #scrChat #btnChatEnde{font-size:var(--rz-fs-text);margin-top:6px}
       /* ---- D12-2b (Turn 27, 27e) · der Chat bekommt dieselbe Grammatik wie
          die uebrigen Screens: oben der Verlauf, unten die Schreibkante als
-         eigene Zone, dazwischen die Naht mit dem Wegweiser-Badge. Das Badge
-         ist hier eine MARKE, kein Knopf — es nennt den Ort, es oeffnet nichts. */
+         eigene Zone, dazwischen die Naht mit dem Wegweiser-Badge.
+         T2i · Das Badge war hier eine blosse Marke (cursor:default) und
+         oeffnete nichts. Seit T2 ist es ein Knopf wie in den Vorraeumen: es
+         nennt weiterhin den Ort (K5) und klappt zusaetzlich den Wegweiser
+         aus der Naht. Die Sonderregel ist deshalb entfallen — .rz-weg-badge
+         bringt cursor:pointer schon mit. */
       #scrChat .rz-chat-oben{flex:1;display:flex;flex-direction:column;min-height:0;padding:0}
       #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-tiefgruen);
         margin:var(--rz-r-5) calc(-1 * var(--rz-rand))
@@ -504,7 +514,27 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         padding:40px var(--rz-rand) calc(22px + env(safe-area-inset-bottom,0px));
         display:flex;flex-direction:column}
       #scrChat .rz-chat-unten .pb-composer{margin-top:0;border-top:0;padding-top:0}
-      #scrChat .rz-chat-unten .rz-weg-badge{cursor:default}
+      /* T2h (Handover Turn 40 §3.8, Entscheidung K3) · Auf breiten Schirmen
+         blutete die Schreibkante nur um das Screenpolster aus: ein Tiefgruen-
+         Rechteck von 688px stand frei auf Papier — weder Zone (die geht bis
+         zur Kante) noch Karte (die haette einen Radius). Jetzt ist sie eine
+         Zone: der Block reicht von Kante zu Kante, sein INHALT bleibt auf der
+         Lesespalte ausgerichtet, damit Composer und Verlauf buendig stehen.
+         calc(50% - 50vw) statt 100vw: Prozente rechnen gegen die Spalte
+         (halbe Spaltenbreite), die Differenz ist genau der Weg nach aussen.
+         Ein nacktes 100vw brauechte zusaetzlich eine Mittenkorrektur.
+         Der Rest, den vw nicht wissen kann, ist die Bildlaufleiste: 50vw
+         zaehlt sie mit, der sichtbare Bereich ist schmaler. Die Ueberlappung
+         von wenigen Pixeln je Seite faengt overflow-x:clip am Screen ab —
+         clip statt hidden, weil hidden einen Rollbereich eroeffnen und die
+         senkrechte Bewegung an sich reissen wuerde. */
+      @media(min-width:900px){
+        .rz-app #scrChat{overflow-x:clip}
+        #scrChat .rz-chat-unten{
+          margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
+          padding-left:calc(50vw - var(--rz-chat-spalte) / 2);
+          padding-right:calc(50vw - var(--rz-chat-spalte) / 2)}
+      }
       /* ---- D12-2c · der gemeinsame Chat traegt die Toene seines Raums ----
          Die Zonen bekommen dieselben Klassen wie in den Vorraeumen; damit
          greifen alle bestehenden Regeln (.rz-tiefgruen .rz-zurueck, .rz-sub,

@@ -151,7 +151,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein">${IKON.wegweiser}<span>${t("start.capsMein")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein">${IKON.wegweiser}<span>${t("weg.badgeMein")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegMein"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
@@ -188,7 +188,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil">${IKON.wegweiser}<span>${t("start.capsTeil")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil">${IKON.wegweiser}<span>${t("weg.badgeTeil")}</span><span class="rz-punkt"></span></button>
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
@@ -244,7 +244,8 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <div class="rz-chat-unten rz-naht-anker rz-tiefgruen">
           <div class="rz-kulisse-naht" id="kulisseChat"></div>
-          <span class="rz-weg-badge rz-auf-naht" id="chatOrt">${IKON.wegweiser}<span id="chatOrtName"></span></span>
+          <button type="button" class="rz-weg-badge rz-auf-naht" id="chatOrt" aria-haspopup="dialog">${IKON.wegweiser}<span id="chatOrtName"></span></button>
+          <div class="rz-weg-panel pb-hidden" id="wegChat"></div>
           <div class="pb-skala" id="pbSkala">
             <span class="rz-fein">${t("chat.deineZahl")}</span>
             <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">
@@ -329,6 +330,12 @@ export function createApp({ doc, backend, root, diktat }) {
      Aufbau neu gebunden — die Listener hängen an Knoten, die beim Abbau
      verschwinden; eine stehengebliebene Closure hat danach kein Ziel mehr. */
   function verdrahteChat() {
+    // T2i · Der Wegweiser im Chat wird HIER verdrahtet, nicht einmalig beim
+    // App-Start wie die drei Vorraum-Badges: seit S87 ist scrChat eine
+    // Vorlage, deren DOM bei jedem Betreten neu entsteht. Eine Verdrahtung
+    // aus der Boot-Phase hinge nach dem ersten Abbau an einem Knoten, den es
+    // nicht mehr gibt.
+    verdrahteWegweiser(doc, $("chatOrt"), $("wegChat"));
     $("btnChatZurueck").addEventListener("click", async () => {
       await pausiereChat();
       betrete(state.herkunft || "scrStart");
@@ -685,6 +692,72 @@ export function createApp({ doc, backend, root, diktat }) {
       beiden Freigaben). Läuft still im Hintergrund bei jedem Vorraum-Betreten.
       S36: Auf Start und in "Mein Raum" lebt der Wegweiser IM Intro-Panel
       (oben, nicht als letzte Karte); Lage-Hinweise stehen vor den Optionen. */
+  /** Panelinhalt: Optionen, optionaler Zusatz, Fusszeile. Von Vorraeumen und
+      Chat gemeinsam benutzt, damit beide dieselbe Form behalten. */
+  function zeichneWegPanel(box, zeilen, extra) {
+    box.innerHTML = zeilen.map(x => `<p class="rz-option">${esc(x)}</p>`).join("") +
+      (extra || "") + `<div class="rz-weg-fuss">${t("weg.fuss")}</div>`;
+  }
+
+  /* T2i · Wegweiser IM Gespraech.
+     Die vier Stufen bedeuten hier NICHT Dringlichkeit wie in den Vorraeumen.
+     Dort steht man VOR etwas und waehlt; im Chat ist man drin, und eine Zeile
+     "hier wartet noch etwas anderes" waere eine Aufforderung, das Gespraech zu
+     verlassen. Belegt sind die Stufen deshalb mit der Prioritaetskette der
+     Haltungs-Charta (Regel 7):
+        1 Sicherheit · 2 Stabilitaet · 3 Kontakt · 4 Deutung
+     Das Panel sagt also zuerst "das hier ist vertraulich" und erst zuletzt,
+     wo man gerade steht. Aus demselben Grund leuchtet hier kein wartender
+     Punkt: es gibt keine Stufe mehr, die "hier wartet etwas" bedeutet.
+
+     Der Entwurf liefert je Format genau drei Zeilen — der Deckel greift also
+     nie. Gebaut ist es trotzdem ueber wegKandidaten/waehleWegzeilen, damit
+     weitere Lagen (erste Nachricht noch nicht geschrieben, Ausschnitt-Tuer
+     offen, Freigabe steht an) rein additiv nachruestbar sind. */
+  function wegKandidatenChat(def) {
+    const partner = state.info ? state.info.partner : "";
+    const k = [];
+    const zeile = (stufe, text) => { if (text) k.push({ stufe, text }); };
+    const id = def && def.id;
+    const gemeinsam = !!(def && def.shared);
+    zeile(1, gemeinsam ? t("weg.chatGemeinsam") : t("weg.chatVertraulich", { partner }));
+    if (id === "solo") {
+      zeile(2, t("weg.chatPauseAbschluss"));
+      zeile(3, t("weg.chatTeilen"));
+    } else if (id === "einzel") {
+      const kap = state.engine && state.engine.chat && state.engine.chat.kapitel;
+      const gesamt = (K().KAPITEL_TITEL || []).length;
+      zeile(2, kap && gesamt ? t("weg.chatKapitel", { n: kap, m: gesamt }) : t("weg.chatPause"));
+      zeile(3, t("weg.chatFreigabe", { partner }));
+    } else if (id === "moment") {
+      zeile(2, t("weg.chatPauseAbschlussTeil"));
+      zeile(4, t("weg.chatQzRahmen"));
+    } else if (id === "gemeinsam") {
+      zeile(2, t("weg.chatPauseTeil"));
+      zeile(3, t("weg.chatBefund"));
+    } else if (id === "qualitytime") {
+      zeile(2, t("weg.chatPauseTeil"));
+      zeile(3, t("weg.chatAufdeck"));
+    } else {
+      zeile(2, gemeinsam ? t("weg.chatPauseTeil") : t("weg.chatPause"));
+    }
+    return k;
+  }
+
+  /** T2i · Panel der laufenden Session nachziehen. Haengt am Chat-Zustand,
+      deshalb aus aktualisiereChatEnde() mitgerufen. */
+  function aktualisiereWegweiserChat() {
+    const box = $("wegChat"), badge = $("chatOrt");
+    if (!box || !badge) return;
+    const def = state.engine && state.engine.def;
+    const zeilen = waehleWegzeilen(wegKandidatenChat(def), "scrChat");
+    if (!zeilen.length) { box.classList.add("pb-hidden"); badge.classList.add("pb-hidden"); return; }
+    zeichneWegPanel(box, zeilen);
+    box.classList.remove("pb-hidden");
+    badge.classList.remove("pb-hidden");
+    badge.classList.remove("rz-wartet");   // im Gespraech wartet nichts
+  }
+
   async function aktualisiereWegweiser(screenId) {
     const boxId = { scrStart: "wegStart", scrMyRoom: "wegMein", scrShared: "wegTeil" }[screenId];
     if (!boxId) return;
@@ -707,8 +780,11 @@ export function createApp({ doc, backend, root, diktat }) {
           if (badge) badge.classList.add("pb-hidden");
           return;
         }
-        box.innerHTML = zeilen.map(x => `<p class="rz-option">${esc(x)}</p>`).join("") +
-          `<div class="rz-weg-fuss">${t("weg.fuss")}</div>`;
+        // T2k/K7 · Die Startseite erklaert einmal, was das Zeichen bedeutet.
+        // Bewusst KEIN vierter Kandidat: der Hinweis soll keine echte Zeile
+        // verdraengen, wenn der Deckel von drei greift.
+        zeichneWegPanel(box, zeilen, screenId === "scrStart"
+          ? `<div class="rz-weg-hinweis">${esc(t("weg.hinweisStart"))}</div>` : "");
         box.classList.remove("pb-hidden");
         if (badge) {
           badge.classList.remove("pb-hidden");
@@ -1019,9 +1095,11 @@ export function createApp({ doc, backend, root, diktat }) {
     state.chatId = art;
     state.chatShared = def.shared;
     state.herkunft = def.shared ? "scrShared" : "scrMyRoom";
-    // D12-2b · Das Badge auf der Naht nennt den Ort (Turn 27, 27e). Es ist
-    // hier eine Marke, kein Knopf — der Wegweiser selbst lebt in den Vorräumen.
-    $("chatOrtName").textContent = t(def.shared ? "start.capsTeil" : "start.capsMein");
+    // D12-2b/T2i · Das Badge auf der Naht nennt den Ort (Turn 27, 27e) — und
+    // ist seit T2 zugleich der Wegweiser-Knopf. Die Beschriftung bleibt der
+    // Ortsname (Entscheidung K5), sie zieht ihn aber aus eigenen Schlüsseln
+    // statt aus denen der Startseite (§3.7).
+    $("chatOrtName").textContent = t(def.shared ? "weg.badgeTeil" : "weg.badgeMein");
     gen = ++state.chatGen;
     state.engine = new Engine({
       def, chat, llm: backend.llm, ctx,
@@ -1274,6 +1352,7 @@ export function createApp({ doc, backend, root, diktat }) {
     const id = state.engine && state.engine.def && state.engine.def.id;
     if (b) b.classList.toggle("pb-hidden",
       !((id === "moment" || id === "solo") && state.engine.chat.status === "running"));
+    aktualisiereWegweiserChat();   // T2i: der Wegweiser gehoert zur Schreibkante
   }
 
   /* S38 · Persönliche Zeitleiste fortschreiben (Auftragsklärung, Prozess-

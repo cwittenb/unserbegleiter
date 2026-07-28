@@ -74,6 +74,10 @@ export const THEME_CSS = String.raw`
            bleiben; die Hauptaktionen im Chat (Senden, Mikrofon) brauchen die
            volle Trefferflaeche. Optisch bleibt das Sende-Quadrat 34px. */
         --rz-tapziel-finger:44px;
+        /* T2h · Lesebreite der Chat-Spalte. Steht hier, weil sie an ZWEI
+           Stellen gebraucht wird: als max-width der Spalte und als
+           Rechengroesse fuer das Ausbluten der Schreibkante. */
+        --rz-chat-spalte:640px;
         --rz-hairline-staerke:1px;
         --rz-blatt-schatten:0 12px 34px rgba(0,0,0,.14);
         --rz-kurve:cubic-bezier(.2,.8,.2,1);

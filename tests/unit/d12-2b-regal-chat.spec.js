@@ -158,10 +158,16 @@ describe("D12-2b · Chat mit Naht und Badge", () => {
     expect(root.querySelector("#scrChat .rz-weg-badge").textContent).toContain(de["start.capsTeil"]);
   });
 
-  it("das Ortsbadge ist eine Marke, kein Knopf", async () => {
+  // T2i (Turn 40 §3.8) · KEHRTWENDE gegenueber D12-2b. Das Ortsbadge war hier
+  // bewusst eine blosse Marke; der Turn-40-Handover will einen Knopf daraus
+  // machen, der Hilfe im Gespraech oeffnet. Der Ortsname bleibt (K5).
+  it("das Ortsbadge nennt den Ort UND oeffnet den Wegweiser", async () => {
     const app = await bootApp();
     await inDenChat(app);
-    expect(root.querySelector("#scrChat .rz-weg-badge").tagName).toBe("SPAN");
+    const badge = root.querySelector("#scrChat .rz-weg-badge");
+    expect(badge.tagName).toBe("BUTTON");
+    expect(badge.getAttribute("aria-haspopup")).toBe("dialog");
+    expect(badge.textContent).toContain(de["weg.badgeMein"]);
   });
 
   it("Abschliessen fuehrt hinaus (Pfeil links), Senden bleibt der Pfeil nach oben", async () => {
