@@ -83,6 +83,12 @@ const HART = [
   ["--rz-label-auf-gruen", "--rz-tiefgruen", 4.5, "Caps-Label auf Tiefgruen"],
   ["--rz-pfeil-auf-gruen", "--rz-tiefgruen", 4.5, "Pfeil-Suffix auf Tiefgruen"],
   ["--rz-marke-auf-gruen", "--rz-tiefgruen", 3.0, "Wortmarke am Fuss — dekorativ"],
+  // U1 · Fokuslinie der Feldkante. Nicht-textlicher Bedienhinweis, WCAG 1.4.11
+  // verlangt 3:1 — und der Systemring ist abgeschaltet, es gibt also keinen
+  // zweiten Hinweis. --rz-akzent traegt auf Papier nur 2.33:1, deshalb zieht
+  // die Linie dort --rz-akzent-ink.
+  ["--rz-akzent-ink", "--rz-papier",    3.0, "Fokuslinie der Feldkante auf Papier"],
+  ["--rz-akzent",     "--rz-tiefgruen", 3.0, "Fokuslinie der Feldkante auf Tiefgruen"],
 ];
 
 describe("T2e · tragende Rollen halten die Schwelle", () => {

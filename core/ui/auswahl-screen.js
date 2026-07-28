@@ -195,7 +195,7 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     }
     box.appendChild(karte);
 
-    const rahmen = el("textarea", "rz-ausw-rahmen");
+    const rahmen = el("textarea", "rz-feld rz-ausw-rahmen");   // U1: Feldkante
     rahmen.id = "auswRahmen";
     rahmen.setAttribute("maxlength", "280");
     rahmen.setAttribute("placeholder", t("ausschnitt.rahmenPlatzhalter"));

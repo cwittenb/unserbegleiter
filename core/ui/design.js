@@ -599,7 +599,44 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-paar-grund{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-top:6px;font-style:italic}
       .rz-ausw-leiste{position:sticky;bottom:0;background:var(--rz-papier);padding:8px 0 2px}
       .rz-ausw-fein{font-size:var(--rz-fs-fein);color:var(--rz-sek2);text-align:center;padding-bottom:6px}
-      .rz-ausw-rahmen{width:100%;margin-top:10px;min-height:56px}
+      /* ---- U1 (Handover Turn 41 §2) · Die Feldkante ----
+         Ein Baustein fuer alle Eingaben ausserhalb des Chats: Adresse, Code,
+         Rahmensatz. Kein Rahmen, kein Radius, keine Flaeche — nur eine
+         Haarlinie unten. Dieselbe Geste wie die Schreibkante im Chat: eine
+         Linie unter dem Text heisst ueberall "hier schreibst du".
+
+         Fokus verstaerkt die Linie auf 2px, das Polster darunter gibt einen
+         Punkt ab — so bleibt die Gesamthoehe gleich und nichts springt.
+
+         ACHTUNG, gemessen: §2 nennt --rz-akzent fuer die Fokuslinie. Auf
+         Papier traegt der im hellen Theme nur 2.33:1 und reisst damit die
+         3:1-Schwelle fuer nicht-textliche Bedienhinweise (WCAG 1.4.11) —
+         ausgerechnet beim Fokus, und ausgerechnet nachdem der Systemring
+         ausdruecklich abgeschaltet wird. Auf Papier zieht die Linie deshalb
+         --rz-akzent-ink (7.63:1), auf Tiefgruen --rz-akzent (6.01:1). Der
+         Kontrast-Waechter rechnet beide Paare mit. */
+      .rz-feld{display:block;width:100%;box-sizing:border-box;
+        border:0;border-bottom:1px solid var(--rz-hairline);border-radius:0;background:none;
+        padding:13px 0 12px;min-height:46px;
+        font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);line-height:var(--rz-lh-caps);
+        color:var(--rz-ink)}
+      .rz-feld::placeholder{font-style:italic;color:var(--rz-gedimmt)}
+      .rz-feld:focus{outline:none;border-bottom-width:2px;padding-bottom:11px;
+        border-bottom-color:var(--rz-akzent-ink)}
+      .rz-tiefgruen .rz-feld{border-bottom-color:var(--rz-hairline-gruen);color:var(--rz-ink-auf-gruen)}
+      .rz-tiefgruen .rz-feld::placeholder{color:var(--rz-sek2-auf-gruen)}
+      .rz-tiefgruen .rz-feld:focus{border-bottom-color:var(--rz-akzent)}
+      /* Code-Eingabe: gesperrt gesetzt, damit sechs Ziffern zaehlbar bleiben. */
+      .rz-feld-code{letter-spacing:.2em}
+
+      /* §4.11 · Der Rahmensatz der Vorschau war ein textarea ohne Feldregel
+         und erbte den Browser-Rahmen. Erster Nutzer der Feldkante. */
+      .rz-ausw-rahmen{margin-top:10px;min-height:56px}
+      .rz-luecke{text-align:center;padding:4px 0;opacity:.7}
+      .rz-vorschau-zeile{padding:6px 0}
+      .rz-vorschau-frage{font-size:var(--rz-fs-fein);opacity:.75;margin-bottom:4px}
+      .rz-vorschau-weg{background:none;border:0;color:inherit;opacity:.6;
+                       font-size:var(--rz-fs-zeile);padding:0 4px}
       .rz-luecke{text-align:center;padding:4px 0;opacity:.7}
       .rz-vorschau-zeile{padding:6px 0}
       .rz-vorschau-frage{font-size:var(--rz-fs-fein);opacity:.75;margin-bottom:4px}
