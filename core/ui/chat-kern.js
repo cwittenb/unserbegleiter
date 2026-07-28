@@ -236,7 +236,6 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     const k = el("button", "pb-btn");
     k.id = "btnErneutSenden";
     k.textContent = t("chat.erneutSenden");
-    k.style.marginLeft = "8px";
     k.addEventListener("click", () => { err(""); warteAntwort(() => state.engine.resume(), true); });
     b.appendChild(k);
   }

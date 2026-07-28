@@ -34,34 +34,65 @@ describe("T1b · Farbe lebt nur im Theme", () => {
   // URL-Konstruktor der des DOM, und fileURLToPath erkennt dessen Instanzen
   // nicht ("The URL must be of scheme file"). Mit dem String aus
   // import.meta.url tritt das nicht auf.
-  const uiDateien = () => readdirSync(
-    resolve(dirname(fileURLToPath(import.meta.url)), "../../core/ui"))
-    .filter(n => n.endsWith(".js")).sort();
+  const WURZEL = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
-  // theme.js IST die Palette; recovery-screen.js trägt noch rohe Werte (T3c).
-  const MALT_SELBST = ["recovery-screen.js"];
-  // Stilblöcke inline: nur noch recovery-screen.js (T3c). auswahl-screen.js
+  /* U0 · Die Prüfliste ist core/ui PLUS benannte Dateien außerhalb. Der
+     Update-Hinweis in client.js war sichtbare Oberfläche, die niemand las —
+     dass eine Datei nicht in core/ui liegt, heißt nicht, dass sie keine
+     Gestaltung trägt. */
+  const AUSSERHALB = ["platforms/cloudflare/pages/client.js"];
+
+  const pruefliste = () => [
+    ...readdirSync(resolve(WURZEL, "core/ui")).filter(n => n.endsWith(".js"))
+      .sort().map(n => "core/ui/" + n),
+    ...AUSSERHALB,
+  ];
+
+  // theme.js IST die Palette; recovery-screen.js trägt noch rohe Werte (U6).
+  const MALT_SELBST = ["core/ui/recovery-screen.js"];
+  // Stilblöcke inline: nur noch recovery-screen.js (U6). auswahl-screen.js
   // ist mit T3b herausgefallen — die Sperrklinke unten hat das erzwungen.
-  const STILT_INLINE = ["recovery-screen.js"];
+  const STILT_INLINE = ["core/ui/recovery-screen.js"];
 
-  const ohneKommentare = n =>
-    lies("../../core/ui/" + n).replace(/^\s*\/\/.*$/gm, "");   // Kommentare dürfen Werte nennen
+  const ohneKommentare = p =>                                  // Kommentare dürfen Werte nennen
+    readFileSync(resolve(WURZEL, p), "utf8").replace(/^\s*\/\/.*$/gm, "");
 
-  it("kein UI-Modul außer theme.js malt selbst", () => {
-    for (const n of uiDateien()) {
-      if (n === "theme.js" || MALT_SELBST.includes(n)) continue;
-      expect(ohneKommentare(n).match(/#[0-9a-fA-F]{6}\b/g) || [], n).toEqual([]);
+  /* Eine Zuweisung, deren rechte Seite NUR ein String ist — also ein fester
+     Wert, kein gemessener. `el.style.transform = "translateY(" + d + "px)"`
+     fällt nicht darunter, `el.style.marginLeft = "8px"` schon. */
+  const FESTER_WERT = /\.style\.([a-zA-Z]+)\s*=\s*("[^"]*"|'[^']*'|`[^`]*`)\s*;/g;
+  /* Einzige erlaubte Ausnahme: transition an- und abschalten. Ein Übergang,
+     der für genau einen Bildaufbau aus sein muss, lässt sich in keinem
+     Stylesheet ausdrücken — das ist Technik, keine Gestaltung. */
+  const TECHNIK = ["transition"];
+
+  it("kein Modul außer theme.js malt selbst", () => {
+    for (const p of pruefliste()) {
+      if (p.endsWith("/theme.js") || MALT_SELBST.includes(p)) continue;
+      expect(ohneKommentare(p).match(/#[0-9a-fA-F]{6}\b/g) || [], p).toEqual([]);
     }
   });
 
-  it("kein UI-Modul setzt komplette Stilblöcke inline", () => {
-    // Laufzeitwerte (style.transform, gemessene Höhen via setProperty) bleiben
-    // erlaubt — gemessene Werte gehören nicht in ein Stylesheet.
-    for (const n of uiDateien()) {
-      if (STILT_INLINE.includes(n)) continue;
-      const quelle = ohneKommentare(n);
-      expect(quelle.includes('setAttribute("style"'), n + " · setAttribute(style)").toBe(false);
-      expect(quelle.includes("style.cssText"), n + " · style.cssText").toBe(false);
+  it("kein Modul setzt komplette Stilblöcke inline", () => {
+    for (const p of pruefliste()) {
+      if (STILT_INLINE.includes(p)) continue;
+      const quelle = ohneKommentare(p);
+      expect(quelle.includes('setAttribute("style"'), p + " · setAttribute(style)").toBe(false);
+      expect(quelle.includes("style.cssText"), p + " · style.cssText").toBe(false);
+    }
+  });
+
+  it("kein Modul setzt feste Werte an einzelnen style-Eigenschaften", () => {
+    /* U0 · Die Lücke, durch die margin-left:8px gefallen ist: der Wächter las
+       nur ganze Stilblöcke. Eine Einzelzuweisung mit festem Wert ist aber
+       dasselbe in klein — Gestaltung an einem Ort, an dem niemand sie sucht.
+       Gemessene Werte bleiben erlaubt, sie gehören nicht in ein Stylesheet. */
+    for (const p of pruefliste()) {
+      if (STILT_INLINE.includes(p)) continue;
+      for (const m of ohneKommentare(p).matchAll(FESTER_WERT)) {
+        if (m[2].length === 2) continue;          // = "" nimmt weg, setzt nicht
+        expect(TECHNIK.includes(m[1]), p + " · " + m[0].trim()).toBe(true);
+      }
     }
   });
 
@@ -69,14 +100,15 @@ describe("T1b · Farbe lebt nur im Theme", () => {
     // Sperrklinke in beide Richtungen: wird eine Datei aufgeräumt, MUSS sie
     // hier verschwinden (sonst bliebe eine tote Ausnahme stehen, hinter der
     // sich später neue Verstöße verstecken). Kommt eine dazu, schlägt schon
-    // einer der beiden Tests oben an.
-    const maltNoch = uiDateien().filter(n =>
-      n !== "theme.js" && (ohneKommentare(n).match(/#[0-9a-fA-F]{6}\b/g) || []).length);
+    // einer der Tests oben an.
+    const maltNoch = pruefliste().filter(p =>
+      !p.endsWith("/theme.js") && (ohneKommentare(p).match(/#[0-9a-fA-F]{6}\b/g) || []).length);
     expect(maltNoch).toEqual(MALT_SELBST);
 
-    const stiltNoch = uiDateien().filter(n => {
-      const q = ohneKommentare(n);
-      return q.includes('setAttribute("style"') || q.includes("style.cssText");
+    const stiltNoch = pruefliste().filter(p => {
+      const q = ohneKommentare(p);
+      return q.includes('setAttribute("style"') || q.includes("style.cssText") ||
+        [...q.matchAll(FESTER_WERT)].some(m => m[2].length > 2 && !TECHNIK.includes(m[1]));
     });
     expect(stiltNoch).toEqual(STILT_INLINE);
   });

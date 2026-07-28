@@ -605,6 +605,26 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-vorschau-frage{font-size:var(--rz-fs-fein);opacity:.75;margin-bottom:4px}
       .rz-vorschau-weg{background:none;border:0;color:inherit;opacity:.6;
                        font-size:var(--rz-fs-zeile);padding:0 4px}
+      /* ---- U0 · Zwei Inline-Stile, die keine waren ----
+         chat-kern.js · der Knopf neben der Fehlermeldung. 8px ist --rz-r-2. */
+      #btnErneutSenden{margin-left:var(--rz-r-2)}
+
+      /* platforms/cloudflare/pages/client.js · der Hinweis, dass eine neue
+         Fassung bereitliegt. Er lag ausserhalb von core/ui und damit
+         ausserhalb jeder Pruefung — mit rohen Farben, 14px Schrift und
+         999px Radius. Schatten und Weichzeichner sind ersatzlos entfallen:
+         beide kommen in der Turn-40-Sprache nicht vor. Die Pille grenzt sich
+         jetzt ueber Haarlinie und Kartenflaeche ab, sie schwebt flacher. */
+      #swUpdate{position:fixed;left:50%;bottom:calc(var(--rz-r-4) + env(safe-area-inset-bottom,0px));
+        transform:translateX(-50%);z-index:99;background:var(--rz-karte);
+        border:1px solid var(--rz-hairline);color:var(--rz-ink);
+        border-radius:var(--rz-rund-pille);padding:var(--rz-r-2) var(--rz-r-4);
+        font-family:var(--rz-sans);font-size:var(--rz-fs-fein);
+        display:flex;gap:var(--rz-r-3);align-items:center}
+      #swUpdate button{font-family:var(--rz-sans);font-size:var(--rz-fs-fein);cursor:pointer;
+        border:0;border-radius:var(--rz-rund-pille);padding:var(--rz-r-1) var(--rz-r-3);
+        background:var(--rz-akzent);color:var(--rz-auf-akzent)}
+
       .rz-teilen-block{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
         padding:18px 20px;margin:12px 0}
       .rz-teilen-block .rz-von{color:var(--rz-label-auf-gruen);margin-bottom:8px}

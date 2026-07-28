@@ -249,16 +249,11 @@ export function zeigeUpdateHinweis() {
   const box = doc.createElement("div");
   box.id = "swUpdate";
   box.setAttribute("role", "status");
-  box.style.cssText = "position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:99;" +
-    "background:var(--rz-karte,#fff);border:1px solid var(--rz-karte-rand,#d8dee5);color:var(--rz-ink);border-radius:999px;" +
-    "padding:10px 16px;font:inherit;font-size:14px;display:flex;gap:12px;align-items:center;" +
-    "box-shadow:0 6px 24px rgba(0,0,0,.12);backdrop-filter:blur(8px)";
+  // U0 · Aussehen lebt in design.js (#swUpdate), nicht hier.
   const txt = doc.createElement("span");
   txt.textContent = t("pwa.updateVerfuegbar");
   const btn = doc.createElement("button");
   btn.textContent = t("pwa.neuLaden");
-  btn.style.cssText = "font:inherit;font-size:14px;cursor:pointer;border:0;border-radius:999px;" +
-    "padding:6px 14px;background:var(--rz-akzent);color:var(--rz-auf-akzent,#fff)";
   btn.addEventListener("click", () => location.reload());
   box.append(txt, btn);
   doc.body.appendChild(box);
