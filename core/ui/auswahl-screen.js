@@ -69,15 +69,14 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
   /** Auswahlfläche: Paar-Blöcke statt Blasen. */
   function renderAuswahl(box) {
     box.innerHTML = "";
-    const kopf = el("div", "pb-echo");
+    const kopf = el("div", "pb-echo rz-ausw-kopf");   // T3b: Aussehen in design.js
     kopf.textContent = ausw.luecken ? t("ausschnitt.luecken") : t("ausschnitt.anleitung");
-    kopf.setAttribute("style", "align-self:center;font-size:12px;color:var(--rz-sek2);padding:6px 0;text-align:center");
     box.appendChild(kopf);
 
     for (const paar of ausw.paare) {
       const wahlbar = paarWaehlbar(ausw.eignung, paar.id);
       const an = ausw.gewaehlt.has(paar.id);
-      const b = el("div", "rz-paar");
+      const b = el("div", "rz-paar" + (an ? " rz-an" : "") + (wahlbar ? "" : " rz-zu"));
       b.setAttribute("data-paar", paar.id);
       b.setAttribute("role", "button");
       b.setAttribute("tabindex", "0");
@@ -85,19 +84,11 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
       if (!wahlbar) b.setAttribute("aria-disabled", "true");
       // Kein Häkchen, kein Badge an bestandenen Paaren: Wer seine Auswahl
       // abgenommen bekommt, sitzt in einer Klassenarbeit.
-      b.setAttribute("style",
-        "border:1px solid " + (an ? "var(--rz-tiefgruen)" : "var(--rz-karte-rand)") +
-        ";background:" + (an ? "var(--rz-karte)" : "transparent") +
-        ";border-radius:14px;padding:10px 12px;margin:6px 0;" +
-        (wahlbar ? "cursor:pointer" : "opacity:.45"));
-      const f = el("div"); f.textContent = kuerze(paar.frage.text);
-      f.setAttribute("style", "font-size:13px;color:var(--rz-sek2);margin-bottom:6px");
-      const a = el("div"); a.textContent = kuerze(paar.antwort.text);
-      a.setAttribute("style", "font-size:14px");
+      const f = el("div", "rz-paar-frage"); f.textContent = kuerze(paar.frage.text);
+      const a = el("div", "rz-paar-antwort"); a.textContent = kuerze(paar.antwort.text);
       b.appendChild(f); b.appendChild(a);
       if (!wahlbar && ausw.gruende.has(paar.id)) {
-        const g = el("div"); g.textContent = paarGrund(ausw.eignung, paar.id) || "";
-        g.setAttribute("style", "font-size:12px;color:var(--rz-sek2);margin-top:6px;font-style:italic");
+        const g = el("div", "rz-paar-grund"); g.textContent = paarGrund(ausw.eignung, paar.id) || "";
         b.appendChild(g);
       }
       verdrahtePaar(b, paar, wahlbar);
@@ -105,18 +96,16 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     }
 
     const n = ausw.gewaehlt.size;
-    const leiste = el("div");
-    leiste.setAttribute("style", "position:sticky;bottom:0;background:var(--rz-papier);padding:8px 0 2px");
-    const zaehler = el("div");
+    const leiste = el("div", "rz-ausw-leiste");
+    const zaehler = el("div", "rz-ausw-fein");
     zaehler.id = "auswZaehler";
     // Zähler schlicht: keine Lesezeit-Schätzung — das wäre eine Aussage über
     // den Empfänger, und für den spricht die Begleitung nicht.
     zaehler.textContent = fuelle(t("ausschnitt.zaehler"), { n });
-    zaehler.setAttribute("style", "font-size:12px;color:var(--rz-sek2);text-align:center;padding-bottom:6px");
     leiste.appendChild(zaehler);
     if (ausw.hinweis) {
-      const h = el("div"); h.id = "auswHinweis"; h.textContent = t("ausschnitt.richtwert");
-      h.setAttribute("style", "font-size:12px;color:var(--rz-sek2);text-align:center;padding-bottom:6px");
+      const h = el("div", "rz-ausw-fein");
+      h.id = "auswHinweis"; h.textContent = t("ausschnitt.richtwert");
       leiste.appendChild(h);
     }
     const weiter = el("button", "rz-zeile rz-knopf-flach" + (n ? "" : " rz-gedimmt"));
@@ -184,22 +173,18 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     karte.appendChild(von);
     for (const st of stuecke) {
       if (st.gapBefore) {
-        const l = el("div"); l.className = "rz-luecke"; l.textContent = "…";
-        l.setAttribute("style", "text-align:center;padding:4px 0;opacity:.7");
+        const l = el("div", "rz-luecke"); l.textContent = "…";
         karte.appendChild(l);
       }
-      const zeile = el("div");
+      const zeile = el("div", "rz-vorschau-zeile");
       zeile.setAttribute("data-vorschau", st.id);
-      zeile.setAttribute("style", "padding:6px 0");
-      const f = el("div"); f.textContent = st.question;
-      f.setAttribute("style", "font-size:13px;opacity:.75;margin-bottom:4px");
+      const f = el("div", "rz-vorschau-frage"); f.textContent = st.question;
       const a = el("p", "rz-teilen-text"); a.textContent = st.answer;
       zeile.appendChild(f); zeile.appendChild(a);
-      const weg = el("button");
+      const weg = el("button", "rz-vorschau-weg");
       weg.setAttribute("data-weg-paar", st.id);
       weg.textContent = "×";
       weg.setAttribute("aria-label", t("ausschnitt.entfernen"));
-      weg.setAttribute("style", "background:none;border:0;color:inherit;opacity:.6;font-size:16px;padding:0 4px");
       weg.addEventListener("click", () => {
         ausw.gewaehlt.delete(st.id);
         if (!ausw.gewaehlt.size) { ausw.phase = "auswahl"; }
@@ -210,12 +195,11 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     }
     box.appendChild(karte);
 
-    const rahmen = el("textarea");
+    const rahmen = el("textarea", "rz-ausw-rahmen");
     rahmen.id = "auswRahmen";
     rahmen.setAttribute("maxlength", "280");
     rahmen.setAttribute("placeholder", t("ausschnitt.rahmenPlatzhalter"));
     rahmen.value = ausw.rahmen;
-    rahmen.setAttribute("style", "width:100%;margin-top:10px;min-height:56px");
     rahmen.addEventListener("input", () => { ausw.rahmen = rahmen.value; });
     box.appendChild(rahmen);
 

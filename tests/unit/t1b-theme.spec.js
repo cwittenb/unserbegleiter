@@ -40,8 +40,9 @@ describe("T1b · Farbe lebt nur im Theme", () => {
 
   // theme.js IST die Palette; recovery-screen.js trägt noch rohe Werte (T3c).
   const MALT_SELBST = ["recovery-screen.js"];
-  // Stilblöcke inline: auswahl-screen.js (13 Stellen, T3b), recovery-screen.js (T3c).
-  const STILT_INLINE = ["auswahl-screen.js", "recovery-screen.js"];
+  // Stilblöcke inline: nur noch recovery-screen.js (T3c). auswahl-screen.js
+  // ist mit T3b herausgefallen — die Sperrklinke unten hat das erzwungen.
+  const STILT_INLINE = ["recovery-screen.js"];
 
   const ohneKommentare = n =>
     lies("../../core/ui/" + n).replace(/^\s*\/\/.*$/gm, "");   // Kommentare dürfen Werte nennen

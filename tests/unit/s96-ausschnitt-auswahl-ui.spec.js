@@ -130,6 +130,24 @@ describe("S96.2 · Auswahl-Modus", () => {
     expect(erstes().getAttribute("aria-pressed")).toBe("false");
   });
 
+  // T3b · Der Auswahl-Zustand stand bis dahin als Inline-Style am Element
+  // (Rand, Fläche, Deckkraft in einem String). Jetzt tragen ihn Klassen. Das
+  // ist die Stelle, an der die Herauslösung still hätte brechen können:
+  // aria-pressed käme weiter richtig, aber man SÄHE die Auswahl nicht mehr.
+  it("der Auswahl-Zustand steht in Klassen, nicht mehr im style-Attribut", async () => {
+    const { app, paare: P } = await bisAngebot();
+    app.testAusschnitt(JSON.parse(eignungBlock(P)).pairs);
+    await ruhe();
+    root.querySelector("#btnAuswStart").click();
+    await ruhe();
+    const bl = paare(root.querySelector("#pbMsgs"));
+    expect(bl.some(b => b.hasAttribute("style")), "kein style-Attribut mehr").toBe(false);
+    expect(bl[0].classList.contains("rz-an")).toBe(false);
+    expect(bl[2].classList.contains("rz-zu"), "nicht waehlbares Paar").toBe(true);
+    bl[0].click(); await ruhe();
+    expect(paare(root.querySelector("#pbMsgs"))[0].classList.contains("rz-an")).toBe(true);
+  });
+
   it("ein Kriterien-Verletzer bleibt sichtbar und stumm — der Grund kommt einmal", async () => {
     const { app, paare: P } = await bisAngebot();
     app.testAusschnitt(JSON.parse(eignungBlock(P)).pairs);

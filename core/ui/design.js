@@ -564,6 +564,36 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Die Freigabe-Vorschau zeigt EXAKT den Text, der im Regal ankommt:
          Tiefgruen-Block mit Von-Zeile, typografische Anfuehrung per CSS
          (keine Textaenderung). Wahl-Labels und Aktionen als Hairline-Zeilen. */
+      /* ---- T3b · Ausschnitt-Auswahl und Vorschau (R4b) ----
+         Dreizehn Inline-Stilbloecke aus auswahl-screen.js. Rein mechanisch
+         herausgeloest: Abstaende, Deckkraft und min-height stehen unveraendert
+         da, weil es fuer sie keine Skala gibt. Auf die Skala gezogen wurden
+         nur die vier Schriftgroessen und der Radius:
+           12px -> --rz-fs-fein (13px)     · vier Stellen, Mikrotext
+           13px -> --rz-fs-fein (13px)     · unveraendert
+           14px -> --rz-fs-text (15px)     · der Antworttext eines Paars
+           16px -> --rz-fs-zeile (17px)    · das Entfernen-Zeichen
+           14px Radius -> --rz-rund-blatt  · unveraendert
+         Die Gestaltungsfrage aus dem Sprintplan (bleiben die Paar-Bloecke
+         Karten mit Rand und Radius, oder werden sie Hairline-Zeilen wie
+         ueberall sonst?) ist damit NICHT beantwortet — sie steht offen. */
+      .rz-ausw-kopf{align-self:center;font-size:var(--rz-fs-fein);color:var(--rz-sek2);
+                    padding:6px 0;text-align:center}
+      .rz-paar{border:1px solid var(--rz-karte-rand);background:transparent;
+               border-radius:var(--rz-rund-blatt);padding:10px 12px;margin:6px 0;cursor:pointer}
+      .rz-paar.rz-an{border-color:var(--rz-tiefgruen);background:var(--rz-karte)}
+      .rz-paar.rz-zu{cursor:default;opacity:.45}
+      .rz-paar-frage{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-bottom:6px}
+      .rz-paar-antwort{font-size:var(--rz-fs-text)}
+      .rz-paar-grund{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-top:6px;font-style:italic}
+      .rz-ausw-leiste{position:sticky;bottom:0;background:var(--rz-papier);padding:8px 0 2px}
+      .rz-ausw-fein{font-size:var(--rz-fs-fein);color:var(--rz-sek2);text-align:center;padding-bottom:6px}
+      .rz-ausw-rahmen{width:100%;margin-top:10px;min-height:56px}
+      .rz-luecke{text-align:center;padding:4px 0;opacity:.7}
+      .rz-vorschau-zeile{padding:6px 0}
+      .rz-vorschau-frage{font-size:var(--rz-fs-fein);opacity:.75;margin-bottom:4px}
+      .rz-vorschau-weg{background:none;border:0;color:inherit;opacity:.6;
+                       font-size:var(--rz-fs-zeile);padding:0 4px}
       .rz-teilen-block{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
         padding:18px 20px;margin:12px 0}
       .rz-teilen-block .rz-von{color:var(--rz-label-auf-gruen);margin-bottom:8px}
