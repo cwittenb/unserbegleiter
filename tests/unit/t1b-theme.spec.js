@@ -6,8 +6,9 @@
 // Übergangskurve gehören nach theme.js — nirgendwo sonst.
 
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { DESIGN_CSS } from "../../core/ui/design.js";
 import { THEME_CSS } from "../../core/ui/theme.js";
 
@@ -20,23 +21,63 @@ describe("T1b · Farbe lebt nur im Theme", () => {
     expect(treffer).toEqual([]);
   });
 
-  it("auch die UI-Module malen nicht selbst", () => {
-    for (const rel of ["../../core/ui/kulisse.js", "../../core/ui/html.js",
-                       "../../core/ui/sessions.js", "../../core/ui/chat-kern.js"]) {
-      const quelle = lies(rel).replace(/^\s*\/\/.*$/gm, "");     // Kommentare dürfen Werte nennen
-      expect(quelle.match(/#[0-9a-fA-F]{6}\b/g) || [], rel).toEqual([]);
+  /* T3a · Bis T2 stand hier eine Namensliste: drei, dann vier Dateien, die
+     jemand von Hand gepflegt hat. Eine neue Datei in core/ui/ war damit
+     automatisch ungeprüft — der Wächter wuchs nicht mit dem Code.
+     Jetzt läuft er über das VERZEICHNIS und führt stattdessen die Ausnahmen.
+     Der Unterschied ist die Beweislast: vorher musste jemand daran denken,
+     eine Datei aufzunehmen; jetzt muss jemand begründen, warum eine
+     ausgenommen bleibt. Die Ausnahmelisten sind Sperrklinken — sie dürfen
+     schrumpfen, nicht wachsen, und der Test merkt beides. */
+
+  // Der Pfad wird OHNE URL-Objekt gebildet: unter happy-dom ist der globale
+  // URL-Konstruktor der des DOM, und fileURLToPath erkennt dessen Instanzen
+  // nicht ("The URL must be of scheme file"). Mit dem String aus
+  // import.meta.url tritt das nicht auf.
+  const uiDateien = () => readdirSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../../core/ui"))
+    .filter(n => n.endsWith(".js")).sort();
+
+  // theme.js IST die Palette; recovery-screen.js trägt noch rohe Werte (T3c).
+  const MALT_SELBST = ["recovery-screen.js"];
+  // Stilblöcke inline: auswahl-screen.js (13 Stellen, T3b), recovery-screen.js (T3c).
+  const STILT_INLINE = ["auswahl-screen.js", "recovery-screen.js"];
+
+  const ohneKommentare = n =>
+    lies("../../core/ui/" + n).replace(/^\s*\/\/.*$/gm, "");   // Kommentare dürfen Werte nennen
+
+  it("kein UI-Modul außer theme.js malt selbst", () => {
+    for (const n of uiDateien()) {
+      if (n === "theme.js" || MALT_SELBST.includes(n)) continue;
+      expect(ohneKommentare(n).match(/#[0-9a-fA-F]{6}\b/g) || [], n).toEqual([]);
     }
   });
 
-  // T2j · chat-kern.js ist seit T2 in der Liste oben. Damit die Datei nicht
-  // über einen Inline-Style wieder ausschert, verbietet dieser Test das
-  // Setzen ganzer Stilblöcke dort. Laufzeitwerte (style.transform, gemessene
-  // Höhen über setProperty) bleiben erlaubt — sie gehören nicht in ein
-  // Stylesheet.
-  it("chat-kern.js setzt keine kompletten Stilblöcke inline", () => {
-    const quelle = lies("../../core/ui/chat-kern.js");
-    expect(quelle).not.toContain('setAttribute("style"');
-    expect(quelle).not.toContain("style.cssText");
+  it("kein UI-Modul setzt komplette Stilblöcke inline", () => {
+    // Laufzeitwerte (style.transform, gemessene Höhen via setProperty) bleiben
+    // erlaubt — gemessene Werte gehören nicht in ein Stylesheet.
+    for (const n of uiDateien()) {
+      if (STILT_INLINE.includes(n)) continue;
+      const quelle = ohneKommentare(n);
+      expect(quelle.includes('setAttribute("style"'), n + " · setAttribute(style)").toBe(false);
+      expect(quelle.includes("style.cssText"), n + " · style.cssText").toBe(false);
+    }
+  });
+
+  it("die Ausnahmelisten sind aktuell — sie dürfen nur schrumpfen", () => {
+    // Sperrklinke in beide Richtungen: wird eine Datei aufgeräumt, MUSS sie
+    // hier verschwinden (sonst bliebe eine tote Ausnahme stehen, hinter der
+    // sich später neue Verstöße verstecken). Kommt eine dazu, schlägt schon
+    // einer der beiden Tests oben an.
+    const maltNoch = uiDateien().filter(n =>
+      n !== "theme.js" && (ohneKommentare(n).match(/#[0-9a-fA-F]{6}\b/g) || []).length);
+    expect(maltNoch).toEqual(MALT_SELBST);
+
+    const stiltNoch = uiDateien().filter(n => {
+      const q = ohneKommentare(n);
+      return q.includes('setAttribute("style"') || q.includes("style.cssText");
+    });
+    expect(stiltNoch).toEqual(STILT_INLINE);
   });
 
   it("jeder im Dark-Block überschriebene Token ist im Root-Block angelegt", () => {

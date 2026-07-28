@@ -179,7 +179,7 @@ export function machePanels({ $, el, state, backend, err, renderMsgs, warteAntwo
       `<div class="pb-sub">${einzel ? t("aufdeck.titelTeil", { owner: esc(owner.name) }) : t("aufdeck.titel")}</div>` +
       (ersteTafel ? `<p class="rz-fein">${t("aufdeck.intro")}</p>` : "") +
       (einzel ? richtungHtml(tipper, owner) : richtungHtml(tafel.gB, tafel.gA) + richtungHtml(tafel.gA, tafel.gB)));
-    karte.setAttribute("style", "align-self:stretch;max-width:none");
+    // T3a · Layout lebt in design.js (.pb-tafel), nicht hier.
     if (mitWeiter) {
       const w = el("button", "pb-btn primary");
       w.id = "adWeiter"; w.textContent = t("aufdeck.weiter");

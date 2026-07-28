@@ -109,6 +109,11 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
                background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:var(--rz-rund-pille);padding:7px 16px;font-size:var(--rz-fs-fein);
                color:var(--rz-sek);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px)}
       .pb-zwei{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:stretch}
+      /* T3a · Die Aufdeck-Tafel (S62) haengt als Karte im Nachrichtenfluss und
+         soll dort die volle Spaltenbreite nehmen, statt der 88%-Begrenzung der
+         Nachrichten zu folgen. Das stand bis T2 als Inline-Style in panels.js —
+         zwei Layout-Werte, die niemand im Stylesheet gesucht haette. */
+      .pb-tafel{align-self:stretch;max-width:none}
       .pb-zwei .pb-card{display:flex;flex-direction:column;gap:6px}
       @media(max-width:540px){.pb-zwei{grid-template-columns:1fr}}
       .pb-gruppe{margin:14px 0 2px}
