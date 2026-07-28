@@ -102,7 +102,7 @@ describe("T2g · die Sprecher-Marke hängt nicht mehr am Listen-Gap", () => {
 
 describe("T2j · die Echo-Pille lebt im Stylesheet", () => {
   it("die Regel steht in design.js und zieht nur Skalenwerte", () => {
-    const r = regel("#scrChat .rz-echo");
+    const r = regel(".rz-echo");
     expect(r).toContain("font-size:var(--rz-fs-caps)");
     expect(r).toContain("border-radius:var(--rz-rund-pille)");
     // Kein roher Wert mehr — bis auf die Haarlinie des Rahmens, die im ganzen
@@ -110,11 +110,14 @@ describe("T2j · die Echo-Pille lebt im Stylesheet", () => {
     expect(r.replace("1px solid", "")).not.toMatch(/\d+px/);
   });
 
-  it("die fremden .pb-echo-Orte bleiben unberührt", () => {
-    // Leseansicht und Auswahl-Screen tragen dieselbe Klasse, dort ist sie
-    // heute ungestylt. Eine Regel auf .pb-echo wäre eine stille Änderung
-    // an zwei Orten, die niemand bestellt hat.
+  it("die Pille sieht in Gespräch und Leseansicht gleich aus", () => {
+    // T2j-Nachzug · Zuerst war die Regel auf #scrChat begrenzt, um die beiden
+    // fremden .pb-echo-Orte nicht still mitzuändern. Genau die Ungleichheit
+    // war aber der Befund: dieselbe Angabe, zweierlei Gestalt. Die Leseansicht
+    // trägt jetzt .rz-echo mit — der Auswahl-Screen nicht, er hat seit T3b
+    // sein eigenes .rz-ausw-kopf.
+    expect(regel(".rz-echo")).toBeTruthy();
+    expect(KOMPONENTEN).not.toContain("#scrChat .rz-echo{");
     expect(KOMPONENTEN).not.toContain(".pb-echo{");
-    expect(regel("#scrChat .rz-echo")).toBeTruthy();
   });
 });

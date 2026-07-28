@@ -37,7 +37,7 @@ export function zeichneReplay(wirt, verlauf, el) {
   for (const m of msgs) {
     // Panel-Echos bleiben: sie sind Teil dessen, was damals zu sehen war.
     if (m.echo) {
-      const e = el("div", "pb-echo");
+      const e = el("div", "pb-echo rz-echo");   // T2j-Nachzug: wie im lebenden Verlauf
       e.textContent = m.echo;
       wirt.appendChild(e);
       continue;

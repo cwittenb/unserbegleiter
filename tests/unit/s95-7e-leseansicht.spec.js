@@ -46,6 +46,8 @@ describe("S95.7e · Was gezeichnet wird", () => {
   it("Panel-Echos bleiben — sie waren damals zu sehen", () => {
     zeichneReplay(wirt, verlauf([{ role: "user", content: "x", echo: "Nähe 4 · Wunsch 6" }]), el);
     expect(wirt.querySelector(".pb-echo").textContent).toBe("Nähe 4 · Wunsch 6");
+    // T2j-Nachzug · dieselbe Pille wie im lebenden Verlauf, nicht mehr nackt.
+    expect(wirt.querySelector(".pb-echo").classList.contains("rz-echo")).toBe(true);
   });
 
   it("Nutzertext wird als Text gesetzt, nicht als HTML", () => {

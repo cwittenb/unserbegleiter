@@ -125,6 +125,18 @@ describe("T2e · --rz-gedimmt bleibt dekorativ", () => {
     expect(zustand.slice(0, zustand.indexOf("}"))).toContain("color:var(--rz-sek)");
     const sig = KOMPONENTEN.slice(KOMPONENTEN.indexOf(".rz-signatur{"));
     expect(sig.slice(0, sig.indexOf("}"))).toContain("color:var(--rz-sek)");
+    // T2e-Nachzug · "tippen zum Schliessen" ist eine Anweisung, keine Zier.
+    const fuss = KOMPONENTEN.slice(KOMPONENTEN.indexOf(".rz-weg-fuss{"));
+    expect(fuss.slice(0, fuss.indexOf("}"))).toContain("color:var(--rz-sek)");
+  });
+
+  it("--rz-gedimmt faerbt nur noch benannte Zier-Rollen", () => {
+    // Was uebrig bleibt, ist bewusst dekorativ: die gesperrte Zeile selbst,
+    // die Wortmarke, der Platzhalter. Wer eine weitere Textrolle darauf legt,
+    // soll hier vorbeikommen und begruenden.
+    const ZIER = [".rz-zeile:disabled", ".rz-gedimmt", ".rz-fussmarke", "::placeholder"];
+    for (const m of KOMPONENTEN.matchAll(/([^{}]+)\{[^}]*color:var\(--rz-gedimmt\)[^}]*\}/g))
+      expect(ZIER.some(z => m[1].includes(z)), "unbenannte Rolle: " + m[1].trim()).toBe(true);
   });
 
   it("in der gruenen Zone gilt die Gegenregel", () => {

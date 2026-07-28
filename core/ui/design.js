@@ -350,7 +350,13 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;
                                line-height:var(--rz-lh-fein);margin:0 0 14px}
       .rz-weg-panel .rz-option em{font-style:italic}
-      .rz-weg-fuss{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-gedimmt);
+      /* T2e-Nachzug (Handover Turn 40 §3.4) · "tippen zum Schliessen" ist die
+         einzige Angabe, wie man das Panel wieder loswird — eine ANWEISUNG,
+         keine Zier. Auf --rz-gedimmt lag sie bei 2.30:1 und trug damit nicht;
+         jetzt --rz-sek (4.70:1), wie schon .rz-zustand und .rz-signatur.
+         Sie bleibt trotzdem die leiseste Zeile im Panel: --rz-fs-caps gegen
+         --rz-fs-fein des Hinweises darueber und --rz-fs-zeile der Optionen. */
+      .rz-weg-fuss{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-sek);
                    text-align:center;padding-top:8px}
       /* T2k (K7) · Einmalige Erklaerung des Zeichens, nur im Panel der
          Startseite. Leiser als eine Option, lauter als die Fusszeile: sie
@@ -494,10 +500,15 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          chat-kern.js gesetzt — mit den rohen Werten 12px und 999px an genau
          der Stelle, die der T1b-Waechter nicht las. 12px ist keine Stufe der
          Skala (Nachbarn: 11 und 13), 999px gibt es als --rz-rund-pille.
-         Bewusst .rz-echo und nicht .pb-echo: die Klasse .pb-echo tragen auch
-         die Leseansicht und der Auswahl-Screen, wo sie heute UNGESTYLT ist —
-         eine Regel darauf waere eine stille Aenderung an zwei fremden Orten. */
-      #scrChat .rz-echo{align-self:flex-end;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);
+         T2j-Nachzug · Die Regel hiess zuerst "#scrChat .rz-echo", weil die
+         Klasse .pb-echo auch die Leseansicht und der Auswahl-Screen tragen und
+         eine Regel DARAUF zwei fremde Orte still veraendert haette. Genau das
+         war aber der eigentliche Befund: in der Leseansicht stand eine nackte
+         div, wo im Gespraech eine Pille sitzt — dieselbe Angabe, zweierlei
+         Gestalt. Die Leseansicht traegt jetzt .rz-echo mit, der Auswahl-Screen
+         nicht (der hat seit T3b sein eigenes .rz-ausw-kopf). Deshalb steht die
+         Regel ohne Screen-Bindung. */
+      .rz-echo{align-self:flex-end;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);
         color:var(--rz-sek2);background:var(--rz-karte);border:1px solid var(--rz-karte-rand);
         border-radius:var(--rz-rund-pille);padding:var(--rz-r-1) var(--rz-r-3);max-width:82%}
       #scrChat .rz-panel{border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
@@ -618,11 +629,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         display:flex;align-items:center;gap:8px}
       .rz-sprach-hinweis{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);color:var(--rz-sek2);
         max-width:16ch;text-align:right;line-height:var(--rz-lh-zeile)}
+      /* T2e-Nachzug · Vom Kontrast-Waechter gefunden, nicht vom Handover: der
+         Sprachknopf trug seine Beschriftung auf --rz-gedimmt (2.30:1). Das ist
+         ein Bedienelement mit Text, keine Zier — jetzt --rz-sek (4.70:1).
+         Der aktive Zustand musste mit: auf --rz-akzent-hell lag er bei 2.94:1
+         und waere nach der Korrektur SCHWAECHER gewesen als der inaktive —
+         der Zustand haette sich verkehrt herum gelesen. --rz-akzent-ink ist
+         der Akzent in seiner Schriftrolle (7.63:1) und traegt hier richtig. */
       .rz-sprachknopf{border:1px solid var(--rz-hairline);background:var(--rz-papier);
-        color:var(--rz-gedimmt);cursor:pointer;border-radius:0;padding:6px 10px;min-height:0;
+        color:var(--rz-sek);cursor:pointer;border-radius:0;padding:6px 10px;min-height:0;
         font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.1em;
         display:inline-flex;align-items:center;gap:5px}
-      .rz-sprachknopf .an{color:var(--rz-akzent-hell)}
+      .rz-sprachknopf .an{color:var(--rz-akzent-ink)}
       .rz-sprachknopf .rz-punkt{width:5px;height:5px;border-radius:50%;background:var(--rz-akzent)}
       #boxPaarsprache.rz-sprachdialog{position:fixed;left:0;right:0;bottom:0;z-index:25;
         display:block;margin:0;border:0;border-top:1px solid var(--rz-hairline);border-radius:0;
