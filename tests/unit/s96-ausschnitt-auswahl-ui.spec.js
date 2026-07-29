@@ -280,13 +280,17 @@ describe("S96.2 · Vorschau", () => {
     await bisVorschau();
     const frei = root.querySelector("#btnAuswFreigeben");
     expect(frei.disabled).toBe(true);
-    const wege = [...root.querySelector("#pbMsgs").querySelectorAll("input[data-weg]")].map(x => x.getAttribute("data-weg"));
+    // U4/§4.8 · Rahmensatz, Wege und Freigeben stehen in der unteren Zone,
+    // nicht mehr im Verlauf — sie gehören zu dem, was das Gerät verlässt.
+    const unten = root.querySelector("#auswLeiste");
+    const wege = [...unten.querySelectorAll("input[data-weg]")].map(x => x.getAttribute("data-weg"));
     expect(wege).toEqual(["shelf", "moment"]);   // „selbst" entfällt beim Ausschnitt
+    expect(root.querySelector("#pbMsgs input[data-weg]"), "nicht mehr auf Papier").toBeNull();
   });
 
   it("die Freigabe legt einen Ausschnitt mit Karenz ins Regal", async () => {
     const { backend } = await bisVorschau([0, 3]);
-    const box = root.querySelector("#pbMsgs");
+    const box = root.querySelector("#auswLeiste");
     box.querySelector("#auswRahmen").value = "Ein Stück von neulich.";
     box.querySelector("#auswRahmen").dispatchEvent(new document.defaultView.Event("input"));
     const w = box.querySelector('input[data-weg="shelf"]');

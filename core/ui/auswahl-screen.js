@@ -198,7 +198,9 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
   function renderVorschau(box) {
     box.innerHTML = "";
     const stuecke = baueAusschnitt(ausw.paare, [...ausw.gewaehlt]);
-    const karte = el("div", "rz-teilen-block");
+    // §4.8 · Der Ausschnitt steht auf Papier. Der dunkle Kasten war eine
+    // Zone ohne Naht mitten im Blatt; die Klasse bleibt fuer panels.js.
+    const karte = el("div", "rz-vorschau");
     const von = el("div", "rz-caps rz-von");
     von.textContent = fuelle(t("ausschnitt.denkarbeit"), { name: state.info.name });
     karte.appendChild(von);
@@ -226,19 +228,25 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     }
     box.appendChild(karte);
 
+    // §4.8 · Rahmensatz, Wege und Freigeben gehoeren zu dem, was das Geraet
+    // verlaesst — also in die Tiefgruen-Zone, wie die Leiste der Auswahl.
+    const unten = $("auswLeiste");
+    if (!unten) return;              // S87: leere Huelle, folgenlos
+    unten.innerHTML = "";
+
     const rahmen = el("textarea", "rz-feld rz-ausw-rahmen");   // U1: Feldkante
     rahmen.id = "auswRahmen";
     rahmen.setAttribute("maxlength", "280");
     rahmen.setAttribute("placeholder", t("ausschnitt.rahmenPlatzhalter"));
     rahmen.value = ausw.rahmen;
     rahmen.addEventListener("input", () => { ausw.rahmen = rahmen.value; });
-    box.appendChild(rahmen);
+    unten.appendChild(rahmen);
 
     const wegName = { shelf: t("gate.weg.regal", { partner: state.info.partner }), moment: t("gate.weg.moment", { partner: state.info.partner }) };
     const wahl = el("div");
     wahl.innerHTML = WEGE_FUER("excerpt").map(w =>
-      `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"> ${esc(wegName[w])}</label>`).join("");
-    box.appendChild(wahl);
+      `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"><span>${esc(wegName[w])}</span></label>`).join("");
+    unten.appendChild(wahl);
 
     const frei = el("button", "rz-zeile rz-knopf-flach rz-gedimmt");
     frei.id = "btnAuswFreigeben"; frei.disabled = true;
@@ -265,13 +273,13 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
       if (!engine) return;
       await warteAntwort(() => engine.submitToolResult(fuelle(K().steuerTexte.freigabeGequert, { paths: wege.join(", ") })));
     });
-    box.appendChild(frei);
+    unten.appendChild(frei);
 
     const zurueck = el("button", "rz-zeile rz-knopf-flach");
     zurueck.id = "btnAuswZurueck";
     zurueck.innerHTML = `<span>${esc(t("ausschnitt.zurueck"))}</span><span class="rz-pfeil">→</span>`;
     zurueck.addEventListener("click", () => { ausw.phase = "auswahl"; renderMsgs(true); });
-    box.appendChild(zurueck);
+    unten.appendChild(zurueck);
   }
   /** Zeichnet die offene Auswahl in `box` — und meldet, ob es etwas zu zeichnen gab.
    *  Damit muss app.js weder `ausw` noch dessen Phasen kennen. */
@@ -279,8 +287,11 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     // §1.1 · Die Schreibkante gehoert waehrend der Auswahl der Leiste. Das
     // Umschalten steht hier, weil hier ohnehin ueber "offen oder nicht"
     // entschieden wird — und weil so kein zweiter Ort davon wissen muss.
+    // U4 · Die untere Zone gehoert dem Modul in BEIDEN Phasen: in der Auswahl
+    // traegt sie Zaehler und Wege hinaus, in der Vorschau Rahmensatz, Wege und
+    // Freigeben. Nur der Wegweiser-Text unterscheidet die Phasen (auswahlOffen).
     const schirm = $("scrChat"), leiste = $("auswLeiste");
-    const offen = !!ausw && ausw.phase !== "vorschau";
+    const offen = !!ausw;
     if (schirm) schirm.classList.toggle("rz-auswahl", offen);
     if (leiste) {
       leiste.classList.toggle("pb-hidden", !offen);

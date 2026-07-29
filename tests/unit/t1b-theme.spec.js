@@ -96,6 +96,22 @@ describe("T1b · Farbe lebt nur im Theme", () => {
     }
   });
 
+  /* U4 · Beim Verschieben von CSS-Bloecken zwischen Patches sind vier Regeln
+     wortgleich doppelt gelandet — folgenlos (die zweite gewinnt mit demselben
+     Inhalt), aber Ballast, den niemand bemerkt. Eine wortgleiche Wiederholung
+     ist nie Absicht: sie zu verbieten kostet nichts und faengt genau die
+     Copy-Paste-Unfaelle, die bei Ganzdatei-Ersetzung entstehen. */
+  it("keine Regel steht wortgleich zweimal im Stylesheet", () => {
+    const regeln = (KOMPONENTEN_CSS.match(/[^{}]+\{[^{}]*\}/g) || [])
+      .map(r => r.replace(/\s+/g, " ").trim());
+    const gesehen = new Set(), doppelt = [];
+    for (const r of regeln) {
+      if (gesehen.has(r)) doppelt.push(r.slice(0, 60) + "…");
+      gesehen.add(r);
+    }
+    expect(doppelt).toEqual([]);
+  });
+
   it("die Ausnahmelisten sind aktuell — sie dürfen nur schrumpfen", () => {
     // Sperrklinke in beide Richtungen: wird eine Datei aufgeräumt, MUSS sie
     // hier verschwinden (sonst bliebe eine tote Ausnahme stehen, hinter der

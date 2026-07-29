@@ -676,16 +676,28 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       /* §4.11 · Der Rahmensatz der Vorschau war ein textarea ohne Feldregel
          und erbte den Browser-Rahmen. Erster Nutzer der Feldkante. */
       .rz-ausw-rahmen{margin-top:10px;min-height:56px}
+      /* ---- U4 (Handover Turn 41 §4.8–4.10) · Die Vorschau ----
+         §4.8 · Der Ausschnitt — das, was tatsaechlich beim Leser ankommt,
+         samt der Auslassung "…" — steht auf Papier. Der dunkle Kasten
+         (.rz-teilen-block) faellt hier weg: er war ein Tiefgruen-Block
+         mitten auf Papier, also eine Zone ohne Naht. Die Handlungen —
+         Rahmensatz, die zwei Wege und der abschliessende Knopf — stehen
+         unten in der Tiefgruen-Zone, wie die Leiste der Auswahl seit U3c.
+         Die Klasse .rz-teilen-block bleibt bestehen — panels.js zeigt damit
+         die Selbstmitteilung, und dort ist der Block richtig. */
+      .rz-vorschau .rz-von{color:var(--rz-label);margin-bottom:var(--rz-r-2)}
       .rz-luecke{text-align:center;padding:4px 0;opacity:.7}
-      .rz-vorschau-zeile{padding:6px 0}
+
+      /* §4.9 · Das "x" war 15px ohne Trefferflaeche, bei opacity:.6, direkt
+         neben dem Text — und es ist die einzige Handlung dieses Screens, die
+         etwas wegnimmt. Jetzt 44px, rechts, mit Abstand zum Text. */
+      .rz-vorschau-zeile{display:flex;align-items:flex-start;gap:var(--rz-r-3);padding:6px 0}
+      .rz-vorschau-zeile > div:first-child{flex:1;min-width:0}
       .rz-vorschau-frage{font-size:var(--rz-fs-fein);opacity:.75;margin-bottom:4px}
-      .rz-vorschau-weg{background:none;border:0;color:inherit;opacity:.6;
-                       font-size:var(--rz-fs-zeile);padding:0 4px}
-      .rz-luecke{text-align:center;padding:4px 0;opacity:.7}
-      .rz-vorschau-zeile{padding:6px 0}
-      .rz-vorschau-frage{font-size:var(--rz-fs-fein);opacity:.75;margin-bottom:4px}
-      .rz-vorschau-weg{background:none;border:0;color:inherit;opacity:.6;
-                       font-size:var(--rz-fs-zeile);padding:0 4px}
+      .rz-vorschau-weg{flex:none;background:none;border:0;color:var(--rz-sek);
+                       width:var(--rz-tapziel-finger);height:var(--rz-tapziel-finger);
+                       min-height:var(--rz-tapziel-finger);
+                       font-size:var(--rz-fs-zeile);line-height:1;padding:0;cursor:pointer}
       /* ---- U0 · Zwei Inline-Stile, die keine waren ----
          chat-kern.js · der Knopf neben der Fehlermeldung. 8px ist --rz-r-2. */
       #btnErneutSenden{margin-left:var(--rz-r-2)}
@@ -713,8 +725,21 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         line-height:var(--rz-lh-fein);margin:0}
       .rz-teilen-text::before{content:'„'}
       .rz-teilen-text::after{content:'“'}
-      .rz-wahl{display:block;font-size:var(--rz-fs-fein);margin:0;padding:10px 0;
+      /* §4.10 · Die Wege waren nackte Systemkaestchen — das einzige Stueck UI
+         im Set mit Fremdgestalt. Jetzt eine Haarlinien-Zeile wie ueberall,
+         44px hoch, mit dem Kaestchen links.
+         Das Kaestchen bleibt ein echtes <input type=checkbox>: eine
+         nachgebaute Marke muesste den Haken selbst zeichnen, und ein
+         handgezeichneter Haken, der vom System abweicht, ist der
+         schlechtere Tausch. accent-color faerbt ihn ein. */
+      .rz-wahl{display:flex;align-items:center;gap:var(--rz-r-3);
+        font-size:var(--rz-fs-fein);margin:0;padding:0;
+        min-height:var(--rz-tapziel-finger);cursor:pointer;
         border-top:1px solid var(--rz-hairline)}
+      .rz-wahl input[type=checkbox]{flex:none;width:18px;height:18px;margin:0;
+        accent-color:var(--rz-tiefgruen)}
+      .rz-tiefgruen .rz-wahl{border-top-color:var(--rz-hairline-gruen)}
+      .rz-tiefgruen .rz-wahl input[type=checkbox]{accent-color:var(--rz-akzent)}
       .rz-von .rz-initial{width:18px;height:18px;font-size:var(--rz-fs-caps);vertical-align:middle}
       .rz-regal-eintrag .rz-von{margin-bottom:4px}
       .rz-regal-text{font-family:var(--rz-serif);font-size:var(--rz-fs-text);font-weight:300;line-height:var(--rz-lh-fein)}
