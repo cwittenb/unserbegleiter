@@ -51,9 +51,11 @@ describe("T1b · Farbe lebt nur im Theme", () => {
   // Hex-Werte gibt es ausserhalb von theme.js nicht mehr — die Liste ist leer,
   // und sie soll leer bleiben.
   const MALT_SELBST = [];
-  // Stilblöcke inline: nur noch recovery-screen.js (U6). auswahl-screen.js
-  // ist mit T3b herausgefallen — die Sperrklinke unten hat das erzwungen.
-  const STILT_INLINE = ["core/ui/recovery-screen.js"];
+  /* U6 · Die Liste ist LEER. Mit dem Pflicht-Vollbild hat recovery-screen.js
+     seinen letzten Inline-Stilblock abgegeben — "Farbe und Skala leben in
+     theme.js" ist damit kein Vorsatz mehr, sondern ein geprüfter Zustand über
+     das ganze Verzeichnis. Wer hier etwas einträgt, muss es begründen. */
+  const STILT_INLINE = [];
 
   const ohneKommentare = p =>                                  // Kommentare dürfen Werte nennen
     readFileSync(resolve(WURZEL, p), "utf8").replace(/^\s*\/\/.*$/gm, "");
@@ -81,7 +83,6 @@ describe("T1b · Farbe lebt nur im Theme", () => {
      duerfte. Beides ist ein eigener Schritt, beides steht im Merkposten. */
   const MALT_FUNKTIONAL = [
     "core/ui/design.js",                        // .pb-err (Rolle: --rz-warn) + box-shadow an .pb-lz
-    "core/ui/recovery-screen.js",               // Schleier des Pflicht-Modals — faellt mit U6
     "platforms/cloudflare/pages/client.js",     // Boot-Fehlerkasten: rendert, BEVOR das
                                                 // Stylesheet der App existiert. Legitim inline.
   ];

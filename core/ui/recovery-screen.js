@@ -151,31 +151,88 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     }
   }
 
-  /* ---- Pflicht-Modal (S45, Flag EMAIL_PFLICHT): Ohne bestätigte Adresse geht
-   *  es nicht weiter — Zugangsverlust wäre kritischer als die kleine Hürde.
-   *  Bewusst nicht wegklickbar: kein Schließen-Knopf, kein Klick-außerhalb,
-   *  kein Escape. Verschwindet ausschließlich durch erfolgreiche Bestätigung. ---- */
+  /* ---- Pflicht-Vollbild (S45, Flag EMAIL_PFLICHT; Turn 41 §1.2) ------------
+   *  Ohne bestätigte Adresse geht es nicht weiter — Zugangsverlust waere
+   *  kritischer als die kleine Huerde. Bewusst nicht wegklickbar: kein
+   *  Schliessen-Knopf, kein Klick-ausserhalb, kein Escape. Es verschwindet
+   *  ausschliesslich durch erfolgreiche Bestaetigung.
+   *
+   *  §1.2 · Es war eine Karte auf abgedunkeltem Grund. Ein Schleier zeigt eine
+   *  Umgebung, die man SIEHT, aber nicht erreichen kann — und fuer manche ist
+   *  das der erste Screen der App ueberhaupt. Jetzt Vollbild in Tiefgruen:
+   *  kein Drumherum, das ein Drumherum verspricht.
+   *
+   *  Drei Regeln folgen daraus:
+   *  · KEINE Bedien-Ecke. Sie ist ein Ausgang, und es gibt keinen. Ein
+   *    gezeichneter Ausgang, der nicht funktioniert, ist schlimmer als keiner.
+   *    Der Kasten deckt sie zu (z-index 1000 gegen 7) — hier steht sie
+   *    zusaetzlich ausdruecklich still, damit sie auch dann nicht durchkommt,
+   *    wenn jemand spaeter an den Ebenen dreht.
+   *  · KEIN Wegweiser-Badge. Der Wegweiser nennt einen Ort; hier ist noch
+   *    keiner betreten. Signatur oben und Wortmarke unten setzen Ton und
+   *    Absender — mehr braucht es nicht.
+   *  · Fokusfalle statt Escape-Sperre. Im Vollbild gibt es kein Aussen mehr,
+   *    also darf der Fokus auch nicht hinaus. ---- */
   function zeigeEmailPflicht() {
     const overlay = doc.createElement("div");
     overlay.id = "pbEmailPflicht";
-    overlay.style.cssText = "position:fixed;inset:0;background:rgba(20,26,34,.55);display:flex;align-items:flex-start;justify-content:center;z-index:1000;padding:48px 18px;overflow:auto";
-    const karte = doc.createElement("div");
-    karte.className = "pb-card";
-    karte.style.cssText = "max-width:440px;width:100%;background:var(--rz-karte,#fff);border-radius:14px;padding:20px";
-    karte.innerHTML =
-      `<div class="rz-zwischentitel">${t("rec.pflicht.titel")}</div>` +
-      `<p class="rz-fein-leise-unten">${t("rec.pflicht.text")}</p>`;
+    overlay.className = "rz-tiefgruen";
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-labelledby", "pflichtTitel");
+
+    const spalte = doc.createElement("div");
+    spalte.className = "rz-pflicht-spalte";
+    spalte.innerHTML =
+      `<span class="rz-signatur" data-rz-signatur></span>` +
+      `<div class="rz-h2" id="pflichtTitel">${t("rec.pflicht.titel")}</div>` +
+      `<p class="rz-sub">${t("rec.pflicht.text")}</p>`;
     const wirt = doc.createElement("div");
-    karte.appendChild(wirt);
-    overlay.appendChild(karte);
+    spalte.appendChild(wirt);
+    const marke = doc.createElement("span");
+    marke.className = "rz-fussmarke";
+    marke.setAttribute("data-rz-marke", "");
+    marke.textContent = t("allg.marke");
+    spalte.appendChild(marke);
+    overlay.appendChild(spalte);
     (doc.body || wurzel).appendChild(overlay);
+
+    // Die Signatur haengt sonst an setzeSignatur(), das nur den App-Baum
+    // kennt — der Kasten haengt am body.
+    const sig = spalte.querySelector("[data-rz-signatur]");
+    if (sig && state.info)
+      sig.textContent = t("allg.signatur", { ich: state.info.name, partner: state.info.partner });
+
+    doc.documentElement.setAttribute("data-pflicht", "1");   // Bedien-Ecke still
+
+    /* Fokusfalle: die bedienbaren Elemente werden bei JEDEM Tab neu gesammelt,
+       nicht einmal eingesammelt. Schritt 2 ist anfangs stummgeschaltet (§5.4)
+       und wird es bei abgelaufenem Code wieder — eine feste Liste haette den
+       Fokus dann auf ein totes Feld geschickt. */
+    const bedienbar = () => [...overlay.querySelectorAll("input,button")]
+      .filter(e => !e.disabled);
+    const falle = e => {
+      if (e.key !== "Tab") return;
+      const f = bedienbar();
+      if (!f.length) return;
+      const erste = f[0], letzte = f[f.length - 1];
+      const jetzt = doc.activeElement;
+      if (e.shiftKey && (jetzt === erste || !overlay.contains(jetzt))) { e.preventDefault(); letzte.focus(); }
+      else if (!e.shiftKey && jetzt === letzte) { e.preventDefault(); erste.focus(); }
+    };
+    doc.addEventListener("keydown", falle, true);
+
     baueVerifikation(wirt, {
       onFertig: () => {
         state.info.recoveryEmail = true;
+        doc.removeEventListener("keydown", falle, true);
+        doc.documentElement.removeAttribute("data-pflicht");
         overlay.remove();
         zeigeRecovery();
       },
     });
+    const erstes = overlay.querySelector("[data-rec=mail]");
+    if (erstes && erstes.focus) erstes.focus();
   }
   return { baueVerifikation, zeigeRecovery, zeigeEmailPflicht };
 }

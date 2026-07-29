@@ -673,6 +673,20 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       /* Code-Eingabe: gesperrt gesetzt, damit sechs Ziffern zaehlbar bleiben. */
       .rz-feld-code{letter-spacing:.2em}
 
+      /* ---- U6 (Handover Turn 41 §1.2) · Pflicht-Vollbild ----
+         Kein Schleier, keine Karte, kein Radius: die ganze Flaeche ist
+         Tiefgruen. Mobil und Desktop identisch — es gibt keine ausblutende
+         Zone wie im Chat, also braucht der Desktop keine Sonderbehandlung.
+         Nur die Lesespalte greift.
+         Die Bedien-Ecke wird nicht nur verdeckt, sondern stillgelegt: sie ist
+         ein Ausgang, und es gibt keinen. */
+      #pbEmailPflicht{position:fixed;inset:0;z-index:1000;overflow:auto;
+        background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
+        padding:40px var(--rz-rand) var(--rz-rand)}
+      .rz-pflicht-spalte{max-width:520px;margin:0 auto;display:flex;flex-direction:column}
+      .rz-pflicht-spalte .rz-h2{margin-top:var(--rz-r-6)}
+      html[data-pflicht] .rz-ecke{display:none}
+
       /* ---- U5 (Handover Turn 41 §2, §5.2–5.4) · Wiedereinstieg ----
          Die Felder tragen die Feldkante aus U1, die Knoepfe sind
          Hairline-Zeilen wie ueberall. Rohe Farben und Radien sind ersatzlos
