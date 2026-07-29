@@ -246,6 +246,11 @@ export function createApp({ doc, backend, root, diktat }) {
           <div class="rz-kulisse-naht" id="kulisseChat"></div>
           <button type="button" class="rz-weg-badge rz-auf-naht" id="chatOrt" aria-haspopup="dialog">${IKON.wegweiser}<span id="chatOrtName"></span></button>
           <div class="rz-weg-panel pb-hidden" id="wegChat"></div>
+          <!-- U3c/§1.1 · Die Leiste der Freigabe-Auswahl ist die untere Zone,
+               keine klebende Leiste auf Papier. Sie steht deshalb HIER, in der
+               Schreibkante, und tritt waehrend der Auswahl an die Stelle des
+               Composers. Gefuellt wird sie vom Auswahl-Modul. -->
+          <div class="rz-ausw-leiste pb-hidden" id="auswLeiste"></div>
           <div class="pb-skala" id="pbSkala">
             <span class="rz-fein">${t("chat.deineZahl")}</span>
             <input type="range" id="pbSkalaRange" min="1" max="10" step="1" value="7">

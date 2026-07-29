@@ -56,3 +56,30 @@ describe("§4.7 · das Paar hat einen Namen", () => {
     expect(en["ausschnitt.ariaPaar"]).toContain("{frage}");
   });
 });
+
+/* ------------------------------------------------------------- U3c · §1.1 */
+
+describe("§1.1 · die Leiste ist die untere Zone, keine klebende Leiste", () => {
+  it("kein position:sticky und kein Papier-Boden mehr", () => {
+    const r = regel(".rz-ausw-leiste");
+    expect(r).not.toContain("position:sticky");
+    expect(r).not.toContain("background:var(--rz-papier)");
+  });
+
+  it("die feine Schrift trägt den grünen Ton", () => {
+    // Die Leiste stand auf Papier, jetzt auf Tiefgrün — --rz-sek2 wäre dort
+    // die falsche Rolle und würde kaum tragen.
+    expect(regel(".rz-ausw-fein")).toContain("color:var(--rz-sek2-auf-gruen)");
+  });
+
+  it("der Composer weicht über eine Klasse am Screen", () => {
+    // Nicht über pb-hidden je Element: aktualisiereComposer() läuft aus
+    // anderen Anlässen weiter und würde ihn jederzeit zurückholen.
+    const i = KOMPONENTEN.indexOf("#scrChat.rz-auswahl .pb-composer");
+    expect(i).toBeGreaterThan(-1);
+    const block = KOMPONENTEN.slice(i, KOMPONENTEN.indexOf("}", i) + 1);
+    for (const sel of [".pb-skala", "#btnChatEnde", "#btnRaumVerlassen"])
+      expect(block, sel).toContain(sel);
+    expect(block).toContain("display:none");
+  });
+});

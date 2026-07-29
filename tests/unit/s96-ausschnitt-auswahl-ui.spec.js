@@ -151,6 +151,33 @@ describe("S96.2 · Auswahl-Modus", () => {
     expect(zeilen(), "nach dem Verlassen").not.toContain(de["weg.auswahlHalten"]);
   });
 
+  // §1.1 · Die Leiste klebte per position:sticky am Ende der Papier-Liste.
+  // Jetzt ist sie die untere Zone — und tritt dort an die Stelle des
+  // Composers, solange ausgewählt wird.
+  it("die Leiste steht in der Schreibkante, nicht am Ende der Liste", async () => {
+    const { app, paare: P } = await bisAngebot();
+    app.testAusschnitt(JSON.parse(eignungBlock(P)).pairs);
+    await ruhe();
+    root.querySelector("#btnAuswStart").click();
+    await ruhe();
+
+    const leiste = root.querySelector("#auswLeiste");
+    expect(leiste.closest(".rz-chat-unten"), "Leiste gehört in die untere Zone").toBeTruthy();
+    expect(leiste.classList.contains("pb-hidden")).toBe(false);
+    expect(leiste.querySelector("#btnAuswWeiter"), "die Knöpfe sitzen darin").toBeTruthy();
+    expect(root.querySelector("#pbMsgs #btnAuswWeiter"), "und nicht mehr im Verlauf").toBeNull();
+
+    // Der Composer weicht — über eine Klasse am Screen, damit
+    // aktualisiereComposer() ihn nicht jederzeit zurückholt.
+    expect(root.querySelector("#scrChat").classList.contains("rz-auswahl")).toBe(true);
+
+    root.querySelector("#btnAuswAbbruch").click();
+    await ruhe();
+    expect(root.querySelector("#scrChat").classList.contains("rz-auswahl")).toBe(false);
+    expect(leiste.classList.contains("pb-hidden")).toBe(true);
+    expect(leiste.innerHTML, "keine Reste").toBe("");
+  });
+
   // §4.7 · Ohne Namen liest ein Screenreader zwei Absätze Fließtext als Label.
   it("jedes Paar trägt einen Namen und eine Beschreibung", async () => {
     const { app, paare: P } = await bisAngebot();

@@ -108,8 +108,11 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
       box.appendChild(b);
     }
 
+    // §1.1 · Die Leiste steht in der unteren Zone, nicht am Ende der Liste.
     const n = ausw.gewaehlt.size;
-    const leiste = el("div", "rz-ausw-leiste");
+    const leiste = $("auswLeiste");
+    if (!leiste) return;              // S87: leere Huelle, folgenlos
+    leiste.innerHTML = "";
     const zaehler = el("div", "rz-ausw-fein");
     zaehler.id = "auswZaehler";
     // Zähler schlicht: keine Lesezeit-Schätzung — das wäre eine Aussage über
@@ -134,7 +137,6 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     // Lautlos: keine Sicherheitsabfrage, keine Bilanz.
     ab.addEventListener("click", () => beendeAuswahl());
     leiste.appendChild(weiter); leiste.appendChild(ab);
-    box.appendChild(leiste);
   }
 
   const KURZ = 220;
@@ -274,6 +276,16 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
   /** Zeichnet die offene Auswahl in `box` — und meldet, ob es etwas zu zeichnen gab.
    *  Damit muss app.js weder `ausw` noch dessen Phasen kennen. */
   function zeichneAuswahl(box) {
+    // §1.1 · Die Schreibkante gehoert waehrend der Auswahl der Leiste. Das
+    // Umschalten steht hier, weil hier ohnehin ueber "offen oder nicht"
+    // entschieden wird — und weil so kein zweiter Ort davon wissen muss.
+    const schirm = $("scrChat"), leiste = $("auswLeiste");
+    const offen = !!ausw && ausw.phase !== "vorschau";
+    if (schirm) schirm.classList.toggle("rz-auswahl", offen);
+    if (leiste) {
+      leiste.classList.toggle("pb-hidden", !offen);
+      if (!offen) leiste.innerHTML = "";
+    }
     if (!ausw) return false;
     (ausw.phase === "vorschau" ? renderVorschau : renderAuswahl)(box);
     return true;

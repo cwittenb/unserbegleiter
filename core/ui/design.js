@@ -627,8 +627,22 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-paar-frage{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-bottom:6px}
       .rz-paar-antwort{font-size:var(--rz-fs-text)}
       .rz-paar-grund{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-top:6px;font-style:italic}
-      .rz-ausw-leiste{position:sticky;bottom:0;background:var(--rz-papier);padding:8px 0 2px}
-      .rz-ausw-fein{font-size:var(--rz-fs-fein);color:var(--rz-sek2);text-align:center;padding-bottom:6px}
+      /* U3c (Handover Turn 41 §1.1) · Die Leiste klebte per position:sticky
+         auf Papier — ohne Haarlinie nach oben, also ohne Kante. Jetzt IST sie
+         die untere Zone: oben Papier fuer das, was man aussucht, unten
+         Tiefgruen fuer das, was das Geraet verlaesst. Die Naht ist die Kante,
+         eine eigene Linie braucht es nicht mehr.
+         Waehrend die Auswahl offen ist, tritt sie an die Stelle des Composers.
+         Das haengt an einer Klasse am Screen, nicht an pb-hidden je Element:
+         aktualisiereComposer() laeuft aus anderen Anlaessen weiter und wuerde
+         den Composer sonst jederzeit zurueckholen. */
+      .rz-ausw-leiste{padding:var(--rz-r-2) 0 0}
+      .rz-ausw-fein{font-size:var(--rz-fs-fein);color:var(--rz-sek2-auf-gruen);
+                    text-align:center;padding-bottom:6px}
+      #scrChat.rz-auswahl .pb-composer,
+      #scrChat.rz-auswahl .pb-skala,
+      #scrChat.rz-auswahl #btnChatEnde,
+      #scrChat.rz-auswahl #btnRaumVerlassen{display:none}
       /* ---- U1 (Handover Turn 41 §2) · Die Feldkante ----
          Ein Baustein fuer alle Eingaben ausserhalb des Chats: Adresse, Code,
          Rahmensatz. Kein Rahmen, kein Radius, keine Flaeche — nur eine
