@@ -69,9 +69,15 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
   /** Auswahlfläche: Paar-Blöcke statt Blasen. */
   function renderAuswahl(box) {
     box.innerHTML = "";
-    const kopf = el("div", "pb-echo rz-ausw-kopf");   // T3b: Aussehen in design.js
-    kopf.textContent = ausw.luecken ? t("ausschnitt.luecken") : t("ausschnitt.anleitung");
-    box.appendChild(kopf);
+    // §4.4 · Die Bedienanleitung stand hier und war bei fuenfzehn Paaren nach
+    // dem ersten Wisch weg. Sie lebt jetzt im Wegweiser (weg.auswahlHalten),
+    // der nicht mitscrollt. Hier bleibt nur, was ueber DIESE Auswahl etwas
+    // sagt: dass Stellen fehlen. Ohne Luecken steht gar nichts.
+    if (ausw.luecken) {
+      const kopf = el("div", "pb-echo rz-ausw-kopf");
+      kopf.textContent = t("ausschnitt.luecken");
+      box.appendChild(kopf);
+    }
 
     for (const paar of ausw.paare) {
       const wahlbar = paarWaehlbar(ausw.eignung, paar.id);
@@ -86,6 +92,13 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
       // abgenommen bekommt, sitzt in einer Klassenarbeit.
       const f = el("div", "rz-paar-frage"); f.textContent = kuerze(paar.frage.text);
       const a = el("div", "rz-paar-antwort"); a.textContent = kuerze(paar.antwort.text);
+      // §4.7 · Ohne Namen liest ein Screenreader den ganzen Block als Label
+      // vor — zwei Absaetze Fliesstext, und aria-pressed sagt dabei nicht,
+      // WAS gewaehlt ist. Der Name nennt die Frage, die Antwort wird
+      // Beschreibung: erst wozu, dann was.
+      a.id = "auswAntwort-" + paar.id;
+      b.setAttribute("aria-label", fuelle(t("ausschnitt.ariaPaar"), { frage: paar.frage.text }));
+      b.setAttribute("aria-describedby", a.id);
       b.appendChild(f); b.appendChild(a);
       if (!wahlbar && ausw.gruende.has(paar.id)) {
         const g = el("div", "rz-paar-grund"); g.textContent = paarGrund(ausw.eignung, paar.id) || "";
@@ -129,7 +142,15 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
 
   /** Tippen = umschalten. Gedrückthalten = „bis hierhin". */
   function verdrahtePaar(b, paar, wahlbar) {
-    let timer = null, lang = false;
+    // §4.5 · Gedrueckthalten war 500ms ohne jede Rueckmeldung: wer zu kurz
+    // haelt, schaltet stattdessen um und haelt es fuer einen Fehler. Ab 150ms
+    // zeigt die Oberkante an, dass etwas laeuft — leise, aber vorhanden.
+    let timer = null, ahnung = null, lang = false;
+    const losgelassen = () => {
+      if (timer) { clearTimeout(timer); timer = null; }
+      if (ahnung) { clearTimeout(ahnung); ahnung = null; }
+      b.classList.remove("rz-halten");
+    };
     const tippen = () => {
       if (!wahlbar) {
         if (!ausw.gruende.has(paar.id)) { ausw.gruende.add(paar.id); renderMsgs(); }
@@ -141,13 +162,18 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     };
     const spanne = () => {
       lang = true;
+      losgelassen();
       ausw.gewaehlt = fuelleSpanne(ausw.paare, ausw.gewaehlt, ausw.eignung, ausw.anker, paar.id);
       ausw.anker = paar.id;
       pruefeRichtwert(); renderMsgs();
     };
-    b.addEventListener("pointerdown", () => { lang = false; timer = setTimeout(spanne, 500); });
+    b.addEventListener("pointerdown", () => {
+      lang = false;
+      if (wahlbar) ahnung = setTimeout(() => b.classList.add("rz-halten"), 150);
+      timer = setTimeout(spanne, 500);
+    });
     for (const ev of ["pointerup", "pointerleave", "pointercancel"])
-      b.addEventListener(ev, () => { if (timer) { clearTimeout(timer); timer = null; } });
+      b.addEventListener(ev, losgelassen);
     b.addEventListener("click", () => { if (!lang) tippen(); lang = false; });
     // Zugänglichkeit: Gedrückthalten ist unsichtbar und mit Tastatur nicht
     // erreichbar — Umschalt+Enter ist die Entsprechung für „bis hierhin".
@@ -253,5 +279,10 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     return true;
   }
 
-  return { ausschnittAngebot, starteAuswahl, beendeAuswahl, zeichneAuswahl, pruefeRichtwert };
+  /** §4.4 · Der Wegweiser traegt die Bedienanleitung der Auswahl. Er muss
+   *  dafuer nur wissen, OB gerade ausgewaehlt wird — nicht, in welcher Phase. */
+  const auswahlOffen = () => !!ausw && ausw.phase !== "vorschau";
+
+  return { ausschnittAngebot, starteAuswahl, beendeAuswahl, zeichneAuswahl,
+           pruefeRichtwert, auswahlOffen };
 }

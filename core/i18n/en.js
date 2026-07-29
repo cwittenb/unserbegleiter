@@ -47,6 +47,8 @@ export const en = {
   "weg.chatQzRahmen": "This time belongs to you two. I only hold the frame and ask — the deciding is yours.",
   "weg.chatBefund": "At the end there is a shared finding. You do not have to agree to get there.",
   "weg.chatAufdeck": "The reveal happens together — told, not read out. The numbers stay where they are.",
+  "weg.auswahlHalten": "Tap to pick a passage. Press and hold to take everything up to there — with a keyboard: shift and enter.",
+  "ausschnitt.ariaPaar": "Answer to: {frage}",
   // D3 · Anteroom zones (design turn 17c/d)
   "zone.raum": "The Room.",
   "zone.regal": "The Shelf.",

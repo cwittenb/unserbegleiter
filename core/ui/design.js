@@ -618,6 +618,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-paar.rz-an{background:var(--rz-flaeche-hoch);
                      margin:0 calc(var(--rz-rand) * -1);padding:15px var(--rz-rand)}
       .rz-paar.rz-zu{cursor:default;border-top-style:dashed;opacity:.5}
+      /* §4.5 · Rueckmeldung ab 150ms: die Oberkante wird kraeftiger und
+         nimmt den Akzent an. Kein Wachsen, kein Schatten — nur die Linie,
+         die ohnehin da ist. So sieht man, dass etwas laeuft, bevor die
+         Spanne bei 500ms zuschlaegt. */
+      .rz-paar.rz-halten{border-top-width:2px;border-top-color:var(--rz-akzent-ink)}
+      .rz-tiefgruen .rz-paar.rz-halten{border-top-color:var(--rz-akzent)}
       .rz-paar-frage{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-bottom:6px}
       .rz-paar-antwort{font-size:var(--rz-fs-text)}
       .rz-paar-grund{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-top:6px;font-style:italic}

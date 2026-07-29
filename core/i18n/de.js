@@ -53,6 +53,10 @@ export const de = {
   "weg.chatQzRahmen": "Diese Zeit gehört euch. Ich halte nur den Rahmen und frage nach — entscheiden tut ihr.",
   "weg.chatBefund": "Am Ende steht ein gemeinsamer Befund. Ihr müsst euch dafür nicht einig werden.",
   "weg.chatAufdeck": "Aufgedeckt wird gemeinsam — erzählt, nicht abgelesen. Zahlen bleiben, wo sie sind.",
+  // U3b/§4.4 · Die Anleitung stand über der Liste und war nach dem ersten
+  // Wisch verschwunden. Im Wegweiser bleibt sie erreichbar.
+  "weg.auswahlHalten": "Tippen wählt eine Stelle aus. Gedrückthalten nimmt alles bis dorthin mit — mit Tastatur: Umschalt und Eingabe.",
+  "ausschnitt.ariaPaar": "Antwort auf: {frage}",
   // D3 · Vorraum-Zonen (Design Turn 17c/d)
   "zone.raum": "Der Raum.",
   "zone.regal": "Das Regal.",

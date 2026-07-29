@@ -720,6 +720,15 @@ export function createApp({ doc, backend, root, diktat }) {
     const zeile = (stufe, text) => { if (text) k.push({ stufe, text }); };
     const id = def && def.id;
     const gemeinsam = !!(def && def.shared);
+    // §4.4 · Waehrend der Freigabe-Auswahl traegt der Wegweiser die
+    // Bedienanleitung. Sie steht auf Stufe 2 (Stabilitaet): sie sagt, wie man
+    // die Flaeche beherrscht — nach der Vertraulichkeit, vor allem anderen.
+    if (auswahlOffen()) {
+      zeile(1, gemeinsam ? t("weg.chatGemeinsam") : t("weg.chatVertraulich", { partner }));
+      zeile(2, t("weg.auswahlHalten"));
+      zeile(3, t("weg.chatFreigabe", { partner }));
+      return k;
+    }
     zeile(1, gemeinsam ? t("weg.chatGemeinsam") : t("weg.chatVertraulich", { partner }));
     if (id === "solo") {
       zeile(2, t("weg.chatPauseAbschluss"));
@@ -912,8 +921,15 @@ export function createApp({ doc, backend, root, diktat }) {
   /* R4b · Ausschnitt-Auswahl und Vorschau leben jetzt in auswahl-screen.js —
      samt ihrem eigenen Zustand (`ausw`). app.js kennt weder den Zustand noch
      seine Phasen; es fragt ueber zeichneAuswahl(), ob gezeichnet wurde. */
-  const { ausschnittAngebot, starteAuswahl, beendeAuswahl, zeichneAuswahl } =
-    macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, warteAntwort });
+  /* §4.4 · Der Wegweiser traegt waehrend der Auswahl deren Anleitung. Damit
+     er beim Oeffnen und Schliessen der Flaeche mitzieht, laeuft er an
+     renderMsgs mit — dem einen Punkt, den jede Zustandsaenderung der Auswahl
+     ohnehin passiert. */
+  const { ausschnittAngebot, starteAuswahl, beendeAuswahl, zeichneAuswahl, auswahlOffen } =
+    macheAuswahlScreen({
+      $, el, state, backend, err, warteAntwort,
+      renderMsgs: erzwingen => { renderMsgs(erzwingen); aktualisiereWegweiserChat(); },
+    });
 
   /* S96.1 · Bauvorschrift: engine-frei. Die Engine wird AUSSCHLIESSLICH für die
      Quittung ans Modell gebraucht — quereGate selbst kommt ohne Session aus.

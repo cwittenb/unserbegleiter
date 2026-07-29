@@ -8,6 +8,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createApp } from "../../core/ui/app.js";
+import { de } from "../../core/i18n/de.js";
 import { MockLLM } from "../../core/engine/mock-llm.js";
 import { Repo } from "../../core/store/repo.js";
 import { Bstate, Pstate } from "../../core/store/bundles.js";
@@ -128,6 +129,40 @@ describe("S96.2 · Auswahl-Modus", () => {
     expect(root.querySelector("#auswZaehler").textContent).toContain("1");
     erstes().click(); await ruhe();
     expect(erstes().getAttribute("aria-pressed")).toBe("false");
+  });
+
+  // §4.4 · Die Bedienanleitung stand über der Liste und war bei fünfzehn
+  // Paaren nach dem ersten Wisch verschwunden. Sie lebt jetzt im Wegweiser,
+  // der nicht mitscrollt — und muss dort auftauchen, sobald die Fläche offen
+  // ist, und wieder verschwinden, wenn sie es nicht mehr ist.
+  it("der Wegweiser trägt die Bedienanleitung, solange ausgewählt wird", async () => {
+    const { app, paare: P } = await bisAngebot();
+    const zeilen = () => [...root.querySelectorAll("#wegChat .rz-option")].map(o => o.textContent);
+    expect(zeilen()).not.toContain(de["weg.auswahlHalten"]);
+
+    app.testAusschnitt(JSON.parse(eignungBlock(P)).pairs);
+    await ruhe();
+    root.querySelector("#btnAuswStart").click();
+    await ruhe();
+    expect(zeilen(), "während der Auswahl").toContain(de["weg.auswahlHalten"]);
+
+    root.querySelector("#btnAuswAbbruch").click();
+    await ruhe();
+    expect(zeilen(), "nach dem Verlassen").not.toContain(de["weg.auswahlHalten"]);
+  });
+
+  // §4.7 · Ohne Namen liest ein Screenreader zwei Absätze Fließtext als Label.
+  it("jedes Paar trägt einen Namen und eine Beschreibung", async () => {
+    const { app, paare: P } = await bisAngebot();
+    app.testAusschnitt(JSON.parse(eignungBlock(P)).pairs);
+    await ruhe();
+    root.querySelector("#btnAuswStart").click();
+    await ruhe();
+    const b = paare(root.querySelector("#pbMsgs"))[0];
+    expect(b.getAttribute("aria-label")).toMatch(/^Antwort auf: /);
+    const beschreibung = b.getAttribute("aria-describedby");
+    expect(beschreibung).toBeTruthy();
+    expect(b.querySelector("#" + beschreibung).className).toContain("rz-paar-antwort");
   });
 
   // T3b · Der Auswahl-Zustand stand bis dahin als Inline-Style am Element
