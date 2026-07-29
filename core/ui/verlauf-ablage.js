@@ -73,7 +73,21 @@ export async function verlaufEinstellung(backend) {
 }
 
 /**
- * Alle aufbewahrten Verlaeufe loeschen (Sammelweg im Einstellungsblatt).
+ * Wie viele aufbewahrte Verlaeufe liegen im Raum? (U7/3.7)
+ * Dieselbe Quelle wie loescheAlleVerlaeufe — die Zeitleiste kennt die
+ * Kennungen, der Speicher selbst laesst sich nicht auflisten. Die Zahl darf
+ * nicht raten: sie steht in einer Frage, die man nicht zuruecknehmen kann.
+ */
+export async function zaehleVerlaeufe(backend) {
+  try {
+    const zl = await backend.pstate.get("timeline");
+    if (!zl || !Array.isArray(zl.entries)) return 0;
+    return zl.entries.filter(e => e && e.vid).length;
+  } catch { return 0; }
+}
+
+/**
+ * Alle aufbewahrten Verlaeufe loeschen (Sammelweg in den Einstellungen).
  * Geht ueber die Zeitleiste, weil nur sie die Kennungen kennt — der Speicher
  * selbst laesst sich nicht auflisten. Die Eintraege bleiben unberuehrt (F1),
  * nur ihr Verweis faellt weg.

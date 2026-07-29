@@ -110,12 +110,22 @@ beforeEach(async () => {
   await ruhe();
 });
 
-describe("D8/D12-2d · Sprache im Einstellungs-Blatt", () => {
-  it("das Blatt bietet die Oberflaechensprache an und zeigt die aktuelle als gewaehlt", async () => {
+/* U7 (Turn 41 · Nachtrag 1.1) · Aus dem Blatt ist ein Ort geworden. Die
+   Aussagen bleiben dieselben — nur wohnen sie jetzt in zwei Zonen: die eigene
+   Wahl oben auf Papier, der Vorschlag an den Partner unten in Tiefgruen,
+   weil er das Geraet verlaesst. */
+describe("D8/D12-2d · Sprache in den Einstellungen", () => {
+  const oben = () => document.getElementById("einstOben");
+  const unten = () => document.getElementById("einstGemeinsam");
+  async function inDieEinstellungen() {
     document.getElementById("pbEinst").click();
     await ruhe();
-    const blatt = document.getElementById("pbEinstBlatt");
-    expect(blatt.classList.contains("pb-hidden")).toBe(false);
+  }
+
+  it("der Ort bietet die Oberflaechensprache an und zeigt die aktuelle als gewaehlt", async () => {
+    await inDieEinstellungen();
+    const blatt = oben();
+    expect(document.getElementById("scrEinstellungen").classList.contains("pb-hidden")).toBe(false);
     const wahlen = [...blatt.querySelectorAll("[data-ui]")].map(b => b.getAttribute("data-ui"));
     expect(wahlen).toEqual(["de", "en"]);
     expect(blatt.querySelector('[data-ui="de"]').classList.contains("an")).toBe(true);
@@ -123,22 +133,23 @@ describe("D8/D12-2d · Sprache im Einstellungs-Blatt", () => {
   });
 
   it("es nennt die Paarsprache und bietet den Wechsel-Vorschlag an", async () => {
-    document.getElementById("pbEinst").click();
-    await ruhe();
-    const blatt = document.getElementById("pbEinstBlatt");
-    const fuesse = [...blatt.querySelectorAll(".rz-einst-fuss")].map(e => e.textContent).join(" ");
+    await inDieEinstellungen();
+    // 3.4 · Ein Hinweis statt zwei: was die Begleitung spricht UND wie weit
+    // die eigene Wahl reicht.
+    const fuesse = [...oben().querySelectorAll(".rz-einst-fuss"),
+                    ...unten().querySelectorAll(".rz-einst-fuss")].map(e => e.textContent).join(" ");
     expect(fuesse).toContain("Deutsch");
     expect(fuesse).toContain("Agenda");     // verhandelt wird dort
     // D12-2f · Gestellt wird der Antrag hier — der Eintrag entsteht in der Agenda.
-    const knopf = blatt.querySelector("#einstSprachAntrag");
+    // U7/1.2 · Er steht UNTEN: er verlaesst das Geraet.
+    const knopf = unten().querySelector("#einstSprachAntrag");
     expect(knopf).toBeTruthy();
     expect(knopf.textContent).toContain("Englisch");
   });
 
-  it("die Ansicht steht als drei Zeilen im Blatt", async () => {
-    document.getElementById("pbEinst").click();
-    await ruhe();
-    const blatt = document.getElementById("pbEinstBlatt");
+  it("die Ansicht steht als drei Zeilen oben", async () => {
+    await inDieEinstellungen();
+    const blatt = oben();
     expect([...blatt.querySelectorAll("[data-ansicht]")].map(b => b.getAttribute("data-ansicht")))
       .toEqual(["light", "dark", "auto"]);
     blatt.querySelector('[data-ansicht="dark"]').click();
@@ -146,12 +157,16 @@ describe("D8/D12-2d · Sprache im Einstellungs-Blatt", () => {
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
   });
 
-  it("erneuter Tap schliesst das Blatt wieder", async () => {
-    const knopf = document.getElementById("pbEinst"), blatt = document.getElementById("pbEinstBlatt");
-    knopf.click(); await ruhe();
-    expect(blatt.classList.contains("pb-hidden")).toBe(false);
-    knopf.click(); await ruhe();
-    expect(blatt.classList.contains("pb-hidden")).toBe(true);
+  /* U7 · Hier stand "erneuter Tap schliesst das Blatt wieder". Ein ORT
+     schliesst sich nicht durch erneutes Antippen seines Eingangs — man geht
+     zurueck. Geprueft wird deshalb der Rueckweg: der Pfeil oben links. */
+  it("der Pfeil oben links fuehrt zurueck", async () => {
+    await inDieEinstellungen();
+    const schirm = document.getElementById("scrEinstellungen");
+    expect(schirm.classList.contains("pb-hidden")).toBe(false);
+    root.querySelector("#btnEinstZurueck").click();
+    await ruhe();
+    expect(schirm.classList.contains("pb-hidden")).toBe(true);
   });
 
   it("der alte Sprachknopf auf dem Startscreen ist weg", () => {
@@ -188,13 +203,14 @@ describe("Quick-Lane · Wegweiser auf dem Desktop", () => {
 
 
 describe("D12-2f · Der Vorschlag aus dem Blatt landet in der Agenda", () => {
-  it("Klick stellt den Antrag; danach nennt das Blatt den Stand statt eines zweiten Knopfs", async () => {
+  it("Klick stellt den Antrag; danach nennt die Zone den Stand statt eines zweiten Knopfs", async () => {
     document.getElementById("pbEinst").click();
     await ruhe();
-    const blatt = document.getElementById("pbEinstBlatt");
-    await klick(blatt.querySelector("#einstSprachAntrag"));
-    expect(blatt.querySelector("#einstSprachAntrag")).toBeNull();
-    expect(blatt.textContent).toContain("Agenda");
+    // U7/1.2 · Der Vorschlag steht in der Tiefgruen-Zone: er verlaesst das Geraet.
+    const zone = document.getElementById("einstGemeinsam");
+    await klick(zone.querySelector("#einstSprachAntrag"));
+    expect(zone.querySelector("#einstSprachAntrag")).toBeNull();
+    expect(zone.textContent).toContain("Agenda");
   });
 });
 

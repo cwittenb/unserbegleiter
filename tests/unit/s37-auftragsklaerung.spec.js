@@ -144,12 +144,16 @@ describe("S37 · Kapitel-Panel & Kopfzeile & UI-Sprache", () => {
   // D12-2d · Die Oberflaechensprache wohnt jetzt im Einstellungs-Blatt (nicht
   // mehr als Knopf in der Paarsprach-Karte). Sie bleibt persoenlich: sie
   // aendert pstate.language und die eigene Ansicht, nicht die Paarsprache.
-  it("das Einstellungs-Blatt stellt nur die eigene Oberflaeche um", async () => {
+  // U7 · Aus dem Blatt ist ein Screen geworden; die Ecke fuehrt dorthin.
+  it("die Einstellungen stellen nur die eigene Oberflaeche um", async () => {
     const backend = memoryBackend(null);
     backend.language = { request: async () => ({}), withdraw: async () => ({}) };
     await bootApp(backend);
     await klick(document.getElementById("pbEinst"));
-    const en = document.getElementById("pbEinstBlatt").querySelector('[data-ui="en"]');
+    await ruhe();
+    expect(document.getElementById("scrEinstellungen").classList.contains("pb-hidden"),
+      "die Ecke fuehrt zum Ort").toBe(false);
+    const en = document.getElementById("einstOben").querySelector('[data-ui="en"]');
     expect(en).toBeTruthy();
     await klick(en);
     await ruhe();

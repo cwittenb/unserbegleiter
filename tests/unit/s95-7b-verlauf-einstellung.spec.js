@@ -22,9 +22,12 @@ function backendMit(daten = {}) {
 
 beforeEach(() => setLocale("de"));
 
-describe("S95.7b · Schalter im Einstellungsblatt", () => {
+describe("S95.7b · Schalter in den Einstellungen", () => {
+  // U7 · Aus dem Blatt ist ein Ort mit zwei Zonen geworden. Der Schalter
+  // steht oben: er gilt nur auf diesem Gerät.
   function baueBlatt(backend) {
-    document.body.innerHTML = '<div id="pbEinst"></div><div id="pbEinstBlatt"></div>';
+    document.body.innerHTML =
+      '<div id="pbEinst"></div><div id="einstOben"></div><div id="einstGemeinsam"></div>';
     const chrome = id => document.getElementById(id);
     return macheEinstellungenScreen({
       doc: document, $: chrome, chrome, backend,
@@ -53,7 +56,7 @@ describe("S95.7b · Schalter im Einstellungsblatt", () => {
   it("nennt keine Empfehlung und nicht, was andere tun", async () => {
     const s = baueBlatt(backendMit());
     await s.zeigeEinstellungen();
-    const txt = document.getElementById("pbEinstBlatt").textContent;
+    const txt = document.getElementById("einstOben").textContent;
     expect(txt).not.toMatch(/empfohlen|empfehlen|die meisten|üblich/i);
   });
 });

@@ -300,24 +300,41 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       html[data-theme=dark] .rz-einst-seerose{display:none}
       .rz-einst .rz-punkt{position:absolute;top:3px;right:3px;width:6px;height:6px;
                           border-radius:50%;background:var(--rz-akzent)}
-      .rz-einst-blatt{position:absolute;top:42px;right:0;width:min(272px,calc(100vw - 32px));
-                      background:var(--rz-papier);color:var(--rz-ink);
-                      border:1px solid var(--rz-hairline);border-radius:var(--rz-rund-blatt);padding:14px 16px;
-                      box-shadow:var(--rz-blatt-schatten);text-align:left}
-      html[data-theme=dark] .rz-einst-blatt{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
-                                            border-color:var(--rz-hairline-gruen)}
-      .rz-einst-blatt .rz-caps{margin:0 0 6px}
-      .rz-einst-blatt .rz-caps+.rz-caps,.rz-einst-gruppe+.rz-einst-gruppe{margin-top:16px}
-      .rz-einst-wahl{display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;
-                     border:0;background:none;padding:8px 0;margin:0;cursor:pointer;text-align:left;
-                     font-family:var(--rz-sans);font-size:var(--rz-fs-text);color:inherit;
-                     border-bottom:1px solid var(--rz-hairline)}
-      html[data-theme=dark] .rz-einst-wahl{border-bottom-color:var(--rz-hairline-gruen)}
-      .rz-einst-wahl:last-child{border-bottom:0}
-      .rz-einst-wahl .rz-haken{color:var(--rz-akzent-hell);font-size:var(--rz-fs-fein);opacity:0}
+      /* ---- U7 (Turn 41 · Nachtrag) · Einstellungen als Ort ----
+         Das aufklappende Blatt ist entfallen: es war der letzte schwebende
+         Behaelter der App und der letzte Ort mit Radius UND Schatten. Der
+         Screen ist jetzt die Flaeche.
+
+         §2 · Die Wahl ist eine Haarlinien-Zeile mit Haken rechts, kein
+         Systemradio und keine Pille. Ein Knopf ist in diesem System keine
+         Form, sondern eine Zeile mit Richtung.
+
+         3.2 · Das Caps-Label ist ein GRUPPEN-Label, keine Zeile: kein
+         min-height, nicht antippbar. Die Haarlinie der ersten Zeile bildet
+         seine Unterkante.
+         3.1 · Jede Gruppe schliesst unten mit einer Haarlinie ab — sonst
+         beginnt der Hinweistext darunter optisch wie eine weitere Option. */
+      .rz-einst-gruppe+.rz-einst-gruppe{margin-top:26px}
+      .rz-einst-gruppe .rz-caps{display:block;margin:0 0 4px;min-height:0;
+                                color:var(--rz-akzent-hell)}
+      .rz-tiefgruen .rz-einst-gruppe .rz-caps{color:var(--rz-label-auf-gruen)}
+      .rz-einst-gruppe .rz-zeile:last-of-type{border-bottom:1px solid var(--rz-karte-rand)}
+      .rz-tiefgruen .rz-einst-gruppe .rz-zeile:last-of-type{border-bottom-color:var(--rz-hairline-gruen)}
+      .rz-einst-wahl .rz-haken{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-text);
+                               color:var(--rz-akzent-hell);opacity:0}
+      .rz-tiefgruen .rz-einst-wahl .rz-haken{color:var(--rz-pfeil-auf-gruen)}
       .rz-einst-wahl.an .rz-haken{opacity:1}
-      .rz-einst-fuss{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin:10px 0 0;line-height:var(--rz-lh-fein)}
-      html[data-theme=dark] .rz-einst-fuss{color:var(--rz-sek2-auf-gruen)}
+      /* 3.3 · Der Hinweis gehoert zur Zeile darueber, nicht zwischen zwei
+         Knoepfe. 8px Abstand nach oben, dann erst Luft zur naechsten Gruppe. */
+      .rz-einst-fuss{font-size:var(--rz-fs-fein);color:var(--rz-sek);
+                     margin:var(--rz-r-2) 0 0;line-height:var(--rz-lh-fein)}
+      .rz-tiefgruen .rz-einst-fuss{color:var(--rz-sek2-auf-gruen)}
+      /* 3.5 · Das Baum-Band ist 84px hoch und liegt ueber der Naht. Endet die
+         Papier-Zone direkt mit Text, laufen die Silhouetten durch die letzten
+         Zeilen. --rz-nahtfrei (32px, T2b) reicht dafuer nicht — das war das
+         Mass fuer das Badge, nicht fuer die Kulisse. */
+      .rz-einst-oben{padding-bottom:var(--rz-kulissenfrei)}
+      .rz-einst-oben .rz-h2-oben{margin-top:var(--rz-r-6)}
       /* Nur auf dem Startscreen steht das Ortsetikett ueber der Betreten-Zeile;
          in den Vorraeumen traegt das Badge den Ort (Turn 27, §1). */
       .rz-caps-ueber{margin-bottom:11px}
@@ -946,19 +963,23 @@ export function verdrahteWegweiser(doc, badge, panel) {
   }
 }
 
-/** Feste Bedien-Ecke oben rechts: Ansicht hell/dunkel (+ Push-Glocke). */
-/* D12-2d · Die Bedien-Ecke traegt jetzt EIN Zeichen: Baum bei Hell, Seerose
-   bei Dunkel — dieselbe Paarung wie Kulisse und .pb-baeume/.pb-seerosen. Der
-   Punkt am Zeichen zeigt einen offenen Sprachantrag des Partners; ohne ihn
-   waere ein Antrag hinter dem geschlossenen Blatt unsichtbar.
-   Die Klasse .rz-ecke ist zugleich der Wirt fuer die Push-Glocke (M7a). */
+/** Feste Bedien-Ecke oben rechts: der Weg zu den Einstellungen. */
+/* D12-2d · Die Bedien-Ecke traegt EIN Zeichen: Baum bei Hell, Seerose bei
+   Dunkel — dieselbe Paarung wie Kulisse und .pb-baeume/.pb-seerosen.
+   U7 (Turn 41 · Nachtrag 1.1) · Das aufklappende Blatt ist entfallen; die
+   Einstellungen sind ein eigener Screen. Der Knopf fuehrt jetzt dorthin,
+   statt ein Panel zu oeffnen — deshalb aria-haspopup weg.
+   Der Punkt am Zeichen zeigt weiterhin einen offenen Sprachantrag des
+   Partners. Er wird dadurch eher wichtiger: der Ort liegt jetzt weiter weg,
+   und ohne den Punkt gaebe es keinen Hinweis, dass dort etwas wartet.
+   (Der frueher hier vermerkte Wirt fuer eine Push-Glocke war ein Irrtum im
+   Kommentar — eine Glocke hat es nie gegeben.) */
 export const CHROME_HTML = String.raw`<div class="rz-ecke pb-theme" role="group">
-      <button id="pbEinst" class="rz-einst" type="button" aria-haspopup="dialog" aria-expanded="false">
+      <button id="pbEinst" class="rz-einst" type="button">
         <span class="rz-einst-baum">${zeichen("baum", { groesse: 20 })}</span>
         <span class="rz-einst-seerose">${zeichen("bluete", { groesse: 20 })}</span>
         <span class="rz-punkt pb-hidden" id="pbEinstPunkt"></span>
       </button>
-      <div class="rz-einst-blatt pb-hidden" id="pbEinstBlatt" role="dialog"></div>
     </div>`;
 
 export function applyDesign(doc) {

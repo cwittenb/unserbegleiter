@@ -71,6 +71,11 @@ export const THEME_CSS = String.raw`
         /* T2b · Freiraum an der Naht: das Badge ragt 16px in die obere
            Zone, die Naht-Kulisse 84px. Der Zonenfuss haelt Abstand. */
         --rz-nahtfrei:32px;
+        /* U7 (Nachtrag 3.5) · Die Naht-Kulisse ist 84px hoch — deutlich mehr
+           als das Badge, fuer das --rz-nahtfrei gedacht war. Wo die Papier-Zone
+           mit Text endet, braucht sie diesen Freiraum, sonst laufen die
+           Silhouetten durch die letzten Zeilen. */
+        --rz-kulissenfrei:96px;
 
         /* ---- Radien. Rund ist das Blatt, eckig die Zeile. ---- */
         --rz-rund-knopf:12px;
@@ -91,7 +96,6 @@ export const THEME_CSS = String.raw`
            Rechengroesse fuer das Ausbluten der Schreibkante. */
         --rz-chat-spalte:640px;
         --rz-hairline-staerke:1px;
-        --rz-blatt-schatten:0 12px 34px rgba(0,0,0,.14);
         --rz-kurve:cubic-bezier(.2,.8,.2,1);
         --rz-dauer:.3s;
         --rz-dauer-kurz:.2s;

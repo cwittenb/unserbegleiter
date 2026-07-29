@@ -22,7 +22,8 @@ describe("D10 · Die Bedien-Ecke existiert", () => {
     const ecke = document.querySelector(".rz-ecke");
     expect(ecke).toBeTruthy();
     expect(ecke.querySelector("#pbEinst")).toBeTruthy();
-    expect(ecke.querySelector("#pbEinstBlatt")).toBeTruthy();
+    // U7/1.1 · Die Ecke traegt kein Panel mehr — sie ist der Weg zu einem Ort.
+    expect(ecke.querySelector("#pbEinstBlatt")).toBeNull();
   });
 
   it("das Zeichen traegt beide Fassungen und eine Beschriftung", () => {

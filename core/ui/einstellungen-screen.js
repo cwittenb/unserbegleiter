@@ -12,7 +12,7 @@
 import { t, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 import { esc } from "./html.js";
 import { setzeAnsicht, merkeAnsicht } from "./design.js";
-import { verlaufEinstellung, EINST_VERLAUF, loescheAlleVerlaeufe } from "./verlauf-ablage.js";   // S95.7b
+import { verlaufEinstellung, EINST_VERLAUF, loescheAlleVerlaeufe, zaehleVerlaeufe } from "./verlauf-ablage.js";   // S95.7b
 
 /**
  * @param {object} ctx
@@ -43,66 +43,81 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
     zeigeEinstellungen();
   }
 
+  /* U7 (Turn 41 · Nachtrag) · Aus dem Blatt ist ein Ort geworden. Gerendert
+     wird in zwei Zonen: oben, was nur auf diesem Geraet gilt, unten, was
+     Folgen hat. Der Wiedereinstieg und das Loeschen stehen fest im Markup —
+     sie brauchen die Aufklapp-Mechanik (data-box) und ihre Verdrahtung vom
+     Start; alles andere wird bei jedem Betreten neu gezeichnet. */
   async function zeigeEinstellungen() {
+    const oben = $("einstOben"), gemeinsam = $("einstGemeinsam");
+    if (!oben || !gemeinsam) return;
     const verlaufModus = await verlaufEinstellung(backend);   // S95.7b
-    const blatt = chrome("pbEinstBlatt");
-    if (!blatt || blatt.classList.contains("pb-hidden")) return;
     const ansicht = doc.documentElement.getAttribute("data-ansicht") || "auto";
     const ui = getLocale();
     const paar = state.info && state.info.locale === "en" ? "en" : "de";
     const offen = state.info && state.info.languageRequest;
+    const partner = (state.info && state.info.partner) || "";
+
+    /* §2 · Die Wahl ist eine Haarlinien-Zeile mit Haken rechts. Der Haken
+       traegt aria-hidden, weil aria-pressed die Aussage schon macht. */
     const wahl = (gruppe, wert, text, aktiv) =>
-      `<button class="rz-einst-wahl${aktiv ? " an" : ""}" data-${gruppe}="${wert}">` +
-      `<span>${text}</span><span class="rz-haken" aria-hidden="true">✓</span></button>`;
-    blatt.innerHTML =
-      `<div class="rz-einst-gruppe">` +
-      `<div class="rz-caps">${t("einst.ansicht")}</div>` +
-      wahl("ansicht", "light", t("theme.hell"), ansicht === "light") +
-      wahl("ansicht", "dark", t("theme.dunkel"), ansicht === "dark") +
-      wahl("ansicht", "auto", t("theme.auto"), ansicht === "auto") +
-      `</div>` +
-      `<div class="rz-einst-gruppe">` +
-      `<div class="rz-caps">${t("einst.sprache")}</div>` +
-      wahl("ui", "de", t("paarspr.name.de"), ui === "de") +
-      wahl("ui", "en", t("paarspr.name.en"), ui === "en") +
-      `<p class="rz-einst-fuss">${t("einst.paarsprache", { sprache: sprachName(paar) })}</p>` +
-      // D12-2f · Der Antrag wird hier gestellt, verhandelt wird er in der
-      // Agenda: der Knopf legt den Eintrag an, die Absprache lebt dort.
-      (offen
-        ? `<p class="rz-einst-fuss">${t("einst.antragOffen", { sprache: sprachName(offen.target) })}</p>`
-        : backend.language
-        ? `<button class="pb-btn rz-oben-2" id="einstSprachAntrag">` +
-          `${t("einst.vorschlagen", { sprache: sprachName(paar === "en" ? "de" : "en") })}</button>` +
-          `<p class="rz-einst-fuss">${t("einst.paarspracheHinweis")}</p>`
-        : "") +
-      `</div>` +
-      /* S95.7b · Aufbewahrung der Gespraechsverlaeufe. Vorgabe ist
-         "aufbewahren" (F0) — deshalb steht hier keine Empfehlung und keine
-         Aussage darueber, was andere tun. Der Fusstext sagt, was passiert,
-         nicht was gut waere. */
-      `<div class="rz-einst-gruppe">` +
-      `<div class="rz-caps">${t("verlauf.einstTitel")}</div>` +
-      wahl("verlauf", "immer", t("verlauf.einstImmer"), verlaufModus === "immer") +
-      wahl("verlauf", "fragen", t("verlauf.einstFragen"), verlaufModus === "fragen") +
-      `<p class="rz-einst-fuss">${t("verlauf.einstErklaerung")}</p>` +
-      `<button class="pb-btn rz-oben-2" id="einstVerlaeufeWeg">${t("verlauf.alleLoeschen")}</button>` +
-      `</div>`;
-    for (const b of blatt.querySelectorAll("[data-verlauf]"))
+      `<button class="rz-zeile rz-einst-wahl${aktiv ? " an" : ""}" data-${gruppe}="${wert}" aria-pressed="${aktiv}">` +
+      `<span>${esc(text)}</span><span class="rz-haken" aria-hidden="true">\u2713</span></button>`;
+    const gruppe = (titel, inhalt) =>
+      `<div class="rz-einst-gruppe"><div class="rz-caps">${esc(titel)}</div>${inhalt}</div>`;
+    const hinweis = text => `<p class="rz-einst-fuss">${esc(text)}</p>`;
+
+    oben.innerHTML =
+      gruppe(t("einst.ansicht"),
+        wahl("ansicht", "light", t("theme.hell"), ansicht === "light") +
+        wahl("ansicht", "dark", t("theme.dunkel"), ansicht === "dark") +
+        wahl("ansicht", "auto", t("theme.auto"), ansicht === "auto")) +
+      // 3.4 · Zwei Hinweise zu einem: was die Begleitung spricht UND wie weit
+      // die eigene Wahl reicht.
+      gruppe(t("einst.sprache"),
+        wahl("ui", "de", t("paarspr.name.de"), ui === "de") +
+        wahl("ui", "en", t("paarspr.name.en"), ui === "en") +
+        hinweis(t("einst.spracheHinweis", { sprache: sprachName(paar) }))) +
+      /* S95.7b · Vorgabe ist "aufbewahren" (F0) — deshalb keine Empfehlung und
+         keine Aussage darueber, was andere tun. Der Hinweis sagt, was
+         passiert, nicht was gut waere. */
+      gruppe(t("verlauf.einstTitel"),
+        wahl("verlauf", "immer", t("verlauf.einstImmer"), verlaufModus === "immer") +
+        wahl("verlauf", "fragen", t("verlauf.einstFragen"), verlaufModus === "fragen") +
+        hinweis(t("verlauf.einstErklaerung")));
+
+    /* D12-2f · Der Antrag wird hier gestellt, verhandelt wird er in der
+       Agenda: die Zeile legt den Eintrag an, die Absprache lebt dort.
+       Er steht UNTEN, weil er das Geraet verlaesst — anders als die
+       Sprachwahl darueber, die nur hier gilt. */
+    gemeinsam.innerHTML = offen
+      ? `<div class="rz-caps">${esc(t("einst.gruppeGemeinsam"))}</div>` +
+        hinweis(t("einst.antragOffen", { sprache: sprachName(offen.target) }))
+      : backend.language
+      ? `<div class="rz-caps">${esc(t("einst.gruppeGemeinsam"))}</div>` +
+        `<button class="rz-zeile rz-unten rz-knopf-flach" id="einstSprachAntrag">` +
+        `<span>${esc(t("einst.vorschlagen", { sprache: sprachName(paar === "en" ? "de" : "en") }))}</span>` +
+        `<span class="rz-pfeil">\u2192</span></button>` +
+        hinweis(t("einst.sprachvorschlagHinweis", { partner }))
+      : "";
+
+    for (const b of oben.querySelectorAll("[data-verlauf]"))
       b.addEventListener("click", async () => {
         const v = b.getAttribute("data-verlauf");
         try { await backend.pstate.set(EINST_VERLAUF, v); } catch { /* still */ }
         zeigeEinstellungen();
       });
-    const weg = blatt.querySelector("#einstVerlaeufeWeg");
-    /* K3: Aufraeumen stellt die Vorgabe NICHT um — zwei Dinge, zwei Entscheidungen. */
-    if (weg) weg.addEventListener("click", async () => {
-      if (!(await bestaetige(t("verlauf.loeschFrage")))) return;
-      await loescheAlleVerlaeufe(backend);
-      zeigeEinstellungen();
-    });
-    for (const b of blatt.querySelectorAll("[data-ansicht]"))
+    for (const b of oben.querySelectorAll("[data-ansicht]"))
       b.addEventListener("click", () => waehleAnsicht(b.getAttribute("data-ansicht")));
-    const antrag = blatt.querySelector("#einstSprachAntrag");
+    for (const b of oben.querySelectorAll("[data-ui]"))
+      b.addEventListener("click", async () => {
+        const l = b.getAttribute("data-ui");
+        if (l === getLocale()) return;
+        setLocale(l);
+        try { await backend.pstate.set("language", l); } catch { /* Umgebungen ohne pstate */ }
+        relaunch();     // die Oberfläche wird in der neuen Sprache neu gebaut
+      });
+    const antrag = gemeinsam.querySelector("#einstSprachAntrag");
     if (antrag) antrag.addEventListener("click", async () => {
       const ziel = paar === "en" ? "de" : "en";
       try {
@@ -114,31 +129,45 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
         zeigeEinstellungen();
       } catch (e) { err(fehlerText(e)); }
     });
-    for (const b of blatt.querySelectorAll("[data-ui]"))
-      b.addEventListener("click", async () => {
-        const l = b.getAttribute("data-ui");
-        if (l === getLocale()) return;
-        setLocale(l);
-        try { await backend.pstate.set("language", l); } catch { /* Umgebungen ohne pstate */ }
-        relaunch();     // die Oberfläche wird in der neuen Sprache neu gebaut
-      });
   }
 
-  function verdrahteEinstellungen() {
-    const knopf = chrome("pbEinst"), blatt = chrome("pbEinstBlatt");
-    if (!knopf || !blatt || knopf.dataset.rzVerdrahtet) return;
-    knopf.dataset.rzVerdrahtet = "1";
-    knopf.addEventListener("click", ev => {
-      ev.stopPropagation();
-      const zu = blatt.classList.toggle("pb-hidden");
-      knopf.setAttribute("aria-expanded", String(!zu));
-      if (!zu) zeigeEinstellungen();
+  /* 3.7 · Loeschen ist endgueltig und stand als normale Zeile neben dem
+     Wiedereinstieg. Statt eines System-confirm klappt die Zeile auf, nennt
+     die Zahl und fragt erst dann — dieselbe Bewegung, die das System schon
+     kennt. K3 bleibt: Aufraeumen stellt die Vorgabe NICHT um. */
+  async function zeigeLoeschFrage() {
+    const box = $("boxVerlaeufeWeg");
+    if (!box) return;
+    let n = 0;
+    try { n = await zaehleVerlaeufe(backend); } catch { /* still */ }
+    box.innerHTML = `<p class="rz-einst-fuss">${esc(
+      n ? t("verlauf.loeschAnzahl", { n }) : t("verlauf.loeschKeine"))}</p>`;
+    if (!n) return;
+    const ja = doc.createElement("button");
+    ja.className = "rz-zeile rz-knopf-flach";
+    ja.type = "button";
+    ja.id = "btnVerlaeufeWegJa";
+    ja.innerHTML = `<span></span><span class="rz-pfeil">\u2192</span>`;
+    ja.firstChild.textContent = t("verlauf.loeschJa");
+    box.appendChild(ja);
+    ja.addEventListener("click", async () => {
+      await loescheAlleVerlaeufe(backend);
+      box.classList.add("pb-hidden");
+      zeigeEinstellungen();
     });
-    doc.addEventListener("click", ev => {
-      if (blatt.classList.contains("pb-hidden")) return;
-      if (blatt.contains(ev.target) || knopf.contains(ev.target)) return;
-      blatt.classList.add("pb-hidden");
-      knopf.setAttribute("aria-expanded", "false");
+  }
+
+  /* U7/1.1 · Die Ecke oeffnet kein Panel mehr, sie fuehrt zu einem Ort.
+     Damit entfallen auch die beiden Sonderwege des Panels: das
+     stopPropagation und der Klick-ausserhalb-Waechter am document. Ein Ort
+     schliesst sich nicht, wenn man danebentippt — man geht zurueck. */
+  function verdrahteEinstellungen(betrete) {
+    const knopf = chrome("pbEinst");
+    if (!knopf || knopf.dataset.rzVerdrahtet) return;
+    knopf.dataset.rzVerdrahtet = "1";
+    knopf.addEventListener("click", () => {
+      zeigeEinstellungen();
+      betrete("scrEinstellungen");
     });
   }
 
@@ -193,5 +222,5 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
     knopf("#psNein", () => backend.language.withdraw());
   }
   return { aktualisierePunkt, waehleAnsicht, zeigeEinstellungen, verdrahteEinstellungen,
-           sprachName, zeigePaarsprache };
+           sprachName, zeigePaarsprache, zeigeLoeschFrage };
 }

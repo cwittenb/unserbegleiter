@@ -409,6 +409,22 @@ export const de = {
   "einst.vorschlagen": "Sprachwechsel vorschlagen ({sprache})",
   "einst.antragOffen": "Ein Wechsel zu {sprache} steht in der Agenda.",
   "einst.paarspracheHinweis": "Das ändert ihr gemeinsam — in der Agenda im gemeinsamen Raum.",
+  // U7 · Der Screen trennt nach REICHWEITE, nicht nach Thema: oben, was nur
+  // auf diesem Gerät gilt; unten, was Folgen hat. Deshalb stehen Sprachwahl
+  // und Sprachvorschlag in verschiedenen Zonen.
+  "einst.zoneGeraet": "Nur auf diesem Gerät.",
+  "einst.zoneFolgen": "Gerät und Zugang.",
+  "einst.gruppeGemeinsam": "Gemeinsam ändern",
+  "einst.gruppeGeraet": "Dieses Gerät",
+  // 3.4 · Zwei Hinweise zu einem: was die Begleitung spricht UND wie weit
+  // die eigene Wahl reicht.
+  "einst.spracheHinweis": "Die Begleitung spricht {sprache}. Deine Wahl hier gilt nur auf diesem Gerät.",
+  // 3.3 · Der Hinweis steht direkt an der Zeile, auf die er sich bezieht.
+  "einst.sprachvorschlagHinweis": "Der Vorschlag landet in der Agenda im gemeinsamen Raum — {partner} stimmt dort zu.",
+  // 3.7 · Statt System-Rückfrage: die Zeile klappt auf und nennt die Zahl.
+  "verlauf.loeschAnzahl": "{n} aufbewahrte Verläufe liegen in deinem Raum. Das lässt sich nicht rückgängig machen.",
+  "verlauf.loeschKeine": "Es liegen keine aufbewahrten Verläufe in deinem Raum.",
+  "verlauf.loeschJa": "Ja, alle löschen",
   "paarspr.agendaKopf": "Sprache der Begleitung",
   // PWA (M1): Manifest & Home-Bildschirm
   "pwa.name": "raumzuzweit",

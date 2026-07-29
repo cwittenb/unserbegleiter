@@ -156,8 +156,6 @@ export function createApp({ doc, backend, root, diktat }) {
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><div class="rz-caps">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
-          <button class="rz-zeile rz-unten pb-hidden" id="btnRecovery" data-box="boxRecovery"><span>${t("rec.titel")}</span><span class="rz-pfeil">↓</span></button>
-          <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
           <!-- S95.7e · Leseansicht eines abgeschlossenen Gespraechs. Eigene
                Flaeche, keine Eingabe, kein Panel — lesen aendert nichts. -->
           <div class="rz-regal-inhalt pb-hidden" id="boxLesen">
@@ -170,6 +168,51 @@ export function createApp({ doc, backend, root, diktat }) {
           <h2 class="rz-h2">${t("mein.gruppeRegale")}</h2>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseMein"></div>
+        <span class="rz-fussmarke" data-rz-marke></span>
+      </div>
+    </div>
+    <!-- U7 (Turn 41 · Nachtrag) · Einstellungen sind ein ORT, kein Dialog.
+         Die Naht trennt hier nach REICHWEITE, nicht nach Thema: oben, was nur
+         auf diesem Geraet gilt und sich zuruecknehmen laesst; unten, was das
+         Geraet verlaesst oder endgueltig ist. Genau darum stehen Sprachwahl
+         (oben) und Sprachvorschlag (unten) nicht beieinander, obwohl sie
+         dasselbe Thema haben. -->
+    <div id="scrEinstellungen" class="rz-screen rz-split pb-hidden">
+      <div class="rz-half rz-papier rz-einst-oben">
+        <div class="rz-kopf rz-kopf-mitte">
+          <button class="rz-zurueck" id="btnEinstZurueck" aria-label="${t("allg.zurueck")}">←</button>
+          <span class="rz-signatur" data-rz-signatur></span>
+          <span class="rz-zurueck rz-blind">←</span>
+        </div>
+        <h1 class="rz-h1">${t("einst.titel")}</h1>
+        <div id="einstOben"></div>
+        <div class="rz-fuss">
+          <h2 class="rz-h2 rz-h2-oben">${t("einst.zoneGeraet")}</h2>
+        </div>
+      </div>
+      <div class="rz-half rz-tiefgruen rz-naht-anker">
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeEinst">${IKON.wegweiser}<span>${t("einst.titel")}</span><span class="rz-punkt"></span></button>
+        <div class="rz-weg-panel pb-hidden" id="wegEinst"></div>
+        <div class="rz-regal-reihen" id="einstUnten">
+          <!-- Vom Modul gefuellt: was ihr GEMEINSAM aendert. -->
+          <div class="rz-einst-gruppe" id="einstGemeinsam"></div>
+          <!-- Statisch, damit die Verdrahtung beim Start greift und die
+               Aufklapp-Mechanik dieselbe ist wie im Regal (data-box). -->
+          <div class="rz-einst-gruppe">
+            <div class="rz-caps">${t("einst.gruppeGeraet")}</div>
+            <button class="rz-zeile rz-unten pb-hidden" id="btnRecovery" data-box="boxRecovery"><span>${t("rec.titel")}</span><span class="rz-pfeil">↓</span></button>
+            <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
+            <!-- 3.7 · Endgueltige Handlung, deshalb keine normale Zeile: sie
+                 klappt auf, nennt die Zahl und fragt erst dann. Dieselbe
+                 Bewegung wie beim Wiedereinstieg — kein System-confirm. -->
+            <button class="rz-zeile rz-unten" id="btnVerlaeufeWeg" data-box="boxVerlaeufeWeg"><span>${t("verlauf.alleLoeschen")}</span><span class="rz-pfeil">↓</span></button>
+            <div class="rz-regal-inhalt pb-hidden" id="boxVerlaeufeWeg"></div>
+          </div>
+        </div>
+        <div class="rz-fuss">
+          <h2 class="rz-h2">${t("einst.zoneFolgen")}</h2>
+        </div>
+        <div class="rz-kulisse-fuss" id="kulisseEinst"></div>
         <span class="rz-fussmarke" data-rz-marke></span>
       </div>
     </div>
@@ -284,7 +327,9 @@ export function createApp({ doc, backend, root, diktat }) {
   }
 
   const $ = id => wurzel.querySelector("#" + id);
-  const screens = ["scrStart", "scrMyRoom", "scrShared", "scrProzess", "scrChat"];
+  /* U7 · scrEinstellungen ist ein Ort wie die anderen — er muss in dieser
+     Liste stehen, sonst blendet show() ihn nie aus. */
+  const screens = ["scrStart", "scrMyRoom", "scrShared", "scrProzess", "scrChat", "scrEinstellungen"];
   function show(id) {
     if (id !== "scrChat") raeumeChatOberflaeche();   // S87: die Fläche gehört zur Session, nicht zum Screen
     state.screen = id;
@@ -779,7 +824,7 @@ export function createApp({ doc, backend, root, diktat }) {
   }
 
   async function aktualisiereWegweiser(screenId) {
-    const boxId = { scrStart: "wegStart", scrMyRoom: "wegMein", scrShared: "wegTeil" }[screenId];
+    const boxId = { scrStart: "wegStart", scrMyRoom: "wegMein", scrShared: "wegTeil", scrEinstellungen: "wegEinst" }[screenId];
     if (!boxId) return;
     try {
       const lage = await ladeLage();
@@ -1240,7 +1285,8 @@ export function createApp({ doc, backend, root, diktat }) {
   const chrome = id => doc.getElementById(id);
   /* R4b · Einstellungsblatt und Paarsprache leben jetzt in
      einstellungen-screen.js — Abhaengigkeiten explizit statt ueber die Closure. */
-  const { aktualisierePunkt, zeigeEinstellungen, verdrahteEinstellungen, zeigePaarsprache } =
+  const { aktualisierePunkt, zeigeEinstellungen, verdrahteEinstellungen, zeigePaarsprache,
+          zeigeLoeschFrage } =
     macheEinstellungenScreen({ doc, $, chrome, backend, state, err, relaunch, bestaetige });
   /* R4b · Die Wiedereinstiegs-Gruppe (Karte, Pflicht-Modal, Bauelement) lebt
      jetzt in recovery-screen.js. Ihre Abhaengigkeiten sind dort explizit statt
@@ -1333,6 +1379,7 @@ export function createApp({ doc, backend, root, diktat }) {
   verdrahteWegweiser(doc, $("wegBadgeStart"), $("wegStart"));   // D2: Badge auf der Naht
   verdrahteWegweiser(doc, $("wegBadgeMein"), $("wegMein"));     // D3: Vorraum mich
   verdrahteWegweiser(doc, $("wegBadgeTeil"), $("wegTeil"));     // D3: Vorraum uns
+  verdrahteWegweiser(doc, $("wegBadgeEinst"), $("wegEinst"));   // U7: Einstellungen
   $("btnMyRoom").addEventListener("click", () => betrete("scrMyRoom"));
   $("btnSharedRoom").addEventListener("click", () => betrete("scrShared"));
   $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));
@@ -1354,6 +1401,14 @@ export function createApp({ doc, backend, root, diktat }) {
   // U5/§1.3 · Der Wiedereinstieg klappt wie jede andere Regal-Zeile auf. Der
   // Inhalt steht schon (zeigeRecovery baut ihn beim Start), die Zeile schaltet
   // ihn nur sichtbar — deshalb kein Nachladen im Toggle.
+  $("btnEinstZurueck").addEventListener("click", () => betrete("scrStart"));
+  /* 3.7 · Die Zahl wird beim Oeffnen geholt, nicht vorgehalten: sie steht in
+     einer Frage, die man nicht zuruecknehmen kann, und darf nicht veralten. */
+  $("btnVerlaeufeWeg").addEventListener("click", () =>
+    infoToggle("boxVerlaeufeWeg", () => {
+      $("boxVerlaeufeWeg").classList.remove("pb-hidden");
+      zeigeLoeschFrage();
+    }).catch(e => err(e.message)));
   $("btnRecovery").addEventListener("click", () =>
     infoToggle("boxRecovery", () => $("boxRecovery").classList.remove("pb-hidden")).catch(e => err(e.message)));
   // S88 · Prozessreflexion ist eine HANDLUNG und bekommt wie jede Handlung
@@ -1828,7 +1883,7 @@ export function createApp({ doc, backend, root, diktat }) {
     // aufhalten (dieselbe Regel wie bei der Kulisse). Der Boot lief sonst in
     // eine zusätzliche Runde durch die API, bevor die Sitzung stand.
     setzeAnsicht(doc, gemerkteAnsicht());
-    verdrahteEinstellungen();
+    verdrahteEinstellungen(betrete);
     aktualisierePunkt();
     backend.pstate.get("theme").then(w => {
       if (!w || w === gemerkteAnsicht()) return;
