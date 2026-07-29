@@ -161,14 +161,10 @@ describe("D9 · Vollbild im Betrieb (beide Raeume)", () => {
     expect(root.querySelector("#btnAgenda").classList.contains("rz-auf")).toBe(false);
   });
 
-  it("der Wiedereinstiegs-Hinweis zwingt den Raum NICHT ins Vollbild", async () => {
-    await bootApp(memoryBackend());
-    await klick(root.querySelector("#btnMyRoom"));
-    const recovery = root.querySelector("#boxRecovery");
-    recovery.classList.remove("pb-hidden");
-    await klick(root.querySelector("#btnZeitleiste"));
-    await klick(root.querySelector("#btnZeitleiste"));
-    expect(root.querySelector("#scrMyRoom").classList.contains("rz-regal-offen")).toBe(false);
-    expect(recovery.classList.contains("pb-hidden")).toBe(false);   // bleibt stehen
-  });
+  /* U5/§1.3 · Hier stand ein Test, der festhielt, dass der Wiedereinstieg
+     den Raum NICHT ins Vollbild zwingt — er war von REGAL_OFFEN ausgenommen,
+     weil er ohne eigene Zeile von selbst offen dastand. Jetzt hat er eine
+     Zeile wie die anderen und verhaelt sich auch so; die Ausnahme ist weg.
+     Das Auf- und Zuklappen wird in recovery-ui.spec.js geprueft — dort gibt
+     es ein Recovery-Backend, ohne das die Zeile gar nicht erscheint. */
 });

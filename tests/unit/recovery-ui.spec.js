@@ -39,6 +39,33 @@ describe("Recovery-Karte (zweistufig)", () => {
     expect(root.querySelector("#boxRecovery").classList.contains("pb-hidden")).toBe(true);
   });
 
+  /* U5/§1.3 · Aus der Karte, die von selbst im Regal stand, ist eine Zeile
+     geworden, die aufklappt — dieselbe Bewegung wie die uebrigen Regal-Zeilen.
+     Damit faellt auch die D9-Ausnahme weg: der Wiedereinstieg zwingt den Raum
+     nicht mehr dauerhaft ins Vollbild, weil er nicht mehr dauerhaft offen ist. */
+  it("ist eine Regal-Zeile, die aufklappt", async () => {
+    const backend = baseBackend({ recoveryEmail: false });
+    backend.recovery = recoveryStub().impl;
+    const app = createApp({ doc: document, backend, root });
+    await app.boot();
+    await klick(root.querySelector("#btnMyRoom"));
+
+    const zeile = root.querySelector("#btnRecovery");
+    const box = root.querySelector("#boxRecovery");
+    expect(zeile.classList.contains("pb-hidden"), "die Zeile ist da").toBe(false);
+    expect(box.classList.contains("pb-hidden"), "geschlossen, bis jemand oeffnet").toBe(true);
+
+    await klick(zeile);
+    expect(box.classList.contains("pb-hidden"), "aufgeklappt").toBe(false);
+
+    await klick(zeile);
+    expect(box.classList.contains("pb-hidden"), "und wieder zu").toBe(true);
+    // Das Vollbild-Verhalten selbst prueft d9-regal-vollbild.spec.js an den
+    // uebrigen Zeilen — es ist derselbe Weg und braucht ein Layout, das
+    // happy-dom hier nicht liefert. Hier zaehlt: die Zeile oeffnet und
+    // schliesst, statt dass der Inhalt von selbst dasteht.
+  });
+
   it("Adresse → Code anfordern → Code bestätigen → Status „hinterlegt“ mit Ändern-Knopf", async () => {
     const st = recoveryStub();
     const backend = baseBackend({ recoveryEmail: false });
@@ -46,15 +73,25 @@ describe("Recovery-Karte (zweistufig)", () => {
     const app = createApp({ doc: document, backend, root });
     await app.boot();
 
+    // U5/§1.3 · Der Wiedereinstieg ist eine Regal-Zeile geworden, die
+    // aufklappt — er steht nicht mehr von selbst offen im Raum.
+    const zeile = root.querySelector("#btnRecovery");
+    expect(zeile.classList.contains("pb-hidden"), "die Zeile ist da").toBe(false);
     const box = root.querySelector("#boxRecovery");
-    expect(box.classList.contains("pb-hidden")).toBe(false);
+    expect(box.classList.contains("pb-hidden"), "der Inhalt wartet").toBe(true);
     expect(box.textContent).toContain("Hinterlege eine E-Mail-Adresse");
-    expect(q(box, "pin").style.display).toBe("none");            // Schritt 2 noch verborgen
+    // U5/§5.4 · Schritt 2 verschwindet nicht mehr, er ist stumm — sonst
+    // springt der Screen in der Höhe, und im Vollbild ist das eine große
+    // Bewegung. Sichtbar bleibt, was noch kommt.
+    expect(q(box, "pin").disabled).toBe(true);
+    expect(q(box, "pin").closest(".rz-rec-schritt").getAttribute("aria-disabled")).toBe("true");
 
     q(box, "mail").value = "anna@example.com";
     await klick(q(box, "senden"));
     expect(st.begonnen).toBe("anna@example.com");
-    expect(q(box, "pin").style.display).not.toBe("none");        // Schritt 2 sichtbar
+    expect(q(box, "pin").disabled).toBe(false);                  // Schritt 2 scharf
+    expect(q(box, "pin").closest(".rz-rec-schritt").getAttribute("aria-disabled")).toBe("false");
+    expect(q(box, "note").getAttribute("role"), "Bestätigung").toBe("status");
     expect(q(box, "note").textContent).toContain("anna@example.com");
 
     q(box, "pin").value = "123456";
@@ -91,8 +128,10 @@ describe("Recovery-Karte (zweistufig)", () => {
     await klick(q(box, "senden"));
     q(box, "pin").value = "000000";
     await klick(q(box, "ok"));
-    expect(q(box, "pin").style.display).toBe("none");            // zurück auf Schritt 1
-    expect(q(box, "ok").style.display).toBe("none");
+    expect(q(box, "pin").disabled).toBe(true);                   // zurück auf Schritt 1
+    // §5.3 · Ein Fehler darf nicht aussehen wie eine Zusage.
+    expect(q(box, "note").getAttribute("role")).toBe("alert");
+    expect(q(box, "ok").disabled).toBe(true);
   });
 
   it("hinterlegte Adresse: Ändern öffnet den Verifikationsfluss erneut", async () => {

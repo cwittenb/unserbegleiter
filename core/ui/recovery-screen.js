@@ -31,37 +31,70 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
    *  gibt; Tests greifen über data-rec-Attribute zu. ---- */
   function baueVerifikation(wirt, { onFertig }) {
     wirt.innerHTML = "";
-    const el = (tag, attrs, stil) => {
+    // U5 · Aussehen lebt in design.js. Kein style-Attribut, keine rohen Werte.
+    const el = (tag, attrs) => {
       const x = doc.createElement(tag);
       for (const [k, v] of Object.entries(attrs || {})) x.setAttribute(k, v);
-      if (stil) x.style.cssText = stil;
       return x;
     };
-    const mail = el("input", { type: "email", placeholder: t("rec.platzhalter"), "data-rec": "mail", autocomplete: "email" },
-      "display:block;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit");
-    const senden = el("button", { class: "pb-btn primary", "data-rec": "senden" }, "margin-top:8px");
-    senden.textContent = t("rec.codeSenden");
-    const pin = el("input", { type: "text", inputmode: "numeric", placeholder: t("rec.codeLabel"), "data-rec": "pin", autocomplete: "one-time-code" },
-      "display:none;width:100%;box-sizing:border-box;padding:9px;border:1px solid #cfd8e0;border-radius:9px;font:inherit;margin-top:8px;letter-spacing:.2em");
-    const ok = el("button", { class: "pb-btn primary", "data-rec": "ok" }, "display:none;margin-top:8px");
-    ok.textContent = t("rec.bestaetigen");
-    const note = el("span", { class: "pb-sub", "data-rec": "note" }, "display:block;margin-top:8px");
-    for (const x of [mail, senden, pin, ok, note]) wirt.appendChild(x);
+    const zeile = (text, marke) => {
+      const b = el("button", { type: "button", class: "rz-zeile rz-knopf-flach", "data-rec": marke });
+      const s = doc.createElement("span"); s.textContent = text;
+      const p = doc.createElement("span"); p.className = "rz-pfeil"; p.textContent = "\u2192";
+      b.appendChild(s); b.appendChild(p);
+      return b;
+    };
+
+    /* §5.2 · Der Ablauf hatte keinen sichtbaren Fortschritt — der Screen zeigte
+       immer nur, was gerade da war. Statt eines Steppers fuehrt das Zonen-Label
+       ueber dem Feld: "Deine Adresse" -> "Der Code aus der E-Mail". Zwei
+       Schritte, beide sichtbar; der zweite ist stumm, bis er dran ist (§5.4). */
+    const s1 = el("div", { class: "rz-rec-schritt" });
+    const l1 = el("div", { class: "rz-caps" }); l1.textContent = t("rec.labelAdresse");
+    const mail = el("input", { type: "email", placeholder: t("rec.platzhalter"), "data-rec": "mail",
+      autocomplete: "email", class: "rz-feld" });
+    const senden = zeile(t("rec.codeSenden"), "senden");
+    for (const x of [l1, mail, senden]) s1.appendChild(x);
+
+    const s2 = el("div", { class: "rz-rec-schritt", "aria-disabled": "true" });
+    const l2 = el("div", { class: "rz-caps" }); l2.textContent = t("rec.labelCode");
+    const pin = el("input", { type: "text", inputmode: "numeric", placeholder: t("rec.codeLabel"),
+      "data-rec": "pin", autocomplete: "one-time-code", class: "rz-feld rz-feld-code", disabled: "" });
+    const ok = zeile(t("rec.bestaetigen"), "ok");
+    ok.disabled = true;
+    for (const x of [l2, pin, ok]) s2.appendChild(x);
+
+    const note = el("span", { class: "rz-rec-note", "data-rec": "note", role: "status" });
+    for (const x of [s1, s2, note]) wirt.appendChild(x);
+
+    /* §5.3 · Bestaetigung und Fehler landeten im selben Element und in
+       derselben Farbe — ein Fehler sah aus wie eine Zusage. Getrennt wird
+       jetzt ueber die ARIA-Rolle (Vorlesestimme) UND ueber den Ton. */
+    const sage = (text, schlimm) => {
+      note.textContent = text;
+      note.setAttribute("role", schlimm ? "alert" : "status");
+    };
+    // §5.4 · Schritt 2 verschwand und kam wieder; der Screen sprang. Jetzt
+    // bleibt er stehen und wird nur stumm- oder scharfgeschaltet.
+    const scharf = an => {
+      s2.setAttribute("aria-disabled", an ? "false" : "true");
+      pin.disabled = !an;
+      ok.disabled = !an;
+    };
 
     let gesendetAn = null;   // Adresse aus Schritt 1 — reist bei der Bestätigung mit (D6.1a)
     const schritt2 = email => {
       gesendetAn = email;
-      note.textContent = t("rec.codeUnterwegs", { email });
-      pin.style.display = "block";
-      ok.style.display = "inline-block";
-      senden.textContent = t("rec.neuAnfordern");
+      sage(t("rec.codeUnterwegs", { email }), false);
+      scharf(true);
+      senden.firstChild.textContent = t("rec.neuAnfordern");
     };
     senden.addEventListener("click", async () => {
       const email = mail.value.trim();
-      if (!email) { note.textContent = t("rec.bitte"); return; }
+      if (!email) { sage(t("rec.bitte"), true); return; }
       senden.disabled = true;
       try { await backend.recovery.beginVerify(email); schritt2(email); }
-      catch (e) { note.textContent = fehlerText(e); }
+      catch (e) { sage(fehlerText(e), true); }
       finally { senden.disabled = false; }
     });
     ok.addEventListener("click", async () => {
@@ -70,31 +103,40 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
         await backend.recovery.confirm(pin.value.trim(), gesendetAn);
         onFertig();
       } catch (e) {
-        note.textContent = fehlerText(e);
+        sage(fehlerText(e), true);
         // Abgelaufen/zu viele Versuche: zurück auf Schritt 1 — neuer Code nötig.
         if (e && (e.code === "pin_expired" || e.code === "pin_tries" || e.code === "pin_none")) {
-          pin.value = ""; pin.style.display = "none"; ok.style.display = "none";
-          senden.textContent = t("rec.codeSenden");
-        }
-      } finally { ok.disabled = false; }
+          pin.value = ""; scharf(false);
+          senden.firstChild.textContent = t("rec.codeSenden");
+        } else { ok.disabled = false; }
+      }
     });
   }
 
   function zeigeRecovery() {
-    const box = $("boxRecovery");
-    if (!backend.recovery) { box.classList.add("pb-hidden"); return; }
-    box.classList.remove("pb-hidden");
+    const box = $("boxRecovery"), zeile = $("btnRecovery");
+    /* §1.3 · Der Wiedereinstieg war eine Karte, die von selbst im Regal stand.
+       Jetzt ist er eine Zeile, die aufklappt — dieselbe Bewegung wie die
+       uebrigen Regal-Zeilen, ein Baustein weniger im System. Der Inhalt wird
+       vorbereitet, sichtbar wird er erst beim Oeffnen. */
+    if (!backend.recovery) {
+      box.classList.add("pb-hidden");
+      if (zeile) zeile.classList.add("pb-hidden");
+      return;
+    }
+    if (zeile) zeile.classList.remove("pb-hidden");
     const hinterlegt = !!(state.info && state.info.recoveryEmail);
     box.innerHTML =
-      `<div class="pb-sub">${t("rec.titel")}</div>` +
       `<p class="rz-fein-leise">` +
       (hinterlegt ? t("rec.hinterlegt") : t("rec.neu")) +
       `</p>`;
     if (hinterlegt) {
       const aendern = doc.createElement("button");
-      aendern.className = "pb-btn";
+      aendern.className = "rz-zeile rz-knopf-flach";
+      aendern.setAttribute("type", "button");
       aendern.setAttribute("data-rec", "aendern");
-      aendern.textContent = t("rec.aendern");
+      aendern.innerHTML = "<span></span><span class=\"rz-pfeil\">\u2192</span>";
+      aendern.firstChild.textContent = t("rec.aendern");
       box.appendChild(aendern);
       aendern.addEventListener("click", () => {
         aendern.remove();

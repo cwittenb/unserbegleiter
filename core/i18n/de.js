@@ -57,6 +57,10 @@ export const de = {
   // Wisch verschwunden. Im Wegweiser bleibt sie erreichbar.
   "weg.auswahlHalten": "Tippen wählt eine Stelle aus. Gedrückthalten nimmt alles bis dorthin mit — mit Tastatur: Umschalt und Eingabe.",
   "ausschnitt.ariaPaar": "Antwort auf: {frage}",
+  // U5/§5.2 · Der Ablauf hatte keinen sichtbaren Fortschritt. Statt eines
+  // Steppers fuehrt das Zonen-Label ueber dem Feld durch die zwei Schritte.
+  "rec.labelAdresse": "Deine Adresse",
+  "rec.labelCode": "Der Code aus der E-Mail",
   // D3 · Vorraum-Zonen (Design Turn 17c/d)
   "zone.raum": "Der Raum.",
   "zone.regal": "Das Regal.",

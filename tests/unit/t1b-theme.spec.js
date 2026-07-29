@@ -48,8 +48,9 @@ describe("T1b · Farbe lebt nur im Theme", () => {
     ...AUSSERHALB,
   ];
 
-  // theme.js IST die Palette; recovery-screen.js trägt noch rohe Werte (U6).
-  const MALT_SELBST = ["core/ui/recovery-screen.js"];
+  // Hex-Werte gibt es ausserhalb von theme.js nicht mehr — die Liste ist leer,
+  // und sie soll leer bleiben.
+  const MALT_SELBST = [];
   // Stilblöcke inline: nur noch recovery-screen.js (U6). auswahl-screen.js
   // ist mit T3b herausgefallen — die Sperrklinke unten hat das erzwungen.
   const STILT_INLINE = ["core/ui/recovery-screen.js"];
@@ -66,10 +67,31 @@ describe("T1b · Farbe lebt nur im Theme", () => {
      Stylesheet ausdrücken — das ist Technik, keine Gestaltung. */
   const TECHNIK = ["transition"];
 
+  /* U5 · Die Suche fand nur Hex-Werte. Ein rgba() ist genauso eine Farbe —
+     recovery-screen.js trug ein rgba(20,26,34,.55) und galt trotzdem als
+     sauber, sobald die Hex-Werte weg waren. Aufgefallen ist das erst, weil
+     die Sperrklinke die Datei aus der Liste haben wollte.
+     Zwei Listen statt einer: Hex gilt fuer ALLE, damit kein neuer Hex-Wert
+     unter einer breiten Ausnahme verschwindet. */
+  const HEX = /#[0-9a-fA-F]{6}\b/g;
+  const FUNKTION = /\brgba?\(|\bhsla?\(/g;
+  /* design.js traegt zwei Stellen mit Farbfunktion: die Fehlerflaeche .pb-err
+     (rohes Rot — Rolle dafuer ist seit U5 --rz-warn) und ein box-shadow an der
+     Lesezeichen-Fahne (.pb-lz), das es in der Turn-40-Sprache gar nicht geben
+     duerfte. Beides ist ein eigener Schritt, beides steht im Merkposten. */
+  const MALT_FUNKTIONAL = [
+    "core/ui/design.js",                        // .pb-err (Rolle: --rz-warn) + box-shadow an .pb-lz
+    "core/ui/recovery-screen.js",               // Schleier des Pflicht-Modals — faellt mit U6
+    "platforms/cloudflare/pages/client.js",     // Boot-Fehlerkasten: rendert, BEVOR das
+                                                // Stylesheet der App existiert. Legitim inline.
+  ];
+
   it("kein Modul außer theme.js malt selbst", () => {
     for (const p of pruefliste()) {
       if (p.endsWith("/theme.js") || MALT_SELBST.includes(p)) continue;
-      expect(ohneKommentare(p).match(/#[0-9a-fA-F]{6}\b/g) || [], p).toEqual([]);
+      expect(ohneKommentare(p).match(HEX) || [], p + " · Hex").toEqual([]);
+      if (MALT_FUNKTIONAL.includes(p)) continue;
+      expect(ohneKommentare(p).match(FUNKTION) || [], p + " · rgba/hsl").toEqual([]);
     }
   });
 
@@ -118,7 +140,7 @@ describe("T1b · Farbe lebt nur im Theme", () => {
     // sich später neue Verstöße verstecken). Kommt eine dazu, schlägt schon
     // einer der Tests oben an.
     const maltNoch = pruefliste().filter(p =>
-      !p.endsWith("/theme.js") && (ohneKommentare(p).match(/#[0-9a-fA-F]{6}\b/g) || []).length);
+      !p.endsWith("/theme.js") && (ohneKommentare(p).match(HEX) || []).length);
     expect(maltNoch).toEqual(MALT_SELBST);
 
     const stiltNoch = pruefliste().filter(p => {

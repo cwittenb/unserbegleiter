@@ -673,6 +673,26 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       /* Code-Eingabe: gesperrt gesetzt, damit sechs Ziffern zaehlbar bleiben. */
       .rz-feld-code{letter-spacing:.2em}
 
+      /* ---- U5 (Handover Turn 41 §2, §5.2–5.4) · Wiedereinstieg ----
+         Die Felder tragen die Feldkante aus U1, die Knoepfe sind
+         Hairline-Zeilen wie ueberall. Rohe Farben und Radien sind ersatzlos
+         entfallen — im System gibt es hier keine.
+         §5.4 · pin und ok verschwanden per display:none und kamen bei
+         abgelaufenem Code wieder: der Screen sprang in der Hoehe, im Vollbild
+         waere das eine grosse Bewegung. Jetzt bleiben sie stehen und werden
+         stummgeschaltet — der Ablauf bleibt sichtbar. */
+      .rz-rec-schritt{margin-top:var(--rz-r-5)}
+      .rz-rec-schritt[aria-disabled=true]{opacity:.45}
+      .rz-rec-schritt[aria-disabled=true] .rz-feld,
+      .rz-rec-schritt[aria-disabled=true] .rz-zeile{pointer-events:none}
+      /* §5.3 · Bestaetigung und Fehler standen im selben Element und in
+         derselben Farbe. Getrennt wird jetzt ueber die Rolle, nicht ueber
+         den Ton allein — der Ton kommt dazu. */
+      .rz-rec-note{display:block;margin-top:var(--rz-r-2);
+                   font-family:var(--rz-sans);font-size:var(--rz-fs-fein);color:var(--rz-sek)}
+      .rz-rec-note[role=alert]{color:var(--rz-warn)}
+      .rz-tiefgruen .rz-rec-note{color:var(--rz-sek2-auf-gruen)}
+
       /* §4.11 · Der Rahmensatz der Vorschau war ein textarea ohne Feldregel
          und erbte den Browser-Rahmen. Erster Nutzer der Feldkante. */
       .rz-ausw-rahmen{margin-top:10px;min-height:56px}

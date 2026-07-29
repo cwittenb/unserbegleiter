@@ -49,6 +49,8 @@ export const en = {
   "weg.chatAufdeck": "The reveal happens together — told, not read out. The numbers stay where they are.",
   "weg.auswahlHalten": "Tap to pick a passage. Press and hold to take everything up to there — with a keyboard: shift and enter.",
   "ausschnitt.ariaPaar": "Answer to: {frage}",
+  "rec.labelAdresse": "Your address",
+  "rec.labelCode": "The code from the email",
   // D3 · Anteroom zones (design turn 17c/d)
   "zone.raum": "The Room.",
   "zone.regal": "The Shelf.",

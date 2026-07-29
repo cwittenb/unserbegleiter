@@ -156,6 +156,7 @@ export function createApp({ doc, backend, root, diktat }) {
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><div class="rz-caps">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
+          <button class="rz-zeile rz-unten pb-hidden" id="btnRecovery" data-box="boxRecovery"><span>${t("rec.titel")}</span><span class="rz-pfeil">↓</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
           <!-- S95.7e · Leseansicht eines abgeschlossenen Gespraechs. Eigene
                Flaeche, keine Eingabe, kein Panel — lesen aendert nichts. -->
@@ -391,10 +392,12 @@ export function createApp({ doc, backend, root, diktat }) {
     for (const g of Object.values(INFO_GRUPPEN))
       if (g.includes(id)) for (const b of g) if (b !== id) $(b).classList.add("pb-hidden");
   }
-  /* D9 · Regal-Vollbild. Der Wiedereinstiegs-Hinweis (boxRecovery) zählt
-     bewusst nicht als Regal-Inhalt: er steht von selbst da und soll den
-     Raum nicht dauerhaft ins Vollbild zwingen. */
-  const REGAL_OFFEN = ".rz-regal-inhalt:not(.pb-hidden):not(#boxRecovery)";
+  /* D9 · Regal-Vollbild.
+     U5/§1.3 · Der Wiedereinstieg war bis dahin ausgenommen — er stand ohne
+     eigene Zeile von selbst offen da und haette den Raum sonst dauerhaft ins
+     Vollbild gezwungen. Jetzt hat er eine Zeile wie die anderen und klappt
+     nur auf, wenn jemand ihn oeffnet; die Ausnahme faellt damit weg. */
+  const REGAL_OFFEN = ".rz-regal-inhalt:not(.pb-hidden)";
 
   /** Fährt die Regal-Zone hoch bis unter den Kopf ("Raum für uns") und
    *  wieder herunter. Der obere Teil bleibt dabei EXAKT stehen: beide Zonen
@@ -467,7 +470,10 @@ export function createApp({ doc, backend, root, diktat }) {
       return Promise.resolve();
     }
     const zone = box.closest && box.closest(".rz-half");
-    if (zone) for (const g of zone.querySelectorAll(".rz-regal-inhalt")) if (g !== box && g.id !== "boxRecovery") g.classList.add("pb-hidden");
+    // U5/§1.3 · boxRecovery war hier ausgenommen, weil er ohne eigene Zeile
+    // dauerhaft offen stand. Jetzt gilt fuer ihn dieselbe Regel: immer nur
+    // EINE Box offen, sonst springen die Hoehen.
+    if (zone) for (const g of zone.querySelectorAll(".rz-regal-inhalt")) if (g !== box) g.classList.add("pb-hidden");
     return Promise.resolve().then(oeffnen).then(r => { regalModus(box); return r; });
   }
 
@@ -1345,6 +1351,11 @@ export function createApp({ doc, backend, root, diktat }) {
     if (oben) oben.addEventListener("click", () => regalZu(screen));
   }
   $("btnZeitleiste").addEventListener("click", () => infoToggle("boxZeitleiste", () => zeigeZeitleiste()).catch(e => err(e.message)));
+  // U5/§1.3 · Der Wiedereinstieg klappt wie jede andere Regal-Zeile auf. Der
+  // Inhalt steht schon (zeigeRecovery baut ihn beim Start), die Zeile schaltet
+  // ihn nur sichtbar — deshalb kein Nachladen im Toggle.
+  $("btnRecovery").addEventListener("click", () =>
+    infoToggle("boxRecovery", () => $("boxRecovery").classList.remove("pb-hidden")).catch(e => err(e.message)));
   // S88 · Prozessreflexion ist eine HANDLUNG und bekommt wie jede Handlung
   // einen eigenen Raum (S44 hatte sie bereits an die Stelle der Auftrags-
   // klärung gesetzt — nur ihr Panel steckte noch als Klappe im Regal-Block).
