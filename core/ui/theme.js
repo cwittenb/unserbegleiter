@@ -36,6 +36,13 @@ export const THEME_CSS = String.raw`
         /* Hinweisblatt (Wiedereinstieg): warmes Papier mit eigenem Rand. */
         --rz-hinweis-flaeche:#fbf7e4;--rz-hinweis-rand:#e2d9a8;
         --rz-akzent-ink:#41562c;--rz-auf-akzent:#ffffff;
+        /* U8.3 · Inline-Links. Bis hierher war .pb-link nur eine gepunktete
+           Unterlinie in Fliesstextfarbe — im Fliesstext praktisch unsichtbar,
+           und auf Tiefgruen erst recht. Zwei Rollen, weil die Zeitleiste und
+           die Leseansicht in der GRUENEN Zone liegen: derselbe Stil braucht
+           dort einen eigenen Ton, sonst faellt er gegen das Papier-Gruen
+           zusammen. Beide Werte liegen ueber 4.5:1 auf ihrem Grund. */
+        --rz-link:#35591f;--rz-link-auf-gruen:#b7d69a;
         --rz-karte:rgba(255,255,255,.60);--rz-karte-rand:rgba(90,110,80,.15);
         --rz-blase-du:rgba(255,255,255,.72);--rz-blase-du-rand:rgba(90,110,80,.13);
         --rz-feld:rgba(255,255,255,.74);--rz-feld-rand:rgba(90,110,80,.22);
@@ -115,5 +122,6 @@ export const THEME_CSS = String.raw`
         --rz-blase-du:rgba(255,255,255,.06);--rz-blase-du-rand:rgba(255,255,255,.09);
         --rz-feld:rgba(255,255,255,.06);--rz-feld-rand:rgba(255,255,255,.16);
         --rz-flaeche-hoch:#2c3428;--rz-warn:#e8ab99;
+        --rz-link:#b7d69a;--rz-link-auf-gruen:#b7d69a;
       }
 `;

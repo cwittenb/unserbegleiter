@@ -442,6 +442,8 @@ export const korpusTexte = {
   "sk.materialKopf": "FREIGEGEBENES MATERIAL (gemeinsame Schicht, von beiden):",
   "sk.zeitleisteKopf": "EIGENE ZEITLEISTE (jüngste Einträge):",
   "sk.sessionsKopf": "LETZTE GEMEINSAME SESSIONS:",
+  "ak.kopf": "ANLASS DIESER SITZUNG (app-intern; nicht zitieren, keine Tokens nennen):",
+  "ak.teilenAusVerlauf": "Die Person hat gerade das Protokoll vom {datum} [{topics}] gelesen ({vid}) und ist von dort aus hierher gekommen, weil sie daraus etwas teilen möchte. Eröffne so, dass dieser Anlass Platz hat, ohne ihn zur Vorgabe zu machen — frage offen, was sie daran beschäftigt und was davon ankommen soll. Den Wortlaut hast du NICHT: Hole ihn per RECALL-BLOCK mit dieser Kennung, sobald er gebraucht wird, und behaupte vorher nichts über einzelne Sätze. Alles Übrige gilt unverändert: die Sicherheits-Weiche, die M1-Bremse, und der Freigabe-Ort erst am Abschluss dieser Sitzung. Schlage von dir aus KEINE Stellen vor und nimm die Gabelung nicht vorweg — der Anlass ist eine Ausgangslage, keine Entscheidung.",
   "mk.kopf": "MOMENT-CONTEXT (app-intern; nicht als Block zitieren, dramaturgisch einbringen):",
   "mk.auftraegeLeer": "GOALS: noch keine.",
   "mk.agendaKopf": "AGENDA (offen):",

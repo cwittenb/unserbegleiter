@@ -6,7 +6,7 @@ import { cleanDisplay, findeBlock } from "../contracts/block.js";
 import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht } from "../contracts/steuertoken.js";
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
-import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
+import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, baueAnlassKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
 import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, WEGE_FUER, inKarenz } from "../engine/regal.js";
 import { paareAusVerlauf, baueAusschnitt, paarWaehlbar, paarGrund, waehleUm,
   fuelleSpanne, ueberRichtwert, hatStilleLuecken } from "../engine/ausschnitt.js";
@@ -26,7 +26,7 @@ import { macheAnsichtenScreen } from "./ansichten-screen.js";   // R4b
 import { macheAuswahlScreen } from "./auswahl-screen.js";   // R4b
 import { machePanels } from "./panels.js";   // R4b
 import { macheChatKern } from "./chat-kern.js";   // R4b
-import { legeVerlaufAb, verlaufEinstellung, holeVerlauf } from "./verlauf-ablage.js";   // S95.7a/8b
+import { legeVerlaufAb, verlaufEinstellung, holeVerlauf, loescheVerlaufUndVerweis } from "./verlauf-ablage.js";   // S95.7a/8b, U8.5
 import { zeichneReplay } from "./replay-ansicht.js";   // S95.7e
 
 
@@ -161,7 +161,18 @@ export function createApp({ doc, backend, root, diktat }) {
           <div class="rz-regal-inhalt pb-hidden" id="boxLesen">
             <div class="rz-caps" id="lesenKopf"></div>
             <div id="lesenInhalt"></div>
-            <button class="pb-btn rz-oben-2" id="lesenZu">${t("verlauf.leseZu")}</button>
+            <!-- U8.5/U8.6 · Der Fuss traegt die Wege als Links, nicht als
+                 Pillen: Der Vorraum spricht in Haarlinien und leisen Zeilen,
+                 eine Knopf-Pille war hier der einzige Fremdkoerper.
+                 Reihenfolge nach Gewicht: der Weg zurueck ins Gespraech
+                 zuerst, Schliessen als Normalfall, Loeschen zuletzt und
+                 leise — es ist der einzige Weg ohne Rueckweg. -->
+            <div class="rz-lesen-fuss" id="lesenFuss">
+              <span class="pb-link" id="lesenTeilen">${t("verlauf.teilen")}</span>
+              <span class="pb-link" id="lesenZu">${t("verlauf.leseZu")}</span>
+              <span class="pb-link rz-klein-leise" id="lesenWeg">${t("verlauf.zlLoeschen")}</span>
+            </div>
+            <div class="rz-klein-leise rz-oben-1 pb-hidden" id="lesenHinweis"></div>
           </div>
         </div>
         <div class="rz-fuss">
@@ -430,7 +441,11 @@ export function createApp({ doc, backend, root, diktat }) {
      einander, statt sich zu stapeln. zeigeNur blendet die Geschwister aus;
      die zeige*-Funktionen rufen es vor dem Befüllen auf. */
   const INFO_GRUPPEN = {
-    scrMyRoom: ["boxZeitleiste"],   // S88: boxMess lebt jetzt im eigenen Raum scrProzess
+    // S88: boxMess lebt jetzt im eigenen Raum scrProzess
+    // U8.4: boxLesen gehoert in die Gruppe. Vorher stand sie ausserhalb und
+    // oeffnete sich UNTER der noch offenen Zeitleiste — zwei Rollbereiche
+    // uebereinander, keiner davon im Vollbild. Eine Ansicht zur Zeit.
+    scrMyRoom: ["boxZeitleiste", "boxLesen"],
     scrShared: ["boxRegal", "boxAgenda", "boxQz"],
   };
   function zeigeNur(id) {
@@ -1011,7 +1026,12 @@ export function createApp({ doc, backend, root, diktat }) {
   chatKern.verbinde({ baueTafelKarte, zeichneAuswahl });
   
   const FORTSETZ_PAUSE_MS = 5 * 60 * 1000;   // S71: unter fünf Minuten Abwesenheit machen wir nahtlos weiter, erst danach das Wiedereinstiegs-Ritual
-  async function startChat(art) {
+  /* U8.6 · `anlass` ist optional und heute nur fuer "solo" belegt:
+     {vid} — die Person kommt aus einem gelesenen Protokoll und will daraus
+     etwas teilen. Der Anlass wird als versteckte Kontext-Nachricht
+     eingespielt (Muster wie COMPANION-CONTEXT), NICHT als Vorab-Auswahl:
+     Was quert, entscheidet sich im Gespraech und am Abschluss. */
+  async function startChat(art, anlass) {
     // S87 · Kopf-Abbau: eine eventuell noch stehende Chat-Oberfläche wird
     // ZUERST abgebaut (Entwurf unter der ALTEN chatId sichern, Diktat stoppen,
     // Pausenstempel setzen), bevor unten state.chatId überschrieben wird.
@@ -1239,6 +1259,13 @@ export function createApp({ doc, backend, root, diktat }) {
         }
         const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten, leseMarker });
         if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
+        /* U8.6 · Der Anlass kommt NACH dem Kontext: Er verweist auf einen
+           Eintrag, den der Kontext gerade eingefuehrt hat (samt {vid:…}), und
+           steht ohne ihn in der Luft. Kein Automatismus — der Begleiter
+           eroeffnet, holt den Wortlaut bei Bedarf per RECALL-BLOCK und
+           bleibt sonst bei allem, was ohnehin gilt. */
+        const anlassKontext = baueAnlassKontext(anlass, timeline);
+        if (anlassKontext) chat.messages.push({ role: "user", hidden: true, content: anlassKontext });
       }
       if (art === "moment") {
         const [goals, agenda, momentLog, measurements, freiA, freiB, findings] = await Promise.all([
@@ -1299,31 +1326,92 @@ export function createApp({ doc, backend, root, diktat }) {
      Stream-Blase, Skalen und Composer mit — nichts davon gehoert zu einem
      abgeschlossenen Gespraech. Lesen aendert nichts, deshalb gibt es hier
      weder Eingabe noch Knoepfe ausser dem Schliessen. */
+  /* U8.5 · Welcher Verlauf gerade offen liegt. Der Fuss braucht die Kennung
+     fuer Loeschen und Teilen; sie am Knoten zu parken waere ein zweiter
+     Zustandsort neben dieser Closure. */
+  let lesenVid = null;
+
   function verdrahteLeseansicht() {
-    const zu = $("lesenZu");
-    if (zu && !zu.dataset.rzVerdrahtet) {
-      zu.dataset.rzVerdrahtet = "1";
-      zu.addEventListener("click", schliesseLeseansicht);
-    }
+    const fuss = $("lesenFuss");
+    if (!fuss || fuss.dataset.rzVerdrahtet) return;
+    fuss.dataset.rzVerdrahtet = "1";
+    $("lesenZu").addEventListener("click", schliesseLeseansicht);
+    $("lesenWeg").addEventListener("click", () => loescheGelesenen().catch(e => err(e.message)));
+    $("lesenTeilen").addEventListener("click", () => teileAusGelesenem().catch(e => err(e.message)));
   }
 
-  function oeffneLeseansicht(verlauf) {
+  function lesenHinweis(text) {
+    const h = $("lesenHinweis");
+    if (!h) return;
+    h.textContent = text || "";
+    h.classList.toggle("pb-hidden", !text);
+  }
+
+  function oeffneLeseansicht(verlauf, vid) {
     const box = $("boxLesen");
     if (!box) return;
+    lesenVid = vid || null;
     const kopf = $("lesenKopf"), inhalt = $("lesenInhalt");
     if (kopf) kopf.textContent = t("verlauf.leseTitel", {
       datum: new Date((verlauf && verlauf.at) || Date.now()).toLocaleDateString(getLocale()),
     });
     verdrahteLeseansicht();
+    lesenHinweis("");
     const n = zeichneReplay(inhalt, verlauf, el);
     if (!n && inhalt) inhalt.textContent = t("verlauf.leseLeer");
+    /* U8.4 · Wie jede andere Regal-Ansicht: zeigeNur raeumt die Geschwister
+       weg, regalModus faehrt die Zone ins Vollbild. Beides fehlte — deshalb
+       stand die Leseansicht als angehaengter Kasten unter der Zeitleiste.
+       Der Loeschen-Weg im Fuss haengt an einem Verlauf; ohne Kennung waere
+       es eine verschlossene Tuer (dieselbe Regel wie in S95.8a). */
+    zeigeNur("boxLesen");
     box.classList.remove("pb-hidden");
+    $("lesenWeg").classList.toggle("pb-hidden", !lesenVid);
+    $("lesenTeilen").classList.toggle("pb-hidden", !lesenVid);
+    regalModus(box);
     if (inhalt) inhalt.scrollTop = 0;
   }
 
+  /* Schliessen fuehrt dorthin ZURUECK, wo geoeffnet wurde — sonst stuende
+     der Raum nach dem Lesen leer da und die Zeitleiste muesste erneut
+     aufgeklappt werden. */
   function schliesseLeseansicht() {
     const box = $("boxLesen");
-    if (box) box.classList.add("pb-hidden");
+    if (!box) return;
+    lesenVid = null;
+    box.classList.add("pb-hidden");
+    lesenHinweis("");
+    zeigeZeitleiste().catch(e => err(e.message));
+  }
+
+  /* U8.5 (F1 unveraendert) · Der Verlauf geht, der Zeitleisten-Eintrag
+     bleibt. Danach schliesst die Ansicht: Weiterlesen in etwas, das gerade
+     geloescht wurde, waere eine Luege auf dem Schirm. */
+  async function loescheGelesenen() {
+    if (!lesenVid) return;
+    if (!(await bestaetige(t("verlauf.loeschFrage")))) return;
+    await loescheVerlaufUndVerweis(backend, lesenVid);
+    schliesseLeseansicht();
+  }
+
+  /* U8.6 · Die Tuer, die S95.8a offen gelassen hat.
+     Der frueher hier stehende Eingang quere direkt — an M1-Bremse und
+     Sicherheits-Weiche vorbei, weil beide im Gespraech leben und hier keins
+     war. Diese Tuer quert NICHTS: Sie oeffnet eine Sitzung. Alles Weitere
+     (Redaktion, Kriterien, Freigabe-Ort am Abschluss) laeuft dort, wo es
+     hingehoert. Der Korpus verspricht diesen Weg schon in der dritten Tuer
+     ("in einer neuen Reflexion laesst sich darauf zurueckkommen") — die
+     Oberflaeche hat ihn bis hier nirgends gezeigt.
+     Laeuft bereits eine Sitzung, wird KEINE zweite geoeffnet: Das Gespraech
+     laesst sich dort ansprechen (seit S95.8b holt der Begleiter den Wortlaut
+     ueber die Kennung selbst). */
+  async function teileAusGelesenem() {
+    if (!lesenVid) return;
+    const offen = await backend.chat.load("mine", "solo").catch(() => null);
+    if (offen && offen.status === "running") { lesenHinweis(t("verlauf.teilenLaeuft")); return; }
+    const vid = lesenVid;
+    schliesseLeseansicht();
+    await startChat("solo", { vid });
   }
 
   /* S95.8b · Den angeforderten Verlauf in den Kontext geben.
@@ -1357,7 +1445,7 @@ export function createApp({ doc, backend, root, diktat }) {
   const { zeigeZeitleiste, zeigeRegal, zeigeAgenda, zeigeMess, zeigeMomente } =
     macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                            zeitleistenEintrag, zeigePaarsprache,
-                           oeffneLeseansicht, bestaetige });
+                           oeffneLeseansicht });
 
   // S71 · Verlässt jemand den Chat, stempeln wir den Pausenbeginn auf die
   // laufende Session — so bleibt eine kurze Rückkehr (< 5 Min) nahtlos, während

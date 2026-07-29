@@ -12,6 +12,17 @@
 //   · Er ist still. Kein Zähler, kein Badge, keine Erinnerung — wer die
 //     Zeitleiste liest, soll nicht daran gemahnt werden, dass da noch etwas
 //     ungeteilt liegt. Dieselbe Disziplin wie beim Regal.
+//
+// U8.5 · Der LÖSCHEN-Link ist umgezogen: Er steht jetzt im Fuß der
+// Leseansicht, neben "Schließen" (app.js), nicht mehr in der Listenzeile.
+// Löschen ohne Ansehen war ein Griff ins Dunkle — die Zeile nennt Schlagwort
+// und Zusammenfassung, nicht den Wortlaut, der verschwindet.
+//
+// Die S95.8a-Invariante ist davon UNBERÜHRT und wird hier weiter gehalten:
+// Die Zeitleiste handelt nicht. Lesen ändert nichts, und Löschen ändert
+// nichts am Partner — an welcher Stelle der Link dafür steht, ist eine Frage
+// der Bedienung, nicht der Architektur. Was NICHT zurückkommen darf, ist ein
+// Teilen-Eingang, der an M1-Bremse und Sicherheits-Weiche vorbeiführt.
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { macheAnsichtenScreen } from "../../core/ui/ansichten-screen.js";
@@ -24,7 +35,7 @@ const EINTRAEGE = [
 
 function baue({ eintraege = EINTRAEGE, verlauf = { messages: [{ role: "user", content: "x" }] } } = {}) {
   document.body.innerHTML = '<div id="boxZeitleiste"><div id="zlItems"></div></div>';
-  const gerufen = { lesen: 0, bestaetigt: 0 };
+  const gerufen = { lesen: 0, bestaetigt: 0, lesenVid: null };
   const speicher = new Map([["timeline", { entries: eintraege }]]);
   if (verlauf) speicher.set("verlauf:1700-abc", verlauf);
   const backend = { pstate: { async get(k) { return speicher.get(k) ?? null; },
@@ -33,7 +44,7 @@ function baue({ eintraege = EINTRAEGE, verlauf = { messages: [{ role: "user", co
     $: id => document.getElementById(id), backend, state: {},
     zeigeNur: () => {}, rhythmusSektion: async () => {}, zeitleistenEintrag: async () => {},
     zeigePaarsprache: () => {},
-    oeffneLeseansicht: () => { gerufen.lesen++; },
+    oeffneLeseansicht: (_v, vid) => { gerufen.lesen++; gerufen.lesenVid = vid; },
     bestaetige: async () => { gerufen.bestaetigt++; return true; },
   });
   return { screen, gerufen, speicher };
@@ -65,15 +76,19 @@ describe("S95.8a · Sichtbarkeit", () => {
   });
 });
 
-describe("S95.8a · Löschen (F1)", () => {
-  it("fragt zurück, löscht den Verlauf und lässt den Eintrag stehen", async () => {
-    const { screen, gerufen, speicher } = baue();
+describe("U8.5 · Löschen ist umgezogen (F1 gilt weiter)", () => {
+  it("die Listenzeile bietet kein Löschen mehr an", async () => {
+    const { screen } = baue();
     await screen.zeigeZeitleiste();
-    document.querySelector("[data-zlweg]").click();
+    expect(document.querySelectorAll("[data-zlweg]")).toHaveLength(0);
+  });
+
+  it("die Zeile fragt auch nichts — kein Bestätigen-Pfad mehr in der Liste", async () => {
+    const { screen, gerufen } = baue();
+    await screen.zeigeZeitleiste();
+    for (const el of document.querySelectorAll("#zlItems span")) el.click();
     await new Promise(r => setTimeout(r, 0));
-    expect(gerufen.bestaetigt).toBe(1);
-    expect(speicher.get("verlauf:1700-abc")).toBeNull();
-    expect(speicher.get("timeline").entries).toHaveLength(2);   // Einträge unberührt
+    expect(gerufen.bestaetigt).toBe(0);
   });
 });
 
@@ -90,10 +105,18 @@ describe("S95.8a · Der Teilen-Eingang ist zurückgebaut", () => {
     expect(Object.keys(screen)).not.toContain("oeffneReplay");
   });
 
-  it("Lesen und Löschen bleiben — beides ändert nichts am Partner", async () => {
+  it("Lesen bleibt — es ändert nichts am Partner", async () => {
     const { screen } = baue();
     await screen.zeigeZeitleiste();
     expect(document.querySelectorAll("[data-zllesen]")).toHaveLength(1);
-    expect(document.querySelectorAll("[data-zlweg]")).toHaveLength(1);
+  });
+
+  it("die Kennung geht ans Lesen mit — der Fuß braucht sie für Löschen und Teilen", async () => {
+    const { screen, gerufen } = baue();
+    await screen.zeigeZeitleiste();
+    document.querySelector("[data-zllesen]").click();
+    await new Promise(r => setTimeout(r, 0));
+    expect(gerufen.lesen).toBe(1);
+    expect(gerufen.lesenVid).toBe("1700-abc");
   });
 });

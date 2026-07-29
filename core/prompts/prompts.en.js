@@ -441,6 +441,8 @@ export const korpusTexte = {
   "sk.materialKopf": "RELEASED MATERIAL (shared layer, from both):",
   "sk.zeitleisteKopf": "OWN TIMELINE (most recent entries):",
   "sk.sessionsKopf": "RECENT SHARED SESSIONS:",
+  "ak.kopf": "OCCASION FOR THIS SESSION (app-internal; do not quote, do not name tokens):",
+  "ak.teilenAusVerlauf": "The person has just read the record from {datum} [{topics}] ({vid}) and came here from there, because they want to share something from it. Open in a way that leaves room for this occasion without turning it into a requirement — ask openly what about it is on their mind and what they want to get across. You do NOT have the wording: fetch it via RECALL-BLOCK with this identifier once it is needed, and claim nothing about individual sentences before that. Everything else applies unchanged: the concerns-switch, the M1 brake, and the release point only at the close of this session. Do not suggest passages yourself and do not pre-empt the fork — the occasion is a starting position, not a decision.",
   "mk.kopf": "MOMENT-CONTEXT (app-internal; do not quote as a block, bring it in dramaturgically):",
   "mk.auftraegeLeer": "GOALS: none yet.",
   "mk.agendaKopf": "AGENDA (open):",

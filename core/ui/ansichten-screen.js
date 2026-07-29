@@ -20,8 +20,10 @@ import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, inKarenz } from "../
 import { markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
 import { formatiereVerlauf, formatiereMessrunde, holeMessIntervall, messFenster,
          trageMessbeitragEin } from "./prozess.js";
-import { zeitraumText, rhythmusText } from "./zeit-texte.js";
-import { holeVerlauf, loescheVerlauf } from "./verlauf-ablage.js";   // S95.7c
+import { zeitraumText, rhythmusText, relativZeit } from "./zeit-texte.js";
+// U8.5 · loescheVerlauf ist hier weg: Loeschen lebt jetzt im Fuss der
+// Leseansicht (app.js), nicht in der Listenzeile.
+import { holeVerlauf } from "./verlauf-ablage.js";   // S95.7c
 
 /**
  * @param {object} ctx
@@ -35,7 +37,7 @@ import { holeVerlauf, loescheVerlauf } from "./verlauf-ablage.js";   // S95.7c
  */
 export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                                        zeitleistenEintrag, zeigePaarsprache,
-                                       oeffneLeseansicht, bestaetige }) {
+                                       oeffneLeseansicht }) {
   async function zeigeZeitleiste() {
     const zl = (await backend.pstate.get("timeline")) || { entries: [] };
     zeigeNur("boxZeitleiste");
@@ -44,9 +46,21 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
     items.innerHTML = zl.entries.length
       ? zl.entries.map((e2, i) => {
           const det = e2.details || [];
-          return `<div class="pb-item"><strong>${esc((e2.topics || []).join(" · "))}</strong><br>${esc(e2.summary)}` +
+          /* U8.2 · Kopfzeile: WAS und WANN in einer Zeile, das Wann als
+             Subtitle. Vorher stand der Eintrag ohne jede Zeitangabe da —
+             eine Chronik, die nicht sagt, wann. Das Datum selbst steht
+             weiterhin im Kopf der Leseansicht; hier zaehlt die Weite
+             ("vor 3 Tagen"), nicht der Kalendertag.
+             Trennung mit " · " wie bei den Schlagworten (K5): mehrfach
+             derselbe Punkt ist kein Problem, ein zweites Trennzeichen waere
+             eine zweite Regel. */
+          const wann = relativZeit(e2.at);
+          return `<div class="pb-item">` +
+            `<div class="rz-zl-kopf"><strong>${esc((e2.topics || []).join(" · "))}</strong>` +
+            (wann ? `<span class="pb-sub"> · ${esc(wann)}</span>` : "") + `</div>` +
+            `<div class="rz-zl-text">${esc(e2.summary)}</div>` +
             (det.length
-              ? `<br><span class="pb-link" data-zl="${i}">${t("zeitleiste.detailsAuf")}</span>` +
+              ? `<span class="pb-link" data-zl="${i}">${t("zeitleiste.detailsAuf")}</span>` +
                 `<div class="pb-hidden rz-oben-1" id="zlDet${i}">` +
                 det.map(dd => `<div class="rz-klein-leise"><strong>${esc(dd.id)}</strong> ${esc(dd.text)}</div>`).join("") +
                 `</div>`
@@ -59,9 +73,15 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
                nichts am Partner.
                Nur wo ein Verlauf liegt — keine ausgegraute Tür. Und still wie
                das Regal: kein Zähler, kein Badge. */
+            /* U8.5 (K4) · Loeschen ist HIER weg und steht jetzt im Fuss der
+               Leseansicht, neben "Schliessen". Grund: Loeschen ohne Ansehen
+               ist ein Griff ins Dunkle — die Zeile nennt nur Schlagwort und
+               Zusammenfassung, nicht den Wortlaut, der verschwindet. Wer den
+               Fuss erreicht, hat gelesen, was er wegwirft.
+               Die S95.8a-Invariante bleibt unberuehrt: Loeschen aendert
+               nichts am Partner, egal an welcher Stelle der Link steht. */
             (e2.vid
-              ? `<br><span class="pb-link" data-zllesen="${esc(e2.vid)}">${t("verlauf.zlLesen")}</span>` +
-                ` <span class="pb-link rz-klein-leise" data-zlweg="${esc(e2.vid)}">${t("verlauf.zlLoeschen")}</span>`
+              ? `<span class="pb-link" data-zllesen="${esc(e2.vid)}">${t("verlauf.zlLesen")}</span>`
               : "") + `</div>`;
         }).join("")
       : `<div class="pb-item">${t("zeitleiste.leer")}</div>`;
@@ -79,17 +99,12 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
        Quittung ans Modell (Bauvorschrift aus S96.1). */
     /* S95.7e · Lesen. Anders als der Teilen-Eingang braucht das kein laufendes
        Gespraech zu beruecksichtigen: Lesen aendert nichts. */
+    /* U8.5 · Die Kennung geht mit: Der Fuss der Leseansicht traegt jetzt
+       Loeschen und Teilen, und beide brauchen sie. */
     for (const b of items.querySelectorAll("[data-zllesen]"))
       b.addEventListener("click", async () => {
-        const v = await holeVerlauf(backend, b.getAttribute("data-zllesen"));
-        oeffneLeseansicht(v);
-      });
-
-    for (const b of items.querySelectorAll("[data-zlweg]"))
-      b.addEventListener("click", async () => {
-        if (!(await bestaetige(t("verlauf.loeschFrage")))) return;
-        await loescheVerlauf(backend, b.getAttribute("data-zlweg"));
-        await zeigeZeitleiste();          // Eingang verschwindet mit dem Verlauf
+        const vid = b.getAttribute("data-zllesen");
+        oeffneLeseansicht(await holeVerlauf(backend, vid), vid);
       });
   }
 

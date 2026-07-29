@@ -252,6 +252,36 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkpost
   return KT("sk.kopf") + "\n" + teile.join("\n\n");
 }
 
+/**
+ * U8.6 · ANLASS-KONTEXT — die Person kommt aus einem gelesenen Protokoll und
+ * will daraus etwas teilen.
+ *
+ * Warum es diesen Block gibt: Der Weg aus der Zeitleiste ins Teilen MUSS
+ * durch eine Sitzung laufen (S95.8a). Ohne Uebergabe muesste die Person das
+ * eben Gelesene noch einmal erzaehlen — der Link haette ein Versprechen
+ * gegeben, das die Sitzung nicht kennt.
+ *
+ * Was er ausdruecklich NICHT tut: Er waehlt nichts aus, schlaegt keine
+ * Stellen vor und nimmt die Gabelung am Abschluss nicht vorweg. Er nennt die
+ * Ausgangslage — mehr kann er nicht, ohne die Entscheidung zu verschieben,
+ * die der Person gehoert.
+ *
+ * Ohne passenden Zeitleisten-Eintrag gibt er null zurueck: Eine Kennung ohne
+ * Eintrag koennte der Begleiter nicht aufloesen, und ein Verweis auf ein
+ * Gespraech, das er nicht findet, ist schlechter als kein Verweis.
+ */
+export function baueAnlassKontext(anlass, timeline) {
+  if (!anlass || !anlass.vid) return null;
+  const eintrag = ((timeline && timeline.entries) || []).find(e => e && e.vid === anlass.vid);
+  if (!eintrag) return null;
+  const KT = key => K().korpusTexte[key];
+  return KT("ak.kopf") + "\n" + fuelle(KT("ak.teilenAusVerlauf"), {
+    vid: anlass.vid,
+    datum: (eintrag.at || "").slice(0, 10),
+    topics: (eintrag.topics || []).join(" · "),
+  });
+}
+
 export function baueMomentKontext({ goals, agenda, momentLog, messrunde, messVerlauf, sharings, qualitytime, findings }, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];

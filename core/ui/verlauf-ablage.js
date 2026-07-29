@@ -107,3 +107,31 @@ export async function loescheAlleVerlaeufe(backend) {
   } catch { /* Aufraeumen ist Komfort, kein Muss */ }
   return zahl;
 }
+
+/**
+ * U8.5 · Einen Verlauf loeschen UND seinen Verweis aus der Chronik nehmen.
+ *
+ * Der Einzelweg (S95.8a) hat bisher nur den Speicher geleert und das `vid`
+ * am Eintrag stehen lassen — anders als der Sammelweg, der es seit jeher
+ * entfernt. Die Folge war still und teuer: `baueSoloKontext` rendert Eintraege
+ * mit `{vid:…}`, der Begleiter haelt das fuer einen abrufbaren Wortlaut, gibt
+ * den RECALL-BLOCK aus und findet nichts. Genau die leere Zusage, gegen die
+ * S95.8b die Kennung ueberhaupt in den Kontext gestellt hat.
+ *
+ * Der Eintrag selbst bleibt (F1) — nur sein Verweis faellt weg. Ein Eintrag
+ * ohne Kennung ist ehrlich: Der Begleiter sieht, dass dort nichts zu holen
+ * ist, und kann es sagen, statt es zu versuchen.
+ */
+export async function loescheVerlaufUndVerweis(backend, id) {
+  if (!id) return false;
+  const ok = await loescheVerlauf(backend, id);
+  try {
+    const zl = await backend.pstate.get("timeline");
+    if (zl && Array.isArray(zl.entries)) {
+      let beruehrt = false;
+      for (const e of zl.entries) if (e && e.vid === id) { delete e.vid; beruehrt = true; }
+      if (beruehrt) await backend.pstate.set("timeline", zl);
+    }
+  } catch { /* Aufraeumen ist Komfort, kein Muss — der Speicher ist geleert */ }
+  return ok;
+}

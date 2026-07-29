@@ -311,7 +311,12 @@ export function baueMockdaten(meta = MOCK_META) {
 
   privat[key(meta, "pstate:A")] = stempel({
     // vid verknüpft den Eintrag mit dem aufbewahrten Verlauf (S95.7a).
-    timeline: { entries: [{ at: vor(6), topics: ["Rückzug"], summary: "Gemerkt: Ich ziehe mich zurück, statt zu sagen, dass mich die Absage getroffen hat.", vid: MOCK_VID }] },
+    // U8.7 · Das frühere "Gemerkt:" war ein Mock-Artefakt, kein Prefix des
+    // Systems — es sah im Vorraum aus wie eine Feldbeschriftung und war doch
+    // nur Fließtext. Weg damit. Die Länge folgt jetzt dem Schema
+    // (ZEITLEISTEN-PFLEGE: 3–5 Sätze), damit das Dev-Panel zeigt, wie viel
+    // Text ein Eintrag im Betrieb wirklich trägt.
+    timeline: { entries: [{ at: vor(6), topics: ["Rückzug"], summary: "Die Absage am Freitag hat mehr getroffen, als ich zugegeben habe. Statt es zu sagen, bin ich still geworden und habe den Abend allein verbracht. Im Gespräch ist deutlich geworden, dass der Rückzug sich wie Schutz anfühlt und von außen wie Desinteresse aussehen kann. Offen bleibt, wie ich das ansprechen kann, ohne dass es wie ein Vorwurf klingt.", vid: MOCK_VID }] },
     ["verlauf:" + MOCK_VID]: baueAufbewahrtenVerlauf(meta),
     selfDisclosures: { items: [{ at: vor(6), text: "„Mir ist unser Abend wichtig — wenn er kippt, sag es mir bitte früh.“" }] },
   });

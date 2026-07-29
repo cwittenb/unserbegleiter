@@ -119,7 +119,21 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .pb-gruppe{margin:14px 0 2px}
       .pb-gruppe>.pb-sub{display:block;margin-bottom:2px}
       .pb-weg .pb-item{border-bottom:0;padding:5px 0;font-size:var(--rz-fs-fein);color:var(--rz-sek)}
-      .pb-link{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+      /* U8.3 (K3a) · EIN Inline-Link-Stil, nicht zwei. Die gepunktete Linie in
+         Fliesstextfarbe war keine Tuer, sondern eine Andeutung — im Regal
+         ("Das ganze Gespraech lesen") las sie sich wie kursiver Text. Jetzt
+         durchgezogen, in Akzentfarbe, eine Spur fester im Gewicht. Die Regel
+         gilt an allen sechs Stellen; ein zweiter Link-Stil daneben haette nur
+         die Frage aufgeworfen, welcher wann gilt. */
+      .pb-link{cursor:pointer;color:var(--rz-link);font-weight:500;
+               text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+      .pb-link:hover{text-decoration-thickness:2px}
+      .rz-tiefgruen .pb-link{color:var(--rz-link-auf-gruen)}
+      /* Der leise Zwilling (Loeschen, Nebenwege) bleibt leise: dieselbe Linie,
+         aber Sekundaerfarbe — sonst haetten Haupt- und Nebenweg dasselbe
+         Gewicht und die Zeile bekaeme zwei gleich laute Angebote. */
+      .pb-link.rz-klein-leise{color:var(--rz-sek);font-weight:400}
+      .rz-tiefgruen .pb-link.rz-klein-leise{color:var(--rz-sek-auf-gruen);font-weight:400}
       .pb-mitte{margin:26px 0}
       .pb-mitte .pb-card{align-items:center;text-align:center;padding:32px 26px}
       .pb-mitte .pb-btn{margin:6px 0 0}
@@ -896,6 +910,39 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       /* Die Erklaerzeile am Fuss des offenen Kastens (regal.intro): leise,
          ueber einer Hairline, unter den Eintraegen. */
       .rz-regal-fussnote{border-top:1px solid var(--rz-hairline-gruen);padding-top:14px;margin-top:18px}
+
+      /* ============ U8 · Chronik-Eintrag und Leseansicht ============ */
+      /* U8.2 · Kopfzeile des Eintrags. Schlagwort und Weite auf EINER Zeile,
+         die Weite als Subtitle — sie ordnet ein, sie ist nicht die Sache. */
+      .rz-zl-kopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:0;margin-bottom:var(--rz-r-1)}
+      .rz-zl-text{margin-bottom:var(--rz-r-2)}
+
+      /* U8.4 · Die Leseansicht ist eine Ansicht wie das Regal, kein Anhang.
+         Fullbleed: Der Eintragskasten hat links/rechts kein eigenes Polster,
+         die Zone traegt den Rand — sonst stuende der Verlauf zweifach
+         eingerueckt in einer ohnehin schmalen Spalte.
+         Sprechgruppen werden durch Haarlinien getrennt statt durch Blasen:
+         Ein abgeschlossenes Gespraech ist Protokoll, kein laufender Chat, und
+         Sprechblasen laden zum Antworten ein, wo es nichts zu antworten gibt. */
+      #boxLesen{padding-left:0;padding-right:0}
+      #lesenInhalt{display:flex;flex-direction:column;gap:0}
+      #lesenInhalt .pb-msg{background:none;border:0;border-radius:0;max-width:none;
+        padding:var(--rz-r-3) 0;margin:0;border-top:1px solid var(--rz-hairline-gruen)}
+      #lesenInhalt>*:first-child,#lesenInhalt .rz-sprechgruppe:first-child .pb-msg:first-of-type{border-top:0}
+      #lesenInhalt .rz-sprechgruppe{display:flex;flex-direction:column}
+      #lesenInhalt .rz-sprechgruppe .pb-msg~.pb-msg{border-top:0;padding-top:0}
+      #lesenInhalt .rz-sprecher{margin-top:var(--rz-r-3);padding-top:var(--rz-r-3);
+        border-top:1px solid var(--rz-hairline-gruen)}
+      #lesenInhalt .rz-sprechgruppe:first-child .rz-sprecher{border-top:0;margin-top:0;padding-top:0}
+      #lesenInhalt .rz-sprechgruppe .pb-msg{border-top:0}
+      #lesenInhalt .rz-echo{margin:var(--rz-r-2) 0}
+
+      /* U8.5 · Der Fuss: eine Zeile ueber einer Haarlinie, Wege als Links.
+         Umbruchfaehig, damit auf schmalen Geraeten nichts abgeschnitten wird;
+         der leise Weg (Loeschen) rutscht dann nach unten, nicht aus dem Bild. */
+      .rz-lesen-fuss{display:flex;flex-wrap:wrap;gap:var(--rz-r-4);align-items:baseline;
+        border-top:1px solid var(--rz-hairline-gruen);padding-top:var(--rz-r-3);margin-top:var(--rz-r-4)}
+      .rz-lesen-fuss .pb-link{min-height:var(--rz-tapziel);display:inline-flex;align-items:center}
       @media(prefers-reduced-motion:reduce){
         .rz-half{transition:none}
         .rz-regal-inhalt:not(.pb-hidden){animation:none}
