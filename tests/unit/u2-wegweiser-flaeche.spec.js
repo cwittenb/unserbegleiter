@@ -56,10 +56,10 @@ describe("U2 · was §3 bestätigt, bleibt so", () => {
 
 describe("U2 · die zwei Werte, die sich geändert haben", () => {
   it("die Fläche hebt sich vom Boden ab, statt Papier zu sein", () => {
-    expect(regel(".rz-weg-panel")).toContain("background:var(--rz-weg-flaeche)");
+    expect(regel(".rz-weg-panel")).toContain("background:var(--rz-flaeche-hoch)");
     for (const block of [THEME_CSS.slice(THEME_CSS.indexOf(":root{"), THEME_CSS.indexOf("html[data-theme=dark]")),
                          THEME_CSS.slice(THEME_CSS.indexOf("html[data-theme=dark]"))])
-      expect(block).toMatch(/--rz-weg-flaeche:#[0-9a-f]{6}/);
+      expect(block).toMatch(/--rz-flaeche-hoch:#[0-9a-f]{6}/);
   });
 
   it("der Absatzabstand liegt auf dem Raster", () => {

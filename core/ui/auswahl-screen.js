@@ -114,7 +114,10 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     weiter.addEventListener("click", () => { ausw.phase = "vorschau"; renderMsgs(true); });
     const ab = el("button", "rz-zeile rz-knopf-flach");
     ab.id = "btnAuswAbbruch";
-    ab.innerHTML = `<span>${esc(t("ausschnitt.behalten"))}</span><span class="rz-pfeil">→</span>`;
+    // §4.6 · Zwei Knoepfe gleicher Gestalt, verschiedene Richtung: "Ansehen,
+    // wie es ankommt" fuehrt weiter (→), "Noch fuer mich behalten" verlaesst
+    // die Flaeche und verwirft die Auswahl (←).
+    ab.innerHTML = `<span>${esc(t("ausschnitt.behalten"))}</span><span class="rz-pfeil">←</span>`;
     // Lautlos: keine Sicherheitsabfrage, keine Bilanz.
     ab.addEventListener("click", () => beendeAuswahl());
     leiste.appendChild(weiter); leiste.appendChild(ab);

@@ -39,10 +39,13 @@ export const THEME_CSS = String.raw`
         --rz-karte:rgba(255,255,255,.60);--rz-karte-rand:rgba(90,110,80,.15);
         --rz-blase-du:rgba(255,255,255,.72);--rz-blase-du-rand:rgba(90,110,80,.13);
         --rz-feld:rgba(255,255,255,.74);--rz-feld-rand:rgba(90,110,80,.22);
-        /* U2 (Handover Turn 41 §3) · Der aufgeklappte Wegweiser ist eine
-           eigene Flaeche, kein Stueck Papier mit zwei Linien drum. Ein Ton
-           unter dem Boden — mehr geht auf Papier nicht, siehe Protokoll. */
-        --rz-weg-flaeche:#f7f4ed;
+        /* U2/U3 · Eine Stufe vom Boden abgehoben. Zwei Rollen, dieselbe
+           Stufe: der aufgeklappte Wegweiser (§3) und das gewaehlte Paar in
+           der Freigabe (§4.2). Hell einen Ton dunkler als Papier, dunkel
+           einen Ton heller — die Richtung dreht, die Geste bleibt.
+           Mehr Abstand geht auf Papier nicht, ohne --rz-sek den Kontrast zu
+           nehmen; die Rechnung steht in SPRINT-U2-PROTOKOLL.md §2. */
+        --rz-flaeche-hoch:#f7f4ed;
         /* ---- T1b · Typo-Skala. Die Streuner (10/12/13.5/14.5/15.5/16/16.5/
            19/20/26 px) sind auf diese sechs Stufen gezogen; die Zuordnung
            steht im Sprintprotokoll. ---- */
@@ -102,6 +105,6 @@ export const THEME_CSS = String.raw`
         --rz-karte:rgba(255,255,255,.055);--rz-karte-rand:rgba(255,255,255,.10);
         --rz-blase-du:rgba(255,255,255,.06);--rz-blase-du-rand:rgba(255,255,255,.09);
         --rz-feld:rgba(255,255,255,.06);--rz-feld-rand:rgba(255,255,255,.16);
-        --rz-weg-flaeche:#2c3428;
+        --rz-flaeche-hoch:#2c3428;
       }
 `;

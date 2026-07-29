@@ -92,8 +92,8 @@ const HART = [
   // U2 · Die aufgeklappte Wegweiser-Flaeche ist ein eigener Boden. Sie traegt
   // die Optionen (--rz-ink) und die Fusszeile samt Hinweis (--rz-sek). Wer sie
   // dunkler macht, nimmt --rz-sek den Kontrast — hier faellt das auf.
-  ["--rz-ink", "--rz-weg-flaeche", 4.5, "Wegweiser-Optionen"],
-  ["--rz-sek", "--rz-weg-flaeche", 4.5, "Wegweiser-Fusszeile und Hinweis"],
+  ["--rz-ink", "--rz-flaeche-hoch", 4.5, "Wegweiser-Optionen"],
+  ["--rz-sek", "--rz-flaeche-hoch", 4.5, "Wegweiser-Fusszeile und Hinweis"],
 ];
 
 describe("T2e · tragende Rollen halten die Schwelle", () => {

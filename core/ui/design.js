@@ -345,7 +345,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          getrennt nur durch die zwei Haarlinien. Jetzt hebt sie sich einen Ton
          ab und liest sich als eigene Zone, wie §3 es verlangt. */
       .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px var(--rz-rand);
-                    background:var(--rz-weg-flaeche);color:var(--rz-ink);
+                    background:var(--rz-flaeche-hoch);color:var(--rz-ink);
                     border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
                     transform:translateY(-50%) scaleY(0);transform-origin:center center;
                     opacity:0;pointer-events:none;
@@ -594,10 +594,30 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          ueberall sonst?) ist damit NICHT beantwortet — sie steht offen. */
       .rz-ausw-kopf{align-self:center;font-size:var(--rz-fs-fein);color:var(--rz-sek2);
                     padding:6px 0;text-align:center}
-      .rz-paar{border:1px solid var(--rz-karte-rand);background:transparent;
-               border-radius:var(--rz-rund-blatt);padding:10px 12px;margin:6px 0;cursor:pointer}
-      .rz-paar.rz-an{border-color:var(--rz-tiefgruen);background:var(--rz-karte)}
-      .rz-paar.rz-zu{cursor:default;opacity:.45}
+      /* U3 (Handover Turn 41 §4.1–4.3) · Der Paar-Block war der einzige
+         Rahmen im System. Ueberall sonst trennt eine Haarlinie und der
+         Rhythmus traegt — hier stand ein Kasten mit Radius um jeden Block.
+         Jetzt: border-top statt border, Radius 0, und DIE FLAECHE WAEHLT.
+
+         §4.2 · Der Rahmen musste auch aus einem zweiten Grund weg. Gewaehlt
+         hiess border-color:var(--rz-tiefgruen) — im dunklen Theme ist
+         Tiefgruen DUNKLER als Papier, der gewaehlte Rand waere also
+         verschwunden. Ohne Rand traegt die Fuellung allein, und die dreht
+         die Richtung von selbst: hell einen Ton dunkler, dunkel einen Ton
+         heller. Beides ist --rz-flaeche-hoch.
+
+         Das Ausbluten bis zur Zonenkante (Entscheidung K11) ist dieselbe
+         Geste wie bei der Schreibkante: eine Flaeche, die den Rand erreicht,
+         heisst "das hier ist jetzt gemeint".
+
+         §4.3 · Gesperrt braucht ein zweites Signal. Deckkraft allein ist auf
+         Papier fast nicht zu sehen; die gestrichelte Oberkante erkennt man
+         auch ohne Farbe. */
+      .rz-paar{border:0;border-top:1px solid var(--rz-hairline);border-radius:0;
+               background:none;padding:15px 0;margin:0;cursor:pointer}
+      .rz-paar.rz-an{background:var(--rz-flaeche-hoch);
+                     margin:0 calc(var(--rz-rand) * -1);padding:15px var(--rz-rand)}
+      .rz-paar.rz-zu{cursor:default;border-top-style:dashed;opacity:.5}
       .rz-paar-frage{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-bottom:6px}
       .rz-paar-antwort{font-size:var(--rz-fs-text)}
       .rz-paar-grund{font-size:var(--rz-fs-fein);color:var(--rz-sek2);margin-top:6px;font-style:italic}
