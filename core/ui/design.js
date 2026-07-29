@@ -340,15 +340,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-weg-badge .rz-punkt{width:6px;height:6px;border-radius:50%;background:var(--rz-akzent-text);
                               display:none}
       .rz-weg-badge.rz-wartet .rz-punkt{display:block}
+      /* U2 (Handover Turn 41 §3) · Die Flaeche traegt bisher exakt den
+         Papierton der Zone darueber — als Flaeche ist sie damit unsichtbar,
+         getrennt nur durch die zwei Haarlinien. Jetzt hebt sie sich einen Ton
+         ab und liest sich als eigene Zone, wie §3 es verlangt. */
       .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px var(--rz-rand);
-                    background:var(--rz-papier);color:var(--rz-ink);
+                    background:var(--rz-weg-flaeche);color:var(--rz-ink);
                     border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
                     transform:translateY(-50%) scaleY(0);transform-origin:center center;
                     opacity:0;pointer-events:none;
                     transition:transform .3s var(--rz-kurve),opacity .3s var(--rz-kurve)}
       .rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}
       .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;
-                               line-height:var(--rz-lh-fein);margin:0 0 14px}
+                               line-height:var(--rz-lh-fein);margin:0 0 var(--rz-r-5)}
       .rz-weg-panel .rz-option em{font-style:italic}
       /* T2e-Nachzug (Handover Turn 40 §3.4) · "tippen zum Schliessen" ist die
          einzige Angabe, wie man das Panel wieder loswird — eine ANWEISUNG,

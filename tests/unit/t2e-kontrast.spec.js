@@ -89,6 +89,11 @@ const HART = [
   // die Linie dort --rz-akzent-ink.
   ["--rz-akzent-ink", "--rz-papier",    3.0, "Fokuslinie der Feldkante auf Papier"],
   ["--rz-akzent",     "--rz-tiefgruen", 3.0, "Fokuslinie der Feldkante auf Tiefgruen"],
+  // U2 · Die aufgeklappte Wegweiser-Flaeche ist ein eigener Boden. Sie traegt
+  // die Optionen (--rz-ink) und die Fusszeile samt Hinweis (--rz-sek). Wer sie
+  // dunkler macht, nimmt --rz-sek den Kontrast — hier faellt das auf.
+  ["--rz-ink", "--rz-weg-flaeche", 4.5, "Wegweiser-Optionen"],
+  ["--rz-sek", "--rz-weg-flaeche", 4.5, "Wegweiser-Fusszeile und Hinweis"],
 ];
 
 describe("T2e · tragende Rollen halten die Schwelle", () => {
