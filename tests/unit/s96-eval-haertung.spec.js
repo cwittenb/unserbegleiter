@@ -91,7 +91,10 @@ describe("S96 · Moment-Abschluss (QZ-01)", () => {
   it("Landung und Block stehen in derselben Nachricht — beide Fehlformen benannt", () => {
     beide(sp => {
       const txt = moment();
-      expect(txt, sp).toContain(sp === "de" ? "LANDUNGS-PFLICHT (S96 geschärft)" : "LANDING OBLIGATION (S96 sharpened)");
+      // S100.1 · Die Landungs-Pflicht lebt jetzt im Baustein regieUebergabe —
+      // die Zusatzmarke "(S96 geschärft)" ist mit dem Umzug entfallen, die
+      // Regel selbst gilt jetzt für beide Abschluss-Sessions.
+      expect(txt, sp).toContain(sp === "de" ? "LANDUNGS-PFLICHT" : "LANDING OBLIGATION");
       expect(txt, sp).toContain(sp === "de" ? "in DERSELBEN Nachricht" : "in THE SAME message");
       expect(txt, sp).toContain(sp === "de" ? "ohne würdigenden Schlusssatz" : "without an appreciating closing sentence");
     });

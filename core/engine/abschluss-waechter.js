@@ -1,27 +1,44 @@
-// Abschluss-Wächter (S99.3) — eine Nachricht, die FRAGT, beendet die Sitzung nicht.
+// Abschluss-Wächter (S99.3, verallgemeinert in S100.2) —
+// eine Nachricht, die FRAGT, übergibt nicht die Regie.
 //
-// Befund aus einem echten Verlauf: Auf "[CLOSE SESSION]" antwortete die
-// Begleitung mit der Gabelung ("Magst du das für dich behalten, oder gibt es
-// etwas davon, das Bernd erreichen soll? Ich kann dir drei Wege anbieten …")
-// UND dem TIMELINE-BLOCK in derselben Nachricht. Der Block setzt die Session
-// auf "finished", der Composer weicht dem Ausgang (S93) — die Frage stand da,
-// aber es gab kein Feld mehr, um sie zu beantworten. Eine Gabelung, die man
-// nicht nehmen kann, ist schlimmer als keine: Sie nennt die Türen und
+// Befund aus einem echten Verlauf (Reflexionsgespräch): Auf "[CLOSE SESSION]"
+// antwortete die Begleitung mit der Gabelung ("Magst du das für dich behalten,
+// oder gibt es etwas davon, das Bernd erreichen soll? Ich kann dir drei Wege
+// anbieten …") UND dem TIMELINE-BLOCK in derselben Nachricht. Der Block setzt
+// die Session auf "finished", der Composer weicht dem Ausgang (S93) — die Frage
+// stand da, aber es gab kein Feld mehr, um sie zu beantworten. Eine Gabelung,
+// die man nicht nehmen kann, ist schlimmer als keine: Sie nennt die Türen und
 // verschließt sie im selben Atemzug.
 //
-// Die Prompt-Regel (ZWEI SCHRITTE, wie sie die Qualitätszeit seit S98 kennt)
-// ist die erste Verteidigung; dieser Wächter ist die zweite. Er löst genau eine
-// SYSTEM-REVISION aus (Engine-Vertrag 2) und lässt die zweite Antwort passieren.
+// S100 · DASSELBE PRINZIP, DREIMAL GEFUNDEN. Die Regel steht seit S72 auch in
+// der Auflösung ("eine Nachricht, die nach Zustimmung fragt, trägt NIE eine
+// Aufdeck-Marke") und seit S98 in der Qualitätszeit ("fragen UND gleichzeitig
+// abschließen ist ein Verstoß") — jedes Mal nach einem eigenen Fehlverlauf
+// entdeckt, jedes Mal neu formuliert. Der gemeinsame Grund: Marken und Blöcke
+// geben die Führung an die App ab. Danach zeigt sie, öffnet sie oder schließt
+// sie — und die Schreibkante ist weg oder überschrieben.
+//
+// Dieser Wächter deckt die ABSCHLUSS-Familie ab: Reflexionsgespräch
+// (TIMELINE-BLOCK) und Qualitätszeit (MOMENT-BLOCK). Die Aufdeck-Marken der
+// Auflösung bewacht weiterhin aufdeck-waechter.js — ihre Dramaturgie hat
+// eigene Bedingungen (Tafel schon gezeigt? im Aufdeck-Pfad?), die hier nichts
+// zu suchen haben.
 //
 // ZWEI ENGFÜHRUNGEN, damit er nur dort urteilt, wo er zuständig ist:
 //
-//   1. NUR MIT BLOCK. Ohne TIMELINE-BLOCK endet nichts — dann darf gefragt
-//      werden, so viel die Dramaturgie verlangt.
-//   2. NUR NACH EINEM ABSCHLUSS-ANLASS. Der zweite Anlass des Blocks ist
-//      "[CHECKPOINT]": Dort verlangt der Prompt ausdrücklich ZUERST den Block
-//      und DANACH das Wiederanknüpfen ("wir waren bei … — magst du da
-//      weitermachen?"). Diese Frage ist richtig, und ohne diese Prüfung würde
-//      der Wächter sie bei jeder Wiederaufnahme revidieren.
+//   1. NUR MIT BLOCK. Ohne den Abschluss-Block endet nichts — dann darf
+//      gefragt werden, so viel die Dramaturgie verlangt.
+//   2. NUR NACH EINEM ABSCHLUSS-ANLASS — aber das gilt NICHT für jede Session,
+//      und der Unterschied ist keine Nachlässigkeit:
+//        · TIMELINE-BLOCK hat ZWEI Anlässe. Der zweite ist "[CHECKPOINT]", und
+//          dort verlangt der Prompt ausdrücklich ZUERST den Block und DANACH
+//          das Wiederanknüpfen ("wir waren bei … — magst du da weitermachen?").
+//          Diese Frage ist richtig; ohne die Prüfung würde der Wächter jede
+//          Wiederaufnahme revidieren.
+//        · MOMENT-BLOCK hat NUR den Abschluss-Anlass — und er kommt auch
+//          VERBAL ("lass uns Schluss machen"), also ganz ohne Steuertext. Eine
+//          Anlass-Prüfung würde dort genau die Fälle durchlassen, um die es
+//          geht. Deshalb: `anlassNoetig: false`.
 //
 // Schlimmster Fehlalarm: ein rhetorisches Fragezeichen im Landungssatz kostet
 // EINE Revisionsrunde — dieselbe dokumentierte Toleranz wie beim Aufdeck- und
@@ -32,13 +49,13 @@ export const ABSCHLUSS_TOKEN = "[CLOSE SESSION]";
 
 /** Blockkörper entfernen: Ein Fragezeichen IM JSON (etwa in "summary") ist
  *  Inhalt der Chronik, keine Frage an die Person. */
-export function ohneZeitleistenBlock(text) {
-  return String(text || "").replace(/TIMELINE-BLOCK[\s\S]*?END TIMELINE-BLOCK/g, " ");
+export function ohneBlock(text, name = "TIMELINE-BLOCK") {
+  return String(text || "").replace(new RegExp(name + "[\\s\\S]*?END " + name, "g"), " ");
 }
 
-/** Trägt der Text einen TIMELINE-BLOCK? */
-export function hatZeitleistenBlock(text) {
-  return /\bTIMELINE-BLOCK\b/.test(String(text || ""));
+/** Trägt der Text den Abschluss-Block dieser Session? */
+export function hatBlock(text, name = "TIMELINE-BLOCK") {
+  return new RegExp("\\b" + name + "\\b").test(String(text || ""));
 }
 
 /** Steht in DIESER Sitzung ein Abschluss an? Erkennbar am Steuertext, den die
@@ -50,28 +67,50 @@ export function abschlussAngefordert(messages, token = ABSCHLUSS_TOKEN) {
 }
 
 /** Fragt der sichtbare Teil der Nachricht etwas? */
-export function findetFrage(text) {
-  return ohneZeitleistenBlock(text).includes("?");
+export function findetFrage(text, blockName) {
+  return ohneBlock(text, blockName).includes("?");
 }
 
 // Deutscher Rückfall für Aufrufer ohne Korpus (ältere Tests, Werkzeuge) —
 // derselbe Bau wie AUFDECK_REVISION und URTEILS_REVISION.
 export const ABSCHLUSS_REVISION =
   "[SYSTEM-REVISION: Deine letzte Nachricht stellt eine Frage UND schließt die Sitzung " +
-  "(TIMELINE-BLOCK). Mit dem Block endet die Sitzung sofort — die Person kann dann nichts " +
+  "(Abschluss-Block). Mit dem Block endet die Sitzung sofort — die Person kann dann nichts " +
   "mehr antworten. Wiederhole die Nachricht OHNE den Block: erst die Gabelung bzw. deine " +
   "Frage, und warte auf die Antwort. Der Block folgt in einer SPÄTEREN Nachricht, zusammen " +
   "mit dem würdigenden Schlusssatz und ohne jede Frage.]";
 
 /**
- * Validator für soloDef (Engine-Hook `validiereAntwort`):
+ * Validator für die Abschluss-Familie (Engine-Hook `validiereAntwort`):
  * liefert die Revisions-Nachricht oder null.
  *
  * @param {string} text
- * @param {{messages?:object[], token?:string, revision?:string}} [ctx]
+ * @param {{messages?:object[], token?:string, revision?:string,
+ *          block?:string, anlassNoetig?:boolean}} [ctx]
  */
 export function pruefeAbschlussAntwort(text, ctx = {}) {
-  if (!hatZeitleistenBlock(text)) return null;
-  if (!abschlussAngefordert(ctx.messages, ctx.token)) return null;
-  return findetFrage(text) ? (ctx.revision || ABSCHLUSS_REVISION) : null;
+  const block = ctx.block || "TIMELINE-BLOCK";
+  if (!hatBlock(text, block)) return null;
+  const anlassNoetig = ctx.anlassNoetig !== false;
+  if (anlassNoetig && !abschlussAngefordert(ctx.messages, ctx.token)) return null;
+  return findetFrage(text, block) ? (ctx.revision || ABSCHLUSS_REVISION) : null;
+}
+
+/* S100.3 · Wächter-Kette.
+   Vier Sessions hielten je eine handgeschriebene ||-Kette samt Kommentar zur
+   Reihenfolge. Der Gewinn der Liste ist nicht die Zeilenersparnis, sondern die
+   Beantwortbarkeit: "Welche Wächter hat diese Session?" ist eine Frage an die
+   Daten, nicht an vier Funktionsrümpfe.
+   Die Reihenfolge bleibt bedeutsam — die Engine gewährt genau EINE
+   Revisionsrunde je Antwort (Vertrag 2), also gewinnt der erste Treffer, und
+   der spezifischere Wächter steht vorn. */
+export function waechterKette(waechter) {
+  const liste = (waechter || []).filter(w => typeof w === "function");
+  return (text, engine) => {
+    for (const w of liste) {
+      const revision = w(text, engine);
+      if (revision) return revision;
+    }
+    return null;
+  };
 }

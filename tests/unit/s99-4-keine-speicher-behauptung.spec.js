@@ -25,7 +25,10 @@ describe("S99.4 · Die Regel steht jetzt auch im Reflexionsgespräch", () => {
     const p = reflexionsPrompt("Anna", "Bernd");
     expect(p).toContain("KEINE SPEICHER-BEHAUPTUNG");
     expect(p).toMatch(/gespeichert/);
-    expect(p).toContain("Zeitleisten-Eintrag wurde gespeichert");   // das Gegenbeispiel steht dabei
+    // S100.1 · Das Gegenbeispiel ist mit dem Umzug in den Baustein generisch
+    // geworden ("dein Eintrag wurde gespeichert") — es gilt jetzt für beide
+    // Abschluss-Sessions statt nur für die Zeitleiste.
+    expect(p).toContain("wurde gespeichert");
   });
 
   it("EN: dieselbe Regel", () => {

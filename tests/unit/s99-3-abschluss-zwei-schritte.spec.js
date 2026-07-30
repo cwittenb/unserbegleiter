@@ -15,7 +15,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   pruefeAbschlussAntwort, abschlussAngefordert, findetFrage,
-  hatZeitleistenBlock, ohneZeitleistenBlock, ABSCHLUSS_REVISION,
+  hatBlock, ohneBlock, ABSCHLUSS_REVISION,
 } from "../../core/engine/abschluss-waechter.js";
 import { soloDef } from "../../core/ui/sessions.js";
 import { createApp } from "../../core/ui/app.js";
@@ -53,7 +53,7 @@ describe("S99.3 · Der Wächter urteilt genau über einen Fall", () => {
 
   it("Fragezeichen IM Block ist Chronik, keine Frage an die Person", () => {
     const text = "Alles Gute für heute.\n" + BLOCK;
-    expect(ohneZeitleistenBlock(text)).not.toContain("Was bleibt?");
+    expect(ohneBlock(text)).not.toContain("Was bleibt?");
     expect(pruefeAbschlussAntwort(text, { messages: ABSCHLUSS })).toBeNull();
   });
 
@@ -74,8 +74,11 @@ describe("S99.3 · Der Wächter urteilt genau über einen Fall", () => {
 
 describe("S99.3 · Die Bausteine einzeln", () => {
   it("erkennt den Block", () => {
-    expect(hatZeitleistenBlock(BLOCK)).toBe(true);
-    expect(hatZeitleistenBlock("MOMENT-BLOCK\n{}\nEND MOMENT-BLOCK")).toBe(false);
+    expect(hatBlock(BLOCK)).toBe(true);
+    expect(hatBlock("MOMENT-BLOCK\n{}\nEND MOMENT-BLOCK")).toBe(false);
+    // S100.2 · Der Blockname ist jetzt ein Parameter — dieselbe Prüfung trägt
+    // beide Mitglieder der Abschluss-Familie.
+    expect(hatBlock("MOMENT-BLOCK\n{}\nEND MOMENT-BLOCK", "MOMENT-BLOCK")).toBe(true);
   });
 
   it("erkennt den Abschluss-Anlass an der App-Nachricht", () => {
@@ -206,16 +209,19 @@ describe("S99.3 · Im laufenden Gespräch", () => {
 /* ───────────────────────── Korpus-Kanarien ───────────────────────── */
 
 describe("S99.3 · Die Regel steht im Prompt (erste Verteidigung)", () => {
-  it("DE: die Zwei-Schritt-Regel am Abschluss-Anlass", () => {
+  // S100.1 · Der invariante Kern lebt seit S100 im Baustein regieUebergabe;
+  // die session-eigene Choreografie (die Gabelung als Frage) bleibt lokal.
+  it("DE: die Regie-Übergabe-Regel am Abschluss-Anlass", () => {
     const p = reflexionsPrompt("Anna", "Bernd");
-    expect(p).toContain("ZWEI SCHRITTE");
-    expect(p).toMatch(/nie einen TIMELINE-BLOCK|NIE einen TIMELINE-BLOCK/);
+    expect(p).toContain("REGIE-ÜBERGABE");
+    expect(p).toMatch(/NIE den TIMELINE-BLOCK/);
+    expect(p).toContain("Die Gabelung mit den drei Türen IST eine Frage");
   });
 
   it("EN: dieselbe Regel", () => {
     const p = reflexionsPromptEn("Anna", "Bernd");
-    expect(p).toContain("TWO STEPS");
-    expect(p).toMatch(/NEVER carries a TIMELINE-BLOCK/);
+    expect(p).toContain("HANDING OVER CONTROL");
+    expect(p).toMatch(/NEVER carries the TIMELINE-BLOCK/);
   });
 
   it("der Revisionstext lebt im Korpus, nicht nur im Wächter (de+en)", () => {

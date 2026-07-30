@@ -12,7 +12,7 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
-import { pruefeAbschlussAntwort } from "../engine/abschluss-waechter.js";
+import { pruefeAbschlussAntwort, waechterKette } from "../engine/abschluss-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
@@ -25,19 +25,23 @@ export function soloDef(backend, hooks = {}) {
     shared: false,
     titel: "Reflexionsgespräch",
     sysPrompt: ctx => K().reflexionsPrompt(ctx.me, ctx.partner) + K().THEMEN_RAHMEN,
-    // S93 · Urteils-Wächter: ein Prädikats-Urteil aus der Richterposition löst
-    // genau eine SYSTEM-REVISION aus (Engine-Vertrag 2).
-    // S99.3 · Danach der Abschluss-Wächter: eine Nachricht, die FRAGT, darf die
-    // Sitzung nicht zugleich BEENDEN. Reihenfolge ist folgenlos — der
-    // Urteils-Wächter schweigt bei Block-Antworten, der Abschluss-Wächter
-    // urteilt nur über sie.
-    validiereAntwort: (text, engine) =>
-      pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision) ||
-      pruefeAbschlussAntwort(text, {
+    /* S93 · Urteils-Wächter (Prädikats-Urteil aus der Richterposition).
+       S99.3 · Abschluss-Wächter (fragen und schließen in einer Nachricht).
+       S100.3 · Als Liste statt als ||-Kette: welche Wächter eine Session hat,
+       ist damit eine Frage an die Daten. Reihenfolge ist hier folgenlos — der
+       Urteils-Wächter schweigt bei Block-Antworten, der Abschluss-Wächter
+       urteilt nur über sie.
+       ANLASS NÖTIG: Der TIMELINE-BLOCK hat einen zweiten Anlass ([CHECKPOINT]),
+       bei dem die Anknüpfungsfrage NACH dem Block richtig ist. */
+    validiereAntwort: waechterKette([
+      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+      (text, engine) => pruefeAbschlussAntwort(text, {
         messages: (engine && engine.chat && engine.chat.messages) || [],
+        block: "TIMELINE-BLOCK",
         token: K().steuerTexte.soloAbschluss,
         revision: K().steuerTexte.abschlussRevision,
       }),
+    ]),
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",
@@ -121,8 +125,21 @@ export function momentDef(backend, hooks = {}) {
     shared: true,
     titel: "Qualitätszeit",
     sysPrompt: ctx => K().momentPrompt(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
-    // S93 · Urteils-Wächter (siehe soloDef).
-    validiereAntwort: text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    /* S93 · Urteils-Wächter (siehe soloDef).
+       S100.2 · Und derselbe Abschluss-Wächter. Die Regel stand hier seit S98 im
+       Prompt ("fragen UND gleichzeitig abschließen ist ein Verstoß") — bewacht
+       war sie nie; im Reflexionsgespräch ist genau dieser Fehler dann
+       aufgetreten.
+       KEIN ANLASS NÖTIG: Der MOMENT-BLOCK kennt nur den Abschluss, und der
+       kommt auch VERBAL ("lass uns Schluss machen"), also ohne Steuertext. Eine
+       Anlass-Prüfung ließe genau die Fälle durch, um die es geht. */
+    validiereAntwort: waechterKette([
+      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+      text => pruefeAbschlussAntwort(text, {
+        block: "MOMENT-BLOCK", anlassNoetig: false,
+        revision: K().steuerTexte.abschlussRevision,
+      }),
+    ]),
     // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
     // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort
     // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es

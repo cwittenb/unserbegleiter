@@ -6,6 +6,7 @@
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeAufdeckAntwort } from "../engine/aufdeck-waechter.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
+import { waechterKette } from "../engine/abschluss-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -76,8 +77,12 @@ export function einzelDef(backend, hooks = {}) {
     titel: "Auftragsklärung",
     wiedereinstieg: "einzelWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
-    // S93 · Urteils-Wächter (siehe soloDef).
-    validiereAntwort: text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    // S93 · Urteils-Wächter (siehe soloDef). S100.3: als Liste.
+    // Kein Abschluss-Wächter: Die Auftragsklärung endet über die Freigabe,
+    // nicht über einen Block — sie gehört nicht zur Abschluss-Familie.
+    validiereAntwort: waechterKette([
+      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    ]),
     markerOrder: ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
       "[[SCALE-SAFETY]]": e => hooks.onScale && hooks.onScale("safety", e),
@@ -121,10 +126,17 @@ export function gemeinsamDef(backend, hooks = {}) {
     // S93 · Zwei Wächter, EIN Hook: der spezifischere zuerst. Die Engine
     // gewährt ohnehin nur EINE Revisions-Runde je Antwort — die Aufdeck-
     // Dramaturgie wiegt schwerer als eine Formulierungs-Korrektur.
-    validiereAntwort: (text, eng) => pruefeAufdeckAntwort(text, {
-      messages: eng.chat.messages, nameA: eng.ctx && eng.ctx.nameA, nameB: eng.ctx && eng.ctx.nameB,
-      revision: K().steuerTexte.aufdeckRevision,
-    }) || pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    // S100.3 · Als Liste; die Reihenfolge bleibt bedeutsam (spezifischer zuerst).
+    // Kein Abschluss-Wächter: Die Auflösung endet über den Befund, nicht über
+    // einen Block. Ihre eigene Regie-Übergabe — die Aufdeck-Marke — bewacht
+    // der Aufdeck-Wächter, mit Bedingungen, die nur dort gelten.
+    validiereAntwort: waechterKette([
+      (text, eng) => pruefeAufdeckAntwort(text, {
+        messages: eng.chat.messages, nameA: eng.ctx && eng.ctx.nameA, nameB: eng.ctx && eng.ctx.nameB,
+        revision: K().steuerTexte.aufdeckRevision,
+      }),
+      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    ]),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)
