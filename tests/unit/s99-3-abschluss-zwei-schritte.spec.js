@@ -214,14 +214,14 @@ describe("S99.3 · Die Regel steht im Prompt (erste Verteidigung)", () => {
   it("DE: die Regie-Übergabe-Regel am Abschluss-Anlass", () => {
     const p = reflexionsPrompt("Anna", "Bernd");
     expect(p).toContain("REGIE-ÜBERGABE");
-    expect(p).toMatch(/NIE den TIMELINE-BLOCK/);
+    expect(p).toMatch(/NIE einen TIMELINE-BLOCK/);
     expect(p).toContain("Die Gabelung mit den drei Türen IST eine Frage");
   });
 
   it("EN: dieselbe Regel", () => {
     const p = reflexionsPromptEn("Anna", "Bernd");
     expect(p).toContain("HANDING OVER CONTROL");
-    expect(p).toMatch(/NEVER carries the TIMELINE-BLOCK/);
+    expect(p).toMatch(/NEVER carries a TIMELINE-BLOCK/);
   });
 
   it("der Revisionstext lebt im Korpus, nicht nur im Wächter (de+en)", () => {

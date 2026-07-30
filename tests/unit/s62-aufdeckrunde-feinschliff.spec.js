@@ -184,7 +184,12 @@ describe("S62 · Tafel als Verlaufskarte & Zwei-Schritt-Aufdeckung", () => {
   it("zweite Richtung ([[REVEAL-A]] nach [[REVEAL-B]]) ergibt eine zweite Karte; Intro-Text nur an der ersten", async () => {
     const { mock } = await starteAuflosungMit([
       "Zuerst Bernds Stapel.\n[[REVEAL-B]]",
-      "Was fällt euch auf? … Und nun Annas Stapel.\n[[REVEAL-A]]",
+      // S101 · Die Fixture trug hier eine Frage UND die Marke ("Was fällt euch
+      // auf? … Und nun Annas Stapel."). Der Marken-Wächter beanstandet das —
+      // zu Recht: Die Frage zur ERSTEN Tafel würde nie beantwortet, weil die
+      // zweite sofort erscheint. Der Prompt verbietet genau das seit S62.
+      // Geprüft wird hier das Zeichnen zweier Tafeln, nicht die Dramaturgie.
+      "Und nun Annas Stapel.\n[[REVEAL-A]]",
     ]);
     await klick(root.querySelector("#pbMsgs .pb-tafel #adWeiter"));
     await ruhe(14);

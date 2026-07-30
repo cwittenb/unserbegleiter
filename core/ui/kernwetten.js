@@ -6,7 +6,7 @@
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeAufdeckAntwort } from "../engine/aufdeck-waechter.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
-import { waechterKette } from "../engine/abschluss-waechter.js";
+import { waechterKette, pruefeMarkenAntwort } from "../engine/abschluss-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -135,6 +135,11 @@ export function gemeinsamDef(backend, hooks = {}) {
         messages: eng.chat.messages, nameA: eng.ctx && eng.ctx.nameA, nameB: eng.ctx && eng.ctx.nameB,
         revision: K().steuerTexte.aufdeckRevision,
       }),
+      /* S101 · Die Konsens-Regel ist jetzt auch bewacht, nicht nur gefordert.
+         Sie steht seit S72 im Prompt; der Aufdeck-Wächter darüber prüft etwas
+         anderes und steigt bei gesetzter Marke ausdrücklich aus — dieser Fall
+         fiel bis hierher durch beide Netze. */
+      text => pruefeMarkenAntwort(text, { revision: K().steuerTexte.markenRevision }),
       text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
     ]),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]

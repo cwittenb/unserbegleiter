@@ -67,8 +67,10 @@ describe("Kanarien · Aufdeck-AUFTAKT im aufloesungsPrompt (S43: integriert)", (
     expect(p).toContain("REVEAL-BLOCK");
   });
   it("S62 · Konsens-Regel: Bereitschaftsfrage und Marke nie in derselben Nachricht", () => {
-    expect(p).toContain("KONSENS-REGEL");
-    expect(p).toContain("NIE in derselben Nachricht");
+    // S101 · Die Regel lebt jetzt im Baustein regieUebergabe und gilt für alle
+    // drei Sessions, die Regie übergeben (Abschluss-Block bzw. Aufdeck-Marke).
+    expect(p).toContain("REGIE-ÜBERGABE");
+    expect(p).toContain("NIE eine Aufdeck-Marke");
   });
   it("S62 · getrennte Richtungen mit Frage-vor-Beobachtung", () => {
     expect(p).toContain("wer anfangen möchte");

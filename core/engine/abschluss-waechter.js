@@ -96,6 +96,39 @@ export function pruefeAbschlussAntwort(text, ctx = {}) {
   return findetFrage(text, block) ? (ctx.revision || ABSCHLUSS_REVISION) : null;
 }
 
+/* S101 · Dieselbe Regel, andere Form der Übergabe: die AUFDECK-MARKE.
+   Die Auflösung trägt die Regel seit S72 im Prompt ("die Frage und die Marke
+   stehen NIE in derselben Nachricht") — bewacht war sie nie. Der Aufdeck-
+   Wächter prüft etwas anderes (wiedergegebene Stapel-Inhalte) und steigt bei
+   gesetzter Marke sogar ausdrücklich aus. Genau der Fall, der hier zählt, fiel
+   also durch beide Netze.
+   Warum das teurer ist als beim Abschluss: Die Marke ist der Startschuss für
+   die Tafel. Steht die Zustimmungsfrage daneben, ist aufgedeckt, bevor jemand
+   ja sagen konnte — und ein Okay, das erst danach käme, wäre keins mehr.
+   NUR die Aufdeck-Marken. Panel-Marken ([[SLIDERS]], [[RANKING]], …) übergeben
+   auch die Regie, lassen den Composer aber stehen; dort ist eine Frage in
+   derselben Nachricht unschön, nicht folgenschwer. Ohne Befund kein Wächter. */
+export const AUFDECK_MARKEN = /\[\[REVEAL(-A|-B)?\]\]/;
+
+export const MARKEN_REVISION =
+  "[SYSTEM-REVISION: Deine letzte Nachricht stellt eine Frage UND setzt eine Aufdeck-Marke. " +
+  "Mit der Marke zeigt die App die Tafel — die Frage käme zu spät, und ein Okay danach wäre keins. " +
+  "Wiederhole die Nachricht OHNE Marke: erst die Frage, dann warte auf die Antwort. Die Marke " +
+  "folgt in einer SPÄTEREN Nachricht, allein in der letzten Zeile.]";
+
+/**
+ * Validator für die Aufdeckung (Engine-Hook `validiereAntwort`).
+ * @param {string} text
+ * @param {{marke?:RegExp, revision?:string}} [ctx]
+ */
+export function pruefeMarkenAntwort(text, ctx = {}) {
+  const re = ctx.marke || AUFDECK_MARKEN;
+  const t = String(text || "");
+  if (!re.test(t)) return null;
+  const ohne = t.replace(new RegExp(re.source, "g"), " ");
+  return ohne.includes("?") ? (ctx.revision || MARKEN_REVISION) : null;
+}
+
 /* S100.3 · Wächter-Kette.
    Vier Sessions hielten je eine handgeschriebene ||-Kette samt Kommentar zur
    Reihenfolge. Der Gewinn der Liste ist nicht die Zeilenersparnis, sondern die
