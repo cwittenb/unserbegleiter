@@ -300,10 +300,17 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
     eintraege.sort((a, b) => (a.at < b.at ? -1 : 1));
     box.innerHTML = `<div class="pb-sub">${t("momente.titel")}</div>` +
       `<p class="pb-sub rz-eng">${t("momente.intro")}</p>` +
-      (eintraege.length ? eintraege.map(e2 =>
-        `<div class="pb-item"><span class="pb-sub">${esc((e2.at || "").slice(0, 10))} · ${esc(e2.art)}${e2.themen ? " · " + esc(e2.themen) : ""}</span><br>${esc(e2.text)}` +
-        (e2.impuls ? `<br><span class="pb-sub">${t("momente.impuls")} ${esc(e2.impuls)}</span>` : "") + `</div>`
-      ).join("") : `<p class="rz-klein">${t("momente.leer")}</p>`);
+      (eintraege.length ? eintraege.map(e2 => {
+        /* U9 · Dieselbe Zeitsprache wie die Chronik: "vor 3 Tagen" statt
+           "2026-07-23". Beide Ansichten sind Rückblicke, und wer sie
+           nebeneinander liest, soll nicht zwei Rechenarten im Kopf halten.
+           Die Meta-Zeile wird jetzt aus Teilen gefügt statt zusammengeklebt.
+           Damit fällt nebenbei ein alter Schönheitsfehler weg: Ein Eintrag
+           ohne `at` begann bisher mit einem führenden " · ". */
+        const meta = [relativZeit(e2.at), e2.art, e2.themen].filter(Boolean);
+        return `<div class="pb-item"><span class="pb-sub">${meta.map(esc).join(" · ")}</span><br>${esc(e2.text)}` +
+          (e2.impuls ? `<br><span class="pb-sub">${t("momente.impuls")} ${esc(e2.impuls)}</span>` : "") + `</div>`;
+      }).join("") : `<p class="rz-klein">${t("momente.leer")}</p>`);
   }
   return { zeigeZeitleiste, zeigeRegal, regalKoerper, zeigeAgenda, zeigeMess, zeigeMomente };
 }

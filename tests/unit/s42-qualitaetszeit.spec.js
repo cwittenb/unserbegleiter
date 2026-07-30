@@ -13,6 +13,7 @@ import { Bstate, Pstate } from "../../core/store/bundles.js";
 import { MemoryStore } from "../../core/store/store.js";
 import { freigebeUebergabe } from "../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../core/contracts/uebergabe.js";
+import { relativZeit } from "../../core/ui/zeit-texte.js";                 // U9
 import { baueMomentKontext } from "../../core/ui/sessions.js";
 import { steuerTexte, momentPrompt } from "../../core/prompts/prompts.de.js";
 import { steuerTexte as steuerTexteEn, momentPrompt as momentPromptEn } from "../../core/prompts/prompts.en.js";
@@ -127,26 +128,34 @@ describe("S42 · Sauberes Beenden", () => {
 });
 
 describe("S42 · Gemeinsame Momente (Protokoll-Zeitstrahl)", () => {
-  it("zeigt Protokolle chronologisch mit Datum, Themen und Zwischenzeit-Impuls; leer mit Hinweis", async () => {
+  // U9 · Die Meta-Zeile nennt jetzt die WEITE ("vor 3 Tagen") statt des
+  // Kalendertags — dieselbe Zeitsprache wie die Chronik. Die Prüfung hängt
+  // deshalb an relativZeit statt an festen Daten; nebenbei rostet sie damit
+  // nicht mehr fest (die alten Literale lagen im Juli 2026).
+  it("zeigt Protokolle chronologisch mit Zeitangabe, Themen und Zwischenzeit-Impuls; leer mit Hinweis", async () => {
     const backend = memoryBackend(null);
     await bootApp(backend);
     await klick(root.querySelector("#btnSharedRoom"));
     await klick(root.querySelector("#btnQz"));
     await ruhe();
     expect(root.querySelector("#boxQz").textContent).toContain("Noch keine gemeinsamen Momente");
+    const vorTagen = n => { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString(); };
+    const AUFDECK = vorTagen(9), MOMENT = vorTagen(2);
     await backend.bstate.set("momentLog", { entries: [
-      { at: "2026-07-10T18:00:00Z", summary: "Ihr habt über die Wochenenden gesprochen.", topics: ["Wochenenden"], gentleInvitation: "Sonntag kochen" },
+      { at: MOMENT, summary: "Ihr habt über die Wochenenden gesprochen.", topics: ["Wochenenden"], gentleInvitation: "Sonntag kochen" },
     ]});
-    await backend.bstate.set("revealLog", { at: "2026-07-08T18:00:00Z", summary: "Top 5 aufgedeckt." });
+    await backend.bstate.set("revealLog", { at: AUFDECK, summary: "Top 5 aufgedeckt." });
     await klick(root.querySelector("#btnQz"));   // zu
     await klick(root.querySelector("#btnQz"));   // wieder auf
     await ruhe();
     const txt = root.querySelector("#boxQz").textContent;
-    expect(txt).toContain("2026-07-08");
+    const wAufdeck = relativZeit(AUFDECK), wMoment = relativZeit(MOMENT);
+    expect(txt).toContain(wAufdeck);
+    expect(txt).not.toMatch(/\d{4}-\d{2}-\d{2}/);       // kein Kalendertag mehr
     expect(txt).toContain("Aufdeck-Runde");
     expect(txt).toContain("Wochenenden");
     expect(txt).toContain("Sonntag kochen");
-    expect(txt.indexOf("2026-07-08")).toBeLessThan(txt.indexOf("2026-07-10"));   // chronologisch
+    expect(txt.indexOf(wAufdeck)).toBeLessThan(txt.indexOf(wMoment));   // chronologisch
     // altes Einladungs-Menü existiert nicht mehr
     expect(root.querySelector("#qzHolen")).toBeFalsy();
   });
