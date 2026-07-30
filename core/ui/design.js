@@ -506,10 +506,28 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Rollenwechsel), Nutzerin: Sans 14.5 rechtsbuendig in Dunkelgruen.
          Composer als Hairline-Zeile mit kursivem Serif-Platzhalter,
          Send-Quadrat 34x34. Desktop: ruhige 640px-Mittelspalte. */
+      /* U10.4 (F3a) · Der Chat hatte bis hier KEINEN eigenen Rollbereich. Die
+         ganze Kette stand auf min-height:100dvh — der Kasten wuchs mit jeder
+         Nachricht, niemand eroeffnete einen Ueberlauf, also rollte das
+         DOKUMENT. Die Schreibkante haengt am unteren Ende dieses wachsenden
+         Kastens und fuhr mit hinaus.
+         Jetzt dasselbe Muster wie D9 beim Regal: Hoehe festnageln, Ueberlauf
+         nach innen verlegen. Fest steht alles ab dem Badge — Wegweiser,
+         Composer, Links. Die Kulisse braucht keinen eigenen Schritt: sie ist
+         absolut gegen .rz-naht-anker gesetzt, und der Anker IST die
+         Schreibkante. Steht die Kante, steht die Kulisse.
+         Variante (a): Es rollt die GANZE obere Zone, Kopfzeile inbegriffen.
+         Ein festgesetzter Kopf haette dem Gespraech zusaetzlich Hoehe
+         genommen — auf kleinen Schirmen wird der Ausschnitt sonst zu eng.
+         min-height:0 ist nicht Kosmetik: Flex-Kinder haben per Vorgabe
+         min-height:auto und weigern sich zu schrumpfen; ohne die Null waechst
+         die Zone am overflow vorbei. */
       .rz-app #scrChat{max-width:none;margin:0;background:var(--rz-papier);color:var(--rz-ink);
-        min-height:100dvh;padding:calc(30px + env(safe-area-inset-top,0px)) var(--rz-rand)
+        height:100dvh;min-height:0;overflow-y:hidden;
+        padding:calc(30px + env(safe-area-inset-top,0px)) var(--rz-rand)
         calc(var(--rz-rand) + env(safe-area-inset-bottom,0px))}
-      .rz-chat-innen{max-width:var(--rz-chat-spalte);margin:0 auto;display:flex;flex-direction:column;min-height:calc(100dvh - 60px)}
+      .rz-chat-innen{max-width:var(--rz-chat-spalte);margin:0 auto;display:flex;flex-direction:column;
+        height:100%;min-height:0}
       #scrChat .pb-msgs{gap:22px;flex:1}
       /* T2g (Handover Turn 40 §3.8) · Die Sprecher-Marke hing mit
          margin-bottom:-17px gegen den gap:22px der Nachrichtenliste — zwei
@@ -573,7 +591,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          nennt weiterhin den Ort (K5) und klappt zusaetzlich den Wegweiser
          aus der Naht. Die Sonderregel ist deshalb entfallen — .rz-weg-badge
          bringt cursor:pointer schon mit. */
-      #scrChat .rz-chat-oben{flex:1;display:flex;flex-direction:column;min-height:0;padding:0}
+      /* U10.4 · DIESE Zone rollt — und nur sie. */
+      #scrChat .rz-chat-oben{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0;
+        overflow-y:auto;overscroll-behavior:contain}
+      /* Die Schreibkante bringt ihr flex:none schon mit (= 0 0 auto): Sie
+         kann nicht schrumpfen, ein langer Composer gibt der rollenden Zone
+         nicht nach. Eine zweite Regel dafuer waere Doppelpflege gewesen. */
       #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-tiefgruen);
         margin:var(--rz-r-5) calc(-1 * var(--rz-rand))
                calc(-1 * var(--rz-rand) - env(safe-area-inset-bottom,0px));

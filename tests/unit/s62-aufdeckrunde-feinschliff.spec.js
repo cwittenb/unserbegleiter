@@ -71,21 +71,41 @@ const REVEAL = {
 
 /* ── Maß-Helfer: happy-dom liefert Nullmaße — für die Fern-Fälle stubben
    wir Composer-Unterkante und Fensterhöhe gezielt. ── */
+/* U10.4 · "Fern" heisst jetzt: weit vom ENDE des Verlaufs, nicht weit vom
+   Composer. Der Composer steht seit U10.4 immer — die alte Frage haette sich
+   nicht mehr stellen koennen. Gestubbt wird deshalb die Zone: viel Inhalt
+   (scrollHeight), kleines Fenster darauf (clientHeight), oben stehend. */
 function stelleFern(abstand = 500) {
-  const c = root.querySelector("#pbComposer");
-  c.getBoundingClientRect = () => ({ bottom: abstand, top: abstand - 40, left: 0, right: 0, width: 0, height: 40 });
-  const win = document.defaultView;
-  win.scrollY = 0;
-  Object.defineProperty(win, "innerHeight", { value: 0, configurable: true });
+  const r = root.querySelector("#scrChat .rz-chat-oben");
+  if (!r) return;
+  Object.defineProperty(r, "scrollHeight", { value: abstand * 4, configurable: true });
+  Object.defineProperty(r, "clientHeight", { value: 100, configurable: true });
+  r.__rzTop = 0;
+}
+
+/* U10.4 · Gescrollt wird nicht mehr das Fenster, sondern die obere Zone des
+   Chats. Der Spion sitzt am Prototyp und nicht am Knoten: Das Chat-Markup
+   entsteht erst in startChat, ein Spion auf dem Element waere zu frueh da. */
+function beobachteRoller() {
+  const aufrufe = [];
+  const proto = Object.getPrototypeOf(document.createElement("div"));
+  Object.defineProperty(proto, "scrollTop", {
+    configurable: true,
+    get() { return this.__rzTop || 0; },
+    set(v) {
+      this.__rzTop = v;
+      if (this.classList && this.classList.contains("rz-chat-oben")) aufrufe.push([0, v]);
+    },
+  });
+  return aufrufe;
 }
 
 describe("S62 · Scroll-Disziplin", () => {
   it("Betreten eines Gesprächs scrollt einmalig — Ziel ist die Composer-Unterkante, nicht das Seitenende", async () => {
     const mock = new MockLLM(["Hallo Anna."]);
     const backend = memoryBackend(mock);
-    const aufrufe = [];
-    document.defaultView.scrollTo = (...a) => aufrufe.push(a);
     const app = await bootApp(backend);
+    const aufrufe = beobachteRoller();
     await app.startChat("solo");
     await ruhe(12);
     expect(aufrufe.length).toBeGreaterThan(0);
@@ -102,9 +122,8 @@ describe("S62 · Scroll-Disziplin", () => {
   it("hochgescrollt (fern vom Eingabefeld): Stream-Deltas und Renderläufe scrollen NICHT mehr mit", async () => {
     const mock = new MockLLM(["Erste Antwort.", "Zweite Antwort."]);
     const backend = memoryBackend(mock);
-    const aufrufe = [];
-    document.defaultView.scrollTo = (...a) => aufrufe.push(a);
     const app = await bootApp(backend);
+    const aufrufe = beobachteRoller();
     await app.startChat("solo");
     await ruhe(12);
     stelleFern(500);           // Person ist hochgescrollt: Composer weit unterhalb der Sicht
@@ -118,9 +137,8 @@ describe("S62 · Scroll-Disziplin", () => {
   it("eigenes Senden nimmt das Mitlaufen wieder auf (erzwungener Scroll trotz Fern-Lage)", async () => {
     const mock = new MockLLM(["Antwort eins.", "Antwort zwei."]);
     const backend = memoryBackend(mock);
-    const aufrufe = [];
-    document.defaultView.scrollTo = (...a) => aufrufe.push(a);
     const app = await bootApp(backend);
+    const aufrufe = beobachteRoller();
     await app.startChat("solo");
     await ruhe(12);
     stelleFern(500);

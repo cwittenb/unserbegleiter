@@ -69,6 +69,23 @@ async function speichereEinzel(backend, letzterAssistantText) {
   });
 }
 
+/* U10.4 · Gescrollt wird nicht mehr das Fenster, sondern die obere Zone des
+   Chats. Der Spion sitzt am Prototyp und nicht am Knoten: Das Chat-Markup
+   entsteht erst in startChat, ein Spion auf dem Element waere zu frueh da. */
+function beobachteRoller() {
+  const aufrufe = [];
+  const proto = Object.getPrototypeOf(document.createElement("div"));
+  Object.defineProperty(proto, "scrollTop", {
+    configurable: true,
+    get() { return this.__rzTop || 0; },
+    set(v) {
+      this.__rzTop = v;
+      if (this.classList && this.classList.contains("rz-chat-oben")) aufrufe.push([0, v]);
+    },
+  });
+  return aufrufe;
+}
+
 describe("S53 · Kartentausch & dynamisches Label in Mein Raum", () => {
   it("links steht die Auftragsklärung, rechts das Reflexionsgespräch", async () => {
     await bootApp(memoryBackend(null));
@@ -150,13 +167,12 @@ describe("S53 · Wiedereinstieg in die laufende Auftragsklärung", () => {
 });
 
 describe("S53 · Seite scrollt ans Ende des Verlaufs", () => {
-  it("ruft window.scrollTo beim Rendern des Wiedereinstiegs", async () => {
+  it("rollt die Gespraechszone ans Ende beim Rendern des Wiedereinstiegs (U10.4)", async () => {
     const mock = new MockLLM(["Schön, dass du wieder da bist, Anna."]);
     const backend = memoryBackend(mock);
     await speichereEinzel(backend, "Magst du mehr erzählen?");
     const app = await bootApp(backend);
-    const aufrufe = [];
-    document.defaultView.scrollTo = (...a) => aufrufe.push(a);
+    const aufrufe = beobachteRoller();
     await app.startChat("einzel");
     await ruhe(12);
     expect(aufrufe.length).toBeGreaterThan(0);

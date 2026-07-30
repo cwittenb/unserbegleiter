@@ -8,6 +8,11 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { DESIGN_CSS, CHROME_HTML } from "../../core/ui/design.js";
+import { readFileSync } from "node:fs";
+// Das Chat-Markup ist eine Closure-Funktion in app.js; fuer die reine
+// Struktur-Frage (haengt die Kulisse am selben Knoten wie die Schreibkante?)
+// genuegt die Quelle.
+const CHAT_HTML_ROH = readFileSync("core/ui/app.js", "utf8");
 import { createApp } from "../../core/ui/app.js";
 import { Repo } from "../../core/store/repo.js";
 import { Bstate, Pstate } from "../../core/store/bundles.js";
@@ -162,3 +167,37 @@ describe("U10.3 (F2) · Der Klick-oben-Weg gilt auf allen drei Screens", () => {
   });
 });
 
+describe("U10.4 (F3a) · Nur das Gespräch rollt", () => {
+  const CSS = DESIGN_CSS.replace(/\/\*[\s\S]*?\*\//g, "");
+  const r = sel => {
+    const m = CSS.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\{([^}]*)\\}"));
+    return m ? m[1] : null;
+  };
+
+  it("der Chat ist auf Schirmhöhe genagelt, nicht mindestens so hoch", () => {
+    // min-height hiess: der Kasten darf wachsen. Er wuchs, das Dokument
+    // rollte, und die Schreibkante fuhr mit hinaus.
+    const s = r(".rz-app #scrChat");
+    expect(s).toContain("height:100dvh");
+    expect(s).toContain("min-height:0");
+    expect(s).toContain("overflow-y:hidden");
+  });
+
+  it("die obere Zone rollt — und sie allein", () => {
+    expect(r("#scrChat .rz-chat-oben")).toContain("overflow-y:auto");
+    // flex:none == 0 0 auto — die Kante kann nicht schrumpfen.
+    expect(r("#scrChat .rz-chat-unten")).toContain("flex:none");
+  });
+
+  it("die Flex-Kette kann schrumpfen", () => {
+    // Flex-Kinder haben min-height:auto und weigern sich sonst zu schrumpfen;
+    // ohne die Null wächst die Zone am overflow vorbei.
+    expect(r(".rz-chat-innen")).toContain("min-height:0");
+    expect(r("#scrChat .rz-chat-oben")).toContain("min-height:0");
+  });
+
+  it("die Kulisse hängt an der Schreibkante — kein eigener Schritt nötig", () => {
+    expect(CHAT_HTML_ROH).toMatch(/rz-chat-unten[^>]*rz-naht-anker|rz-naht-anker[^>]*rz-chat-unten/);
+    expect(r(".rz-kulisse-naht")).toContain("top:0");
+  });
+});

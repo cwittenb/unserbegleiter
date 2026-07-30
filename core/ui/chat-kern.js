@@ -92,7 +92,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     d.innerHTML = anzeige
       ? mdRender(anzeige)
       : '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
-    if (nah) { box.scrollTop = box.scrollHeight; scrolleZumEingabefeld(); }
+    if (nah) scrolleZumEingabefeld();
   }
 
   /** S70 · Auslastungs-Wiederholung: ruhige, ZAHLENLOSE Warteanzeige in der
@@ -116,22 +116,29 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
      wird VOR jeder DOM-Änderung live gemessen); Rückkehr ans Ende oder das
      eigene Senden nimmt es wieder auf. Guarded: happy-dom/Umgebungen ohne
      scrollTo bleiben still (Nullmaße melden dort immer "nah"). */
+  /* U10.4 (F3a) · Seit der Chat einen EIGENEN Rollbereich hat, misst die
+     Disziplin nicht mehr am Fenster. Das Eingabefeld steht jetzt immer —
+     "nah am Composer" hatte damit keine Bedeutung mehr, weil die Antwort
+     stets ja gewesen waere. Gemessen wird jetzt die Naehe zum ENDE des
+     Verlaufs: Scrollt die Person hoch, stoppt das Mitlaufen von selbst;
+     Rueckkehr ans Ende oder das eigene Senden nimmt es wieder auf. Der
+     Gedanke aus S62 bleibt, nur sein Bezugspunkt wandert. */
   const SCROLL_NAEHE_PX = 80;
-  function composerUnterkante(win) {
-    const c = $("pbComposer");
-    if (!c || typeof c.getBoundingClientRect !== "function") return 0;
-    return c.getBoundingClientRect().bottom + (win.scrollY || 0);
+  function roller() {
+    const box = $("pbMsgs");
+    return (box && typeof box.closest === "function" && box.closest(".rz-chat-oben")) || null;
   }
   function nahAmEingabefeld() {
-    const win = doc.defaultView;
-    if (!win) return true;
-    const sicht = (win.scrollY || 0) + (win.innerHeight || 0);
-    return composerUnterkante(win) - sicht <= SCROLL_NAEHE_PX;
+    const r = roller();
+    if (!r) return true;
+    // Nullmasse (happy-dom, noch nicht gelayoutet) melden "nah" — still statt
+    // springend, dieselbe Vorsicht wie in S62.
+    return (r.scrollHeight - r.scrollTop - r.clientHeight) <= SCROLL_NAEHE_PX;
   }
+  /* Ans Ende des Verlaufs, nicht ans Ende des Dokuments. */
   function scrolleZumEingabefeld() {
-    const win = doc.defaultView;
-    if (!win || typeof win.scrollTo !== "function") return;
-    win.scrollTo(0, Math.max(0, composerUnterkante(win) - (win.innerHeight || 0)));
+    const r = roller();
+    if (r) r.scrollTop = r.scrollHeight;
   }
 
   function renderMsgs(scrollErzwingen = false) {
@@ -140,7 +147,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     const box = $("pbMsgs");
     if (!box) return;   // S87: leere Hülle (kein Chat aufgebaut) — folgenlos
     // S96.2 · Im Auswahl-Modus übernimmt der Verlauf selbst die Fläche.
-    if (zeichneAuswahl(box)) { box.scrollTop = 0; return; }   // R4b: Phasen kennt nur das Modul
+    if (zeichneAuswahl(box)) { const r = roller(); if (r) r.scrollTop = 0; return; }   // R4b: Phasen kennt nur das Modul
     box.innerHTML = "";
     if (state.engine) {
       const msgs = state.engine.chat.messages;
@@ -190,7 +197,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
       d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
       box.appendChild(d);
     }
-    if (nah) { box.scrollTop = box.scrollHeight; scrolleZumEingabefeld(); }
+    if (nah) scrolleZumEingabefeld();
     aktualisiereSkala();
     aktualisiereComposer();
   }
