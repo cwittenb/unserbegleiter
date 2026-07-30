@@ -102,10 +102,11 @@ describe("D12-2a · Wegweiser-Badge", () => {
     expect(root.querySelector("#wegBadgeTeil").textContent).toContain(de["start.capsTeil"]);
   });
 
-  it("der Warte-Punkt bleibt Teil des Badges (D1-Vertrag)", async () => {
+  it("der Warte-Punkt ist aus dem Badge genommen (U10.2/F1a)", async () => {
     await bootApp();
     for (const id of ["wegBadgeStart", "wegBadgeMein", "wegBadgeTeil"])
-      expect(root.querySelector("#" + id + " .rz-punkt"), id).toBeTruthy();
+      // U10.2 (F1a) · umgedreht: Das Badge fuehrt KEINEN Punkt mehr.
+      expect(root.querySelector("#" + id + " .rz-punkt"), id).toBeNull();
   });
 });
 

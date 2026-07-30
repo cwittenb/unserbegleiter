@@ -97,9 +97,12 @@ describe("D2 · Wegweiser-Badge", () => {
     expect(panel.classList.contains("rz-offen")).toBe(false);
   });
 
-  it("frischer Zustand (Auftrags-Einladung = Stufe 2) laesst den Warte-Punkt leuchten", async () => {
+  it("frischer Zustand (Auftrags-Einladung = Stufe 2) zeigt das Badge, aber keinen Punkt (U10.2)", async () => {
     await bootApp(memoryBackend());
-    expect(root.querySelector("#wegBadgeStart").classList.contains("rz-wartet")).toBe(true);
+    // U10.2 (F1a) · Der Punkt und die Klasse dahinter sind entfallen. Was
+    // wartet, sagt das Panel — das Badge sagt nur noch, dass es da ist.
+    expect(root.querySelector("#wegBadgeStart").classList.contains("rz-wartet")).toBe(false);
+    expect(root.querySelector("#wegBadgeStart .rz-punkt")).toBeNull();
   });
 });
 

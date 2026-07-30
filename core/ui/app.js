@@ -123,7 +123,7 @@ export function createApp({ doc, backend, root, diktat }) {
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
         <div class="rz-kulisse-naht" id="kulisseStart"></div>
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeStart">${IKON.wegweiser}<span>${t("weg.badge")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeStart">${IKON.wegweiser}<span>${t("weg.badge")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegStart"></div>
         <button class="rz-zeile rz-unten" id="btnSharedRoom"><span>${t("start.betreteTeil")}</span><span class="rz-lz-leiste" id="lzStart"></span><span class="rz-pfeil">↓</span></button>
         <div class="rz-fuss">
@@ -151,7 +151,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein">${IKON.wegweiser}<span>${t("weg.badgeMein")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein">${IKON.wegweiser}<span>${t("weg.badgeMein")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegMein"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
@@ -202,7 +202,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeEinst">${IKON.wegweiser}<span>${t("einst.titel")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeEinst">${IKON.wegweiser}<span>${t("einst.titel")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegEinst"></div>
         <div class="rz-regal-reihen" id="einstUnten">
           <!-- Vom Modul gefuellt: was ihr GEMEINSAM aendert. -->
@@ -243,7 +243,7 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
-        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil">${IKON.wegweiser}<span>${t("weg.badgeTeil")}</span><span class="rz-punkt"></span></button>
+        <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil">${IKON.wegweiser}<span>${t("weg.badgeTeil")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
           <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
@@ -875,7 +875,6 @@ export function createApp({ doc, backend, root, diktat }) {
     zeichneWegPanel(box, zeilen);
     box.classList.remove("pb-hidden");
     badge.classList.remove("pb-hidden");
-    badge.classList.remove("rz-wartet");   // im Gespraech wartet nichts
   }
 
   async function aktualisiereWegweiser(screenId) {
@@ -906,10 +905,10 @@ export function createApp({ doc, backend, root, diktat }) {
         zeichneWegPanel(box, zeilen, screenId === "scrStart"
           ? `<div class="rz-weg-hinweis">${esc(t("weg.hinweisStart"))}</div>` : "");
         box.classList.remove("pb-hidden");
-        if (badge) {
-          badge.classList.remove("pb-hidden");
-          badge.classList.toggle("rz-wartet", kandidaten.some(kd => kd.stufe < 4));
-        }
+        // U10.2 (F1a) · Der Warte-Punkt ist fort, damit auch seine Klasse und
+        // die Berechnung dahinter. Das Wegweiser-Zeichen selbst steht IMMER —
+        // es ist die Zusage, dass es hier Hilfe gibt, kein Statusmelder.
+        if (badge) badge.classList.remove("pb-hidden");
         return;
       }
       if (!zeilen.length) { box.classList.add("pb-hidden"); return; }
@@ -1518,8 +1517,21 @@ export function createApp({ doc, backend, root, diktat }) {
   verdrahteWegweiser(doc, $("wegBadgeEinst"), $("wegEinst"));   // U7: Einstellungen
   $("btnMyRoom").addEventListener("click", () => betrete("scrMyRoom"));
   $("btnSharedRoom").addEventListener("click", () => betrete("scrShared"));
-  $("btnZurueck1").addEventListener("click", () => betrete("scrStart"));
-  $("btnZurueck2").addEventListener("click", () => betrete("scrStart"));
+  /* U10.3 · Der Zurueck-Pfeil bekommt eine Vorstufe. Er liegt INNERHALB der
+     Flaeche, die das Regal ohnehin schliesst — bisher feuerten beide Wege:
+     der Pfeil navigierte zur Startseite, danach schloss der gebubbelte
+     Handler einen Kasten, den niemand mehr sah. Netto verliess man den Raum,
+     statt den Kasten zuzumachen.
+     Jetzt gilt: Steht der Screen im Vollbild, schliesst der Pfeil NUR. Erst
+     der zweite Tap fuehrt hinaus — "zurueck" heisst eine Ebene, nicht zwei.
+     regalZu ist idempotent; der gebubbelte Zweitaufruf kehrt sofort zurueck. */
+  const zurueckAus = screenId => () => {
+    const screen = $(screenId);
+    if (screen && screen.classList.contains("rz-regal-offen")) { regalZu(screen); return; }
+    betrete("scrStart");
+  };
+  $("btnZurueck1").addEventListener("click", zurueckAus("scrMyRoom"));
+  $("btnZurueck2").addEventListener("click", zurueckAus("scrShared"));
   $("btnSolo").addEventListener("click", () => startChat("solo").catch(e => err(e.message)));
   $("btnEinzel").addEventListener("click", () => startChat("einzel").catch(e => err(e.message)));
   $("btnGemeinsam").addEventListener("click", () => startChat("gemeinsam").catch(e => err(e.message)));
@@ -1527,7 +1539,11 @@ export function createApp({ doc, backend, root, diktat }) {
   // D9/D12-2b · Klick auf den Bereich ÜBER dem Regal fährt es wieder herunter.
   // Der eigene Zu-Pfeil an der Zonen-Überschrift ist mit Turn 27 entfallen —
   // der Weg nach oben steht jetzt an der Sektionszeile selbst (regalModus).
-  for (const screenId of ["scrMyRoom", "scrShared"]) {
+  // U10.3 (F2) · Der Weg gilt jetzt auf ALLEN drei Screens mit Regal-Mechanik.
+  // scrEinstellungen fehlte, obwohl regalModus dort dieselbe Vollbild-Klasse
+  // setzt. Ein Bedienweg, der auf zwei von drei Screens gilt, ist schwerer zu
+  // lernen als einer, der ueberall gilt.
+  for (const screenId of ["scrMyRoom", "scrShared", "scrEinstellungen"]) {
     const screen = $(screenId);
     if (!screen) continue;
     const oben = screen.querySelector(".rz-half");
@@ -1537,7 +1553,7 @@ export function createApp({ doc, backend, root, diktat }) {
   // U5/§1.3 · Der Wiedereinstieg klappt wie jede andere Regal-Zeile auf. Der
   // Inhalt steht schon (zeigeRecovery baut ihn beim Start), die Zeile schaltet
   // ihn nur sichtbar — deshalb kein Nachladen im Toggle.
-  $("btnEinstZurueck").addEventListener("click", () => betrete("scrStart"));
+  $("btnEinstZurueck").addEventListener("click", zurueckAus("scrEinstellungen"));
   /* 3.7 · Die Zahl wird beim Oeffnen geholt, nicht vorgehalten: sie steht in
      einer Frage, die man nicht zuruecknehmen kann, und darf nicht veralten. */
   $("btnVerlaeufeWeg").addEventListener("click", () =>

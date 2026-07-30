@@ -84,7 +84,14 @@ describe("D1 · Grundbaustein B — Hairline-Zeile", () => {
 describe("D1 · Grundbaustein C — Wegweiser-Badge/Panel", () => {
   it("Badge: grün, UPPERCASE, eckig, mit Warte-Punkt", () => {
     expect(DESIGN_CSS).toMatch(/\.rz-weg-badge\{[^}]*background:var\(--rz-akzent\);[^}]*text-transform:uppercase/);
-    expect(DESIGN_CSS).toContain(".rz-weg-badge.rz-wartet .rz-punkt{display:block}");
+    // U10.2 (F1a) · Der Warte-Punkt ist aus dem D1-Vertrag genommen. Er stand
+    // 8px hinter versal gesperrtem Text und las sich als "WEGWEISER." — ein
+    // Tippfehler, keine Meldung. Der Vertrag haelt jetzt fest, dass das Badge
+    // KEINEN Punkt mehr fuehrt; die uebrigen Zusagen (gruen, versal, eckig)
+    // stehen unveraendert darueber.
+    // Kommentarblind: Die Erklaerung im Stylesheet nennt den abgeloesten
+    // Selektor beim Namen — sonst faende der Waechter seine eigene Notiz.
+    expect(DESIGN_CSS.replace(/\/\*[\s\S]*?\*\//g, "")).not.toContain(".rz-wartet");
   });
 
   // T1b · Die Uebergangskurve ist ein Theme-Baustein (--rz-kurve) statt eines
@@ -101,7 +108,7 @@ describe("D1 · Grundbaustein C — Wegweiser-Badge/Panel", () => {
     const win = new Window();
     const doc = win.document;
     doc.body.innerHTML = `<div class="rz-naht-anker">
-      <button class="rz-weg-badge" id="b"><span>Wegweiser</span><span class="rz-punkt"></span></button>
+      <button class="rz-weg-badge" id="b"><span>Wegweiser</span></button>
       <div class="rz-weg-panel" id="p"><p class="rz-option">…</p></div>
     </div><main id="m">Inhalt</main>`;
     const badge = doc.getElementById("b"), panel = doc.getElementById("p");

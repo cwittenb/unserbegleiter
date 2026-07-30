@@ -34,9 +34,14 @@ describe("D10 · Die Bedien-Ecke existiert", () => {
     expect(k.getAttribute("aria-label")).toBeTruthy();
     // D12-2f · Gezeigt wird das WECHSELZIEL: auf Hell die Seerose, auf Dunkel
     // der Baum. CSS tauscht sie am Theme, nicht JavaScript.
-    expect(DESIGN_CSS).toContain(".rz-einst-baum{display:none}");
-    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-baum{display:block}");
-    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst-seerose{display:none}");
+    // U10.1 · Die Selektoren tragen jetzt die .rz-einst-Ebene mit. Grund: Die
+    // alte Form (.rz-einst-baum{display:none}, 0-1-0) wurde von der
+    // Layout-Sammelregel (0-2-1) ausgestochen — auf HELL standen beide
+    // Zeichen. Die Wechselziel-Logik aus D12-2f ist unveraendert, nur ihre
+    // Durchsetzung ist es jetzt auch.
+    expect(DESIGN_CSS).toContain(".rz-einst .rz-einst-baum{display:none}");
+    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst .rz-einst-baum{display:block}");
+    expect(DESIGN_CSS).toContain("html[data-theme=dark] .rz-einst .rz-einst-seerose{display:none}");
   });
 
   it("legt NICHT doppelt an, wenn die Huelle das Zeichen schon mitbringt", () => {

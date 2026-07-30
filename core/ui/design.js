@@ -305,13 +305,22 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
                display:flex;gap:4px;align-items:flex-start}
       .rz-einst{position:relative;border:0;background:none;margin:0;padding:6px;cursor:pointer;
                 line-height:0;min-width:36px;min-height:var(--rz-tapziel);color:var(--rz-marke)}
-      .rz-einst span[class^="rz-einst-"]{display:block;margin:auto;line-height:0}
+      /* U10.1 · Hier stand frueher display:block. Die Regel hat mit 0-2-1 die
+         Versteck-Regel .rz-einst-baum (0-1-0) ausgestochen — auf HELL waren
+         damit beide Zeichen sichtbar. Auf Dunkel fiel es nicht auf, weil die
+         Dark-Regeln dieselbe Spezifitaet haben und spaeter stehen.
+         Jetzt entscheidet ueber Sichtbarkeit nur noch, wer davon spricht. */
+      .rz-einst span[class^="rz-einst-"]{margin:auto;line-height:0}
       .rz-einst svg{display:block;margin:auto}
       /* D12-2f · Das Zeichen ist das WECHSELZIEL, nicht der Ist-Zustand: auf
-         Hell steht die Seerose (der dunkle Teich), auf Dunkel der Baum. */
-      .rz-einst-baum{display:none}
-      html[data-theme=dark] .rz-einst-baum{display:block}
-      html[data-theme=dark] .rz-einst-seerose{display:none}
+         Hell steht die Seerose (der dunkle Teich), auf Dunkel der Baum.
+         U10.1 · Beide Zustaende auf derselben Ebene (.rz-einst .rz-einst-*),
+         damit keine Layout-Regel sie mehr aussticht. Der Fallback ohne
+         data-theme ist EIN Zeichen (die Seerose) — nicht zwei, nicht keins. */
+      .rz-einst .rz-einst-seerose{display:block}
+      .rz-einst .rz-einst-baum{display:none}
+      html[data-theme=dark] .rz-einst .rz-einst-seerose{display:none}
+      html[data-theme=dark] .rz-einst .rz-einst-baum{display:block}
       .rz-einst .rz-punkt{position:absolute;top:3px;right:3px;width:6px;height:6px;
                           border-radius:50%;background:var(--rz-akzent)}
       /* ---- U7 (Turn 41 · Nachtrag) · Einstellungen als Ort ----
@@ -368,9 +377,15 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
                     font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.16em;
                     text-transform:uppercase;padding:9px 18px;display:flex;align-items:center;gap:8px;
                     border-radius:0;min-height:0}
-      .rz-weg-badge .rz-punkt{width:6px;height:6px;border-radius:50%;background:var(--rz-akzent-text);
-                              display:none}
-      .rz-weg-badge.rz-wartet .rz-punkt{display:block}
+      /* U10.2 (F1a) · Der Warte-Punkt am Badge ist ersatzlos entfallen. Er
+         stand 8px hinter versal gesperrtem Text und las sich als "WEGWEISER."
+         — ein Tippfehler, keine Meldung. Mit ihm sind .rz-wartet und die
+         Berechnung dahinter (kandidaten.some(kd => kd.stufe < 4), app.js)
+         entfernt: eine Klasse, die nichts mehr zeichnet, ist schlimmer als
+         keine. Soll das Signal je zurueck, ist es eine neue Entscheidung
+         ueber Ort und Form, nicht ein Wiederanschalten.
+         In der Bedien-Ecke lebt .rz-einst .rz-punkt weiter — dort sitzt er
+         als Aufsetzer AM Zeichen und liest sich nicht als Satzzeichen. */
       /* U2 (Handover Turn 41 §3) · Die Flaeche traegt bisher exakt den
          Papierton der Zone darueber — als Flaeche ist sie damit unsichtbar,
          getrennt nur durch die zwei Haarlinien. Jetzt hebt sie sich einen Ton
