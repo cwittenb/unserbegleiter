@@ -10,8 +10,8 @@ import { richte } from "../../evals/judge/judge.js";
 import { SZENARIEN } from "../../evals/szenarien/start-katalog.js";
 
 describe("Judge-Prompt-Härtung (j4)", () => {
-  it("Version ist aktuell (j7 · S86: Beleg-Stil keyless)", () => {
-    expect(JUDGE_PROMPT_VERSION).toBe("j7");   // S86: Beleg-Stil; S85: Reinform-Zeile; S76: Strukturausgabe
+  it("Version ist aktuell (j8 · S103: Urteils-Konsistenz)", () => {
+    expect(JUDGE_PROMPT_VERSION).toBe("j8");   // S103: Urteils-Konsistenz; S86: Beleg-Stil; S85: Reinform-Zeile; S76: Strukturausgabe
   });
 
   it("DE-Prompt: nur SYSTEM(Begleitung); PERSON-RESULT-Zahlen zählen nicht; Rahmung ≠ Bestätigung", () => {

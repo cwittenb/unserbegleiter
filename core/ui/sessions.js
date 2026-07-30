@@ -12,7 +12,8 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
-import { pruefeAbschlussAntwort, waechterKette } from "../engine/abschluss-waechter.js";
+import { pruefeAbschlussAntwort, waechterKette, pruefeMetaMarke } from "../engine/abschluss-waechter.js";
+import { pruefeKrisenReihenfolge } from "../engine/krisen-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
@@ -139,6 +140,15 @@ export function momentDef(backend, hooks = {}) {
         block: "MOMENT-BLOCK", anlassNoetig: false,
         revision: K().steuerTexte.abschlussRevision,
       }),
+      /* S103 · Die vierte Regie-Übergabe: [[META-REVEALED]]. Sie lebt in
+         dieser Session (Aufdeckung der Prozessreflexion) und trägt eine
+         Bedingung mehr — allein in der letzten Zeile. */
+      text => pruefeMetaMarke(text, {
+        revision: K().steuerTexte.metaPlatzRevision,
+        frageRevision: K().steuerTexte.markenRevision,
+      }),
+      /* S103 · Geteilter Raum: zuerst der Einzelraum, dann die Krisenhilfe. */
+      text => pruefeKrisenReihenfolge(text, { revision: K().steuerTexte.krisenReihenfolgeRevision }),
     ]),
     // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
     // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort

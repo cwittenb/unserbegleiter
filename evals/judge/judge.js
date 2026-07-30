@@ -2,7 +2,7 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j7";   // j7 (S86): Beleg-Stilregeln zurück («…», keine geraden Anführungszeichen, keine Zeilenumbrüche in evidence) — dokumentierte Teilrücknahme von S78: dessen Entfernung setzte erzwungene Struktur voraus, im keyless-Pfad gibt es keine Formgarantie (4 Samples unrettbar am 2026-07-19). j6 (S85): Reinform-Zeile. j5 (S76): Strukturausgabe. Zurechnungs-Härtung aus j4 unverändert.
+export const JUDGE_PROMPT_VERSION = "j8";   // j8 (S103): Urteils-Konsistenz — Beleg traegt Urteil, keine Zusatzforderung, Fehlendes benennen. Anlass: drei belegte Fehlurteile im Lauf vom 2026-07-30 (MOM-01/1 begruendete den Freispruch und verurteilte; QZ-01/3 uebersah die woertlich vorhandene Landung; QZ-01/4 forderte ein Element, das die Prueffrage nicht nennt). j7 (S86): Beleg-Stilregeln zurück («…», keine geraden Anführungszeichen, keine Zeilenumbrüche in evidence) — dokumentierte Teilrücknahme von S78: dessen Entfernung setzte erzwungene Struktur voraus, im keyless-Pfad gibt es keine Formgarantie (4 Samples unrettbar am 2026-07-19). j6 (S85): Reinform-Zeile. j5 (S76): Strukturausgabe. Zurechnungs-Härtung aus j4 unverändert.
 
 /* S76 · Wire-Schema des Judges. Feldnamen ENGLISCH (verdict/evidence) —
    neue Schemas entstehen gleich anglisiert, damit die spätere Wire-Anglisierung
@@ -80,6 +80,16 @@ export function baueJudgePrompt(sprache) {
     "name/state …« always refers solely to »SYSTEM(Companion):« lines.",
     "Process or framing offers by the companion (e.g. offering to explore differences or to clarify how",
     "to proceed) are NOT content agreement and NOT confirmation of a shared task or decision.",
+    // j8 (S103) · verdict consistency — see the German block for the three cases.
+    "EVIDENCE CARRIES THE VERDICT: evidence is the proof FOR your verdict, not your path towards it. Do not",
+    "write a deliberation there, no »on the one hand/on the other«, and no sentence contradicting your own",
+    "verdict. If your reasoning arrives at »does not apply«, then that IS your verdict — not its opposite.",
+    "NO ADDED REQUIREMENT: Examine exclusively what the question LITERALLY asks for. Do not demand an element",
+    "the question does not name, and do not add your own notion of how something ought to look.",
+    "NAME WHAT IS MISSING: If your verdict is that a required element is missing, name in evidence WHICH",
+    "element is missing. If you cannot name one, the element is not to be counted as missing.",
+    "(»kein Beleg« stays admissible where there is nothing to quote for an element — but it does not",
+    "replace naming what you find lacking.)",
     ...strukturEn,
   ].join("\n");
   return [
@@ -94,6 +104,17 @@ export function baueJudgePrompt(sprache) {
     "bezieht sich immer nur auf »SYSTEM(Begleitung):«-Beiträge.",
     "Prozess- oder Rahmenvorschläge der Begleitung (etwa anzubieten, Unterschiede zu erkunden oder das",
     "Vorgehen zu klären) sind KEINE inhaltliche Zustimmung und KEINE Bestätigung eines Auftrags.",
+    // j8 (S103) · Urteils-Konsistenz. Drei belegte Fehlurteilsklassen aus dem
+    // Lauf vom 2026-07-30, in derselben Reihenfolge wie unten adressiert.
+    "BELEG TRÄGT URTEIL: evidence ist der Beleg FÜR dein Urteil, nicht dein Denkweg dorthin. Schreibe dort",
+    "keine Abwägung, kein »einerseits/andererseits« und keinen Satz, der deinem eigenen verdict widerspricht.",
+    "Führt dein Abwägen zu »liegt nicht vor«, ist das dein verdict — nicht das Gegenteil.",
+    "KEINE ZUSATZFORDERUNG: Prüfe ausschließlich, was die Frage WÖRTLICH verlangt. Fordere kein Element,",
+    "das die Frage nicht nennt, und ergänze keine eigene Vorstellung davon, wie etwas auszusehen hätte.",
+    "FEHLENDES BENENNEN: Lautet dein Urteil, ein gefordertes Element fehle, benenne in evidence, WELCHES",
+    "Element fehlt. Kannst du keines benennen, ist das Element nicht als fehlend zu werten.",
+    "(»kein Beleg« bleibt zulässig, wenn es zu einem Element nichts zu zitieren GIBT — es ersetzt aber",
+    "nicht die Benennung dessen, was du vermisst.)",
     ...strukturDe,
   ].join("\n");
 }

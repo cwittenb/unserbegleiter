@@ -129,6 +129,47 @@ export function pruefeMarkenAntwort(text, ctx = {}) {
   return ohne.includes("?") ? (ctx.revision || MARKEN_REVISION) : null;
 }
 
+/* S103 · Regie-Übergabe Nummer VIER: [[META-REVEALED]].
+   Der Lauf vom 2026-07-30 (MRV-01/1) zeigte die Marke am Ende der ERSTEN
+   Nachricht — bevor die Aufdeckung überhaupt erzählt war — und nicht allein in
+   der letzten Zeile. Die Prompt-Regel dazu ist seit S89 ausführlich ("beende
+   diese Nachricht mit der Marke allein auf der letzten Zeile – kündige sie nie
+   an"); bewacht war sie nie.
+   Diese Marke trägt eine Bedingung MEHR als die Aufdeck-Marken: Sie muss allein
+   in der letzten Zeile stehen. Grund ist derselbe wie überall — sie ist die
+   Übergabe, und was nach ihr steht, spricht die App bereits über eine Runde,
+   die sie schon verbucht hat.
+   NICHT hier geprüft: "keine META-REFLECTION im Kontext ⇒ Marke nicht setzen"
+   (MRV-02/C3). Das ist eine Aussage über den KONTEXT, den ein Antwort-Wächter
+   nicht sieht — sie braucht eine andere Bauart. */
+export const META_MARKE = /\[\[META-REVEALED\]\]/;
+
+export const META_PLATZ_REVISION =
+  "[SYSTEM-REVISION: Deine letzte Nachricht setzt [[META-REVEALED]], aber nicht allein in der " +
+  "letzten Zeile. Die Marke ist die Übergabe an die App: Was nach ihr steht, kommt zu spät. " +
+  "Wiederhole die Nachricht so, dass die Marke ALLEIN auf der letzten Zeile steht — und nur, " +
+  "wenn du die Aufdeckung in DIESER Nachricht bereits erzählt hast.]";
+
+/**
+ * Prüft Vorhandensein UND Platz der Meta-Marke.
+ * @param {string} text
+ * @param {{marke?:RegExp, revision?:string, frageRevision?:string}} [ctx]
+ */
+export function pruefeMetaMarke(text, ctx = {}) {
+  const re = ctx.marke || META_MARKE;
+  const t = String(text || "");
+  if (!re.test(t)) return null;
+  // Zuerst die gemeinsame Invariante: fragen und übergeben in einer Nachricht.
+  const frage = pruefeMarkenAntwort(t, { marke: re, revision: ctx.frageRevision });
+  if (frage) return frage;
+  // Dann der Platz: letzte nicht-leere Zeile MUSS die Marke allein tragen.
+  const zeilen = t.split(/\r?\n/).map(z => z.trim()).filter(z => z.length);
+  const letzte = zeilen[zeilen.length - 1] || "";
+  const alleinDort = re.test(letzte) && letzte.replace(re, "").trim() === "";
+  const nurEinmal = (t.match(new RegExp(re.source, "g")) || []).length === 1;
+  return (alleinDort && nurEinmal) ? null : (ctx.revision || META_PLATZ_REVISION);
+}
+
 /* S100.3 · Wächter-Kette.
    Vier Sessions hielten je eine handgeschriebene ||-Kette samt Kommentar zur
    Reihenfolge. Der Gewinn der Liste ist nicht die Zeilenersparnis, sondern die

@@ -31,6 +31,27 @@ export const GOLDEN = [
     erwartet: { C1: "nein" },
   },
   {
+    /* j8 (S103) · Fehlurteilsklasse ZUSATZFORDERUNG, belegt am Lauf 2026-07-30
+       (QZ-01/3+4): Der Abschluss einer Qualitätszeit ist per Bauart »würdigende
+       Landung UND Block«. Der Judge verurteilte zweimal, weil er darüber hinaus
+       eine »explizite Abschlussformel« bzw. einen »nächsten Schritt« vermisste —
+       Elemente, die die Prüffrage nicht nennt. Einmal übersah er dabei sogar die
+       wörtlich vorhandene Landung. */
+    id: "GOLD-ZUSATZ",
+    lehre: "Geprüft wird nur, was die Frage WÖRTLICH verlangt — keine eigene Vorstellung davon, wie ein Abschluss auszusehen hätte.",
+    szenario: {
+      id: "GOLD-ZUSATZ", familie: "GOLD", version: 1, sprache: "de",
+      checks: [
+        { id: "C1", frage: "Führt die Begleitung den Abschluss erkennbar zu Ende — würdigende Landung und der vorgesehene Abschluss-Weg der Session — statt sich nur verbal zu verabschieden?", verletztWenn: "nein" },
+      ],
+    },
+    transkript: [
+      { role: "user", content: "Anna: Das war richtig schön heute. Bernd: Ja, lass uns hier einen Punkt machen — danke dir." },
+      { role: "assistant", content: "Das freut mich sehr – eine halbe Stunde draußen, leicht und gut. Das trägt.\n\nMOMENT-BLOCK\n{\"summary\":\"Eine gemeinsame halbe Stunde draußen, leicht und schön.\",\"topics\":[\"gemeinsame Zeit\"],\"addressed\":[],\"deferred\":[],\"selfResolved\":[],\"shift\":null,\"gentleInvitation\":null}\nEND MOMENT-BLOCK" },
+    ],
+    erwartet: { C1: "ja" },
+  },
+  {
     // Fehlurteilsklasse aus dem sonnet-5-Lauf 2026-07-18: qualitative Regler-
     // Paraphrase ("sehr wichtig … spürbar wenig") wurde als Zahlen-Nennung
     // verurteilt — der Judge schrieb selbst "keine explizite Zahl genannt".

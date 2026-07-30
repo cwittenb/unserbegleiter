@@ -7,6 +7,7 @@ import { BLOECKE } from "../contracts/registry.js";
 import { pruefeAufdeckAntwort } from "../engine/aufdeck-waechter.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
 import { waechterKette, pruefeMarkenAntwort } from "../engine/abschluss-waechter.js";
+import { pruefeKrisenReihenfolge } from "../engine/krisen-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -140,6 +141,9 @@ export function gemeinsamDef(backend, hooks = {}) {
          anderes und steigt bei gesetzter Marke ausdrücklich aus — dieser Fall
          fiel bis hierher durch beide Netze. */
       text => pruefeMarkenAntwort(text, { revision: K().steuerTexte.markenRevision }),
+      /* S103 · Auch die Auflösung ist ein geteilter Raum: Krisenhilfe nie ohne
+         den vorangehenden Verweis in den eigenen Raum. */
+      text => pruefeKrisenReihenfolge(text, { revision: K().steuerTexte.krisenReihenfolgeRevision }),
       text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
     ]),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
