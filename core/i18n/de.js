@@ -70,6 +70,9 @@ export const de = {
   // Mein Raum
   "mein.intro": "Dieser Raum ist nur für dich — nichts von hier erreicht {partner}, außer du gibst es ausdrücklich frei. Wenn du magst, kannst du Erarbeitetes jederzeit teilen: Die Begleitung hilft dir dann bei einer Formulierung, und erst dein Häkchen gibt sie frei. Nimm dir die Zeit, die du brauchst.",
   "mein.solo": "Reflexionsgespräch beginnen",
+  // S99.1 · Eine laufende Reflexion sagt das auch (Muster mein.einzelWeiter,
+  // teil.momentWeiter, teil.gemeinsamWeiter).
+  "mein.soloWeiter": "Reflexionsgespräch fortsetzen",
   "mein.einzel": "Auftragsklärung beginnen",
   "mein.einzelWeiter": "Auftragsklärung fortsetzen",
   "mein.zeitleiste": "Meine Zeitleiste",
@@ -83,6 +86,12 @@ export const de = {
   "teil.moment": "Qualitätszeit beginnen",
   "teil.momentWeiter": "Qualitätszeit fortsetzen",
   "chat.abschliessen": "Session abschließen",
+  // S99.2 · Der Abschluss ist unumkehrbar (Composer weg, Session beendet,
+  // kein Wiederoeffnen). Die Rueckfrage steht als Zeile an der Schreibkante —
+  // kein schwebender Behaelter (U7: aus dem Dialog wird ein Ort).
+  "chat.abschliessenFrage": "Session wirklich abschließen? Danach lässt sich hier nichts mehr schreiben.",
+  "chat.abschliessenJa": "Abschließen",
+  "chat.abschliessenNein": "Zurück",
   "momente.titel": "Gemeinsame Momente",
   "momente.intro": "Euer geteilter Zeitstrahl: die Protokolle eurer Sessions zu zweit — zum Nachlesen als Erinnerung.",
   "momente.leer": "Noch keine gemeinsamen Momente — nach eurer ersten Qualitätszeit liegt hier das Protokoll.",

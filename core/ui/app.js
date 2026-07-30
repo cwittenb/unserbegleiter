@@ -3,7 +3,7 @@
 
 import { Engine } from "../engine/engine.js";
 import { cleanDisplay, findeBlock } from "../contracts/block.js";
-import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht } from "../contracts/steuertoken.js";
+import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht, PAIRS_KOPF } from "../contracts/steuertoken.js";
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
 import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, baueAnlassKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
@@ -145,7 +145,7 @@ export function createApp({ doc, backend, root, diktat }) {
         <p class="rz-sub rz-still-aus" id="einzelSubP">${t("mein.einzelSub")}</p>
         <p class="rz-sub rz-still-aus" id="messSubP">${t("mein.messSub")}</p>
         <div class="rz-fuss">
-          <button class="rz-zeile" id="btnSolo"><span>${t("mein.solo")}</span><span class="rz-pfeil">↑</span></button>
+          <button class="rz-zeile" id="btnSolo"><span id="soloLabel">${t("mein.solo")}</span><span class="rz-pfeil">↑</span></button>
           <button class="rz-zeile rz-spalte" id="btnEinzel"><span class="rz-zeile-haupt"><span id="einzelLabel">${t("mein.einzel")}</span><span class="rz-pfeil">↑</span></span><span class="rz-balken pb-hidden" id="einzelBalken"><i></i></span></button>
           <button class="rz-zeile pb-hidden" id="btnMess"><span>${t("mein.mess")}</span><span class="rz-pfeil">↑</span></button>
         </div>
@@ -318,6 +318,14 @@ export function createApp({ doc, backend, root, diktat }) {
             <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
           </div>
           <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">←</span></button>
+          <!-- S99.2 · Rueckfrage vor dem Abschluss. Sie tritt AN DIE STELLE des
+               Knopfes (nicht darueber, nicht daneben) und traegt dieselbe
+               Grammatik wie die Verlaufs-Zeile: eine Frage, zwei Woerter. -->
+          <div class="rz-klein-leise rz-oben-1 pb-hidden" id="chatEndeFrage" role="group"></div>
+          <!-- S99.6 · Platz fuer die Verlaufs-Zeile am Sitzungsende. Sie stand
+               bisher unter der Ausschnitt-Tuer und war damit unsichtbar, wenn
+               es keine gab — genau in dem Fall, in dem sie gebraucht wird. -->
+          <div class="rz-klein-leise rz-oben-1 pb-hidden" id="verlaufAusgang"></div>
           <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnRaumVerlassen"><span>${t("chat.raumVerlassenKnopf")}</span><span class="rz-pfeil">←</span></button>
           <span class="rz-fussmarke" data-rz-marke></span>
         </div>
@@ -398,6 +406,7 @@ export function createApp({ doc, backend, root, diktat }) {
     // aus der Boot-Phase hinge nach dem ersten Abbau an einem Knoten, den es
     // nicht mehr gibt.
     verdrahteWegweiser(doc, $("chatOrt"), $("wegChat"));
+    baueEndeFrage();
     $("btnChatZurueck").addEventListener("click", async () => {
       await pausiereChat();
       betrete(state.herkunft || "scrStart");
@@ -413,10 +422,31 @@ export function createApp({ doc, backend, root, diktat }) {
     // S42 · Expliziter Abschluss der Qualitätszeit: bittet die Begleitung um den
     // Abschluss-Akt; das Modell erzeugt das Protokoll (MOMENT-BLOCK), die App
     // legt es in "Gemeinsame Momente" ab und schließt die Session wirklich.
-    $("btnChatEnde").addEventListener("click", async () => {
+    /* S99.2 · Der Knopf fragt jetzt zurueck. Grund: Der Abschluss ist der
+       einzige unumkehrbare Griff im Gespraech — danach ist der Composer weg,
+       die Session "finished", und ein erneutes Betreten beginnt frisch
+       (abgeschlossene Solo-/Moment-Sessions werden verworfen).
+       Die Frage ersetzt den Knopf, statt ueber ihm zu schweben. */
+    $("btnChatEnde").addEventListener("click", () => {
+      if (!state.engine || state.engine.chat.status !== "running") return;
+      zeigeEndeFrage(true);
+    });
+    $("btnEndeNein").addEventListener("click", () => {
+      zeigeEndeFrage(false);
+      aktualisiereChatEnde();
+    });
+    $("btnEndeJa").addEventListener("click", async () => {
+      zeigeEndeFrage(false);
       if (!state.engine || state.engine.chat.status !== "running") return;
       const text = state.engine.def.id === "solo" ? K().steuerTexte.soloAbschluss : K().steuerTexte.momentAbschluss;
-      await warteAntwort(() => state.engine.submitToolResult(text, { hidden: true }));
+      /* S99.7 · Die Paar-Kennungen reisen IM SELBEN Zug wie der Abschluss —
+         eine Panel-Antwort ist genau EINE Nachricht (Vertrag 1), und eine
+         zweite Nachricht waere eine zweite Modellrunde. Ohne die Kennungen
+         raet das Modell die Ids fuer den Eignungsbericht; geratene Ids sind
+         nie waehlbar, und die Ausschnitt-Tuer bleibt stumm zu. */
+      const kennungen = paarKennungenZug(state.engine);
+      await warteAntwort(() => state.engine.submitToolResult(
+        kennungen ? kennungen + "\n" + text : text, { hidden: true }));
       aktualisiereChatEnde();
       aktualisiereComposer();
     });
@@ -546,7 +576,7 @@ export function createApp({ doc, backend, root, diktat }) {
     // dann state.info.name/role als null (Fehlerbox statt Wegweiser).
     if (!state.info) state.info = await backend.info();
     const still = p => Promise.resolve().then(p).catch(() => null);
-    const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat, findings, gemeinsamChat] = await Promise.all([
+    const [reveal, revealLog, shelf, agenda, measurements, timeline, hA, hB, einzelChat, momentChat, findings, gemeinsamChat, soloChat] = await Promise.all([
       still(() => backend.bstate.get("reveal")),
       still(() => backend.bstate.get("revealLog")),
       still(() => backend.bstate.get("shelf")),
@@ -559,6 +589,7 @@ export function createApp({ doc, backend, root, diktat }) {
       still(() => backend.chat.load("shared", "moment")),
       still(() => backend.bstate.get("findings")),
       still(() => backend.chat.load("shared", "gemeinsam")),
+      still(() => backend.chat.load("mine", "solo")),
     ]);
     const rolle = state.info.role;
     const offeneRunde = (((measurements && measurements.items) || [])).find(r => r.status === "open");
@@ -598,6 +629,10 @@ export function createApp({ doc, backend, root, diktat }) {
       einzelBegonnen: !!(einzelChat && (einzelChat.messages || []).length) || einzelFrei,
       einzelFertig: einzelFrei,
       momentOffen: !!(momentChat && momentChat.status === "running" && (momentChat.messages || []).length),
+      // S99.1 · Laufendes Reflexionsgespräch. Abgeschlossene Solo-Sessions
+      // werden beim Betreten ohnehin verworfen (startChat) — "running" mit
+      // Nachrichten ist deshalb der eindeutige Fortsetzen-Zustand.
+      soloOffen: !!(soloChat && soloChat.status === "running" && (soloChat.messages || []).length),
       zeitleisteLeer: !((timeline && timeline.entries) || []).length,
     };
   }
@@ -712,6 +747,11 @@ export function createApp({ doc, backend, root, diktat }) {
       // "beginnen" (Muster wie btnMoment/teil.momentWeiter).
       const be = $("einzelLabel");
       if (be) be.textContent = lage.einzelBegonnen ? t("mein.einzelWeiter") : t("mein.einzel");
+      // S99.1 · Dasselbe fürs Reflexionsgespräch. Bis hierher hieß die Zeile
+      // auch mitten in einer laufenden Sitzung "beginnen" — sie versprach
+      // einen Neuanfang, den der Klick gar nicht einlöst.
+      const bs = $("soloLabel");
+      if (bs) bs.textContent = lage.soloOffen ? t("mein.soloWeiter") : t("mein.solo");
       // D3 · 2px-Fortschrittsbalken (Design 17c) unter der Auftragsklaerungs-
       // Zeile: sichtbar, solange eine Kapitel-Pause vorliegt; Breite = Anteil
       // geschaffter Kapitel. Kein Kapitel-Label (Spez).
@@ -1094,7 +1134,12 @@ export function createApp({ doc, backend, root, diktat }) {
       onMomentEnde: () => { aktualisiereChatEnde(); aktualisiereComposer(); },
       // S76 · Solo-Abschluss (TIMELINE-BLOCK nach [CLOSE SESSION]) beendet die
       // Session — Knopf und Composer ziehen sichtbar nach.
-      onZeitleiste: () => { aktualisiereChatEnde(); aktualisiereComposer(); },
+      // S99.6 · Und der Verlauf wird aufbewahrt, falls das nicht schon über den
+      // Eignungsbericht geschehen ist (Daten-Hook, bewusst UNGEZÄUNT wie onSave).
+      onZeitleiste: async (daten, e2) => {
+        aktualisiereChatEnde(); aktualisiereComposer();
+        await verlaufAbschluss(e2 || state.engine);
+      },
     };
     const def =
       art === "solo" ? soloDef(backend, hooks) :
@@ -1187,6 +1232,9 @@ export function createApp({ doc, backend, root, diktat }) {
     state.chatId = art;
     state.chatShared = def.shared;
     state.herkunft = def.shared ? "scrShared" : "scrMyRoom";
+    // S99.6 · Zeitmarke des Betretens. Sie entscheidet, ob ein Zeitleisten-
+    // Eintrag noch zu DIESER Sitzung gehört (siehe hefteVerlaufAn).
+    state.sessionAb = Date.now();
     // D12-2b/T2i · Das Badge auf der Naht nennt den Ort (Turn 27, 27e) — und
     // ist seit T2 zugleich der Wegweiser-Knopf. Die Beschriftung bleibt der
     // Ortsname (Entscheidung K5), sie zieht ihn aber aus eigenen Schlüsseln
@@ -1525,9 +1573,52 @@ export function createApp({ doc, backend, root, diktat }) {
   function aktualisiereChatEnde() {
     const b = $("btnChatEnde");
     const id = state.engine && state.engine.def && state.engine.def.id;
-    if (b) b.classList.toggle("pb-hidden",
-      !((id === "moment" || id === "solo") && state.engine.chat.status === "running"));
+    const offen = (id === "moment" || id === "solo") && state.engine.chat.status === "running";
+    if (b) b.classList.toggle("pb-hidden", !offen);
+    // S99.2 · Eine stehengebliebene Rueckfrage waere ein Knopf ohne Wirkung:
+    // Sie faellt weg, sobald der Abschluss nicht mehr offen steht.
+    if (!offen) zeigeEndeFrage(false);
     aktualisiereWegweiserChat();   // T2i: der Wegweiser gehoert zur Schreibkante
+  }
+
+  /* S99.2 · Die Rueckfrage vor dem Abschluss.
+     Form nach U7 (§1.1: "aus dem Dialog wird ein Ort"): kein schwebender
+     Behaelter, kein Systemdialog — eine Zeile an derselben Stelle, an der
+     der Knopf stand. Die Vorgabe der Frage ist NEIN: Wer nichts tut, schliesst
+     nichts ab (dieselbe Grammatik wie die Verlaufs-Frage aus S95.7b). */
+  function baueEndeFrage() {
+    const f = $("chatEndeFrage");
+    if (!f) return;
+    f.innerHTML =
+      `${esc(t("chat.abschliessenFrage"))} ` +
+      `<button class="pb-link" id="btnEndeJa">${esc(t("chat.abschliessenJa"))}</button> · ` +
+      `<button class="pb-link" id="btnEndeNein">${esc(t("chat.abschliessenNein"))}</button>`;
+  }
+
+  /** Frage an die Stelle des Knopfes — nie beide zugleich. */
+  function zeigeEndeFrage(an) {
+    const f = $("chatEndeFrage"), b = $("btnChatEnde");
+    if (f) f.classList.toggle("pb-hidden", !an);
+    if (b && an) b.classList.add("pb-hidden");
+  }
+
+  /* S99.7 · Die Paar-Kennungen fuer den Eignungsbericht.
+     Der Prompt verspricht sie seit S95.2 woertlich ("die Paar-Kennung, die dir
+     die App im Verlauf mitgibt") — geliefert wurden sie nie. Das Modell konnte
+     sie auch nicht erraten: Sie stammen aus den NACHRICHTEN-INDIZES des Chats
+     (versteckte Zuege eingerechnet), und die sieht es nicht. Ohne den
+     Handschlag ist kein Paar waehlbar (paarWaehlbar), also faellt die
+     Ausschnitt-Tuer weg, also wird kein Verlauf aufbewahrt — die ganze Kette
+     hing an einer Zusage, die niemand einloeste.
+     Nur die Frage wandert mit: Sie identifiziert das Paar eindeutig genug, und
+     die Antwort steht dem Modell im Verlauf ohnehin vollstaendig zur Verfuegung. */
+  function paarKennungenZug(engine) {
+    if (!engine || !engine.chat) return null;
+    const paare = paareAusVerlauf(engine.chat.messages, { markerOrder: engine.def && engine.def.markerOrder });
+    if (!paare.length) return null;
+    return PAIRS_KOPF + "\n" + paare
+      .map(p => p.id + " · " + p.frage.text.replace(/\s+/g, " ").slice(0, 120))
+      .join("\n");
   }
 
   /* S38 · Persönliche Zeitleiste fortschreiben (Auftragsklärung, Prozess-
@@ -1556,6 +1647,56 @@ export function createApp({ doc, backend, root, diktat }) {
     z.id = "verlaufZeile";
     z.innerHTML = inhalt;
     p.appendChild(z);
+    return z;
+  }
+
+  /* S99.6 · Aufbewahren am Sitzungsende.
+     Bis hierher hing die Ablage AUSSCHLIESSLICH am EXCERPT-BLOCK: kein
+     Eignungsbericht (oder kein wählbares Paar) → kein Verlauf → keine Kennung
+     am Zeitleisten-Eintrag → in der nächsten Reflexion ist der Wortlaut-Abruf
+     konstruktionsbedingt unmöglich. Der Begleiter sagte dann wahrheitsgemäß
+     "ich hole das Gespräch" und fand nichts.
+     Der Abschluss ist der richtige Ort dafür: Er kommt IMMER, und der Eintrag,
+     zu dem die Kennung gehört, ist gerade entstanden. */
+  async function verlaufAbschluss(engine) {
+    try {
+      if (state.verlaufId) { await hefteVerlaufAn(state.verlaufId); return; }
+      const zl = await backend.pstate.get("timeline");
+      const eintraege = (zl && zl.entries) || [];
+      const letzter = eintraege[eintraege.length - 1];
+      if (letzter && letzter.vid) return;                    // über den Ausschnitt versorgt
+      const modus = await verlaufEinstellung(backend);
+      if (modus === "fragen") { frageVerlaufAmAusgang(engine); return; }
+      const id = await ablegen(null, engine);
+      if (!id) return;
+      if (await backend.pstate.get("verlaufInfoGezeigt")) return;
+      zeileAmAusgang(esc(t("verlauf.erstInfo")));
+      await backend.pstate.set("verlaufInfoGezeigt", true);
+    } catch { /* Aufbewahren ist Komfort, kein Muss */ }
+  }
+
+  /* K3 · Bei "jedes Mal fragen" wird auch am Sitzungsende gefragt — sonst
+     hätte die Einstellung eine stille Nebenwirkung, die niemand gewählt hat:
+     Ohne Ausschnitt-Tür gäbe es weder Frage noch Ablage. Vorgabe ist NEIN. */
+  function frageVerlaufAmAusgang(engine) {
+    const z = zeileAmAusgang(
+      `${esc(t("verlauf.frage"))} ` +
+      `<button class="pb-link" id="vlAusJa">${esc(t("verlauf.frageJa"))}</button> · ` +
+      `<button class="pb-link" id="vlAusNein">${esc(t("verlauf.frageNein"))}</button>`);
+    if (!z) return;
+    z.querySelector("#vlAusNein").addEventListener("click", () => z.classList.add("pb-hidden"));
+    z.querySelector("#vlAusJa").addEventListener("click", async () => {
+      await ablegen(null, engine);
+      z.classList.add("pb-hidden");
+    });
+  }
+
+  /** Zeile an der Schreibkante, dort wo eben noch der Composer stand. */
+  function zeileAmAusgang(inhalt) {
+    const z = $("verlaufAusgang");
+    if (!z) return null;
+    z.innerHTML = inhalt;
+    z.classList.remove("pb-hidden");
     return z;
   }
 
@@ -1593,6 +1734,12 @@ export function createApp({ doc, backend, root, diktat }) {
       if (!zl || !zl.entries || !zl.entries.length) return;      // Eintrag kommt noch
       const letzter = zl.entries[zl.entries.length - 1];
       if (letzter.vid) return;                                    // schon versorgt
+      /* S99.6 · Nur an einen Eintrag DIESER Sitzung. Vorher hing die Kennung
+         am jüngsten Eintrag überhaupt — kam der Eignungsbericht VOR dem
+         Abschluss-Eintrag (der Normalfall), landete der frische Verlauf am
+         Eintrag der VORIGEN Sitzung. Ein Abruf hätte dann das falsche Gespräch
+         geholt, und genau davor warnt der Kommentar am Abruf-Haken selbst. */
+      if (state.sessionAb && Date.parse(letzter.at || "") < state.sessionAb) return;
       letzter.vid = id;
       await backend.pstate.set("timeline", zl);
       state.verlaufId = null;

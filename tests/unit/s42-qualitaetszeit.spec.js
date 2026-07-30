@@ -101,7 +101,9 @@ describe("S42 · Sauberes Beenden", () => {
     await ruhe();
     const ende = root.querySelector("#btnChatEnde");
     expect(ende.classList.contains("pb-hidden")).toBe(false);
+    // S99.2 · Der Abschluss fragt zurück — erst das Ja schickt den Steuertext.
     await klick(ende);
+    await klick(root.querySelector("#btnEndeJa"));
     await ruhe();
     // Wire, nicht Chat; Session wirklich zu; Knopf weg
     const gesendet = mock.calls[1].messages.filter(m => m.role === "user").pop();

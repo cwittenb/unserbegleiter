@@ -152,6 +152,7 @@ describe("S93 · A2/A3 Abschluss-Knopf und Ausgang", () => {
     expect(root.querySelector("#pbComposer").classList.contains("pb-hidden")).toBe(false);
 
     await klick(ende);
+    await klick(root.querySelector("#btnEndeJa"));   // S99.2 · Rückfrage
     await ruhe();
 
     expect(app._state.engine.chat.status).toBe("finished");
@@ -178,6 +179,7 @@ describe("S93 · A2/A3 Abschluss-Knopf und Ausgang", () => {
     await ruhe();
 
     await klick(root.querySelector("#btnChatEnde"));
+    await klick(root.querySelector("#btnEndeJa"));   // S99.2 · Rückfrage
     await ruhe();
 
     expect(app._state.engine.chat.status).toBe("finished");

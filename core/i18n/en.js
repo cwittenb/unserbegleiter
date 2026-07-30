@@ -60,6 +60,8 @@ export const en = {
   // My Private Space
   "mein.intro": "This space is yours alone — nothing from here reaches {partner} unless you explicitly release it. Whenever you like, you can share what you've worked out: your companion helps you find a formulation, and only your checkmark releases it. Take the time you need.",
   "mein.solo": "Start a Supported Reflection Session",
+  // S99.1 · A running reflection says so (pattern: mein.einzelWeiter).
+  "mein.soloWeiter": "Continue Your Supported Reflection Session",
   "mein.einzel": "Start Clarifying Your Focus",
   "mein.einzelWeiter": "Continue Clarifying Your Focus",
   "mein.zeitleiste": "My Timeline",
@@ -73,6 +75,11 @@ export const en = {
   "teil.moment": "Begin quality time",
   "teil.momentWeiter": "Continue quality time",
   "chat.abschliessen": "Close session",
+  // S99.2 · Closing is irreversible — the question stands as a line at the
+  // writing edge, not as a floating container.
+  "chat.abschliessenFrage": "Really close this session? Afterwards you can no longer write here.",
+  "chat.abschliessenJa": "Close it",
+  "chat.abschliessenNein": "Back",
   "momente.titel": "Shared moments",
   "momente.intro": "Your shared timeline: the protocols of your sessions together — to read back as a keepsake.",
   "momente.leer": "No shared moments yet — after your first quality time, its protocol will live here.",

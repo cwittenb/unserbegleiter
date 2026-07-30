@@ -48,10 +48,16 @@ export function entferneSteuerToken(text) {
    unterdrückt. Kanonischer Ort ist die Protokoll-Hygiene: die Liste hat seit
    S95.1 zwei Verbraucher (Renderer und Ausschnitt-Auswahlmenge) und darf nicht
    in zwei Kopien auseinanderlaufen. */
+/** S99.7 · Kopf des Kennungs-Zuges. Er reist HUCKEPACK auf dem Abschluss-Zug
+ *  ([CLOSE SESSION] in derselben Nachricht) — eine Panel-Antwort ist genau EINE
+ *  User-Nachricht (Vertrag 1), und eine zweite waere eine zweite Modellrunde. */
+export const PAIRS_KOPF = "PAIRS";
+
 export const WIRE_KOEPFE = [
   "SLIDERS-RESULT", "RANKING-RESULT", "PARTNER-GUESS-CHANGE", "PARTNER-GUESS",
   "BASELINE-RESULT", "SCALE-RESULT", "CHOICE-RESULT", "SHARING-RESULT", "REVEAL-SHOWN",
   "RECALL-RESULT",   // S95.8b: die App liefert den angeforderten Wortlaut zurueck
+  PAIRS_KOPF,        // S99.7: die Paar-Kennungen fuer den Eignungsbericht
 ];
 
 /** Ist die Nachricht eine Panel-Ergebnis-Nachricht (Wire, nie Anzeige)? */

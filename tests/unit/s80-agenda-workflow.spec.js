@@ -245,6 +245,7 @@ describe("S80 · Abschluss: Persistenz, Heilung, Solo-Ende", () => {
     await app.startChat("moment");
     await ruhe();
     await klick(root.querySelector("#btnChatEnde"));
+    await klick(root.querySelector("#btnEndeJa"));   // S99.2 · Rückfrage
     await ruhe();
     const gespeichert = await backend.chat.load("shared", "moment");
     expect(gespeichert.status).toBe("finished");                  // der Kern des Bugs
@@ -282,9 +283,12 @@ describe("S80 · Abschluss: Persistenz, Heilung, Solo-Ende", () => {
     const ende = root.querySelector("#btnChatEnde");
     expect(ende.classList.contains("pb-hidden")).toBe(false);     // Abschluss-Knopf auch im Reflexionsgespräch
     await klick(ende);
+    await klick(root.querySelector("#btnEndeJa"));   // S99.2 · Rückfrage
     await ruhe();
     const gesendet = mock.calls[1].messages.filter(m => m.role === "user").pop();
-    expect(gesendet.content).toBe("[CLOSE SESSION]");
+    // S99.7 · Der Abschluss-Zug trägt jetzt die Paar-Kennungen huckepack; der
+    // Steuertext steht weiterhin darin (und weiterhin genau einmal).
+    expect(gesendet.content).toContain("[CLOSE SESSION]");
     expect(gesendet.hidden).toBe(true);
     const gespeichert = await backend.chat.load("mine", "solo");
     expect(gespeichert.status).toBe("finished");

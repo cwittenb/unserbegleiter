@@ -12,6 +12,7 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
+import { pruefeAbschlussAntwort } from "../engine/abschluss-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
@@ -26,11 +27,38 @@ export function soloDef(backend, hooks = {}) {
     sysPrompt: ctx => K().reflexionsPrompt(ctx.me, ctx.partner) + K().THEMEN_RAHMEN,
     // S93 · Urteils-Wächter: ein Prädikats-Urteil aus der Richterposition löst
     // genau eine SYSTEM-REVISION aus (Engine-Vertrag 2).
-    validiereAntwort: text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    // S99.3 · Danach der Abschluss-Wächter: eine Nachricht, die FRAGT, darf die
+    // Sitzung nicht zugleich BEENDEN. Reihenfolge ist folgenlos — der
+    // Urteils-Wächter schweigt bei Block-Antworten, der Abschluss-Wächter
+    // urteilt nur über sie.
+    validiereAntwort: (text, engine) =>
+      pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision) ||
+      pruefeAbschlussAntwort(text, {
+        messages: (engine && engine.chat && engine.chat.messages) || [],
+        token: K().steuerTexte.soloAbschluss,
+        revision: K().steuerTexte.abschlussRevision,
+      }),
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",
     blocks: [
+      {
+        /* S99.5 · Wortlaut-Abruf. Der Block ist seit S95.8b im Register, das
+           Schema geprüft, der Prompt ausführlich, der Hook in app.js verdrahtet
+           — nur GEFÜHRT hat ihn nie eine Session. Die Engine dispatcht aus
+           `def.blocks`; was hier fehlt, existiert für sie nicht. Die Anzeige
+           entfernte ihn trotzdem (cleanDisplay läuft über ALLE_BLOECKE), also
+           sah niemand einen Fehler: Der Begleiter forderte an, die App
+           antwortete nie, und beide warteten aufeinander.
+           U8.6 hat auf genau diesen Pfad einen Weg gelegt (Teilen aus einem
+           gelesenen Protokoll: "holt den Wortlaut bei Bedarf per RECALL-BLOCK") —
+           der Weg endete bis hierher im Nichts.
+           Er steht an ERSTER Stelle: Die Engine verarbeitet genau EINEN Block je
+           Nachricht, und ein Abruf wiegt schwerer als ein Abschluss, der in
+           derselben Nachricht ohnehin nicht stehen dürfte. */
+        ...BLOECKE.abruf,
+        handle: (data, engine) => { if (hooks.onAbruf) hooks.onAbruf(data, engine); },
+      },
       {
         ...BLOECKE.zeitleiste,
         handle: async (data, engine) => {
@@ -38,7 +66,14 @@ export function soloDef(backend, hooks = {}) {
           zl.entries.push({ at: new Date().toISOString(), ...data });
           await backend.pstate.set("timeline", zl);
           engine.chat.status = "finished";
-          if (hooks.onZeitleiste) hooks.onZeitleiste(data);
+          /* S99.6 · Der Haken wird ABGEWARTET und bekommt die Engine mit: Die
+             Verlaufs-Ablage hängt seit S95.7a am EXCERPT-BLOCK und fiel damit
+             immer dann aus, wenn kein Eignungsbericht kam — ohne Kennung am
+             Eintrag ist der Wortlaut-Abruf der Folgesitzung unmöglich. Sie
+             gehört an den Abschluss, und zwar HIER: Der Eintrag ist gerade
+             geschrieben, die Kennung findet also sicher IHN und nicht den
+             Eintrag der vorigen Sitzung. */
+          if (hooks.onZeitleiste) await hooks.onZeitleiste(data, engine);
         },
       },
       {
