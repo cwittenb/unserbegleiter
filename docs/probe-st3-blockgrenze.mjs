@@ -12,6 +12,30 @@
 //                      Grenze liegt dann nicht am Ende des Langtexts)
 //   C  grenzregel    — Schema wie A + harte Grenz-Regel in der Präambel
 //   D  beides        — B + C
+//   E  output-config — NUR anthropic: native Structured Outputs (constrained
+//                      decoding) statt erzwungenem Tool-Use. Raw-Fetch mit
+//                      aktueller Form output_config.format; bei 400 automatischer
+//                      Rückfall auf die Beta-Form output_format + Header
+//                      structured-outputs-2025-11-13. JSON kommt als Text-Content
+//                      — die Tool-XML-Leckklasse existiert dort mechanisch nicht.
+//                      Doku-Stand 1. Aug 2026: GA für Claude ≥ 4.5 (kein Beta-
+//                      Header nötig), Streaming unterstützt, MIT Thinking
+//                      kompatibel (Grammatik greift nicht in Thinking — R3
+//                      entfiele für diese Mechanik), Property-Ordering
+//                      required-first, Enum/Const-Casing nicht garantiert,
+//                      Komplexitätslimit ≤ 16 Union-Parameter je Request.
+//                      Schema läuft durch anthropicSoDialekt (s. u.).
+//
+// n=20-BEFUND (1. Aug 2026, korrigiert um den Quelle-Bug): mistral 20/20 an der
+// Blockgrenze sauber (B/D sogar ohne Wächter-Treffer) — anthropic/tool-use
+// variantenunabhängig ~50 % gerissen. E (output_config): 0 Lecks, 4/5 sauber,
+// 1× block:null (WANN-Klasse, existiert in allen Mechaniken).
+//
+// NACH ST3 fährt der ADAPTER SELBST output_config — die Varianten A–D messen
+// damit die NEUE Mechanik (A = Adapter-Baseline; B–D Reihenfolge/Grenzregel
+// obendrauf, nur noch als Vergleich interessant). E bleibt die Roh-Referenz
+// ohne Adapter. quelle: anthropic liefert jetzt "schema" (Alt-Antworten der
+// Tool-Mechanik weiter "tool"); mistral ebenfalls "schema".
 //
 // PROVIDER-VERGLEICH (st2d): Der Riss trägt Anthropic-Handschrift — das
 // durchblutende Markup IST die Tool-Use-Serialisierung (tool_choice). Mistral
@@ -48,11 +72,11 @@ const arg = (name, def) => {
   return a ? a.split("=")[1] : def;
 };
 const N = Number(arg("n", 5));
-const VARIANTEN = arg("varianten", "A,B,C,D").split(",");
+const VARIANTEN = arg("varianten", "A,B,C,D,E").split(",");
 const PROVIDER = arg("provider", "anthropic,mistral").split(",");
-const MODELLE = {
-  anthropic: arg("model-anthropic", arg("model", "claude-sonnet-5")),
-  mistral: arg("model-mistral", "mistral-medium-latest"),
+const MODELLE = {   // CLI > .env (EVAL_*_PIPELINE_MODEL) > Vorgabe
+  anthropic: arg("model-anthropic", arg("model", ENV.EVAL_ANTHROPIC_PIPELINE_MODEL || "claude-sonnet-5")),
+  mistral: arg("model-mistral", ENV.EVAL_MISTRAL_PIPELINE_MODEL || "mistral-medium-latest"),
 };
 const KEYS = { anthropic: ENV.ANTHROPIC_API_KEY, mistral: ENV.MISTRAL_API_KEY };
 if (!PROVIDER.some(pv => KEYS[pv])) {
@@ -87,6 +111,7 @@ const KONFIG = {
   B: { schema: schemaBlockZuerst(basisSchema), system: basisSystem },
   C: { schema: basisSchema, system: basisSystem + "\n\n" + GRENZREGEL },
   D: { schema: schemaBlockZuerst(basisSchema), system: basisSystem + "\n\n" + GRENZREGEL },
+  E: { schema: basisSchema, system: basisSystem, mechanik: "output_config", nurProvider: "anthropic" },
 };
 
 function baueLlm(provider) {
@@ -127,9 +152,85 @@ const VERLAUF = [
 const LECK = /-BLOCK|\[\[|END |<parameter|<\/an|\{\s*"/;
 
 async function zug(llm, k, messages) {
+  if (k.mechanik === "output_config") {
+    const d = await outputConfigZug(k, messages);
+    return { antwort: String(d.antwort || ""), block: d.block || null, quelle: "output_config" };
+  }
   const r = await llm(k.system, messages, { structured: k.schema });
   const d = r.data || {};
   return { antwort: String(d.antwort || ""), block: d.block || null, quelle: r.strukturQuelle };
+}
+
+/* Variante E: native Structured Outputs, roh gegen /v1/messages — die Sonde
+   misst die Mechanik VOR jedem Adapter-Umbau. Aktuelle Form zuerst
+   (output_config.format); meldet die API 400 mit unbekanntem Parameter, folgt
+   GENAU EIN Rückfall auf die dokumentierte Beta-Übergangsform.
+
+   SCHEMA-DIALEKT (Doku "Structured outputs · JSON Schema limitations",
+   gelesen 1. Aug 2026): (a) anyOf verträgt KEINE strukturellen Geschwister —
+   ein Knoten mit type/properties/required NEBEN anyOf wird zu einem reinen
+   anyOf gemischter Varianten umgeschrieben (Geschwister in jede Variante
+   gemergt, required vereinigt); das trifft genau die zeit-noContent-Weiche.
+   (b) additionalProperties:false auf jedem Objekt (SDK-Transformationsmuster
+   der Doku; generationsseitig — die Toleranzregeln der JS-Validatoren für
+   ALTBESTAND bleiben unberührt). (c) Zähl-Constraints (minItems/maxItems u. ä.)
+   werden entfernt — die semantische Wahrheit bleibt der JS-Validator samt
+   Korrektur-Runde (Rollenteilung aus ST1). Type-Arrays (["string","null"]),
+   enum und const sind laut Doku unterstützt und bleiben. */
+export function anthropicSoDialekt(knoten) {
+  if (Array.isArray(knoten)) return knoten.map(anthropicSoDialekt);
+  if (!knoten || typeof knoten !== "object") return knoten;
+  const STRUKTUR = ["type", "properties", "required", "items", "enum", "const", "additionalProperties"];
+  const ZAEHLER = ["minItems", "maxItems", "minimum", "maximum", "minLength", "maxLength"];
+  const rest = {};
+  for (const [k, v] of Object.entries(knoten)) {
+    if (ZAEHLER.includes(k)) continue;
+    rest[k] = v;
+  }
+  if (rest.anyOf && STRUKTUR.some(k => k in rest)) {
+    const { anyOf, description, ...geschwister } = rest;
+    const varianten = anyOf.map(z => {
+      const v = { ...geschwister, ...z };
+      const req = [...new Set([...(geschwister.required || []), ...(z.required || [])])];
+      if (req.length) v.required = req;
+      return anthropicSoDialekt(v);
+    });
+    return description ? { description, anyOf: varianten } : { anyOf: varianten };
+  }
+  const raus = {};
+  for (const [k, v] of Object.entries(rest)) raus[k] = anthropicSoDialekt(v);
+  if (raus.type === "object" && raus.properties && !("additionalProperties" in raus))
+    raus.additionalProperties = false;
+  return raus;
+}
+
+let eForm = "neu";
+async function outputConfigZug(k, messages) {
+  const basis = {
+    model: MODELLE.anthropic, max_tokens: 4096,
+    system: k.system,
+    messages: messages.map(m => ({ role: m.role, content: m.content })),
+    thinking: { type: "disabled" },
+  };
+  const dialekt = anthropicSoDialekt(k.schema.schema);
+  const koerper = eForm === "neu"
+    ? { ...basis, output_config: { format: { type: "json_schema", schema: dialekt } } }
+    : { ...basis, output_format: { type: "json_schema", schema: dialekt } };
+  const kopf = {
+    "Content-Type": "application/json", "x-api-key": KEYS.anthropic, "anthropic-version": "2023-06-01",
+    ...(eForm === "neu" ? {} : { "anthropic-beta": "structured-outputs-2025-11-13" }),
+  };
+  const resp = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: kopf, body: JSON.stringify(koerper) });
+  if (resp.status === 400 && eForm === "neu") {
+    const roh = await resp.text();
+    console.log("    [E] output_config abgelehnt → Rückfall auf Beta-Form (" + roh.slice(0, 120).replace(/\n/g, " ") + ")");
+    eForm = "beta";
+    return outputConfigZug(k, messages);
+  }
+  if (resp.status !== 200) throw new Error("E: HTTP " + resp.status + " — " + (await resp.text()).slice(0, 300));
+  const data = await resp.json();
+  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+  return JSON.parse(text);
 }
 
 const ergebnisse = {};
@@ -137,8 +238,9 @@ for (const provider of PROVIDER) {
   if (!KEYS[provider]) { console.log(`[${provider}] übersprungen — kein Key in der .env.`); continue; }
   const llm = baueLlm(provider);
   for (const v of VARIANTEN) {
+  if (!KONFIG[v]) { console.error("Unbekannte Variante:", v); continue; }
+  if (KONFIG[v].nurProvider && KONFIG[v].nurProvider !== provider) continue;
   const k = fuerProvider(provider, KONFIG[v]);
-  if (!k) { console.error("Unbekannte Variante:", v); continue; }
   const stat = { sauber: 0, leck: 0, keinBlock: 0, schemaFehler: 0, quelle: 0, waechter: 0 };
   for (let lauf = 1; lauf <= N; lauf++) {
     const probleme = [];
@@ -152,7 +254,9 @@ for (const provider of PROVIDER) {
           { role: "user", content: "Für mich behalten. Magst du hier schließen?" },
         ]);
       }
-      if (final.quelle !== "tool") { probleme.push("quelle=" + final.quelle); stat.quelle++; }
+      // ST3: erzwungene Quellen sind "schema" (output_config / response_format)
+      // und alt-kompatibel "tool"; "text" wäre die S85-Rettung — hier ein Befund.
+      if (!k.mechanik && !["schema", "tool"].includes(final.quelle)) { probleme.push("quelle=" + final.quelle); stat.quelle++; }
       if (LECK.test(final.antwort) || LECK.test(r1.antwort)) { probleme.push("LECK"); stat.leck++; }
       if (!final.block || final.block.typ !== "zeit") { probleme.push("kein zeit-Block"); stat.keinBlock++; }
       else {
@@ -182,4 +286,4 @@ for (const [pv, s] of Object.entries(ergebnisse))
 const sieger = Object.entries(ergebnisse).filter(([, s]) => s.sauber === N).map(([pv]) => pv);
 if (sieger.length) console.log("SIEGER (n/n sauber): " + sieger.join(", ") + " → ST3 setzt Variante (und ggf. Provider-Hinweis) als Vorgabe und wiederholt Sonde v2 komplett.");
 else console.log("KEINE Kombination n/n sauber → Präambel-Ansatz an der Blockgrenze verworfen; Fallback Voll-Migration (ST2-Protokoll).");
-console.log("DIFF-Lesart: Ist mistral in A sauber, während anthropic/A reißt, ist der Riss die Tool-Use-Serialisierung (Provider-Quirk) — nicht der Schema-Zuschnitt.");
+console.log("DIFF-Lesart: mistral/A–D sauber + anthropic/A–D gerissen = Tool-Use-Serialisierung. Ist anthropic/E sauber, ist der Mechanikwechsel (output_config statt tool_choice) der ST3-Weg — gleiche Prompts, gleiches Schema.");

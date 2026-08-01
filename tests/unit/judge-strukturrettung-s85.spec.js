@@ -64,7 +64,7 @@ describe("S85 · Anthropic parseStructured: deklarierter Rettungspfad", () => {
       { type: "text", text: "**C1** — Behandelt die Begleitung den Auftrag als beschlossen …" },
     ])));
     await expect(call("sys", [{ role: "user", content: "x" }], { structured: STRUKTUR }))
-      .rejects.toThrow(/kein tool_use-Block/);
+      .rejects.toThrow(/kein JSON-Wert im Text/);
   });
 });
 

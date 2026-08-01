@@ -46,16 +46,18 @@ const M_JSON = {
   usage: { prompt_tokens: 10, completion_tokens: 5 },
 };
 
-describe("Adapter · structured (anthropic Tool-Use)", () => {
-  it("Request trägt tools + erzwungenes tool_choice; data kommt aus dem tool_use-Block", async () => {
+describe("Adapter · structured (anthropic, ST3: output_config)", () => {
+  it("Request trägt output_config (ST3); data kommt aus dem tool_use-Block (Alt-Deutung bleibt)", async () => {
     const f = mockFetch(A_TOOLUSE);
     const call = makeAdapter({ ...KEYLESS }, f);
     const r = await call("SYS", [{ role: "user", content: "u" }], { structured: SCHEMA });
     const { body } = f.calls[0];
-    expect(body.tools).toHaveLength(1);
-    expect(body.tools[0].name).toBe("bewertung");
-    expect(body.tools[0].input_schema).toEqual(SCHEMA.schema);   // unverändert durchgereicht
-    expect(body.tool_choice).toEqual({ type: "tool", name: "bewertung" });
+    // ST3: output_config statt tools/tool_choice
+    expect(body.tools).toBeUndefined();
+    expect(body.tool_choice).toBeUndefined();
+    expect(body.output_config.format.type).toBe("json_schema");
+    // Dialekt-gewandelt, aber deterministisch (Cache-stabil):
+    expect(body.output_config.format.schema).toBeTruthy();
     expect(body.stream).toBeUndefined();
     expect(r.data).toEqual({ checks: ["a", "b"] });
     expect(r.usage.in).toBe(10);
@@ -67,14 +69,14 @@ describe("Adapter · structured (anthropic Tool-Use)", () => {
     await call("SYS", [{ role: "user", content: "u" }], { structured: SCHEMA });
     await call("SYS", [{ role: "user", content: "u" }], { structured: SCHEMA });
     expect(f.calls[0].body.system[0].cache_control).toEqual({ type: "ephemeral" });
-    expect(JSON.stringify(f.calls[0].body.tools)).toBe(JSON.stringify(f.calls[1].body.tools));
+    expect(JSON.stringify(f.calls[0].body.output_config)).toBe(JSON.stringify(f.calls[1].body.output_config));
     expect(f.calls[0].init.headers["x-api-key"]).toBe("sk-test");
   });
 
-  it("kein tool_use-Block ⇒ Wurf mit Diagnose statt Raten", async () => {
+  it("weder tool_use noch JSON im Text ⇒ Wurf mit Diagnose statt Raten", async () => {
     const f = mockFetch({ content: [{ type: "text", text: "Ich erkläre lieber, warum ich das nicht tue." }], stop_reason: "end_turn" });
     const call = makeAdapter({ ...KEYLESS }, f);
-    await expect(call("SYS", [], { structured: SCHEMA })).rejects.toThrow(/kein tool_use-Block/);
+    await expect(call("SYS", [], { structured: SCHEMA })).rejects.toThrow(/kein JSON-Wert im Text/);
     await expect(call("SYS", [], { structured: SCHEMA })).rejects.toThrow(/Ich erkläre lieber/);
   });
 

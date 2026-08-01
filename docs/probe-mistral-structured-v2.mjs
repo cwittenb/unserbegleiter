@@ -23,7 +23,12 @@
 // Transport-Fehler — sie werden getrennt ausgewiesen.
 //
 // Aufruf (Modell PFLICHT, kein Default — S35d):
-//   node probe-mistral-structured-v2.mjs --modell mistral-large-latest [--n 3] [--rpm 2] [--bericht datei.md]
+//   node probe-mistral-structured-v2.mjs [--modell …] [--n 3] [--rpm 2] [--bericht datei.md]
+//   Modell: CLI-Flag > Umgebung/.env (EVAL_MISTRAL_PIPELINE_MODEL) — Fehler nur,
+//   wenn nirgends gesetzt (S35d: kein stiller Fallback, aber .env IST explizite
+//   Konfiguration nach der .env.example-Reihenfolge).
+//   Ratenbremse: standardmäßig AUS (Anfragen feuern sofort); --rpm schaltet sie
+//   als Opt-in zu. Die reaktive 429-Wiederholung (31 s) bleibt immer aktiv.
 //   node probe-mistral-structured-v2.mjs --selbsttest
 //
 // Key: echte Umgebung > ./.env (Parser-Konvention aus evals/env-datei.js, S49).
@@ -354,26 +359,27 @@ async function selbsttest() {
 // ---------------------------------------------------------------- main
 async function main() {
   if (flag("selbsttest")) return selbsttest();
-  const modell = arg("modell");
+  const umgebung = { ...liesEnvDatei(".env"), ...process.env };
+  const modell = arg("modell") || umgebung.EVAL_MISTRAL_PIPELINE_MODEL;
   if (!modell) {
-    console.error("Modell-Konfiguration ist Pflicht (S35d): --modell angeben, z. B. --modell mistral-large-latest");
+    console.error("Modell-Konfiguration ist Pflicht (S35d): --modell angeben ODER EVAL_MISTRAL_PIPELINE_MODEL in der .env setzen.");
     process.exit(2);
   }
-  const umgebung = { ...liesEnvDatei(".env"), ...process.env };
   const apiKey = umgebung.MISTRAL_API_KEY;
   if (!apiKey) { console.error("MISTRAL_API_KEY fehlt — weder in der Umgebung noch in ./.env gefunden."); process.exit(2); }
   const n = Math.max(1, parseInt(arg("n") || "3", 10));
-  const rpm = Math.max(1, parseInt(arg("rpm") || "2", 10));
-  const abstand = Math.ceil(60000 / rpm);
+  const rpm = arg("rpm") ? Math.max(1, parseInt(arg("rpm"), 10)) : 0;   // 0 = keine Bremse
+  const abstand = rpm ? Math.ceil(60000 / rpm) : 0;
   const gesamt = n * (SZENARIEN.length + 1);
 
   console.log(`Sonde v2: ${modell} · ${n}× (S1, S2, S3 + S1-Streaming) = ${gesamt} Anfragen`);
-  console.log(`Ratenbremse ${rpm}/min → ≈ ${Math.ceil((gesamt * abstand) / 60000)} min …`);
+  console.log(rpm ? `Ratenbremse ${rpm}/min → ≈ ${Math.ceil((gesamt * abstand) / 60000)} min …`
+                  : "Ratenbremse AUS — Anfragen feuern sofort (429 wird reaktiv mit 31 s Wartezeit wiederholt).");
   const laeufe = [];
   let start = 0;
   const feuere = async (szenario, streamen) => {
     const warte = start + abstand - Date.now();
-    if (laeufe.length && warte > 0) await schlafe(warte);
+    if (abstand && laeufe.length && warte > 0) await schlafe(warte);
     start = Date.now();
     const r = await einLauf(szenario, modell, apiKey, fetch, streamen);
     laeufe.push(r);

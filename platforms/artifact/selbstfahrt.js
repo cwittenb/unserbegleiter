@@ -48,12 +48,13 @@ export function speicherImSpeicher() {
  *  provider-gerecht mit einem tool_use-Block — die gescripteten Texte werden
  *  mit derselben Übersetzung wie beim MockLLM in Turn-Daten gehoben. */
 export const antwort = (text, body) => {
-  const tc = body && body.tool_choice;
-  const tool = tc && tc.type === "tool" && (body.tools || []).find(t => t.name === tc.name);
-  if (tool) {
+  const format = body && body.output_config && body.output_config.format;
+  if (format) {
+    // ST3: output_config — das Drehbuch antwortet mit dem JSON als Text-Content.
+    const input = uebersetzeDrehbuchText(text, { name: "turn", schema: format.schema });
     return {
-      content: [{ type: "tool_use", name: tool.name, input: uebersetzeDrehbuchText(text, { name: tool.name, schema: tool.input_schema }) }],
-      stop_reason: "tool_use",
+      content: [{ type: "text", text: JSON.stringify(input) }],
+      stop_reason: "end_turn",
       usage: { input_tokens: 1, output_tokens: 1 },
     };
   }

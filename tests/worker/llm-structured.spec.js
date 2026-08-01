@@ -18,9 +18,9 @@ let upstreamStreamen = false;
 
 const TURN_SSE = [
   '{"type":"message_start","message":{"usage":{"input_tokens":3}}}',
-  '{"type":"content_block_delta","delta":{"partial_json":"{\\"antwort\\":\\"Hal"}}',
-  '{"type":"content_block_delta","delta":{"partial_json":"lo du.\\",\\"marker\\":null,\\"block\\":null}"}}',
-  '{"type":"message_delta","delta":{"stop_reason":"tool_use"},"usage":{"output_tokens":9}}',
+  '{"type":"content_block_delta","delta":{"type":"text_delta","text":"{\\"antwort\\":\\"Hal"}}',
+  '{"type":"content_block_delta","delta":{"type":"text_delta","text":"lo du.\\",\\"marker\\":null,\\"block\\":null}"}}',
+  '{"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":9}}',
 ].map(d => "data: " + d + "\n\n").join("");
 
 const SCHEMA = {
@@ -91,7 +91,7 @@ async function angemeldeteAnna() {
 }
 
 describe("Worker · /api/llm mit structured", () => {
-  it("übersetzt in Tool-Use und liefert data in der Fassade zurück", async () => {
+  it("übersetzt in output_config (ST3) und liefert data in der Fassade zurück; tool_use-Upstream wird alt-gedeutet", async () => {
     gesehenerUpstreamBody = null;
     const anna = await angemeldeteAnna();
     const res = await anna.call("POST", "/api/llm", {
@@ -100,8 +100,9 @@ describe("Worker · /api/llm mit structured", () => {
     expect(res.status).toBe(200);
     const daten = await res.json();
     expect(daten.data).toEqual({ checks: ["a", "b"] });
-    expect(gesehenerUpstreamBody.tool_choice).toEqual({ type: "tool", name: "bewertung" });
-    expect(gesehenerUpstreamBody.tools[0].input_schema).toEqual(SCHEMA.schema);
+    expect(gesehenerUpstreamBody.tool_choice).toBeUndefined();
+    expect(gesehenerUpstreamBody.output_config.format.type).toBe("json_schema");   // ST3-Mechanik
+    expect(gesehenerUpstreamBody.output_config.format.schema).toBeTruthy();   // Dialekt-gewandelt
   });
 
   it("ohne structured bleibt der Altpfad unberührt (kein tools im Upstream)", async () => {

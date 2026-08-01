@@ -62,6 +62,7 @@ export const LLM_DEFAULTS = {
 };
 
 import { baueAntwortExtraktor } from "./antwort-extraktor.js";
+import { anthropicSoDialekt } from "./schema-dialekt.js";
 
 /* ---- SSE-Werkzeug (transportneutral) ---- */
 
@@ -295,7 +296,9 @@ function openaiCompat(baseUrl, modelKey) {
       let daten;
       try { daten = JSON.parse(roh); }
       catch (e) { throw new Error("Strukturausgabe ist kein JSON: " + e.message + strukturAuszug(roh)); }
-      return { text: ex.text, data: daten, stop, usage };
+      // ST3: quelle vereinheitlicht — "schema" = decoder-erzwungen (hier via
+      // response_format strict; das Anthropic-Feld "tool" bleibt Alt-Wert).
+      return { text: ex.text, data: daten, stop, usage, strukturQuelle: "schema" };
     },
     parseStructured(data) {
       const r = this.parse(data);
@@ -303,7 +306,7 @@ function openaiCompat(baseUrl, modelKey) {
       let d;
       try { d = JSON.parse(r.text); }
       catch (e) { throw new Error("Strukturausgabe ist kein JSON: " + e.message + strukturAuszug(r.text)); }
-      return { ...r, data: d };
+      return { ...r, data: d, strukturQuelle: "schema" };
     },
     parse(data) {
       if (data.error) throw new Error(data.error.message || "API-Fehler");
@@ -374,24 +377,30 @@ export const LLM_PROVIDERS = {
     streamBody(cfg, systemPrompt, messages) {
       return { ...this.body(cfg, systemPrompt, messages), stream: true };
     },
-    // Erzwungener Tool-Use: tool_choice macht den Tool-Aufruf zur Pflicht, die
-    // Argumente sind die Strukturausgabe. Das Schema-Objekt wird UNVERÄNDERT
-    // durchgereicht (stabile Serialisierung → Prompt-Cache-Treffer bleiben).
+    /* ST3 · MECHANIKWECHSEL: native Structured Outputs (output_config.format,
+       constrained decoding, GA für ≥ 4.5) statt erzwungenem Tool-Use.
+       Sonden-Beweis (Blockgrenze, 1. Aug 2026): tool_choice riss den
+       kombinierten antwort+Block-Zug in ~50 % der Läufe — die Tool-Use-
+       Serialisierung blutete in den antwort-String ("</antwort>",
+       "<parameter …"); mit output_config existiert die Leckklasse mechanisch
+       nicht (E: 0 Lecks). Das JSON kommt als Text-Content. Der Dialekt-Wandler
+       ist deterministisch — stabile Serialisierung, Grammatik-Cache (24 h) und
+       Prompt-Cache bleiben treffsicher. Hinweis der Doku: die API injiziert
+       zusätzlich einen kleinen Format-Systemprompt (Tokenkosten; Wechsel des
+       Formats invalidiert den Prompt-Cache des Fadens). */
     structuredBody(cfg, systemPrompt, messages, structured) {
       return {
         ...this.body(cfg, systemPrompt, messages),
-        tools: [{
-          name: structured.name,
-          description: structured.description || "Liefert die Antwort in der geforderten Struktur.",
-          input_schema: structured.schema,
-        }],
-        tool_choice: { type: "tool", name: structured.name },
+        output_config: { format: { type: "json_schema", schema: anthropicSoDialekt(structured.schema) } },
       };
     },
-    // S79 · Streaming der Strukturausgabe: die Tool-Argumente kommen als
-    // input_json_delta-Fragmente. Der Extraktor schält daraus live das
-    // antwort-Feld für onDelta; am Ende wird das VOLLSTÄNDIGE JSON geparst
-    // (data ist die Wahrheit, der Extraktor nur die Anzeige-Spur).
+    /* ST3 · Streaming unter output_config: das schema-erzwungene JSON kommt
+       als GANZ NORMALE text_delta-Häppchen. Der antwort-Extraktor (S79)
+       schält daraus live das antwort-Feld für onDelta; am Ende wird das
+       vollständige JSON geparst (data ist die Wahrheit, der Extraktor nur die
+       Anzeige-Spur). Scheitert der Parse (nur ohne Erzwingung denkbar, etwa
+       keyless), trägt der Fehler code struktur_fehlt + den Roh-Text — die
+       eine keyless-Korrekturrunde (ST1.4) greift dann im Wiederholungszug. */
     async streamStructuredParse(resp, onDelta) {
       const ex = baueAntwortExtraktor();
       let roh = "", stop = null;
@@ -402,9 +411,9 @@ export const LLM_PROVIDERS = {
         if (ev.type === "message_start" && ev.message && ev.message.usage) {
           const u = ev.message.usage;
           usage.in = u.input_tokens; usage.cacheWrite = u.cache_creation_input_tokens; usage.cacheRead = u.cache_read_input_tokens;
-        } else if (ev.type === "content_block_delta" && ev.delta && typeof ev.delta.partial_json === "string") {
-          roh += ev.delta.partial_json;
-          const stueck = ex.speise(ev.delta.partial_json);
+        } else if (ev.type === "content_block_delta" && ev.delta && typeof ev.delta.text === "string") {
+          roh += ev.delta.text;
+          const stueck = ex.speise(ev.delta.text);
           if (stueck) onDelta(stueck);
         } else if (ev.type === "message_delta") {
           if (ev.delta && ev.delta.stop_reason) stop = ev.delta.stop_reason;
@@ -414,38 +423,45 @@ export const LLM_PROVIDERS = {
       pruefeAbschnitt(stop, ex.text);
       let daten;
       try { daten = JSON.parse(roh); }
-      catch (e) { throw new Error("Strukturausgabe ist kein JSON: " + e.message + strukturAuszug(roh)); }
-      return { text: ex.text, data: daten, stop, usage };
+      catch (e) {
+        const fehler = new Error("Strukturausgabe ist kein JSON: " + e.message + strukturAuszug(roh));
+        fehler.code = "struktur_fehlt";
+        fehler.antwortText = roh;
+        throw fehler;
+      }
+      return { text: ex.text, data: daten, stop, usage, strukturQuelle: "schema" };
     },
+    /* ST3 · output_config: das schema-erzwungene JSON IST der Text-Content.
+       Reihenfolge der Deutung: (1) tool_use-Block, falls vorhanden — Alt-
+       Kompatibilität für Antworten der Tool-Mechanik (etwa Batch-Nachzügler);
+       (2) Text als JSON parsen (Regelfall, strukturQuelle:"schema");
+       (3) S85-Rettung: GENAU EIN JSON-Wert aus Freitext geschält
+           (keyless ohne Erzwingung; strukturQuelle:"text");
+       (4) harter Fehler mit code struktur_fehlt + Roh-Text — die eine
+           keyless-Korrekturrunde (ST1.4) zeigt dem Modell seine Antwort. */
     parseStructured(data, name) {
       if (data.error) throw new Error(data.error.message || "Anthropic-Fehler");
       const bloecke = data.content || [];
       const text = bloecke.filter(b => b.type === "text").map(b => b.text).join("\n").trim();
       pruefeAbschnitt(data.stop_reason, text);
-      const tu = bloecke.find(b => b.type === "tool_use" && (!name || b.name === name));
       const u = data.usage || {};
       const usage = {
         in: u.input_tokens, out: u.output_tokens,
         cacheWrite: u.cache_creation_input_tokens, cacheRead: u.cache_read_input_tokens,
       };
-      if (!tu || !tu.input || typeof tu.input !== "object") {
-        // S85 · Deklarierter Rettungspfad (KEIN stiller Fallback): In Umgebungen
-        // ohne Tool-Erzwingung (keyless Artefakt) antwortet das Modell mitunter
-        // als Freitext/```json. Lässt sich daraus GENAU EIN JSON-Wert schälen,
-        // wird er regulär zurückgegeben — sichtbar markiert mit
-        // strukturQuelle:"text", die Aufrufer reichen die Quelle bis in
-        // Sample, Telemetrie und Bericht durch. Sonst unverändert harter Fehler.
-        const gerettet = extrahiereStrukturAusText(text);
-        if (gerettet != null)
-          return { text, data: gerettet, stop: data.stop_reason, usage, strukturQuelle: "text" };
-        // ST1.4: stabiler Code + Roh-Text am Fehler — die keyless-Korrektur-
-        // Runde zeigt dem Modell seine eigene Antwort (Judge-KORREKTUR-Muster).
-        const fehler = new Error("Strukturausgabe fehlt: kein tool_use-Block (stop_reason=" + data.stop_reason + ")" + strukturAuszug(text));
-        fehler.code = "struktur_fehlt";
-        fehler.antwortText = text;
-        throw fehler;
-      }
-      return { text, data: tu.input, stop: data.stop_reason, usage, strukturQuelle: "tool" };
+      const tu = bloecke.find(b => b.type === "tool_use" && (!name || b.name === name));
+      if (tu && tu.input && typeof tu.input === "object")
+        return { text, data: tu.input, stop: data.stop_reason, usage, strukturQuelle: "tool" };
+      try {
+        return { text, data: JSON.parse(text), stop: data.stop_reason, usage, strukturQuelle: "schema" };
+      } catch { /* kein reines JSON — Rettung versuchen */ }
+      const gerettet = extrahiereStrukturAusText(text);
+      if (gerettet != null)
+        return { text, data: gerettet, stop: data.stop_reason, usage, strukturQuelle: "text" };
+      const fehler = new Error("Strukturausgabe fehlt: kein JSON-Wert im Text (stop_reason=" + data.stop_reason + ")" + strukturAuszug(text));
+      fehler.code = "struktur_fehlt";
+      fehler.antwortText = text;
+      throw fehler;
     },
     parse(data) {
       if (data.error) throw new Error(data.error.message || "Anthropic-Fehler");
@@ -687,12 +703,10 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
 
   return function callClaude(systemPrompt, messages, drittes, viertes) {
     const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
-    /* ST1.5 · Waechter R3: Erzwungener Tool-Use (tool_choice:{type:"tool"})
-       und Extended Thinking schliessen sich bei Anthropic aus. Ohne diese
-       Pruefung kaeme ein kryptischer API-Fehler — hier faellt es mit Klartext
-       an der Konfigurationskante. */
-    if (structured && cfg.provider === "anthropic" && cfg.thinking !== "disabled")
-      throw new Error('Erzwungener Tool-Use verlangt thinking "disabled" (Anthropic) — cfg.thinking anpassen oder structured weglassen.');
+    /* ST3 · Der R3-Waechter (ST1.5) ist GEFALLEN: output_config ist laut Doku
+       MIT Thinking kompatibel — die Grammatik greift nicht in Thinking-Tags,
+       der Grammatik-Zustand setzt sich vor der finalen Ausgabe zurueck. Der
+       Ausschluss galt nur dem erzwungenen Tool-Use (tool_choice). */
     const streamen = typeof onDelta === "function" && cfg.stream !== false;
     const body = structured
       ? { ...P.structuredBody(cfg, systemPrompt, messages, structured), ...(streamen ? { stream: true } : {}) }

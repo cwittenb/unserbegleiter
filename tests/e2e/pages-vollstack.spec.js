@@ -37,18 +37,18 @@ const E2E_FENSTER_MS = 10000;
 const ADMIN = "test-admin-geheim";
 let mf, clientCode, hash;
 
-/** ST2 · Upstream-SSE für STRUKTUR-Anfragen: tool_use-Block als
- *  input_json_delta-Strom — die gescripteten Texte hebt dieselbe Übersetzung
- *  wie beim MockLLM in Turn-Daten. */
+/** ST3 · Upstream-SSE für STRUKTUR-Anfragen (output_config): das schema-
+ *  erzwungene JSON strömt als NORMALE text_delta-Häppchen — die gescripteten
+ *  Texte hebt dieselbe Übersetzung wie beim MockLLM in Turn-Daten. */
 const sseStruktur = (text, body) => {
-  const tool = (body.tools || []).find(t => t.name === body.tool_choice.name);
-  const input = uebersetzeDrehbuchText(text, { name: tool.name, schema: tool.input_schema });
+  const schema = body.output_config.format.schema;
+  const input = uebersetzeDrehbuchText(text, { name: "turn", schema });
   const roh = JSON.stringify(input);
   const deltas = roh.match(/.{1,8}/g) || [""];
   return 'event: message_start\n' +
     'data: {"type":"message_start","message":{"usage":{"input_tokens":7,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}\n\n' +
-    deltas.map(d => 'data: {"type":"content_block_delta","delta":{"type":"input_json_delta","partial_json":' + JSON.stringify(d) + '}}\n\n').join("") +
-    'data: {"type":"message_delta","delta":{"stop_reason":"tool_use"},"usage":{"output_tokens":2}}\n\n' +
+    deltas.map(d => 'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":' + JSON.stringify(d) + '}}\n\n').join("") +
+    'data: {"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"output_tokens":2}}\n\n' +
     'data: {"type":"message_stop"}\n\n';
 };
 
@@ -84,15 +84,15 @@ beforeAll(async () => {
       async UPSTREAM(request) {
         const body = await request.json();
         const text = drehbuch.length ? drehbuch.shift() : "[VOLL] Drehbuch erschöpft";
-        const struktur = body.tool_choice && body.tool_choice.type === "tool";
+        const struktur = !!(body.output_config && body.output_config.format);
         if (body.stream === true)
           return new Response(struktur ? sseStruktur(text, body) : sse(text),
             { headers: { "content-type": "text/event-stream" } });
         if (struktur) {
-          const tool = (body.tools || []).find(t => t.name === body.tool_choice.name);
+          const input = uebersetzeDrehbuchText(text, { name: "turn", schema: body.output_config.format.schema });
           return new Response(JSON.stringify({
-            content: [{ type: "tool_use", name: tool.name, input: uebersetzeDrehbuchText(text, { name: tool.name, schema: tool.input_schema }) }],
-            stop_reason: "tool_use", usage: { input_tokens: 1, output_tokens: 1 },
+            content: [{ type: "text", text: JSON.stringify(input) }],
+            stop_reason: "end_turn", usage: { input_tokens: 1, output_tokens: 1 },
           }), { headers: { "content-type": "application/json" } });
         }
         return new Response(JSON.stringify({

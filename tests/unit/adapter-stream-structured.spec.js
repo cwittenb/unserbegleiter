@@ -23,18 +23,19 @@ const mock = resp => { const fn = async (url, init) => { fn.body = JSON.parse(in
 const inTeile = (s, n) => { const a = []; for (let i = 0; i < s.length; i += n) a.push(s.slice(i, i + n)); return a; };
 
 describe("Anthropic · structured + stream (S79)", () => {
-  it("input_json_delta-Fragmente → extrahierte Text-Deltas; data aus dem End-Parse", async () => {
+  it("ST3 · text_delta-Fragmente (output_config) → extrahierte Text-Deltas; data aus dem End-Parse", async () => {
     const events = [
       { type: "message_start", message: { usage: { input_tokens: 9, cache_read_input_tokens: 100 } } },
-      ...inTeile(TURNJSON, 5).map(t => ({ type: "content_block_delta", delta: { partial_json: t } })),
-      { type: "message_delta", delta: { stop_reason: "tool_use" }, usage: { output_tokens: 40 } },
+      ...inTeile(TURNJSON, 5).map(t => ({ type: "content_block_delta", delta: { type: "text_delta", text: t } })),
+      { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 40 } },
     ];
     const f = mock(sseResp(events));
     const call = makeAdapter({ provider: "anthropic", mode: "keyless", models: { anthropic: "m" } }, f);
     const deltas = [];
     const r = await call("SYS", [{ role: "user", content: "u" }], { structured: SCHEMA, onDelta: d => deltas.push(d) });
     expect(f.body.stream).toBe(true);
-    expect(f.body.tool_choice).toEqual({ type: "tool", name: "turn" });
+    expect(f.body.tool_choice).toBeUndefined();
+    expect(f.body.output_config.format.type).toBe("json_schema");
     expect(deltas.join("")).toBe("Hallo du.\n\nMagst du erzählen?");
     expect(deltas.join("")).not.toContain("{");           // nie rohes JSON an die UI
     expect(r.data).toEqual({ antwort: "Hallo du.\n\nMagst du erzählen?", marker: null, block: null });
