@@ -95,10 +95,13 @@ for (const g of faelle) {
 console.log("\n==== BILANZ ====");
 const wackelig = bilanz.filter(b => b.treffer < b.gesamt);
 if (!wackelig.length) {
-  console.log("Alle Fälle " + N + "/" + N + " — der Abbruch war ein EINZELAUSREISSER (Rauschen).");
-  console.log("Konsequenz: nicht am Judge-Prompt drehen. Der Selbsttest braucht eine");
-  console.log("Wiederholungs-Politik (z. B. best-of-3 je Fall) — Kandidat für einen eigenen");
-  console.log("kleinen Sprint; solange genügt es, den Lauf erneut zu starten.");
+  console.log("Alle Fälle " + N + "/" + N + " — der Judge urteilt hier stabil.");
+  console.log("Zwei Lesarten, die die Sonde NICHT unterscheiden kann:");
+  console.log("  · Wurde seit dem Abbruch nichts geändert → Einzelausreißer (Rauschen);");
+  console.log("    dann genügt ein Neustart des Laufs. Offener Kandidat bleibt eine");
+  console.log("    Wiederholungs-Politik im Selbsttest (best-of-3 je Fall).");
+  console.log("  · Wurde die Ursache behoben (Prüffrage, Golden Case, Judge-Prompt) →");
+  console.log("    das Grün ist der Beleg des Fixes, kein Beweis für Rauschen.");
 } else {
   for (const b of wackelig)
     console.log(b.id + "/" + b.check + ": " + b.treffer + "/" + b.gesamt +
