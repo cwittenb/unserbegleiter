@@ -74,7 +74,22 @@ async function holeErgebnisse(ids) {
   let offen = 0;
   for (const id of ids) {
     const s = await (await fetch(BASIS + "/" + id, { headers: KOPF })).json();
-    if (s.processing_status !== "ended") { offen++; console.log("  ⏳ " + id + " läuft noch (" + s.processing_status + ") — später erneut bergen"); continue; }
+    if (s.processing_status !== "ended") {
+      offen++;
+      /* Fortschritt sichtbar machen: Ein Judge-Batch mit adaptivem Thinking
+         läuft oft deutlich länger als die Pipeline-Wellen (Anthropic-SLA: 24 h;
+         unser Cap war nur eine Stunde). Ohne Zählerstände sieht "in_progress"
+         wie Stillstand aus. */
+      const c = s.request_counts || {};
+      const fertig = (c.succeeded || 0) + (c.errored || 0) + (c.canceled || 0) + (c.expired || 0);
+      const gesamt = fertig + (c.processing || 0);
+      const alter = Math.round((Date.now() - new Date(s.created_at).getTime()) / 60000);
+      console.log("  ⏳ " + id + " läuft noch (" + s.processing_status + ") — " +
+        fertig + "/" + (gesamt || "?") + " fertig" +
+        (c.errored ? ", " + c.errored + " Fehler" : "") +
+        ", seit " + alter + " min. Später erneut bergen (SLA 24 h).");
+      continue;
+    }
     if (!s.results_url) { console.log("  ⚠ " + id + " ohne results_url"); continue; }
     const jsonl = await (await fetch(s.results_url, { headers: KOPF })).text();
     let n = 0;
@@ -89,7 +104,9 @@ async function holeErgebnisse(ids) {
     }
     console.log("  ✓ " + id + ": " + n + " Ergebnisse");
   }
-  if (offen) console.log("\n⏳ " + offen + " Batch(es) noch in Arbeit — die Bergung bleibt unvollständig.");
+  if (offen) console.log("\n⏳ " + offen + " Batch(es) noch in Arbeit — die Bergung bleibt unvollständig.\n" +
+  "   Die Transkripte sind bereits vollständig geborgen; es fehlen nur die Urteile.\n" +
+  "   Derselbe Aufruf später wiederholen — der Abruf ist beliebig oft möglich und kostenlos.");
   return map;
 }
 

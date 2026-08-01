@@ -65,6 +65,23 @@ function pipeParse(k, message) {
   };
 }
 
+/* Deutung EINER Pipeline-Antwort — geteilt von Cache-Pilot und Hauptwelle.
+   S81: markiereAbschnitt (S77) wirft bei "abgeschnitten, bevor Text begann";
+   im Batch ist das die Anomalie EINES Samples, nie der Tod des Gesamtlaufs. */
+function verarbeitePipelineAntwort(k, r, d) {
+  let text, usage, abgeschnitten, quelle, blockTyp;
+  try { ({ text, usage, abgeschnitten, quelle, blockTyp } = pipeParse(k, r.message)); }
+  catch (e) { k.leer = e.message + " (Turn " + (d + 1) + ")"; return; }
+  addUsage(k.pipe, usage);
+  const zug = { role: "assistant", content: text };
+  if (abgeschnitten) zug.abgeschnitten = true;
+  if (quelle) zug.strukturQuelle = quelle;
+  if (blockTyp) zug.blockTyp = blockTyp;
+  k.messages.push(zug);
+  if (!text || !String(text).trim()) k.leer = "leere Pipeline-Antwort (Turn " + (d + 1) + ")";   // Anomalie → nicht weiter (S65)
+  else if (abgeschnitten) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Turn " + (d + 1) + ")";   // S77: Halbsätze werden nicht gerichtet
+}
+
 export async function laufeAlleBatch(szenarien, deps) {
   const { pipelineModell, judgeModell, stand, melde, batch, waechter } = deps;
   const fuehreBatch = deps.fuehreBatch || fuehreBatchAus;   // injizierbar für Tests
@@ -105,25 +122,48 @@ export async function laufeAlleBatch(szenarien, deps) {
       requests.push({ custom_id: cid, params: pipeParams(k, pipelineModell, k.messages) });
     }
     if (!requests.length) continue;
-    if (typeof melde === "function") melde({ phase: "batch", label: "Pipeline Turn " + (d + 1) + "/" + maxTurns, gesamt: requests.length });
-    const ergebnis = await fuehreBatch(requests, batch);
+
+    /* ST6a · CACHE-PILOT (nur Turn 1). Der System-Prompt ist ~12,7k Token und
+       macht 96 % des Pipeline-Inputs aus. Im Batch starten alle Konversationen
+       GLEICHZEITIG — jede SCHREIBT den Prompt-Cache, statt zu lesen, weil beim
+       Start noch kein Eintrag existiert. Turn 1 geht deshalb in zwei Wellen:
+       zuerst EINE Konversation je eindeutigem System-Prompt (legt den Cache an),
+       dann der Rest (liest ihn zum Zehntelpreis: 0,20 statt 2,00 je Mio Token).
+       Bewusst KEINE synchrone Aufwärmung — die zahlt den vollen Tarif ohne
+       Batch-Rabatt und wäre teurer als der Gewinn. Preis ist eine zusätzliche
+       Batch-Runde Wartezeit; abschaltbar über --ohne-cache-pilot. */
+    let welle = requests;
+    if (d === 0 && !deps.ohneCachePilot) {
+      const gesehen = new Set();
+      const pilot = [], rest = [];
+      for (const r of requests) {
+        const sys = JSON.stringify(r.params.system);
+        if (gesehen.has(sys)) rest.push(r); else { gesehen.add(sys); pilot.push(r); }
+      }
+      if (pilot.length && rest.length) {
+        if (typeof melde === "function") melde({ phase: "batch", label: "Cache-Pilot (" + pilot.length + " Prompt-Varianten)", gesamt: pilot.length });
+        const perg = await fuehreBatch(pilot, batch);
+        if (typeof melde === "function") melde({ phase: "batch-fertig" });
+        for (const r of pilot) {
+          const k = idx.get(r.custom_id);
+          const e = perg.get(r.custom_id);
+          if (!k) continue;
+          if (!e || e.fehler) { k.fehler = "Batch-Fehler (Cache-Pilot): " + (e ? e.fehler : "kein Ergebnis"); continue; }
+          verarbeitePipelineAntwort(k, e, d);
+        }
+        welle = rest;
+      }
+    }
+
+    if (typeof melde === "function") melde({ phase: "batch", label: "Pipeline Turn " + (d + 1) + "/" + maxTurns, gesamt: welle.length });
+    const ergebnis = welle.length ? await fuehreBatch(welle, batch) : new Map();
     if (typeof melde === "function") melde({ phase: "batch-fertig" });
-    for (const [cid, k] of idx) {
-      const r = ergebnis.get(cid);
-      if (!r || r.fehler) { k.fehler = "Batch-Fehler (Pipeline Turn " + (d + 1) + "): " + (r ? r.fehler : "kein Ergebnis"); continue; }
-      // S81: markiereAbschnitt (S77) wirft bei "abgeschnitten, bevor Text begann".
-      // Im Batch ist das die Anomalie EINES Samples — nie der Tod des Gesamtlaufs.
-      let text, usage, abgeschnitten, quelle, blockTyp;
-      try { ({ text, usage, abgeschnitten, quelle, blockTyp } = pipeParse(k, r.message)); }
-      catch (e) { k.leer = e.message + " (Turn " + (d + 1) + ")"; continue; }
-      addUsage(k.pipe, usage);
-      const zugNeu = { role: "assistant", content: text };
-      if (abgeschnitten) zugNeu.abgeschnitten = true;
-      if (quelle) zugNeu.strukturQuelle = quelle;
-      if (blockTyp) zugNeu.blockTyp = blockTyp;
-      k.messages.push(zugNeu);
-      if (!text || !String(text).trim()) k.leer = "leere Pipeline-Antwort (Turn " + (d + 1) + ")";   // Anomalie → nicht weiter (S65)
-      else if (abgeschnitten) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Turn " + (d + 1) + ")";   // S77-Regel: Halbsätze werden nicht gerichtet
+    for (const r of welle) {
+      const k = idx.get(r.custom_id);
+      if (!k) continue;
+      const e = ergebnis.get(r.custom_id);
+      if (!e || e.fehler) { k.fehler = "Batch-Fehler (Pipeline Turn " + (d + 1) + "): " + (e ? e.fehler : "kein Ergebnis"); continue; }
+      verarbeitePipelineAntwort(k, e, d);
     }
 
     // ---- Phase 1b (S95) · Waechter-Welle dieser Turn-Tiefe --------------------

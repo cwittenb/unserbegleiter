@@ -428,10 +428,15 @@ export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
  * Nicht-strukturfähige Sessions (einzel, gemeinsam, qualitytime) laufen immer
  * genau einmal im Textpfad — sie sind bis ST6 nicht umgestellt.
  */
-export function varianten(szenarien, modus = "aus") {
+export function varianten(szenarien, modus = "aus", nurPaare = false) {
   const raus = [];
   for (const sz of szenarien) {
     const faehig = istStrukturfaehig(sz);
+    /* ST6a · nurPaare: Im A/B-Lauf tragen nicht-strukturfähige Szenarien
+       (einzel, gemeinsam, qualitytime) KEINEN Partner bei — sie erscheinen im
+       GATE-Vergleich gar nicht und kosten trotzdem. Für einen reinen GATE-Lauf
+       bleiben sie weg; für einen vollen Regressionslauf NICHT setzen. */
+    if (modus === "beides" && nurPaare && !faehig) continue;
     if (modus === "aus" || !faehig) { raus.push({ szenario: sz, variante: "text" }); continue; }
     if (modus === "beides") raus.push({ szenario: sz, variante: "text" });
     raus.push({ szenario: sz, variante: "struktur" });

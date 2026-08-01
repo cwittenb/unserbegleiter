@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "zeit": "2026-08-01T21:09:08.728Z",
+  "zeit": "2026-08-01T22:10:50.723Z",
   "stand": {
     "coreHash": "geborgen",
     "provider": "anthropic",
@@ -216,11 +216,11 @@
   },
   "telemetrie": {
     "pipe": {
-      "in": 0,
-      "out": 0,
-      "cacheRead": 0,
-      "cacheWrite": 0,
-      "calls": 0
+      "in": 830,
+      "out": 81810,
+      "cacheRead": 6928431,
+      "cacheWrite": 2368779,
+      "calls": 415
     },
     "judge": {
       "in": 0,
@@ -884,6 +884,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1767,
+          "cacheRead": 94900,
+          "cacheWrite": 20161,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1001,6 +1018,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1918,
+          "cacheRead": 172276,
+          "cacheWrite": 1779,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1118,6 +1152,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1673,
+          "cacheRead": 117412,
+          "cacheWrite": 60135,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1273,6 +1324,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 20,
+          "out": 1448,
+          "cacheRead": 202704,
+          "cacheWrite": 51591,
+          "calls": 10
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1418,6 +1486,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 20,
+          "out": 2211,
+          "cacheRead": 134616,
+          "cacheWrite": 91408,
+          "calls": 10
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1517,6 +1602,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 770,
+          "cacheRead": 101320,
+          "cacheWrite": 51119,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1610,6 +1712,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 989,
+          "cacheRead": 112140,
+          "cacheWrite": 23097,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1736,6 +1855,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1481,
+          "cacheRead": 203285,
+          "cacheWrite": 26469,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -1853,6 +1989,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 2006,
+          "cacheRead": 157943,
+          "cacheWrite": 46403,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2053,6 +2206,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 30,
+          "out": 2925,
+          "cacheRead": 330580,
+          "cacheWrite": 52576,
+          "calls": 15
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2238,6 +2408,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 30,
+          "out": 2711,
+          "cacheRead": 270396,
+          "cacheWrite": 69110,
+          "calls": 15
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2367,6 +2554,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 2437,
+          "cacheRead": 228579,
+          "cacheWrite": 1205,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2484,6 +2688,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 2009,
+          "cacheRead": 157801,
+          "cacheWrite": 46204,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2556,6 +2777,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 592,
+          "cacheRead": 76069,
+          "cacheWrite": 83,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2625,6 +2863,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 578,
+          "cacheRead": 22399,
+          "cacheWrite": 45047,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2724,6 +2979,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1136,
+          "cacheRead": 101304,
+          "cacheWrite": 51403,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2817,6 +3089,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 454,
+          "cacheRead": 112120,
+          "cacheWrite": 22799,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -2916,6 +3205,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1615,
+          "cacheRead": 152291,
+          "cacheWrite": 818,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3009,6 +3315,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1668,
+          "cacheRead": 89984,
+          "cacheWrite": 45752,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3108,6 +3431,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 821,
+          "cacheRead": 126670,
+          "cacheWrite": 25913,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3201,6 +3541,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 993,
+          "cacheRead": 89728,
+          "cacheWrite": 45680,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3300,6 +3657,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1580,
+          "cacheRead": 76122,
+          "cacheWrite": 77005,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3393,6 +3767,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1564,
+          "cacheRead": 67416,
+          "cacheWrite": 68362,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3492,6 +3883,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1345,
+          "cacheRead": 76023,
+          "cacheWrite": 76699,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3585,6 +3993,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1139,
+          "cacheRead": 89756,
+          "cacheWrite": 45491,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3678,6 +4103,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 2437,
+          "cacheRead": 94945,
+          "cacheWrite": 20372,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3750,6 +4192,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 866,
+          "cacheRead": 0,
+          "cacheWrite": 76095,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3819,6 +4278,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 930,
+          "cacheRead": 22463,
+          "cacheWrite": 44926,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3891,6 +4367,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 757,
+          "cacheRead": 50902,
+          "cacheWrite": 25451,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -3960,6 +4453,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 785,
+          "cacheRead": 45098,
+          "cacheWrite": 22549,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4053,6 +4563,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1683,
+          "cacheRead": 76108,
+          "cacheWrite": 39423,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4110,6 +4637,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4227,6 +4771,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1996,
+          "cacheRead": 128476,
+          "cacheWrite": 37918,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4284,6 +4845,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4401,6 +4979,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1565,
+          "cacheRead": 145377,
+          "cacheWrite": 19509,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4458,6 +5053,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4623,6 +5235,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 30,
+          "out": 2379,
+          "cacheRead": 264869,
+          "cacheWrite": 21104,
+          "calls": 15
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4749,6 +5378,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1377,
+          "cacheRead": 179994,
+          "cacheWrite": 52583,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4866,6 +5512,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1002,
+          "cacheRead": 137018,
+          "cacheWrite": 69295,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -4959,6 +5622,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1748,
+          "cacheRead": 56985,
+          "cacheWrite": 58291,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5016,6 +5696,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5133,6 +5830,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1433,
+          "cacheRead": 144946,
+          "cacheWrite": 19324,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5202,6 +5916,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 840,
+          "cacheRead": 4230,
+          "cacheWrite": 2115,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5274,6 +6005,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 738,
+          "cacheRead": 50664,
+          "cacheWrite": 25332,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5343,6 +6091,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 494,
+          "cacheRead": 44860,
+          "cacheWrite": 22430,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5453,6 +6218,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 10,
+          "out": 740,
+          "cacheRead": 76071,
+          "cacheWrite": 50714,
+          "calls": 5
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5558,6 +6340,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 10,
+          "out": 689,
+          "cacheRead": 44910,
+          "cacheWrite": 67365,
+          "calls": 5
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5716,6 +6515,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 20,
+          "out": 1464,
+          "cacheRead": 228371,
+          "cacheWrite": 26213,
+          "calls": 10
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -5861,6 +6677,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 20,
+          "out": 2008,
+          "cacheRead": 134730,
+          "cacheWrite": 90899,
+          "calls": 10
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6016,6 +6849,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 20,
+          "out": 1459,
+          "cacheRead": 152046,
+          "cacheWrite": 102268,
+          "calls": 10
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6161,6 +7011,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 20,
+          "out": 1563,
+          "cacheRead": 179512,
+          "cacheWrite": 45924,
+          "calls": 10
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6260,6 +7127,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 897,
+          "cacheRead": 126705,
+          "cacheWrite": 25787,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6353,6 +7237,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1100,
+          "cacheRead": 134594,
+          "cacheWrite": 801,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6470,6 +7371,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1898,
+          "cacheRead": 158543,
+          "cacheWrite": 21135,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6635,6 +7553,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 30,
+          "out": 2942,
+          "cacheRead": 260673,
+          "cacheWrite": 42521,
+          "calls": 15
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6692,6 +7627,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6809,6 +7761,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 1480,
+          "cacheRead": 162902,
+          "cacheWrite": 1318,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -6908,6 +7877,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 945,
+          "cacheRead": 126635,
+          "cacheWrite": 25832,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -7001,6 +7987,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 12,
+          "out": 1059,
+          "cacheRead": 112099,
+          "cacheWrite": 23166,
+          "calls": 6
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -7073,6 +8076,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 322,
+          "cacheRead": 0,
+          "cacheWrite": 76092,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -7142,6 +8162,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 277,
+          "cacheRead": 22462,
+          "cacheWrite": 44924,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -7214,6 +8251,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 645,
+          "cacheRead": 25406,
+          "cacheWrite": 50812,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -7283,6 +8337,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 6,
+          "out": 631,
+          "cacheRead": 0,
+          "cacheWrite": 67512,
+          "calls": 3
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     },
     {
@@ -7400,6 +8471,23 @@
           "roteLinieGetroffen": false
         }
       ],
+      "telemetrie": {
+        "pipe": {
+          "in": 18,
+          "out": 2831,
+          "cacheRead": 172003,
+          "cacheWrite": 2470,
+          "calls": 9
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 0
+      },
       "belegloserVerstoss": false
     }
   ]

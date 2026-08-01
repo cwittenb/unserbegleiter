@@ -113,6 +113,9 @@ async function main() {
      Szenario (solo, moment) zweimal, im selben Lauf, mit demselben Judge-Stand
      und derselben Baseline. */
   const strukturModus = arg("struktur", "aus");
+  /* ST6a · Reiner GATE-Lauf: nur Szenarien, die im A/B tatsächlich ein Paar
+     bilden. Die übrigen erscheinen im Vergleich gar nicht und kosten trotzdem. */
+  const nurPaare = process.argv.includes("--nur-paare");
   if (!["aus", "an", "beides"].includes(strukturModus)) {
     console.error('Ungültiges --struktur: "' + strukturModus + '" (aus | an | beides).');
     process.exit(2);
@@ -238,8 +241,9 @@ async function main() {
     waechter,                                   // S94 · Lesart des Laufs: Korpus allein (false) oder ausgeliefertes System (true)
   };
   const bericht = batchModus
-    ? await laufeAlleBatch(varianten(szenarien, strukturModus), {
+    ? await laufeAlleBatch(varianten(szenarien, strukturModus, nurPaare), {
         pipelineModell, judgeModell, n, zeit, persistiere, melde, stand, waechter,
+        ohneCachePilot: process.argv.includes("--ohne-cache-pilot"),
         batch: {
           apiKey, intervallMs: batchIntervallMs, maxMs: batchMaxMs,
           /* ST5d: Die Batch-ID einmal ausgeben, sobald sie da ist. Läuft der
@@ -248,7 +252,7 @@ async function main() {
           fortschritt: ev => process.stdout.write(ev && ev.batchId ? "[" + ev.batchId + "] " : "."),
         },
       })
-    : await laufeAlle(varianten(szenarien, strukturModus), {
+    : await laufeAlle(varianten(szenarien, strukturModus, nurPaare), {
         pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen, stand, waechter,
       });
 
