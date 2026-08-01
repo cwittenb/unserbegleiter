@@ -68,6 +68,19 @@ export function korrekturNachricht(b, errors) {
   );
 }
 
+/** ST1.2 · Die Korrektur-Nachricht des STRUKTUR-Modus (Vertrag 2 unverändert:
+ *  genau eine Runde). Sie zitiert Feldnamen statt START/END-Token, denn im
+ *  Struktur-Modus gibt es keine Text-Marken mehr — der Block ist das
+ *  daten-Objekt im block-Feld des Turn-Werkzeugs. Englisch wie die
+ *  Schema-Fehlertexte (S31a: sprachinvariantes Wire). */
+export function korrekturNachrichtStruktur(dataset, errors) {
+  return (
+    "[SYSTEM-REVISION: Your last block (typ \"" + dataset +
+    "\") did not match the schema: " + errors.join("; ") +
+    ". Call the turn tool again NOW with the corrected block in the block field (same typ) – keep antwort to one short sentence.]"
+  );
+}
+
 /**
  * Anzeige-Säuberung: entfernt alle Marker, ersetzt Blöcke durch Platzhalter,
  * kollabiert Leerzeilen. Reine Funktion — Marker/Blöcke werden übergeben,

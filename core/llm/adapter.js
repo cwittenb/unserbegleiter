@@ -438,7 +438,12 @@ export const LLM_PROVIDERS = {
         const gerettet = extrahiereStrukturAusText(text);
         if (gerettet != null)
           return { text, data: gerettet, stop: data.stop_reason, usage, strukturQuelle: "text" };
-        throw new Error("Strukturausgabe fehlt: kein tool_use-Block (stop_reason=" + data.stop_reason + ")" + strukturAuszug(text));
+        // ST1.4: stabiler Code + Roh-Text am Fehler — die keyless-Korrektur-
+        // Runde zeigt dem Modell seine eigene Antwort (Judge-KORREKTUR-Muster).
+        const fehler = new Error("Strukturausgabe fehlt: kein tool_use-Block (stop_reason=" + data.stop_reason + ")" + strukturAuszug(text));
+        fehler.code = "struktur_fehlt";
+        fehler.antwortText = text;
+        throw fehler;
       }
       return { text, data: tu.input, stop: data.stop_reason, usage, strukturQuelle: "tool" };
     },
@@ -682,6 +687,12 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
 
   return function callClaude(systemPrompt, messages, drittes, viertes) {
     const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
+    /* ST1.5 · Waechter R3: Erzwungener Tool-Use (tool_choice:{type:"tool"})
+       und Extended Thinking schliessen sich bei Anthropic aus. Ohne diese
+       Pruefung kaeme ein kryptischer API-Fehler — hier faellt es mit Klartext
+       an der Konfigurationskante. */
+    if (structured && cfg.provider === "anthropic" && cfg.thinking !== "disabled")
+      throw new Error('Erzwungener Tool-Use verlangt thinking "disabled" (Anthropic) — cfg.thinking anpassen oder structured weglassen.');
     const streamen = typeof onDelta === "function" && cfg.stream !== false;
     const body = structured
       ? { ...P.structuredBody(cfg, systemPrompt, messages, structured), ...(streamen ? { stream: true } : {}) }
@@ -699,20 +710,55 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     }
     return mitWiederholung(async () => {
       await drossel();                                     // geteilte RPM-Drossel (pro Workspace), falls gesetzt
-      const resp = await fetchFn(P.url(cfg), {
-        method: "POST",
-        headers: P.headers(cfg),
-        body: JSON.stringify(body),                        // Body byte-identisch zum bisherigen Stand (ohne onDelta)
-      });
-      // HTTP-Status prüfen, BEVOR geparst wird — sonst liefert ein 429 ohne
-      // .error-Feld (Mistral) still text:"" statt eines Fehlers.
-      if (typeof resp.status === "number" && resp.status >= 400) {
-        throw new LlmHttpError(resp.status, parseRetryAfter(resp), await leseFehlerkoerper(resp));
+      const einAufruf = async (aufrufBody) => {
+        const resp = await fetchFn(P.url(cfg), {
+          method: "POST",
+          headers: P.headers(cfg),
+          body: JSON.stringify(aufrufBody),                // Body byte-identisch zum bisherigen Stand (ohne onDelta)
+        });
+        // HTTP-Status prüfen, BEVOR geparst wird — sonst liefert ein 429 ohne
+        // .error-Feld (Mistral) still text:"" statt eines Fehlers.
+        if (typeof resp.status === "number" && resp.status >= 400) {
+          throw new LlmHttpError(resp.status, parseRetryAfter(resp), await leseFehlerkoerper(resp));
+        }
+        if (streamen && istEventStream(resp))
+          return structured ? P.streamStructuredParse(resp, onDelta) : P.streamParse(resp, onDelta);
+        const data = await resp.json();
+        return structured ? P.parseStructured(data, structured.name) : P.parse(data);
+      };
+      /* ST1.4 · keyless ohne Formgarantie (K2-Entscheid, Sprintplan ST1–ST4):
+         (a) Greift der S85-Rettungspfad (strukturQuelle:"text"), meldet
+             onStatus("struktur_rettung") — die Anzeige zaehlt und warnt,
+             die Fassade bleibt regulaer.
+         (b) Kommt gar keine Struktur (code struktur_fehlt), fordert GENAU
+             EINE Korrektur-Runde nach dem Judge-KORREKTUR-Muster nach: Das
+             Modell sieht seine eigene Antwort und die Formforderung;
+             onStatus("struktur_korrektur"). Scheitert auch das → der
+             urspruengliche harte Fehler. NUR keyless — in direct/proxy ist
+             die Struktur erzwungen, ein Formfehler dort ein echter Defekt. */
+      const melde = (st) => { if (typeof onStatus === "function") { try { onStatus(st); } catch { /* Anzeige ist Komfort */ } } };
+      let ergebnis;
+      try {
+        ergebnis = await einAufruf(body);
+      } catch (e) {
+        if (!(cfg.mode === "keyless" && structured && e.code === "struktur_fehlt")) throw e;
+        melde("struktur_korrektur");
+        const nachMsgs = [
+          ...messages.map(m => ({ role: m.role, content: m.content })),
+          { role: "assistant", content: String(e.antwortText || "").trim() || "…" },
+          { role: "user", content: STRUKTUR_KORREKTUR },
+        ];
+        ergebnis = await einAufruf(P.structuredBody(cfg, systemPrompt, nachMsgs, structured));
       }
-      if (streamen && istEventStream(resp))
-        return structured ? P.streamStructuredParse(resp, onDelta) : P.streamParse(resp, onDelta);
-      const data = await resp.json();
-      return structured ? P.parseStructured(data, structured.name) : P.parse(data);
+      if (ergebnis && ergebnis.strukturQuelle === "text") melde("struktur_rettung");
+      return ergebnis;
     }, lokal);
   };
 }
+
+/** ST1.4 · Formforderung der keyless-Korrektur-Runde (sprachinvariantes Wire,
+ *  Muster: Judge-KORREKTUR + korrekturNachricht). */
+export const STRUKTUR_KORREKTUR =
+  "[SYSTEM-REVISION: Your last answer was not the required structure. " +
+  "Answer NOW exclusively with ONE JSON object of the requested form " +
+  "(fields as specified, e.g. {\"antwort\": …}) — no further text before or after, no Markdown fences.]";

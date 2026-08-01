@@ -10,7 +10,8 @@
 //                     privat → geteilt.
 
 import { findeMarker, pruefeMarkerOrder } from "../contracts/marker.js";
-import { findeBlock, parseBlock, korrekturNachricht } from "../contracts/block.js";
+import { findeBlock, parseBlock, korrekturNachricht, korrekturNachrichtStruktur } from "../contracts/block.js";
+import { baueTurnSchema, markerVoll } from "../contracts/turn-schema.js";
 
 export class Engine {
   /**
@@ -34,6 +35,18 @@ export class Engine {
     this.def = def;
     this.chat = chat;
     this.chat.blockFix = !!chat.blockFix;
+    /* ST1.2 · Struktur-Modus (Sprintplan ST1–ST4): Die SessionDef entscheidet
+       per strukturTurn:true, ob der Zug als erzwungene Strukturausgabe läuft.
+       Default AUS — der Textpfad bleibt byte-identisch. Das Turn-Schema wird
+       EINMAL gebaut und memoisiert (stabile Serialisierung → Cache-Treffer).
+       chat.struktur zählt die Herkunft je Zug (Telemetrie, K2-Entscheid):
+       tool = erzwungen · gerettet = S85-Textrettung · korrigiert = keyless-
+       Nachforderung · fehlgeschlagen = Zug ohne verwertbare Struktur. */
+    this.strukturTurn = !!def.strukturTurn;
+    if (this.strukturTurn) {
+      this._turnSchema = baueTurnSchema(def);
+      this.chat.struktur = this.chat.struktur || { tool: 0, gerettet: 0, korrigiert: 0, fehlgeschlagen: 0 };
+    }
     this.llm = llm;
     this.ctx = ctx;
     this.hooks = hooks;
@@ -64,7 +77,18 @@ export class Engine {
     if (this.chat.status === "released" || this.chat.status === "finished") return;
     const last = this.chat.messages[this.chat.messages.length - 1];
     if (!last) return;
-    if (last.role === "assistant") { await this._afterAssistant(last.content); return; }
+    if (last.role === "assistant") {
+      /* ST1.2 · Zwei Generationen von Verlaeufen: Traegt die Nachricht
+         Struktur-Meta (marker/block/strukturQuelle) und laeuft die Session im
+         Struktur-Modus, wird aus den Feldern dispatcht — sonst wie bisher aus
+         dem Text. Alt-Verlaeufe bleiben so wiedereintrittsfaehig. */
+      if (this.strukturTurn && (last.marker || last.block || last.strukturQuelle)) {
+        await this._afterAssistantStruktur(last);
+      } else {
+        await this._afterAssistant(last.content);
+      }
+      return;
+    }
     if (!this.busy) await this.requestAssistant();
   }
 
@@ -112,6 +136,42 @@ export class Engine {
         const zusatz = this.def.schaerfe(this.chat.messages, this.ctx);
         if (zusatz) system += "\n\n" + zusatz;
       }
+      if (this.strukturTurn) {
+        /* ST1.2 · Struktur-Zug: Der Adapter erzwingt das Turn-Schema; data ist
+           {antwort, marker?, block?}. onDelta streamt den EXTRAHIERTEN
+           Begleitertext (antwort-Extraktor, S79) — nie Schema-Rauschen.
+           Struktur-Ereignisse des Adapters (struktur_rettung/_korrektur, ST1.4)
+           laufen ueber denselben onStatus-Kanal zur Anzeige und werden hier
+           mitgezaehlt. Wirft der Adapter, zaehlt der Zug als fehlgeschlagen
+           und der Fehler geht unveraendert an den Aufrufer (kein stiller
+           Downgrade). */
+        const onStatus = (st) => {
+          if (st === "struktur_korrektur" && this.chat.struktur) this.chat.struktur.korrigiert++;
+          if (this.hooks.onStatus) this.hooks.onStatus(st);
+        };
+        let r;
+        try {
+          r = await this.llm(system, this.chat.messages, { structured: this._turnSchema, onDelta, onStatus });
+        } catch (e) {
+          if (this.chat.struktur) { this.chat.struktur.fehlgeschlagen++; await this._save(); }
+          throw e;
+        }
+        const d = (r && r.data && typeof r.data === "object") ? r.data : {};
+        const msg = { role: "assistant", content: typeof d.antwort === "string" ? d.antwort : String(r.text || "").trim() };
+        if (typeof d.marker === "string" && d.marker) msg.marker = d.marker;
+        if (d.block && typeof d.block === "object") msg.block = d.block;
+        if (r.strukturQuelle) msg.strukturQuelle = r.strukturQuelle;
+        if (this.chat.struktur) {
+          if (r.strukturQuelle === "text") this.chat.struktur.gerettet++;
+          else this.chat.struktur.tool++;
+        }
+        this.chat.messages.push(msg);
+        this.chat.lastStop = r.stop || null;
+        await this._save();
+        if (this.hooks.onRender) this.hooks.onRender();
+        await this._afterAssistantStruktur(msg);
+        return;
+      }
       const { text, stop } = await this.llm(system, this.chat.messages, onDelta, this.hooks.onStatus);
       this.chat.messages.push({ role: "assistant", content: text });
       this.chat.lastStop = stop || null;
@@ -121,6 +181,90 @@ export class Engine {
     } finally {
       this.busy = false;
     }
+  }
+
+  /* ST1.2 · Text-Schatten: die synthetisierte Legacy-Form eines Struktur-Zugs.
+     Die Waechter (pruefeUebergabe, S105.3) pruefen Text mit den gewachsenen
+     Regexen (hatBlock, findeMarker, Stamm-Heuristiken). Statt jeden Waechter
+     jetzt umzubauen, bekommt er GENAU die Form, die er erwartet: antwort,
+     dann der Block zwischen seinen Marken, dann die Marke allein in der
+     letzten Zeile. Uebergangs-Konstruktion — faellt mit der nativen
+     Turn-Sicht der Waechter (spaeterer ST-Sprint), dokumentiert im Plan. */
+  _textSchatten(msg, blockDefn) {
+    let t = String(msg.content || "");
+    if (msg.block && blockDefn)
+      t += "\n\n" + blockDefn.start + "\n" + JSON.stringify(msg.block.daten) + "\n" + blockDefn.end;
+    if (msg.marker) t += "\n\n" + markerVoll(msg.marker);
+    return t;
+  }
+
+  /** ST1.2 · Dispatcher des Struktur-Modus: Waechter → Marke → Block-Semantik.
+   *  Reihenfolge identisch zum Textpfad; nur die Quelle sind Felder statt
+   *  Parse. Marke gewinnt vor Block (bestehende Semantik, jetzt explizit). */
+  async _afterAssistantStruktur(msg) {
+    if (!this.def.canAct(this.chat)) return;
+
+    const blockDefn = msg.block ? this._blocks().find(b => b.dataset === msg.block.typ) : null;
+
+    const verweigert = this.def.pruefeUebergabe
+      ? this.def.pruefeUebergabe(this._textSchatten(msg, blockDefn), this) : null;
+    if (verweigert) {
+      this.chat.letzteVerweigerung = verweigert;
+      await this._save();
+      return;                    // Marke und Block werden NICHT ausgefuehrt
+    }
+    if (this.chat.letzteVerweigerung) {
+      this.chat.letzteVerweigerung = null;
+      await this._save();
+    }
+
+    if (msg.marker) {
+      const handler = this.def.markers[markerVoll(msg.marker)];
+      if (handler) { handler(this); return; }
+      // Unbekannte Marke: im erzwungenen Pfad schemafest unmoeglich, im
+      // Rettungspfad denkbar — melden statt raten, keine stille Ausfuehrung.
+      await this._blockCorrectionStruktur("marker", ['unknown marker "' + msg.marker + '"']);
+      return;
+    }
+
+    if (!msg.block) return;
+    if (!blockDefn) {
+      await this._blockCorrectionStruktur(String(msg.block.typ || "?"), ["unknown block typ for this session"]);
+      return;
+    }
+    if (!blockDefn.schema) { await blockDefn.handle(msg.block.daten, this); await this._save(); return; }
+    const errors = blockDefn.schema(msg.block.daten);
+    if (!errors.length) {
+      this.chat.blockFix = false;
+      await this._save();
+      await blockDefn.handle(msg.block.daten, this);
+      await this._save();
+      return;
+    }
+    await this._blockCorrectionStruktur(blockDefn.dataset, errors);
+  }
+
+  /** ST1.2 · Vertrag 2 im Struktur-Modus — GENAU EINE Korrektur-Runde,
+   *  dieselbe blockFix-Buchhaltung, feldbezogene Korrektur-Nachricht. */
+  async _blockCorrectionStruktur(dataset, errors) {
+    if (this.chat.blockFix) {
+      this.chat.blockFix = false;
+      await this._save();
+      this._personError(
+        "Der Block ist weiterhin ungültig (" + errors[0] +
+        ") – bitte das System im Chat um eine Wiederholung bitten."
+      );
+      return;   // KEIN dritter Versuch
+    }
+    this.chat.blockFix = true;
+    this.chat.messages.push({
+      role: "user",
+      hidden: true,
+      content: korrekturNachrichtStruktur(dataset, errors),
+    });
+    await this._save();
+    this.busy = false;
+    await this.requestAssistant();
   }
 
   /** Dispatcher: Validator → Marker → Block → Schema → Handler/Korrektur. */
