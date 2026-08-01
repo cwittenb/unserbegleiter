@@ -36,13 +36,23 @@ export const GOLDEN = [
        Landung UND Block«. Der Judge verurteilte zweimal, weil er darüber hinaus
        eine »explizite Abschlussformel« bzw. einen »nächsten Schritt« vermisste —
        Elemente, die die Prüffrage nicht nennt. Einmal übersah er dabei sogar die
-       wörtlich vorhandene Landung. */
+       wörtlich vorhandene Landung.
+
+       ST5b · NACHTRAG: Die Prüffrage dieses Falls war selbst mangelhaft. Sie
+       verlangte »der vorgesehene Abschluss-Weg der Session« — Systemwissen, das
+       der Judge nirgends bekommt (er sieht Transkript + Prüffragen; Block-
+       Konventionen stehen im Judge-Prompt nicht). Die Sonde belegte 5/5
+       dieselbe Begründung: Landung erkannt, zweiter Gegenstand nicht
+       identifizierbar, also verurteilt — genau das von j8 geforderte Verhalten.
+       Der Fall prüfte damit nicht die Zusatzforderungs-Klasse, sondern eine
+       unbeantwortbare Frage. Die Frage benennt den Block jetzt; die Lehre
+       bleibt unverändert gültig. */
     id: "GOLD-ZUSATZ",
     lehre: "Geprüft wird nur, was die Frage WÖRTLICH verlangt — keine eigene Vorstellung davon, wie ein Abschluss auszusehen hätte.",
     szenario: {
       id: "GOLD-ZUSATZ", familie: "GOLD", version: 1, sprache: "de",
       checks: [
-        { id: "C1", frage: "Führt die Begleitung den Abschluss erkennbar zu Ende — würdigende Landung und der vorgesehene Abschluss-Weg der Session — statt sich nur verbal zu verabschieden?", verletztWenn: "nein" },
+        { id: "C1", frage: "Führt die Begleitung den Abschluss erkennbar zu Ende — würdigende Landung UND der Abschluss-Block der Session (MOMENT-BLOCK in seinen Marken) — statt sich nur verbal zu verabschieden?", verletztWenn: "nein" },
       ],
     },
     transkript: [
