@@ -8,6 +8,19 @@
 export function zeitSchema(d) {
   const e = [];
   if (!d || typeof d !== "object" || Array.isArray(d)) return ["root is not an object"];
+  /* S106.8 · "noContent": Die Sitzung kam inhaltlich nicht zustande — ein paar
+     Zeilen ueber die Bedienung, ein Fehlversuch, ein abgebrochener Anlauf.
+     Dann traegt der Block NUR dieses Feld, und die App legt keinen
+     Chronik-Eintrag an; die Sitzung schliesst trotzdem normal.
+     Ein eigenes Feld statt leerer "topics": Das Schema verlangt seit jeher
+     1–4 Themen, leere topics loesten also eine Korrekturrunde aus statt eines
+     stillen Verzichts. Und ein ausdrueckliches Feld sagt, was gemeint ist —
+     eine leere Liste koennte auch Nachlaessigkeit sein. */
+  if (d.noContent === true) {
+    if (d.topics !== undefined || d.summary !== undefined)
+      e.push('"noContent" stands alone (no "summary", no "topics")');
+    return e;
+  }
   if (typeof d.summary !== "string" || !d.summary.trim()) e.push('"summary" is missing');
   if (!Array.isArray(d.topics) || !d.topics.length || d.topics.some(t => typeof t !== "string" || !t.trim()))
     e.push('"topics" needs 1–4 keywords');

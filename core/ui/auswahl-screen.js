@@ -36,11 +36,19 @@ import { quereGate } from "./sessions.js";
 export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, warteAntwort }) {
   let ausw = null;   // {paare, eignung, gewaehlt:Set, anker, phase, rahmen, …}
 
-  /** Ruhiger Zugang nach dem Eignungsbericht — nie aufgedrängt. */
-  function ausschnittAngebot(eignung, engine) {
+  /** Ruhiger Zugang nach dem Eignungsbericht — nie aufgedrängt.
+   *  @param {object[]} [quelle] S106.5 · Nachrichten, aus denen die Paare
+   *         stammen. Ohne Angabe: das laufende Gespräch. */
+  function ausschnittAngebot(eignung, engine, quelle, quelleDatum) {
     const p = $("ausschnittPanel");
     if (!p) return false;
-    const paare = paareAusVerlauf(engine.chat.messages);
+    /* S106.5 · Der Auswahl-Screen war immer schon quellenunabhaengig —
+       starteAuswahl BEKOMMT die Liste. Nur hier war sie festverdrahtet, und
+       genau daran scheiterte das Teilen aus einem frueheren Gespraech: Die
+       Tuer oeffnete mit den Paaren des LAUFENDEN Gespraechs, das an der Stelle
+       zwei Saetze lang ist. Eine Art von Auswahl, an einer Stelle, zwei
+       moegliche Quellen. */
+    const paare = paareAusVerlauf(quelle || engine.chat.messages);
     const wahl = paare.filter(x => paarWaehlbar(eignung, x.id));
     if (!wahl.length) return false;      // keine Tür statt einer verschlossenen
     p.classList.remove("pb-hidden");
@@ -50,14 +58,14 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     p.innerHTML = `<button class="rz-zeile rz-knopf-flach" id="btnAuswStart"><span>${esc(fuelle(t("ausschnitt.zugang"), { partner: state.info.partner }))}</span><span class="rz-pfeil">→</span></button>`;
     p.querySelector("#btnAuswStart").addEventListener("click", () => {
       p.classList.add("pb-hidden");
-      starteAuswahl(paare, eignung, engine);
+      starteAuswahl(paare, eignung, engine, quelleDatum);
     });
     return true;   // S95.7: die Verlaufs-Zeile haengt an derselben Bedingung
   }
 
-  function starteAuswahl(paare, eignung, engine) {
+  function starteAuswahl(paare, eignung, engine, quelleDatum) {
     ausw = {
-      paare, eignung, engine,
+      paare, eignung, engine, quelleDatum: quelleDatum || null,
       gewaehlt: new Set(),             // Startzustand LEER — Vorauswahl wäre ein Nudge
       anker: null, phase: "auswahl",
       rahmen: "", hinweis: false,      // Richtwert-Hinweis fällt genau EINMAL
@@ -269,6 +277,13 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
           kind: "excerpt",
           pairs: baueAusschnitt(ausw.paare, [...ausw.gewaehlt]),
           frame: ausw.rahmen.trim() || null,
+          /* S106.6 · Stammt der Ausschnitt aus einem FRUEHEREN Gespraech,
+             traegt er dessen Datum. Ohne Herkunft liest der Partner Saetze von
+             vor zwei Wochen, als waeren sie von heute — und Zeit aendert, wie
+             ein Satz ankommt. Bei einem Ausschnitt aus dem laufenden Gespraech
+             bleibt das Feld leer: Dort ist "heute" die Selbstverstaendlichkeit,
+             die keine Angabe braucht. */
+          sourceDate: (ausw.quelleDatum || null),
           selbstmitteilung: null, wish: null,
         }, wege);
       } catch (e) { err(e.message); return; }

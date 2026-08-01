@@ -1121,7 +1121,9 @@ export function createApp({ doc, backend, root, diktat }) {
         /* S95.7 · Erst die Tuer, dann die Verlaufs-Zeile darunter — sie haengt
            an derselben Bedingung: Wo es nichts Teilbares gibt, wird weder eine
            Tuer gezeigt noch etwas gefragt oder aufbewahrt. */
-        if (!ausschnittAngebot(eignung, e2)) return;
+        // S106.5 · Dieselbe Quelle wie die Kennungen (paarKennungenZug).
+        const av = state.anlassVerlauf;
+        if (!ausschnittAngebot(eignung, e2, av && av.messages, av && av.datum)) return;
         verlaufSchritt(eignung, e2);
       }),
       onRegler: lebend(e2 => reglerPanel(e2)),
@@ -1249,6 +1251,10 @@ export function createApp({ doc, backend, root, diktat }) {
     // S99.6 · Zeitmarke des Betretens. Sie entscheidet, ob ein Zeitleisten-
     // Eintrag noch zu DIESER Sitzung gehört (siehe hefteVerlaufAn).
     state.sessionAb = Date.now();
+    // S106.4 · Der Anlass-Verlauf gilt nur fuer DIESE Sitzung. Er wird beim
+    // Betreten geleert und weiter unten neu gesetzt, wenn ein Anlass kommt —
+    // gemerkter Zustand ohne Aufraeumen war der Fehler hinter S99.1/S99.6.
+    state.anlassVerlauf = null;
     // D12-2b/T2i · Das Badge auf der Naht nennt den Ort (Turn 27, 27e) — und
     // ist seit T2 zugleich der Wegweiser-Knopf. Die Beschriftung bleibt der
     // Ortsname (Entscheidung K5), sie zieht ihn aber aus eigenen Schlüsseln
@@ -1331,7 +1337,32 @@ export function createApp({ doc, backend, root, diktat }) {
            eroeffnet, holt den Wortlaut bei Bedarf per RECALL-BLOCK und
            bleibt sonst bei allem, was ohnehin gilt. */
         const anlassKontext = baueAnlassKontext(anlass, timeline);
-        if (anlassKontext) chat.messages.push({ role: "user", hidden: true, content: anlassKontext });
+        if (anlassKontext) {
+          chat.messages.push({ role: "user", hidden: true, content: anlassKontext });
+          /* S106.1 · Der Wortlaut kommt MIT, statt per Block nachgeholt zu
+             werden. Grund: Auf diesem Weg ist er immer gebraucht — die Person
+             ist eigens gekommen, um daraus zu teilen. Ihn erst anzufordern
+             kostete eine Runde, in der der Begleiter ueber ein Gespraech
+             sprach, das er nicht kennt ("ich hole ihn gleich"), und genau dort
+             entstanden die erfundenen Wartezeiten.
+             Der RECALL-BLOCK bleibt fuer den anderen Fall: ein ANDERES
+             Gespraech, mitten im Gespraech. */
+          const verlauf = await holeVerlauf(backend, anlass.vid).catch(() => null);
+          if (verlauf) {
+            chat.messages.push({
+              role: "user", hidden: true, content: baueWortlautWire(verlauf, anlass.vid) });
+            /* S106.4/106.5 · Der abgerufene Verlauf ist ab jetzt die QUELLE
+               fuer Kennungen und Auswahl. Er liegt im Zustand, nicht im Chat:
+               Aus dem Chat liesse er sich nicht zurueckgewinnen — dort steht er
+               als Wire-TEXT, und paareAusVerlauf braucht Nachrichten. */
+            const eintrag = ((timeline && timeline.entries) || []).find(e => e && e.vid === anlass.vid);
+            state.anlassVerlauf = {
+              vid: anlass.vid,
+              messages: verlauf.messages || [],
+              datum: (eintrag && eintrag.at) || null,   // S106.6 · Herkunft des Ausschnitts
+            };
+          }
+        }
       }
       if (art === "moment") {
         const [goals, agenda, momentLog, measurements, freiA, freiB, findings] = await Promise.all([
@@ -1485,15 +1516,24 @@ export function createApp({ doc, backend, root, diktat }) {
      allen anderen App-Antworten. Findet sich nichts, sagt die Antwort das
      ausdruecklich: Der Begleiter soll die Luecke NICHT fuellen, sondern
      benennen und auf die Zeitleiste verweisen. */
-  async function holeWortlaut(daten, engine) {
-    const verlauf = await holeVerlauf(backend, daten && daten.vid);
+  /* S106.1 · Der Wortlaut als Wire-Text — EINE Fassung fuer beide Wege.
+     Er entsteht jetzt an zwei Stellen: auf Anforderung (RECALL-BLOCK, mitten im
+     Gespraech) und beim Betreten ueber "Teilen" aus der Zeitleiste, wo die App
+     ihn ungefragt mitbringt. Beide muessen dasselbe liefern, sonst liest der
+     Begleiter je nach Weg etwas anderes. */
+  function baueWortlautWire(verlauf, vid) {
     const sichtbar = ((verlauf && verlauf.messages) || [])
       .filter(m => !m.hidden && !istWireNachricht(m))
       .map(m => (m.role === "assistant" ? "B: " : "I: ") + cleanDisplay(m.content, [], ALLE_BLOECKE))
       .join("\n");
-    const antwort = sichtbar
-      ? "RECALL-RESULT\n" + fuelle(K().steuerTexte.abrufGefunden, { vid: daten.vid }) + "\n" + sichtbar
+    return sichtbar
+      ? "RECALL-RESULT\n" + fuelle(K().steuerTexte.abrufGefunden, { vid }) + "\n" + sichtbar
       : "RECALL-RESULT\n" + K().steuerTexte.abrufLeer;
+  }
+
+  async function holeWortlaut(daten, engine) {
+    const verlauf = await holeVerlauf(backend, daten && daten.vid);
+    const antwort = baueWortlautWire(verlauf, daten && daten.vid);
     // S105.1 · antworteAufBlock statt submitToolResult: Wir sind im Handler und
     // damit noch im ersten Lauf — sonst verfaellt die Folgerunde an der Sperre.
     await warteAntwort(() => engine.antworteAufBlock(antwort));
@@ -1711,7 +1751,13 @@ export function createApp({ doc, backend, root, diktat }) {
      die Antwort steht dem Modell im Verlauf ohnehin vollstaendig zur Verfuegung. */
   function paarKennungenZug(engine) {
     if (!engine || !engine.chat) return null;
-    const paare = paareAusVerlauf(engine.chat.messages, { markerOrder: engine.def && engine.def.markerOrder });
+    /* S106.4 · Kam die Sitzung ueber "Teilen" aus der Zeitleiste, meint die
+       Person das GELESENE Gespraech — nicht das laufende, das an dieser Stelle
+       oft nur aus ein paar Zuegen besteht. Dann stammen die Kennungen von dort,
+       und die Auswahl weiter unten aus derselben Quelle. */
+    const av = state.anlassVerlauf;
+    const quelle = av ? av.messages : engine.chat.messages;
+    const paare = paareAusVerlauf(quelle, { markerOrder: engine.def && engine.def.markerOrder });
     if (!paare.length) return null;
     return PAIRS_KOPF + "\n" + paare
       .map(p => p.id + " · " + p.frage.text.replace(/\s+/g, " ").slice(0, 120))
@@ -2240,6 +2286,10 @@ export function createApp({ doc, backend, root, diktat }) {
   // S62: testHooks exponiert Render/Stream für die Scroll-Disziplin-Tests.
   return { boot, show, startChat, _state: state, _err: err,
     engine: () => state.engine,
-    testAusschnitt: eignung => ausschnittAngebot(eignung, state.engine),
+    // S106.5 · Die Test-API nimmt denselben Weg wie onAusschnitt — sonst
+    // pruefte sie einen Pfad, den es im Betrieb nicht gibt.
+    testAusschnitt: eignung => ausschnittAngebot(eignung, state.engine,
+      state.anlassVerlauf && state.anlassVerlauf.messages,
+      state.anlassVerlauf && state.anlassVerlauf.datum),
     testHooks: { renderMsgs, zeigeStream: t2 => Promise.resolve(zeigeStream(t2)) } };
 }

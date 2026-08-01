@@ -73,9 +73,22 @@ export function soloDef(backend, hooks = {}) {
       {
         ...BLOECKE.zeitleiste,
         handle: async (data, engine) => {
-          const zl = (await backend.pstate.get("timeline")) || { entries: [] };
-          zl.entries.push({ at: new Date().toISOString(), ...data });
-          await backend.pstate.set("timeline", zl);
+          /* S106.8 · Eine Sitzung OHNE Thema hinterlaesst keinen Eintrag.
+             Die gescheiterten Abruf-Versuche aus dem Testlauf haben Eintraege
+             erzeugt, die dann selbst zum teilbaren Material wurden — das
+             System protokollierte seine eigene Fehlfunktion als Inhalt der
+             Person. Die Entscheidung "kein Thema" trifft das Modell (es fuellt
+             topics ohnehin), die Folge zieht die App: kein neues Signal, kein
+             Schema-Wechsel.
+             Die Sitzung schliesst trotzdem — "kein Eintrag" darf nie "Sitzung
+             bleibt offen" heissen. Und ohne Eintrag gibt es nichts, woran eine
+             Verlaufs-Kennung haengen koennte; der Haken laeuft dann sauber ins
+             Leere (hefteVerlaufAn steigt bei leerer Chronik aus). */
+          if (!data.noContent) {
+            const zl = (await backend.pstate.get("timeline")) || { entries: [] };
+            zl.entries.push({ at: new Date().toISOString(), ...data });
+            await backend.pstate.set("timeline", zl);
+          }
           engine.chat.status = "finished";
           /* S99.6 · Der Haken wird ABGEWARTET und bekommt die Engine mit: Die
              Verlaufs-Ablage hängt seit S95.7a am EXCERPT-BLOCK und fiel damit
