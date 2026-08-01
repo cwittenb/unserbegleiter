@@ -170,6 +170,23 @@ export function pruefeMetaMarke(text, ctx = {}) {
   return (alleinDort && nurEinmal) ? null : (ctx.revision || META_PLATZ_REVISION);
 }
 
+/* S105.3 · Kette für die ÜBERGABE-Prüfung.
+   Gleiche Bauart wie waechterKette, andere Bedeutung des Ergebnisses: Ein
+   Treffer heisst nicht mehr "schreib die Antwort neu", sondern "fuehre die
+   Uebergabe nicht aus". Der Text bleibt in jedem Fall stehen.
+   Der Rueckgabewert ist ein kurzer Grund — er wandert nicht ins Gespraech,
+   sondern nur in den Chat-Zustand, damit Oberflaeche und Tests ihn sehen. */
+export function uebergabeKette(pruefer) {
+  const liste = (pruefer || []).filter(p => typeof p === "function");
+  return (text, engine) => {
+    for (const p of liste) {
+      const grund = p(text, engine);
+      if (grund) return grund;
+    }
+    return null;
+  };
+}
+
 /* S100.3 · Wächter-Kette.
    Vier Sessions hielten je eine handgeschriebene ||-Kette samt Kommentar zur
    Reihenfolge. Der Gewinn der Liste ist nicht die Zeilenersparnis, sondern die

@@ -143,17 +143,19 @@ describe("S103.3 · Die vierte Regie-Übergabe ist bewacht", () => {
   });
 
   it("verdrahtet in der Qualitätszeit — und nur dort", () => {
+    // S105.3 · Die Marke wird jetzt VERWEIGERT statt revidiert: Der Text bleibt
+    // stehen, nur die Aufdeckung unterbleibt.
     const eng = { chat: { messages: [] }, ctx: {} };
-    expect(momentDef(backendStumm(), {}).validiereAntwort("[[META-REVEALED]]\nText danach.", eng))
-      .toBe(steuerTexte.metaPlatzRevision);
+    expect(momentDef(backendStumm(), {}).pruefeUebergabe("[[META-REVEALED]]\nText danach.", eng))
+      .toBe("meta-marke-platz");
     // Die Auflösung kennt diese Marke nicht — dort bleibt sie folgenlos.
-    expect(gemeinsamDef(backendStumm(), {}).validiereAntwort("[[META-REVEALED]]\nText danach.", eng))
+    expect(gemeinsamDef(backendStumm(), {}).pruefeUebergabe("[[META-REVEALED]]\nText danach.", eng))
       .toBeNull();
   });
 
   it("[[CHOICE-CONNECT]] bleibt unberührt", () => {
     const eng = { chat: { messages: [] }, ctx: {} };
-    expect(momentDef(backendStumm(), {}).validiereAntwort("Mögt ihr?\n[[CHOICE-CONNECT]]", eng))
+    expect(momentDef(backendStumm(), {}).pruefeUebergabe("Mögt ihr?\n[[CHOICE-CONNECT]]", eng))
       .toBeNull();
   });
 });
@@ -177,6 +179,8 @@ describe("S103.4 · Der Zweck-Kontrast wird nicht halbiert", () => {
 });
 
 /* ═══════════ S103.5 · Krisen-Reihenfolge im geteilten Raum ═══════════ */
+
+const eng0 = { chat: { messages: [] }, ctx: { nameA: "Anna", nameB: "Bernd" } };
 
 describe("S103.5 · Die Nummer allein genügt nicht", () => {
   const RAUM = "Dafür ist dein eigener Raum da — dort bin ich ganz für dich.";
@@ -206,11 +210,20 @@ describe("S103.5 · Die Nummer allein genügt nicht", () => {
     expect(pruefeKrisenReihenfolge("Der Krisendienst ist erreichbar.")).toBeTruthy();
   });
 
-  it("verdrahtet in beiden geteilten Räumen", () => {
-    const eng = { chat: { messages: [] }, ctx: { nameA: "Anna", nameB: "Bernd" } };
-    for (const def of [momentDef(backendStumm(), {}), gemeinsamDef(backendStumm(), {})])
-      expect(def.validiereAntwort("Ich höre dich. " + HILFE, eng))
-        .toBe(steuerTexte.krisenReihenfolgeRevision);
+  it("S105.3 · beide geteilten Räume schärfen jetzt VORWÄRTS statt zu revidieren", () => {
+    /* Der Fehler steckt im gesprochenen Text (die Nummer ohne den Verweis in
+       den eigenen Raum) — verweigern lässt sich da nichts, und zurückgenommen
+       wird nichts mehr. Also bekommt das Modell die Regel VORHER mit, wenn die
+       Nachricht der Person Krisensignale trägt. */
+    const krise = [{ role: "user", content: "Ich will nicht mehr leben." }];
+    const harmlos = [{ role: "user", content: "Wir hatten einen schönen Abend." }];
+    for (const def of [momentDef(backendStumm(), {}), gemeinsamDef(backendStumm(), {})]) {
+      expect(typeof def.schaerfe).toBe("function");
+      expect(def.schaerfe(krise, {})).toContain("ZUERST der Verweis in den eigenen Raum");
+      expect(def.schaerfe(harmlos, {})).toBeNull();
+      // Und nichts wird mehr zurückgenommen.
+      expect(def.pruefeUebergabe ? def.pruefeUebergabe("Ich höre dich. " + HILFE, eng0) : null).toBeNull();
+    }
   });
 
   it("der Prompt trägt das Gegenbeispiel (de+en)", () => {

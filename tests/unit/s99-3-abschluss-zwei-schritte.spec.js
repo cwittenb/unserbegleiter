@@ -103,23 +103,34 @@ describe("S99.3 · Die Bausteine einzeln", () => {
 
 /* ────────────────────── Verkettung in der SessionDef ────────────────────── */
 
-describe("S99.3 · Beide Wächter hängen am Reflexionsgespräch", () => {
+/* S105.3 · Aus der Revision wurde die verweigerte Übergabe.
+   Die Prüffrage ist dieselbe geblieben — fragen und abschließen in EINER
+   Nachricht bleibt ein Verstoß. Was sich ändert, ist die Folge: Der Text bleibt
+   stehen, nur der Block wird nicht ausgeführt. Damit endet die Sitzung nicht,
+   die Frage ist lesbar, die Person kann antworten. */
+describe("S105.3 · Die Übergabe hängt am Reflexionsgespräch", () => {
   const def = () => soloDef({ pstate: { get: async () => null, set: async () => true } }, {});
 
-  it("das Prädikats-Urteil aus S93 wird weiterhin erkannt", () => {
-    const revision = def().validiereAntwort("Das ist eine starke Fassung.", null);
-    expect(revision).toBe(steuerTexte.urteilsRevision);
-  });
-
-  it("die Frage mit Block wird erkannt — und mit dem Korpus-Wortlaut", () => {
+  it("die Frage mit Block wird erkannt", () => {
     const engine = { chat: { messages: ABSCHLUSS } };
     const text = "Was davon soll Bernd erreichen?\n" + BLOCK;
-    expect(def().validiereAntwort(text, engine)).toBe(steuerTexte.abschlussRevision);
+    expect(def().pruefeUebergabe(text, engine)).toBe("abschluss-mit-frage");
   });
 
-  it("ohne Engine wirft nichts — der Wächter schweigt dann einfach", () => {
+  it("ohne Engine wirft nichts — die Prüfung schweigt dann einfach", () => {
     const text = "Was davon soll Bernd erreichen?\n" + BLOCK;
-    expect(def().validiereAntwort(text, undefined)).toBeNull();
+    expect(def().pruefeUebergabe(text, undefined)).toBeNull();
+  });
+
+  it("ein Prädikats-Urteil ist KEINE Übergabe-Frage mehr — es bleibt stehen", () => {
+    // S93 hatte dafür einen Wächter. Ein Urteil steckt im Text selbst:
+    // verweigern ließe sich da nichts, und zurückgenommen wird nichts mehr.
+    // Die Regel trägt seit S105.4 der Prompt allein — samt der Form, die
+    // richtig wäre ("Das finde ich …" statt "Das ist …").
+    expect(def().pruefeUebergabe("Das ist eine starke Fassung.", null)).toBeNull();
+    const p = reflexionsPrompt("Anna", "Bernd");
+    expect(p).toContain("URTEILS-GRAMMATIK");
+    expect(p).toContain("Das finde ich einen schönen Impuls");
   });
 });
 
@@ -152,13 +163,17 @@ beforeEach(() => {
 });
 
 describe("S99.3 · Im laufenden Gespräch", () => {
-  it("die Gabelung überlebt: genau eine Revisionsrunde, Composer bleibt offen", async () => {
+  it("die Gabelung ÜBERLEBT — und zwar sichtbar: nichts wird zurückgenommen", async () => {
+    /* Der Fall aus dem Testlauf, in der Fassung von S105.3.
+       Das Modell fragt UND schließt in einer Nachricht. Bis hierher versteckte
+       die Engine diese Antwort und ließ sie neu schreiben — die Person sah, wie
+       die Begleitung zurücknahm, was sie gerade gesagt hatte.
+       Jetzt wird nur die ÜBERGABE verweigert: Der Block wird nicht ausgeführt,
+       der Text bleibt lesbar, die Sitzung läuft weiter. Das Ergebnis ist genau
+       das, was die Regel wollte — die Frage steht, und sie ist beantwortbar. */
     const mock = new MockLLM([
       "Schön, dass du da bist.",
-      // Der Fehlfall: fragen UND schließen.
       "Magst du das für dich behalten, oder soll etwas davon Bernd erreichen?\n" + BLOCK,
-      // Nach der Revision: nur die Frage.
-      "Magst du das für dich behalten, oder soll etwas davon Bernd erreichen?",
     ]);
     const backend = memoryBackend(mock);
     const app = createApp({ doc: document, backend, root });
@@ -173,21 +188,21 @@ describe("S99.3 · Im laufenden Gespräch", () => {
     // Die Sitzung läuft weiter — die Person kann antworten.
     expect(app._state.engine.chat.status).toBe("running");
     expect(root.querySelector("#pbComposer").classList.contains("pb-hidden")).toBe(false);
-    // Die beanstandete Fassung ist aus der Anzeige verschwunden (S73-Grammatik).
-    const sichtbar = root.querySelector("#pbMsgs").textContent;
-    expect(sichtbar).not.toContain("Zeitleisten-Eintrag");
-    expect(sichtbar).toContain("Bernd erreichen");
-    // Und die Revision ist genau EINMAL gelaufen.
-    const revisionen = app._state.engine.chat.messages
-      .filter(m => m.role === "user" && String(m.content).includes("SYSTEM-REVISION"));
-    expect(revisionen).toHaveLength(1);
-    expect(revisionen[0].hidden).toBe(true);
+    // Die Frage steht sichtbar da. Sie wurde NICHT entfernt.
+    expect(root.querySelector("#pbMsgs").textContent).toContain("Bernd erreichen");
+    // Keine zweite Runde, keine versteckte Nachricht, keine Revision.
+    expect(mock.calls, "genau zwei Runden: Eröffnung und Abschlussversuch").toHaveLength(2);
+    const msgs = app._state.engine.chat.messages;
+    expect(msgs.some(m => m.role === "assistant" && m.hidden)).toBe(false);
+    expect(JSON.stringify(msgs)).not.toContain("SYSTEM-REVISION");
+    // Der Grund steht im Zustand — für Oberfläche und Tests, nie im Gespräch.
+    expect(app._state.engine.chat.letzteVerweigerung).toBe("abschluss-mit-frage");
   });
 
-  it("die zweite Fassung schließt dann wirklich ab", async () => {
+  it("der Knopf heißt jetzt 'Ohne Teilen abschließen' — und ein Druck beantwortet die Gabelung", async () => {
     const mock = new MockLLM([
       "Schön, dass du da bist.",
-      "Magst du das für dich behalten?\n" + BLOCK,
+      "Magst du das für dich behalten, oder soll etwas davon Bernd erreichen?\n" + BLOCK,
       "Dann behältst du es. Alles Gute für heute.\n" + BLOCK,
     ]);
     const backend = memoryBackend(mock);
@@ -198,8 +213,18 @@ describe("S99.3 · Im laufenden Gespräch", () => {
     await ruhe();
     await klick(root.querySelector("#btnChatEnde"));
     await klick(root.querySelector("#btnEndeJa"));
+    await ruhe(16);
+
+    // S105.5 · Das Label sagt, was der nächste Druck bewirkt.
+    expect(root.querySelector("#btnChatEnde").textContent).toContain("Ohne Teilen");
+
+    await klick(root.querySelector("#btnChatEnde"));
+    await klick(root.querySelector("#btnEndeJa"));
     await ruhe(20);
 
+    // Der zweite Druck ist die dritte Tür, kein zweiter Abschlussversuch.
+    const zug = app._state.engine.chat.messages.filter(m => m.role === "user").pop();
+    expect(zug.content).toContain("[CLOSE SESSION · KEEP]");
     expect(app._state.engine.chat.status).toBe("finished");
     const zl = await backend.pstate.get("timeline");
     expect(zl.entries).toHaveLength(1);          // genau EIN Eintrag, kein Doppel

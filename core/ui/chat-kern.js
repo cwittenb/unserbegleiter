@@ -42,7 +42,7 @@ const SCROLL_NAEHE_PX = 80;
  * @param {(msg:string)=>void} ctx.hint
  * @param {Function} ctx.aktualisiereBusy
  */
-export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisiereBusy }) {
+export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisiereBusy, hooks }) {
   /* Gegenrichtung des Kreises — wird nach dem Bau von panels/auswahl
      nachgetragen (siehe verbinde()). Bis dahin zeichnen sie nichts. */
   let baueTafelKarte = () => null;
@@ -80,14 +80,51 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     return schneideStreamText(roh, (state.engine && state.engine.def && state.engine.def.markerOrder) || []);
   }
 
+  /* S105.6 · Die Stream-Blase trägt das Sprecherlabel VON ANFANG AN.
+     Vorher entstand sie als nacktes .pb-msg.ai; das Label "Begleitung" kam erst
+     beim Voll-Render nach der fertigen Antwort — und schob dann alles darunter
+     um seine Höhe nach unten. Der Schirm ruckelte genau in dem Moment, in dem
+     man zu Ende las.
+     Die Entscheidung, OB ein Label fällt, muss dieselbe sein wie in renderMsgs
+     (D4: nur beim Rollenwechsel) — sonst wandert das Ruckeln bloß in den Fall,
+     wo zwei Begleitungs-Nachrichten aufeinanderfolgen. */
+  function letzteSichtbareRolle() {
+    const msgs = (state.engine && state.engine.chat && state.engine.chat.messages) || [];
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      const m = msgs[i];
+      if (m.echo) continue;                          // Echo-Zeilen führen keine Rolle (wie renderMsgs)
+      if (m.hidden || istWireNachricht(m)) continue;
+      return m.role;
+    }
+    return null;
+  }
+
+  /** Erzeugt die Stream-Blase samt Sprechgruppe, falls nötig. */
+  function baueStreamBlase(box) {
+    let d = box.querySelector("#pbStream");
+    if (d) return d;
+    d = el("div", "pb-msg ai");
+    d.id = "pbStream";
+    if (letzteSichtbareRolle() !== "assistant") {
+      const gruppe = el("div", "rz-sprechgruppe");
+      const lbl = el("div", "rz-sprecher");
+      lbl.textContent = t("chat.begleitung");
+      gruppe.appendChild(lbl);
+      gruppe.appendChild(d);
+      box.appendChild(gruppe);
+    } else {
+      box.appendChild(d);
+    }
+    return d;
+  }
+
   /** Live-Update der Stream-Blase — gezielt, ohne Voll-Rerender je Delta. */
   function zeigeStream(teil) {
     state.streamText = teil;
     const box = $("pbMsgs");
     if (!box) return;
     const nah = nahAmEingabefeld();   // VOR der DOM-Änderung messen (S62)
-    let d = box.querySelector("#pbStream");
-    if (!d) { d = el("div", "pb-msg ai"); d.id = "pbStream"; box.appendChild(d); }
+    const d = baueStreamBlase(box);
     const anzeige = streamAnzeige(teil);
     d.innerHTML = anzeige
       ? mdRender(anzeige)
@@ -102,8 +139,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     if (art !== "overloaded_retry" || state.streamText) return;
     const box = $("pbMsgs");
     if (!box) return;
-    let d = box.querySelector("#pbStream");
-    if (!d) { d = el("div", "pb-msg ai"); d.id = "pbStream"; box.appendChild(d); }
+    const d = baueStreamBlase(box);   // S105.6: auch hier mit Label
     d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>' +
       '<span class="pb-sub rz-block-oben-1">' + t("chat.ausgelastetWarte") + '</span>';
   }
@@ -220,7 +256,21 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     if (v) v.classList.toggle("pb-hidden", !fertig);
   }
 
-  function setzeWarten(v) { state.warten = v; aktualisiereBusy(); }
+  /* S105.2 · Wie viele Wartevorgänge laufen gerade. Ein Zähler statt eines
+     Schalters, weil sie sich schachteln (der Wortlaut-Abruf läuft INNERHALB des
+     Zuges, der ihn ausgelöst hat) und weil ein Nachzügler sonst das Warten
+     eines längst neuen Raumes abschaltete. */
+  let wartende = 0;
+
+  /* S105.5 · Das Warten sperrt auch den Abschluss-Knopf. Es genuegt NICHT, ihn
+     beim Setzen zu sperren: Wer nur setzt, sperrt fuer immer — die Freigabe
+     muss aus derselben Stelle kommen. Der Haken wird von aussen gereicht
+     (app.js kennt den Knopf, dieses Modul nicht). */
+  function setzeWarten(v) {
+    state.warten = v;
+    aktualisiereBusy();
+    if (hooks && hooks.onWarten) hooks.onWarten(v);
+  }
 
   /* S36 · EIN Wartepfad für alle ausstehenden Modell-Antworten: Tipp-Blase
      an, Senden gesperrt, dann Antwort. Panels (Regler, Skala, Gate, Kapitel,
@@ -249,6 +299,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
 
   async function warteAntwort(lauf, scrollErzwingen = false) {
     const gen = state.chatGen;   // S87 · Nachzügler-Zaun: nach einem Raumwechsel keine UI-Wirkung mehr
+    wartende++;                  // S105.2 · Wartevorgänge schachteln sich (z. B. Wortlaut-Abruf im Zug)
     setzeWarten(true);
     // S70: jeder NEUE Wartevorgang macht ein offenes Retry-Angebot ungültig —
     // ein stehengebliebener Knopf dürfte später keinen falschen resume() feuern.
@@ -267,13 +318,21 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
       else { err(fehlerText(e)); if (istUeberlastet(e)) zeigeErneutSenden(); }   // S70/R0
     }
     finally {
-      // S87: Ein Nachzügler darf die NEUE Session nicht aus dem Warten kippen
-      // oder ihren Verlauf neu rendern — der Zaun gilt auch für das Aufräumen.
-      if (gen === state.chatGen) {
-        setzeWarten(false);
-        if (bs) bs.disabled = false;
-        renderMsgs();
-      }
+      /* S87: Ein Nachzügler darf die NEUE Session nicht aus dem Warten kippen
+         oder ihren Verlauf neu rendern.
+         S105.2 · Der Generations-Zaun war dafür das falsche Werkzeug. Er galt
+         auch fürs Aufräumen — wechselte die Generation während eines
+         Wartevorgangs, übersprang das finally ALLES, und `state.warten` blieb
+         dauerhaft stehen; nichts anderes setzt es zurück.
+         Umgekehrt darf ein Nachzügler den Ladezustand eines inzwischen
+         gestarteten Wartens nicht abschalten — der S87-Fall ist echt.
+         Beides zusammen heißt: Es geht nicht um die Generation, sondern darum,
+         ob NOCH JEMAND wartet. Also zählen statt zäunen — dieselbe Bauweise wie
+         beim Zähler der laufenden Backend-Aufrufe. */
+      wartende = Math.max(0, wartende - 1);
+      setzeWarten(wartende > 0);
+      if (bs && !wartende) bs.disabled = false;
+      if (gen === state.chatGen) renderMsgs();
     }
   }
 

@@ -438,7 +438,15 @@ export function createApp({ doc, backend, root, diktat }) {
     $("btnEndeJa").addEventListener("click", async () => {
       zeigeEndeFrage(false);
       if (!state.engine || state.engine.chat.status !== "running") return;
-      const text = state.engine.def.id === "solo" ? K().steuerTexte.soloAbschluss : K().steuerTexte.momentAbschluss;
+      /* S105.5 · Steht die Gabelung schon offen, ist dies die Antwort darauf —
+         die dritte Tuer ("noch fuer mich behalten"), nicht eine zweite
+         Abschlussbitte. Ohne diese Unterscheidung entstuende eine Schleife:
+         Bitte → Gabelung → Bitte → Gabelung. Die App weiss es, weil sie das
+         Ereignis kennt; das Modell muesste es raten. */
+      const solo = state.engine.def.id === "solo";
+      const text = gabelungOffen()
+        ? (solo ? K().steuerTexte.soloOhneTeilen : K().steuerTexte.momentOhneTeilen)
+        : (solo ? K().steuerTexte.soloAbschluss : K().steuerTexte.momentAbschluss);
       /* S99.7 · Die Paar-Kennungen reisen IM SELBEN Zug wie der Abschluss —
          eine Panel-Antwort ist genau EINE Nachricht (Vertrag 1), und eine
          zweite Nachricht waere eine zweite Modellrunde. Ohne die Kennungen
@@ -1012,7 +1020,9 @@ export function createApp({ doc, backend, root, diktat }) {
      Kreis laufen: Der Verlauf zeichnet Panel-Karten und die Auswahlflaeche,
      beide stossen ihrerseits ein Neuzeichnen an. Der Kreis ist real — er wird
      hier sichtbar gemacht statt hinter einem Ereigniskanal versteckt. */
-  const chatKern = macheChatKern({ doc, $, el, state, backend, err, hint, aktualisiereBusy });
+  const chatKern = macheChatKern({ doc, $, el, state, backend, err, hint, aktualisiereBusy,
+    // S105.5 · Der Abschluss-Knopf haengt am Warten — sperren UND freigeben.
+    hooks: { onWarten: () => { if (state.engine) aktualisiereChatEnde(); } } });
   const { aktualisiereSkala, streamAnzeige, zeigeStream, zeigeAusgelastet,
           nahAmEingabefeld, scrolleZumEingabefeld, renderMsgs, aktualisiereComposer,
           setzeWarten, zeigeErneutSenden, warteAntwort, sende } = chatKern;
@@ -1245,7 +1255,11 @@ export function createApp({ doc, backend, root, diktat }) {
       hooks: {
         onSave: c => backend.chat.save(def.shared ? "shared" : "mine", art, c),
         onPersonError: lebend(err),
-        onRender: lebend(renderMsgs),
+        /* S105.5 · Nach jedem Zug kann sich die Lage am Abschluss geaendert
+           haben — etwa wenn eine Uebergabe verweigert wurde und die Gabelung
+           nun offen steht. Der Knopf leitet sein Label aus dem Verlauf ab, also
+           muss er nach dem Zeichnen mitziehen. */
+        onRender: lebend(() => { renderMsgs(); aktualisiereChatEnde(); }),
         onDelta: lebend(zeigeStream),
         onStatus: lebend(zeigeAusgelastet),   // S70: zahlenlose Warteanzeige bei Auslastungs-Retries
       },
@@ -1475,7 +1489,9 @@ export function createApp({ doc, backend, root, diktat }) {
     const antwort = sichtbar
       ? "RECALL-RESULT\n" + fuelle(K().steuerTexte.abrufGefunden, { vid: daten.vid }) + "\n" + sichtbar
       : "RECALL-RESULT\n" + K().steuerTexte.abrufLeer;
-    await warteAntwort(() => engine.submitToolResult(antwort));
+    // S105.1 · antworteAufBlock statt submitToolResult: Wir sind im Handler und
+    // damit noch im ersten Lauf — sonst verfaellt die Folgerunde an der Sperre.
+    await warteAntwort(() => engine.antworteAufBlock(antwort));
   }
 
   /** Rueckfrage. Loeschen ist endgueltig und wird als solches benannt. */
@@ -1586,11 +1602,63 @@ export function createApp({ doc, backend, root, diktat }) {
      gespräch (TIMELINE-BLOCK). Auftragsklärung und Gemeinsame Auflösung
      schließen über ihre eigenen Rituale (Freigabe bzw. Befund) — dort bleibt
      nur "Raum verlassen". */
+  /* S105.5 · Steht die Gabelung offen?
+     ABGELEITET, nie gemerkt. Ein Flag muesste beim Sessionwechsel
+     zurueckgesetzt werden, und genau dieses Vergessen war der Fehler hinter
+     "beginnen/fortsetzen" (S99.1) und hinter der falsch angehefteten
+     Verlaufs-Kennung (S99.6). Ein frischer Chat hat einen leeren Verlauf — die
+     Bedingung ist dann von selbst falsch, ohne dass jemand aufraeumen muss.
+     Bedingung: Die App hat den Abschluss angefordert, und der Block, der die
+     Sitzung beendet haette, kam nicht (die Uebergabe wurde verweigert oder das
+     Modell hat nur gefragt). */
+  function gabelungOffen() {
+    const e = state.engine;
+    if (!e || !e.chat || e.chat.status !== "running") return false;
+    /* Die Sitzung laeuft noch — also hat KEIN Block gegriffen. Ein Blocktext in
+       einer Antwort sagt hier nichts: Genau der Fall, dass er dasteht und
+       trotzdem nicht ausgefuehrt wurde, ist die verweigerte Uebergabe (S105.3).
+       Die Frage ist deshalb allein: Hat die App den Abschluss angefordert, und
+       laeuft die Sitzung immer noch? Dann steht die Gabelung offen.
+       Ein bereits gesendetes KEEP zaehlt nicht mehr — darauf ist die Antwort
+       gegeben, ein weiterer Druck waere wieder ein normaler Abschlussversuch. */
+    const solo = e.def.id === "solo";
+    const token = solo ? K().steuerTexte.soloAbschluss : K().steuerTexte.momentAbschluss;
+    const keep = solo ? K().steuerTexte.soloOhneTeilen : K().steuerTexte.momentOhneTeilen;
+    const msgs = e.chat.messages || [];
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      const m = msgs[i];
+      if (m.role !== "user") continue;
+      const c = String(m.content || "");
+      if (c.includes(keep)) return false;
+      if (c.includes(token)) return true;
+    }
+    return false;
+  }
+
   function aktualisiereChatEnde() {
     const b = $("btnChatEnde");
     const id = state.engine && state.engine.def && state.engine.def.id;
     const offen = (id === "moment" || id === "solo") && state.engine.chat.status === "running";
-    if (b) b.classList.toggle("pb-hidden", !offen);
+    /* S105.5 · Steht die Rueckfrage, tritt sie AN DIE STELLE des Knopfes
+       (S99.2) — dann bleibt er verborgen, auch wenn der Abschluss offen ist.
+       Der Zustand steht in state, nicht im DOM: Am DOM abzulesen, was das DOM
+       gleich gesetzt bekommt, ist eine Rueckkopplung — genau daran ist die
+       erste Fassung gescheitert. */
+    if (b) b.classList.toggle("pb-hidden", !offen || !!state.endeFrageOffen);
+    if (b) {
+      // S105.5 · Das Label sagt, was der Druck BEWIRKT. Steht die Gabelung
+      // offen, beantwortet er sie, statt ein zweites Mal abzuschliessen.
+      const lbl = b.querySelector("span");
+      if (lbl) lbl.textContent = t(offen && gabelungOffen()
+        ? "chat.abschliessenOhneTeilen" : "chat.abschliessen");
+      /* S105.5 · Solange die App am Zug ist, ist der Knopf inaktiv — ein
+         gezeichneter Ausgang, der nicht funktioniert, ist schlimmer als keiner.
+         WICHTIG: Diese Funktion laeuft auch AUS dem Wartevorgang heraus (per
+         onRender mitten im Zug). Wer hier nur setzt, sperrt fuer immer, weil
+         nach dem Warten niemand mehr aufraeumt — deshalb loest die Freigabe am
+         Ende des Wartens dieselbe Stelle erneut aus (setzeWarten → hier). */
+      b.disabled = !!state.warten;
+    }
     // S99.2 · Eine stehengebliebene Rueckfrage waere ein Knopf ohne Wirkung:
     // Sie faellt weg, sobald der Abschluss nicht mehr offen steht.
     if (!offen) zeigeEndeFrage(false);
@@ -1613,6 +1681,7 @@ export function createApp({ doc, backend, root, diktat }) {
 
   /** Frage an die Stelle des Knopfes — nie beide zugleich. */
   function zeigeEndeFrage(an) {
+    state.endeFrageOffen = !!an;            // S105.5 · Wahrheit im Zustand
     const f = $("chatEndeFrage"), b = $("btnChatEnde");
     if (f) f.classList.toggle("pb-hidden", !an);
     if (b && an) b.classList.add("pb-hidden");

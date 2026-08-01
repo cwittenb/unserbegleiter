@@ -80,30 +80,47 @@ describe("S101 · Alle drei kennen die Invariante", () => {
   });
 });
 
-describe("S101 · Die Auflösung ist jetzt bewacht, nicht nur gewarnt", () => {
+/* S105.3 · Aus der Revision wurde die verweigerte Übergabe.
+   Die Regel ist dieselbe geblieben — eine Nachricht, die nach Zustimmung fragt,
+   trägt nie die Marke. Was sich ändert, ist die Folge: Die Marke wird nicht
+   ausgeführt, der Text bleibt stehen. Für die Aufdeckung ist das sogar exakt
+   das Gewollte: Die Tafel erscheint nicht, die Frage steht da, und das Okay
+   kann kommen, bevor irgendetwas sichtbar wird. */
+describe("S105.3 · Die Aufdeck-Marke wird verweigert, nicht revidiert", () => {
   const def = () => gemeinsamDef(backendStumm(), {});
   const eng = { chat: { messages: [] }, ctx: { nameA: "Anna", nameB: "Bernd" } };
 
-  it("Bereitschaftsfrage UND Aufdeck-Marke ⇒ Revision", () => {
-    expect(def().validiereAntwort("Seid ihr beide bereit?\n[[REVEAL-A]]", eng))
-      .toBe(steuerTexte.markenRevision);
+  it("Bereitschaftsfrage UND Aufdeck-Marke ⇒ Marke fällt aus", () => {
+    expect(def().pruefeUebergabe("Seid ihr beide bereit?\n[[REVEAL-A]]", eng))
+      .toBe("marke-mit-frage");
   });
 
   it("Ankündigung ohne Frage ⇒ frei", () => {
-    expect(def().validiereAntwort("Dann zuerst Annas Stapel.\n[[REVEAL-A]]", eng)).toBeNull();
+    expect(def().pruefeUebergabe("Dann zuerst Annas Stapel.\n[[REVEAL-A]]", eng)).toBeNull();
   });
 
   it("Frage ohne Marke ⇒ frei — nach der Tafel ist Fragen ausdrücklich richtig", () => {
-    expect(def().validiereAntwort("Was fällt euch zuerst auf?", eng)).toBeNull();
+    expect(def().pruefeUebergabe("Was fällt euch zuerst auf?", eng)).toBeNull();
   });
 
   it("beide Richtungen zählen gleich", () => {
-    expect(def().validiereAntwort("Mögt ihr?\n[[REVEAL-B]]", eng)).toBe(steuerTexte.markenRevision);
+    expect(def().pruefeUebergabe("Mögt ihr?\n[[REVEAL-B]]", eng)).toBe("marke-mit-frage");
   });
 
   it("Panel-Marken bleiben unberührt — dort steht der Composer weiter", () => {
     // [[BASELINE]] und [[SCALE-CLOSING]] übergeben auch die Regie, aber die
     // Schreibkante bleibt. Ohne Befund kein Wächter (S101).
-    expect(def().validiereAntwort("Wie geht es euch damit?\n[[BASELINE]]", eng)).toBeNull();
+    expect(def().pruefeUebergabe("Wie geht es euch damit?\n[[BASELINE]]", eng)).toBeNull();
+  });
+
+  it("das Stapel-Leck wird VORGEBEUGT, nicht bestraft (S105.3)", () => {
+    // Der Aufdeck-Wächter ist ersatzlos weg: Was gestreamt wurde, war gelesen —
+    // das Verstecken räumte nur das Protokoll auf. Stattdessen schärft die App
+    // vorwärts, solange die Tafel nicht gezeigt ist.
+    const d = def();
+    expect(typeof d.schaerfe).toBe("function");
+    const imPfad = [{ role: "user", content: "AUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT." }];
+    expect(d.schaerfe(imPfad, {})).toContain("APP-HINWEIS");
+    expect(d.schaerfe([{ role: "user", content: "Wir plaudern." }], {})).toBeNull();
   });
 });

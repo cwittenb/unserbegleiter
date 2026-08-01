@@ -11,9 +11,8 @@
 //                                          streamt Text-Häppchen (optional)
 
 import { BLOECKE } from "../contracts/registry.js";
-import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
-import { pruefeAbschlussAntwort, waechterKette, pruefeMetaMarke } from "../engine/abschluss-waechter.js";
-import { pruefeKrisenReihenfolge } from "../engine/krisen-waechter.js";
+import { pruefeAbschlussAntwort, uebergabeKette, pruefeMetaMarke } from "../engine/abschluss-waechter.js";
+import { krisenSchaerfung } from "../engine/krisen-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
@@ -34,13 +33,20 @@ export function soloDef(backend, hooks = {}) {
        urteilt nur über sie.
        ANLASS NÖTIG: Der TIMELINE-BLOCK hat einen zweiten Anlass ([CHECKPOINT]),
        bei dem die Anknüpfungsfrage NACH dem Block richtig ist. */
-    validiereAntwort: waechterKette([
-      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    /* S105.3 · Aus validiereAntwort wird pruefeUebergabe. Der Unterschied ist
+       nicht der Name: Ein Treffer laesst den Text STEHEN und unterbindet nur,
+       dass die App handelt. Bei "fragen UND abschliessen in einer Nachricht"
+       heisst das: Die Frage bleibt lesbar, die Sitzung endet nicht, die Person
+       kann antworten — genau das, was die Regel will.
+       Der Urteils-Waechter ist HIER NICHT MEHR: Ein Praedikats-Urteil steckt im
+       Text selbst, nicht in einer Uebergabe. Es zu verweigern ginge nicht, es
+       zurueckzunehmen wollen wir nicht — bleibt der Prompt (S105.4). */
+    pruefeUebergabe: uebergabeKette([
       (text, engine) => pruefeAbschlussAntwort(text, {
         messages: (engine && engine.chat && engine.chat.messages) || [],
         block: "TIMELINE-BLOCK",
         token: K().steuerTexte.soloAbschluss,
-        revision: K().steuerTexte.abschlussRevision,
+        revision: "abschluss-mit-frage",
       }),
     ]),
     markerOrder: [],
@@ -134,22 +140,22 @@ export function momentDef(backend, hooks = {}) {
        KEIN ANLASS NÖTIG: Der MOMENT-BLOCK kennt nur den Abschluss, und der
        kommt auch VERBAL ("lass uns Schluss machen"), also ohne Steuertext. Eine
        Anlass-Prüfung ließe genau die Fälle durch, um die es geht. */
-    validiereAntwort: waechterKette([
-      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    /* S105.3 · Uebergabe-Pruefung (siehe soloDef). */
+    pruefeUebergabe: uebergabeKette([
       text => pruefeAbschlussAntwort(text, {
         block: "MOMENT-BLOCK", anlassNoetig: false,
-        revision: K().steuerTexte.abschlussRevision,
+        revision: "abschluss-mit-frage",
       }),
       /* S103 · Die vierte Regie-Übergabe: [[META-REVEALED]]. Sie lebt in
          dieser Session (Aufdeckung der Prozessreflexion) und trägt eine
          Bedingung mehr — allein in der letzten Zeile. */
-      text => pruefeMetaMarke(text, {
-        revision: K().steuerTexte.metaPlatzRevision,
-        frageRevision: K().steuerTexte.markenRevision,
-      }),
-      /* S103 · Geteilter Raum: zuerst der Einzelraum, dann die Krisenhilfe. */
-      text => pruefeKrisenReihenfolge(text, { revision: K().steuerTexte.krisenReihenfolgeRevision }),
+      text => pruefeMetaMarke(text, { revision: "meta-marke-platz", frageRevision: "marke-mit-frage" }),
     ]),
+    /* S105.3 · Die Krisen-Reihenfolge ist KEINE Uebergabe-Frage: Der Fehler
+       steckt im gesprochenen Text (die Nummer ohne den Verweis in den eigenen
+       Raum), und dort verweigern laesst sich nichts. Sie wird jetzt VORWAERTS
+       geschaerft — bevor geantwortet wird (siehe schaerfeKontext). */
+    schaerfe: krisenSchaerfung,
     // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
     // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort
     // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es

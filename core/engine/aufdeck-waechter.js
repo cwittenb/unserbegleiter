@@ -98,3 +98,25 @@ export function pruefeAufdeckAntwort(text, { messages, nameA, nameB, revision })
   if (!items.length) return null;
   return findetStapelLeck(text || "", items) ? (revision || AUFDECK_REVISION) : null;
 }
+
+/* S105.3 · VORWAERTS statt rueckwaerts.
+   Der Waechter unten prueft die fertige Antwort auf durchgereichte
+   Stapel-Inhalte — und liess sie bis S105 neu schreiben. Das half niemandem:
+   Was gestreamt wurde, hatte die Person gelesen; das Verstecken raeumte nur
+   das Protokoll auf. Schlimmer noch, der Schaden traf hier nicht sie, sondern
+   den Partner, dessen Werte vorzeitig sichtbar wurden — und der war nicht im
+   Raum, um zu widersprechen.
+   Hier laesst sich gut vorbeugen, weil die Lage aus dem ZUSTAND folgt und
+   nicht aus einer Textdeutung: Solange die Tafel nicht gezeigt ist, gilt die
+   Regel — das weiss die App sicher. */
+export function aufdeckSchaerfung(messages, ctx = {}) {
+  const erste = (messages || []).find(m => m && m.role === "user");
+  if (!imAufdeckPfad(erste && erste.content)) return null;
+  if (tafelSchonGezeigt(messages)) return null;
+  return ctx.aufdeckSchaerfungsText || AUFDECK_SCHAERFUNG;
+}
+
+export const AUFDECK_SCHAERFUNG =
+  "[APP-HINWEIS für diesen Zug: Die Tafel ist noch NICHT gezeigt. Kein Inhalt aus den Stapeln " +
+  "gehört jetzt in deinen Text — keine Werte, keine Reihenfolgen, keine Andeutungen daraus, auch " +
+  "nicht sinngemäß. Das Aufdecken ist die Sache der Tafel, nicht deine.]";

@@ -4,10 +4,9 @@
 // Modell-Kontrakts (die Prompts referenzieren sie wörtlich).
 
 import { BLOECKE } from "../contracts/registry.js";
-import { pruefeAufdeckAntwort } from "../engine/aufdeck-waechter.js";
-import { pruefeUrteilsAntwort } from "../engine/urteils-waechter.js";
-import { waechterKette, pruefeMarkenAntwort } from "../engine/abschluss-waechter.js";
-import { pruefeKrisenReihenfolge } from "../engine/krisen-waechter.js";
+import { uebergabeKette, pruefeMarkenAntwort } from "../engine/abschluss-waechter.js";
+import { krisenSchaerfung } from "../engine/krisen-waechter.js";
+import { aufdeckSchaerfung } from "../engine/aufdeck-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -78,12 +77,9 @@ export function einzelDef(backend, hooks = {}) {
     titel: "Auftragsklärung",
     wiedereinstieg: "einzelWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
-    // S93 · Urteils-Wächter (siehe soloDef). S100.3: als Liste.
-    // Kein Abschluss-Wächter: Die Auftragsklärung endet über die Freigabe,
-    // nicht über einen Block — sie gehört nicht zur Abschluss-Familie.
-    validiereAntwort: waechterKette([
-      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
-    ]),
+    /* S105.3 · Kein Urteils-Waechter mehr: Ein Praedikats-Urteil steckt im Text
+       selbst — verweigern laesst sich da nichts, und zurueckgenommen wird
+       nichts. Die Regel traegt jetzt der Prompt allein (S105.4). */
     markerOrder: ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]", "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"],
     markers: {
       "[[SCALE-SAFETY]]": e => hooks.onScale && hooks.onScale("safety", e),
@@ -131,21 +127,21 @@ export function gemeinsamDef(backend, hooks = {}) {
     // Kein Abschluss-Wächter: Die Auflösung endet über den Befund, nicht über
     // einen Block. Ihre eigene Regie-Übergabe — die Aufdeck-Marke — bewacht
     // der Aufdeck-Wächter, mit Bedingungen, die nur dort gelten.
-    validiereAntwort: waechterKette([
-      (text, eng) => pruefeAufdeckAntwort(text, {
-        messages: eng.chat.messages, nameA: eng.ctx && eng.ctx.nameA, nameB: eng.ctx && eng.ctx.nameB,
-        revision: K().steuerTexte.aufdeckRevision,
-      }),
-      /* S101 · Die Konsens-Regel ist jetzt auch bewacht, nicht nur gefordert.
-         Sie steht seit S72 im Prompt; der Aufdeck-Wächter darüber prüft etwas
-         anderes und steigt bei gesetzter Marke ausdrücklich aus — dieser Fall
-         fiel bis hierher durch beide Netze. */
-      text => pruefeMarkenAntwort(text, { revision: K().steuerTexte.markenRevision }),
-      /* S103 · Auch die Auflösung ist ein geteilter Raum: Krisenhilfe nie ohne
-         den vorangehenden Verweis in den eigenen Raum. */
-      text => pruefeKrisenReihenfolge(text, { revision: K().steuerTexte.krisenReihenfolgeRevision }),
-      text => pruefeUrteilsAntwort(text, K().steuerTexte.urteilsRevision),
+    /* S105.3 · Der Aufdeck-Waechter faellt WEG, ersatzlos.
+       Er verhinderte, dass durchgereichte Stapel-Inhalte stehen bleiben — nur
+       hat das nie geschuetzt: Was gestreamt wurde, hat die Person gelesen. Das
+       Verstecken raeumte das Protokoll auf, nicht ihre Erinnerung. Und der
+       Schaden traf hier nicht sie, sondern den Partner, dessen Werte vorzeitig
+       sichtbar wurden.
+       Vorbeugen ist hier gut moeglich, weil die App aus ihrem ZUSTAND weiss, ob
+       die Tafel schon gezeigt wurde — kein Raten an Text. Das Restrisiko ist
+       ausdruecklich akzeptiert (Produktentscheidung, siehe SPRINT-S105-PROTOKOLL).
+       Was bleibt, ist die Uebergabe: eine Aufdeck-Marke neben einer Frage wird
+       nicht ausgefuehrt. Die Marke faellt, der Text bleibt. */
+    pruefeUebergabe: uebergabeKette([
+      text => pruefeMarkenAntwort(text, { revision: "marke-mit-frage" }),
     ]),
+    schaerfe: (messages, ctx) => aufdeckSchaerfung(messages, ctx) || krisenSchaerfung(messages, ctx),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)

@@ -74,6 +74,21 @@ export class Engine {
     await this.requestAssistant();
   }
 
+  /* S105.1 · Antwort der APP auf einen Block — etwa der Wortlaut, den der
+     RECALL-BLOCK angefordert hat.
+     Sie entsteht im Block-Handler, und der laeuft NOCH im ersten Lauf: busy ist
+     gesetzt, und requestAssistant() steigt an seiner eigenen Sperre wortlos aus.
+     Genau das ist passiert — die Antwort landete im Verlauf, eine Modellrunde
+     dazu gab es nie, und der Begleiter "bekam" den Wortlaut erst, wenn die
+     Person von sich aus etwas tippte.
+     Die beiden anderen Stellen, die eine Folgerunde brauchen (Revision und
+     Blockkorrektur), geben die Sperre ausdruecklich frei. Hier fehlte das nur,
+     weil onAbruf der einzige Handler ist, der ueberhaupt eine Runde braucht. */
+  async antworteAufBlock(content, meta) {
+    this.busy = false;
+    await this.submitToolResult(content, meta);
+  }
+
   async requestAssistant() {
     if (this.busy) return;
     this.busy = true;
@@ -86,7 +101,18 @@ export class Engine {
         : undefined;
       // S70: onStatus ist der zweite Rückkanal (Auslastungs-Wiederholungen) —
       // rein informativ für die Warteanzeige, nie Teil des Antworttexts.
-      const { text, stop } = await this.llm(this.def.sysPrompt(this.ctx), this.chat.messages, onDelta, this.hooks.onStatus);
+      /* S105.3 · Vorwaerts schaerfen. Die Session darf fuer GENAU DIESEN Zug
+         einen Zusatzsatz an den Systemtext haengen — etwa wenn die Nachricht
+         der Person Krisensignale traegt. Er geht nicht in den Verlauf und
+         faellt mit der Runde weg; die naechste Runde entscheidet neu.
+         Der Sinn: pruefen, BEVOR geantwortet wird. Danach laesst sich nichts
+         mehr gutmachen, ohne etwas wegzunehmen — und das tun wir nicht mehr. */
+      let system = this.def.sysPrompt(this.ctx);
+      if (this.def.schaerfe) {
+        const zusatz = this.def.schaerfe(this.chat.messages, this.ctx);
+        if (zusatz) system += "\n\n" + zusatz;
+      }
+      const { text, stop } = await this.llm(system, this.chat.messages, onDelta, this.hooks.onStatus);
       this.chat.messages.push({ role: "assistant", content: text });
       this.chat.lastStop = stop || null;
       await this._save();
@@ -101,32 +127,32 @@ export class Engine {
   async _afterAssistant(text) {
     if (!this.def.canAct(this.chat)) return;
 
-    // S72 · Text-Validator der Session-Definition (z. B. Aufdeck-Wächter):
-    // liefert er eine Revisions-Nachricht, gilt Vertrag 2 — GENAU EINE
-    // automatische Korrektur-Runde, danach wird die Antwort angenommen
-    // (die Prompt-Regeln bleiben die erste Verteidigung).
-    if (this.def.validiereAntwort) {
-      const revision = this.def.validiereAntwort(text, this);
-      if (revision) {
-        if (!this.chat.textFix) {
-          this.chat.textFix = true;
-          // S73: die beanstandete Antwort verschwindet aus der Anzeige — ohne
-          // dieses hidden blieb sie sichtbar stehen (Renderer filtert m.hidden)
-          // und die Revision erschien als zweite, widersprechende Nachricht.
-          const letzte = this.chat.messages[this.chat.messages.length - 1];
-          if (letzte && letzte.role === "assistant") letzte.hidden = true;
-          this.chat.messages.push({ role: "user", hidden: true, content: revision });
-          await this._save();
-          this.busy = false;
-          await this.requestAssistant();
-          return;
-        }
-        this.chat.textFix = false;                     // zweite Runde: annehmen, nicht endlos drehen
-        await this._save();
-      } else if (this.chat.textFix) {
-        this.chat.textFix = false;
-        await this._save();
-      }
+    /* S105.3 · KEIN Text wird je zurueckgenommen.
+       Bis hierher versteckte ein Wächtertreffer die beanstandete Antwort und
+       liess sie neu schreiben (S72/S73). Von aussen sah das so aus, als naehme
+       die Begleitung zurueck, was sie gerade gesagt hatte — ohne Erklaerung und
+       ohne dass jemand wissen konnte, dass eine Maschine dazwischenging.
+       Der Mechanismus half auch niemandem: Was gestreamt wurde, war gelesen.
+       Das Verstecken raeumte das Protokoll auf, nicht die Erinnerung.
+       Stattdessen PRUEFT der Waechter jetzt die HANDLUNG, nicht den Text: Wer
+       eine Uebergabe (Block/Marke) falsch setzt, dessen Uebergabe wird
+       verworfen — der Text bleibt stehen, das Gespraech laeuft weiter. Bei
+       "fragen UND abschliessen in einer Nachricht" ist das genau das Gewollte:
+       Die Frage steht, die Sitzung endet nicht, die Person kann antworten.
+       Regeln, deren Verstoss im TEXT selbst liegt (Urteilsgrammatik,
+       Speicher-Behauptung), tragen nur noch der Prompt — ein Stilfehler kostet
+       weniger als eine sichtbare Ruecknahme. */
+    const verweigert = this.def.pruefeUebergabe ? this.def.pruefeUebergabe(text, this) : null;
+    if (verweigert) {
+      // Nur vermerken, damit Oberflaeche und Tests es sehen koennen. Weder
+      // Anzeige noch Verlauf werden angefasst.
+      this.chat.letzteVerweigerung = verweigert;
+      await this._save();
+      return;                    // Marker und Block werden NICHT ausgefuehrt
+    }
+    if (this.chat.letzteVerweigerung) {
+      this.chat.letzteVerweigerung = null;
+      await this._save();
     }
 
     const mk = findeMarker(text, this.def.markerOrder);

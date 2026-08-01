@@ -97,40 +97,48 @@ describe("S100.4 · Jedes Familienmitglied kennt die Regie-Übergabe", () => {
 
 /* ───────────────── 2 · Der Wächter hängt wirklich dran ───────────────── */
 
+/* S105.3 · Aus "Revision" wurde "Uebergabe verweigert".
+   Die Prueffragen bleiben dieselben — was sich aendert, ist die FOLGE: Der Text
+   bleibt stehen, nur die Handlung faellt aus. Deshalb liefert pruefeUebergabe
+   auch keinen Revisionstext mehr, sondern einen kurzen Grund; er wandert nie
+   ins Gespraech, sondern nur in den Chat-Zustand. */
 describe("S100.4 · Jedes Familienmitglied ist bewacht, nicht nur gewarnt", () => {
   for (const f of FAMILIE) {
     const anlass = [{ role: "user", hidden: true, content: f.token }];
 
-    it(`${f.titel}: Frage + Block ⇒ Revision`, () => {
-      const revision = f.def().validiereAntwort(
+    it(`${f.titel}: Frage + Block ⇒ Übergabe verweigert`, () => {
+      const grund = f.def().pruefeUebergabe(
         "Und was davon nehmt ihr mit?\n" + baueBlock(f),
         { chat: { messages: anlass } });
-      expect(revision).toBe(steuerTexte.abschlussRevision);
+      expect(grund).toBe("abschluss-mit-frage");
     });
 
     it(`${f.titel}: Landung ohne Frage ⇒ frei`, () => {
-      const revision = f.def().validiereAntwort(
+      const grund = f.def().pruefeUebergabe(
         "Alles Gute für heute.\n" + baueBlock(f),
         { chat: { messages: anlass } });
-      expect(revision).toBeNull();
+      expect(grund).toBeNull();
     });
 
     it(`${f.titel}: Frage ohne Block ⇒ frei`, () => {
-      const revision = f.def().validiereAntwort(
+      const grund = f.def().pruefeUebergabe(
         "Was nehmt ihr mit?", { chat: { messages: anlass } });
-      expect(revision).toBeNull();
+      expect(grund).toBeNull();
     });
 
     it(`${f.titel}: Fragezeichen IM Block ist Chronik, keine Frage`, () => {
       const mitFrage = { ...f, blockJson: { ...f.blockJson, summary: "Was bleibt?" } };
-      const revision = f.def().validiereAntwort(
+      const grund = f.def().pruefeUebergabe(
         "Alles Gute.\n" + baueBlock(mitFrage), { chat: { messages: anlass } });
-      expect(revision).toBeNull();
+      expect(grund).toBeNull();
     });
 
-    it(`${f.titel}: der Urteils-Wächter bleibt daneben in Kraft`, () => {
-      const revision = f.def().validiereAntwort("Das ist eine starke Fassung.", { chat: { messages: [] } });
-      expect(revision).toBe(steuerTexte.urteilsRevision);
+    it(`${f.titel}: ein Prädikats-Urteil bleibt STEHEN — Prompt-Klasse (S105.3)`, () => {
+      // Es steckt im Text selbst: verweigern liesse sich da nichts, und
+      // zurueckgenommen wird nichts mehr. Die Regel traegt der Prompt allein.
+      const grund = f.def().pruefeUebergabe("Das ist eine starke Fassung.", { chat: { messages: [] } });
+      expect(grund).toBeNull();
+      expect(f.prompt()).toContain("URTEILS");
     });
   }
 
@@ -154,11 +162,11 @@ describe("S100.4 · Die Grenze der Familie", () => {
     const stumm = backendStumm();
     for (const def of [einzelDef(stumm, {}), gemeinsamDef(stumm, {})]) {
       // Ein Abschluss-Block existiert dort gar nicht; ein Text mit TIMELINE-BLOCK
-      // darf trotzdem keine Abschluss-Revision auslösen.
-      const revision = def.validiereAntwort(
+      // darf trotzdem keine Verweigerung auslösen.
+      const grund = def.pruefeUebergabe && def.pruefeUebergabe(
         "Und wie geht es dir damit?\nTIMELINE-BLOCK\n{}\nEND TIMELINE-BLOCK",
         { chat: { messages: [{ role: "user", content: "[CLOSE SESSION]" }] }, ctx: {} });
-      expect(revision).toBeNull();
+      expect(grund || null).toBeNull();
     }
   });
 
