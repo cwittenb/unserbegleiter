@@ -17,13 +17,17 @@ import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
 import { fuelle } from "../i18n/index.js";
-import { schalteStruktur } from "../prompts/struktur-praeambel.js";
+/* ST2c · Struktur-Modus ZURÜCKGENOMMEN (Sonden-Befund 1. Aug 2026, n=9):
+   Der kombinierte antwort+Block-Zug (Abschluss) riss in 2/3 Läufen — die
+   Tool-Use-Serialisierung blutete in den antwort-String ("…</antwol>
+   <parameter name=\"block\">{"), block blieb null; alle Frage-ohne-Block-Züge
+   waren 9/9 sauber. Gegenmittel-Messung: docs/probe-st3-blockgrenze.mjs.
+   Schalter (schalteStruktur) und Infrastruktur bleiben — die Rücknahme ist,
+   wie im ST2-Protokoll zugesagt, das Entfernen der beiden Aufrufe. */
 
 /** Reflexionsgespräch (persönlicher Raum). */
 export function soloDef(backend, hooks = {}) {
-  /* ST2 · Struktur-Modus AN (Übersetzungs-Präambel statt Korpus-Chirurgie —
-     siehe struktur-praeambel.js). Revert = schalteStruktur entfernen. */
-  return schalteStruktur({
+  return {
     id: "solo",
     shared: false,
     titel: "Reflexionsgespräch",
@@ -127,7 +131,7 @@ export function soloDef(backend, hooks = {}) {
         },
       },
     ],
-  });
+  };
 }
 
 /** S44 · Merkposten anlegen — rein privat (pstate), Dedupe nach Text. */
@@ -143,8 +147,7 @@ export async function merkeMerkposten(backend, data) {
 
 /** Gemeinsame Session (geteilter Raum, Drei-Akt-Struktur lebt im Prompt). */
 export function momentDef(backend, hooks = {}) {
-  /* ST2 · Struktur-Modus AN — wie soloDef. */
-  return schalteStruktur({
+  return {
     id: "moment",
     shared: true,
     titel: "Qualitätszeit",
@@ -233,7 +236,7 @@ export function momentDef(backend, hooks = {}) {
         },
       },
     ],
-  });
+  };
 }
 
 /** Querung ausführen, nachdem die Person im Gate-Panel Wege gewählt hat. */
