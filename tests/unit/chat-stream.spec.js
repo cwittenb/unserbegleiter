@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createApp } from "../../core/ui/app.js";
+import { uebersetzeDrehbuchText } from "../../core/engine/mock-llm.js";
 
 const tick = () => new Promise(r => setTimeout(r, 0));
 const ruhe = async (n = 6) => { for (let i = 0; i < n; i++) await tick(); };
@@ -13,9 +14,23 @@ const ruhe = async (n = 6) => { for (let i = 0; i < n; i++) await tick(); };
 /** LLM, das onDelta nach außen reicht und von außen aufgelöst wird. */
 function streamendesLlm() {
   const offen = [];
-  const fn = async (sys, msgs, onDelta) => new Promise(res => offen.push({ res, onDelta }));
+  // Fassaden-Signatur: positional (Textpfad) ODER Optionen-Objekt (Struktur-
+  // Modus, ST2). Im Struktur-Modus streamen die Deltas den EXTRAHIERTEN
+  // Begleitertext (S79) — das Drehbuch liefert deshalb weiterhin Text-Deltas.
+  const fn = async (sys, msgs, drittes) => {
+    const onDelta = typeof drittes === "function" ? drittes
+      : (drittes && typeof drittes === "object" ? drittes.onDelta : null);
+    const structured = drittes && typeof drittes === "object" ? drittes.structured : null;
+    return new Promise(res => offen.push({ res, onDelta, structured }));
+  };
   fn.delta = t => { const o = offen[0]; if (o && o.onDelta) o.onDelta(t); };   // INKREMENT — kumuliert wird in der Engine
-  fn.antworte = text => { const o = offen.shift(); if (o) o.res({ text, stop: "end_turn" }); };
+  fn.antworte = text => {
+    const o = offen.shift();
+    if (!o) return;
+    o.res(o.structured
+      ? { text, stop: "tool_use", data: uebersetzeDrehbuchText(text, o.structured), strukturQuelle: "mock" }
+      : { text, stop: "end_turn" });
+  };
   return fn;
 }
 

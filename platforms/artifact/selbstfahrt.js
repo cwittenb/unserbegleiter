@@ -21,6 +21,7 @@ import { createApp } from "../../core/ui/app.js";
 import { ArtifactStore } from "./artifact-store.js";
 import { localBackend } from "./local-backend.js";
 import { SZENEN } from "./dev-panel.js";
+import { uebersetzeDrehbuchText } from "../../core/engine/mock-llm.js";
 import { CORE_VERSION } from "../../core/index.js";
 
 /* ================= Bausteine der isolierten Welt ================= */
@@ -42,12 +43,26 @@ export function speicherImSpeicher() {
   };
 }
 
-/** Anthropic-förmige Antwort für das Fetch-Drehbuch. */
-export const antwort = text => ({
-  content: [{ type: "text", text }],
-  stop_reason: "end_turn",
-  usage: { input_tokens: 1, output_tokens: 1 },
-});
+/** Anthropic-förmige Antwort für das Fetch-Drehbuch.
+ *  ST2: Verlangt der Request Struktur (tool_choice), antwortet das Drehbuch
+ *  provider-gerecht mit einem tool_use-Block — die gescripteten Texte werden
+ *  mit derselben Übersetzung wie beim MockLLM in Turn-Daten gehoben. */
+export const antwort = (text, body) => {
+  const tc = body && body.tool_choice;
+  const tool = tc && tc.type === "tool" && (body.tools || []).find(t => t.name === tc.name);
+  if (tool) {
+    return {
+      content: [{ type: "tool_use", name: tool.name, input: uebersetzeDrehbuchText(text, { name: tool.name, schema: tool.input_schema }) }],
+      stop_reason: "tool_use",
+      usage: { input_tokens: 1, output_tokens: 1 },
+    };
+  }
+  return {
+    content: [{ type: "text", text }],
+    stop_reason: "end_turn",
+    usage: { input_tokens: 1, output_tokens: 1 },
+  };
+};
 
 /**
  * Fetch-Drehbuch: bedient api.anthropic.com aus einer Antwort-Queue und
@@ -66,7 +81,7 @@ export function drehbuchFetch(texte, originalFetch) {
       return {
         ok: true, status: 200,
         headers: { get: k => (k.toLowerCase() === "content-type" ? "application/json" : null) },
-        json: async () => antwort(queue.shift()),
+        json: async () => antwort(queue.shift(), body),
         text: async () => "",
       };
     }

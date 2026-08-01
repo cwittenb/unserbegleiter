@@ -134,14 +134,24 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
 
   /** S70 · Auslastungs-Wiederholung: ruhige, ZAHLENLOSE Warteanzeige in der
    *  Tipp-Blase. Retries laufen vor dem ersten Token — eine bereits laufende
-   *  Stream-Anzeige wird deshalb nie überschrieben. */
+   *  Stream-Anzeige wird deshalb nie überschrieben.
+   *  ST2 · Derselbe Kanal trägt die Struktur-Ereignisse der Entwicklungs-
+   *  umgebung (keyless, K2-Entscheid): struktur_korrektur läuft VOR der
+   *  Nachforderungs-Runde (Warteanzeige richtig), struktur_rettung unmittelbar
+   *  nach dem Empfang (kurzer Hinweis, die echte Nachricht folgt sofort).
+   *  In direct/proxy ist die Struktur erzwungen — dort feuern beide nie. */
   function zeigeAusgelastet(art) {
-    if (art !== "overloaded_retry" || state.streamText) return;
+    const TEXTE = {
+      overloaded_retry: "chat.ausgelastetWarte",
+      struktur_korrektur: "chat.strukturKorrektur",
+      struktur_rettung: "chat.strukturRettung",
+    };
+    if (!TEXTE[art] || state.streamText) return;
     const box = $("pbMsgs");
     if (!box) return;
     const d = baueStreamBlase(box);   // S105.6: auch hier mit Label
     d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>' +
-      '<span class="pb-sub rz-block-oben-1">' + t("chat.ausgelastetWarte") + '</span>';
+      '<span class="pb-sub rz-block-oben-1">' + t(TEXTE[art]) + '</span>';
   }
 
   /* S62 · Scroll-Disziplin (löst den harten S53-Sprung ans Seitenende ab):
@@ -216,8 +226,20 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
         letzteRolle = m.role;
         const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
         const mkListe = (state.engine && state.engine.def && state.engine.def.markerOrder) || [];
-        if (m.role === "assistant") d.innerHTML = mdRender(cleanDisplay(m.content, mkListe, ALLE_BLOECKE));
-        else d.textContent = cleanDisplay(m.content, mkListe, ALLE_BLOECKE);
+        /* ST2 · Struktur-Zug: Der Block lebt als Meta an der Nachricht, nicht
+           im Text — die sichtbare Quittung (Platzhalter der Registry, z. B.
+           "Dein Zeitleisten-Eintrag wurde gespeichert.") muss deshalb HIER
+           angefügt werden; in der Text-Ära tat das cleanDisplay beim Ersetzen
+           des Block-Rohtexts. Unsichtbare Blöcke (leerer Platzhalter) bleiben
+           unsichtbar. cleanDisplay läuft weiter — Alt-Verläufe tragen den
+           Block noch im Text. */
+        let anzeige = cleanDisplay(m.content, mkListe, ALLE_BLOECKE);
+        if (m.role === "assistant" && m.block && m.block.typ) {
+          const bd = ALLE_BLOECKE.find(b => b.dataset === m.block.typ);
+          if (bd && bd.placeholder) anzeige = (anzeige ? anzeige + "\n\n" : "") + bd.placeholder;
+        }
+        if (m.role === "assistant") d.innerHTML = mdRender(anzeige);
+        else d.textContent = anzeige;
         (gruppe || box).appendChild(d);
         // S62 · Aufdeck-Tafel als Karte im Verlauf, direkt unter der
         // auslösenden Nachricht; der Weiter-Knopf nur an der jüngsten.

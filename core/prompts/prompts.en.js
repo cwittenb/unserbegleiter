@@ -557,3 +557,19 @@ export const korpusTexte = {
   "qm.vorgemerkt": "Earmarked talking points: ",
   "qm.katalog": "CATALOG of the areas of life:",
 };
+
+/* ST2 · Structured mode: language texts of the translation preamble
+   (struktur-praeambel.js). The preamble TEACHES the mapping from the text
+   convention to the turn fields — the rest of the corpus stays byte-identical:
+   all WHEN rules and the JSON field documentation of the blocks apply
+   verbatim; only the transport changes.
+   Placeholders: {liste} = marker names · {start} = block start token · {typ} = dataset. */
+export const strukturTexte = {
+  kopf: `OUTPUT FORMAT (takes precedence over everything below): Each of your messages is EXACTLY ONE call of the "turn" tool with the fields antwort/marker/block — no text outside the tool, no second output next to it.`,
+  antwort: `"antwort" is your companion text to the person — the only thing they see. ALL conversation rules below apply unchanged to this field. "antwort" NEVER contains markers (no [[…]]), no block tokens (no "…-BLOCK"), no JSON.`,
+  marken: `MARKERS: Wherever the rules below say "end your message with the marker [[X]] alone on the last line", set marker:"X" instead (without brackets) — WHEN a marker is due is governed solely by the rules below, verbatim. No marker ⇒ marker:null. Markers of this session: {liste}.`,
+  ohneMarken: `MARKERS: This session knows no markers — there is no marker field.`,
+  bloecke: `BLOCKS: Wherever the rules below say to output "X-BLOCK … END X-BLOCK" with JSON in between, set block:{"typ":"…","daten":{…}} instead — "daten" is EXACTLY the JSON object described there, field by field, including all the rules given there (the invisibility and ordering rules of the blocks apply verbatim as well). WHEN a block is due is governed solely by the rules below. No block ⇒ block:null; at most ONE block per message. Translation for this session:`,
+  zeile: `{start} ⇒ typ "{typ}"`,
+  schluss: `Everything else — occasions, sequences, prohibitions, tone, control texts — applies verbatim. Example: a message that carries a NOTE-BLOCK per the rules still carries no marker (marker:null).`,
+};

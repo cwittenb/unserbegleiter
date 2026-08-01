@@ -17,6 +17,7 @@ import { build } from "esbuild";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { coreHash } from "../../scripts/core-hash.js";
+import { uebersetzeDrehbuchText } from "../../core/engine/mock-llm.js";
 import { warteAuf, warteSendbereit } from "../../platforms/artifact/selbstfahrt.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -35,6 +36,21 @@ const E2E_FENSTER_MS = 10000;
 
 const ADMIN = "test-admin-geheim";
 let mf, clientCode, hash;
+
+/** ST2 · Upstream-SSE für STRUKTUR-Anfragen: tool_use-Block als
+ *  input_json_delta-Strom — die gescripteten Texte hebt dieselbe Übersetzung
+ *  wie beim MockLLM in Turn-Daten. */
+const sseStruktur = (text, body) => {
+  const tool = (body.tools || []).find(t => t.name === body.tool_choice.name);
+  const input = uebersetzeDrehbuchText(text, { name: tool.name, schema: tool.input_schema });
+  const roh = JSON.stringify(input);
+  const deltas = roh.match(/.{1,8}/g) || [""];
+  return 'event: message_start\n' +
+    'data: {"type":"message_start","message":{"usage":{"input_tokens":7,"cache_creation_input_tokens":0,"cache_read_input_tokens":0}}}\n\n' +
+    deltas.map(d => 'data: {"type":"content_block_delta","delta":{"type":"input_json_delta","partial_json":' + JSON.stringify(d) + '}}\n\n').join("") +
+    'data: {"type":"message_delta","delta":{"stop_reason":"tool_use"},"usage":{"output_tokens":2}}\n\n' +
+    'data: {"type":"message_stop"}\n\n';
+};
 
 /** Upstream-SSE mit Sentinel-Text — eindeutig gegen UI-Texte (S67-Lehre). */
 const sse = text => {
@@ -68,8 +84,17 @@ beforeAll(async () => {
       async UPSTREAM(request) {
         const body = await request.json();
         const text = drehbuch.length ? drehbuch.shift() : "[VOLL] Drehbuch erschöpft";
+        const struktur = body.tool_choice && body.tool_choice.type === "tool";
         if (body.stream === true)
-          return new Response(sse(text), { headers: { "content-type": "text/event-stream" } });
+          return new Response(struktur ? sseStruktur(text, body) : sse(text),
+            { headers: { "content-type": "text/event-stream" } });
+        if (struktur) {
+          const tool = (body.tools || []).find(t => t.name === body.tool_choice.name);
+          return new Response(JSON.stringify({
+            content: [{ type: "tool_use", name: tool.name, input: uebersetzeDrehbuchText(text, { name: tool.name, schema: tool.input_schema }) }],
+            stop_reason: "tool_use", usage: { input_tokens: 1, output_tokens: 1 },
+          }), { headers: { "content-type": "application/json" } });
+        }
         return new Response(JSON.stringify({
           content: [{ type: "text", text }], stop_reason: "end_turn",
           usage: { input_tokens: 1, output_tokens: 1 },

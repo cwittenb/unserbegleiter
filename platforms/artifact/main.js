@@ -14,6 +14,8 @@ import { runSelftest } from "./selftest.js";
 import { fahreSelbstfahrt } from "./selbstfahrt.js";
 import { createDevPanel } from "./dev-panel.js";
 
+let letzteApp = null;   // ST2: jüngste App-Instanz (Struktur-Telemetrie im Panel)
+
 const doc = document;
 const wurzel = doc.getElementById("app");
 // Zwei feste Bereiche: die App oben, das Entwickler-Panel dauerhaft darunter.
@@ -95,6 +97,7 @@ function rollenwahl(store, meta) {
   const start = async role => {
     app.innerHTML = `<div id="pbApp"></div>`;
     const ui = createApp({ doc, backend: backendFuer({ store, meta, role }), root: doc.getElementById("pbApp") });
+    letzteApp = ui;   // ST2: Live-Getter für die Struktur-Telemetrie im Panel
     await ui.boot();
   };
   doc.getElementById("asA").onclick = () => start("A");
@@ -118,6 +121,7 @@ createDevPanel({
   doc,
   host: doc.getElementById("pbDevHost"),
   store: panelStore,
+  holeStruktur: () => { const e = letzteApp && letzteApp.engine(); return (e && e.chat && e.chat.struktur) || null; },
   reboot: () => boot().catch(e => { app.innerHTML = "<p>" + t("wieder.startFehler", { fehler: e.message }) + "</p>"; }),
 });
 

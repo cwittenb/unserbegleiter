@@ -495,7 +495,11 @@ export const SZENEN = [
     der nächste Panel-Aufbau zeigt sie an und verwirft sie. */
 export const quittung = { text: null };
 
-export function createDevPanel({ doc, host, store, reboot }) {
+/* ST2 · Struktur-Telemetrie (K2-Entscheid): Der keyless-Pfad hat keine
+   Formgarantie — die Abweichung vom erzwungenen Pfad bekommt hier eine Zahl.
+   holeStruktur ist ein LIVE-Getter auf die laufende Session (main.js reicht
+   ihn herein); ohne laufende Session zeigt der Abschnitt das ehrlich an. */
+export function createDevPanel({ doc, host, store, reboot, holeStruktur }) {
   host.innerHTML = `
     <details style="margin-top:26px;border-top:1px dashed var(--rz-karte-rand);padding-top:10px">
       <summary style="cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--rz-sek);font-weight:600">Entwickler-Panel</summary>
@@ -521,6 +525,10 @@ export function createDevPanel({ doc, host, store, reboot }) {
         <div id="devTokens" style="padding:2px 0 6px"></div>
         <button id="devTokensReset" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:5px 12px">Token-Zähler zurücksetzen</button>
 
+        <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-akzent-ink);font-weight:600;margin:14px 0 6px">Struktur-Telemetrie (laufende Session)</div>
+        <div id="devStruktur" style="padding:2px 0 6px;color:var(--rz-sek)">–</div>
+        <button id="devStrukturLesen" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:5px 12px">Aktualisieren</button>
+
         <div style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--rz-akzent-ink);font-weight:600;margin:14px 0 6px">Zustand sichern &amp; laden</div>
         <button id="devSave" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:6px 14px">Zustand speichern (JSON)</button>
         <button id="devLoad" style="font:inherit;cursor:pointer;border:1px solid var(--rz-karte-rand);background:var(--rz-karte);color:var(--rz-ink);border-radius:999px;padding:6px 14px">Zustand aus Textfeld laden</button>
@@ -532,6 +540,19 @@ export function createDevPanel({ doc, host, store, reboot }) {
 
   const $ = id => host.querySelector("#" + id);
   const msg = (t, rot) => { const m = $("devMsg"); m.textContent = t; m.style.color = rot ? "#b4232a" : "#0f766e"; };
+
+  /* ---- Struktur-Telemetrie (ST2): tool = erzwungen · gerettet = S85-Text-
+     rettung · korrigiert = keyless-Nachforderung · fehlgeschlagen = Zug ohne
+     verwertbare Struktur. Zähler leben am Chat (chat.struktur, Engine ST1). */
+  function zeigeStruktur() {
+    const el = $("devStruktur");
+    const z = typeof holeStruktur === "function" ? holeStruktur() : null;
+    if (!z) { el.textContent = "Keine laufende Struktur-Session."; return; }
+    el.textContent = "tool " + (z.tool || 0) + " · gerettet " + (z.gerettet || 0) +
+      " · korrigiert " + (z.korrigiert || 0) + " · fehlgeschlagen " + (z.fehlgeschlagen || 0);
+  }
+  $("devStrukturLesen").onclick = zeigeStruktur;
+  zeigeStruktur();
 
   /* ---- Token-Zähler (S61): Startwert aus dem Store (überlebt Reloads),
      Live-Aktualisierung über das pb:tokens-Ereignis des Zähl-Wrappers. ---- */

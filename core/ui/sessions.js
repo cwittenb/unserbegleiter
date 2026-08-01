@@ -17,10 +17,13 @@ import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
 import { fuelle } from "../i18n/index.js";
+import { schalteStruktur } from "../prompts/struktur-praeambel.js";
 
 /** Reflexionsgespräch (persönlicher Raum). */
 export function soloDef(backend, hooks = {}) {
-  return {
+  /* ST2 · Struktur-Modus AN (Übersetzungs-Präambel statt Korpus-Chirurgie —
+     siehe struktur-praeambel.js). Revert = schalteStruktur entfernen. */
+  return schalteStruktur({
     id: "solo",
     shared: false,
     titel: "Reflexionsgespräch",
@@ -124,7 +127,7 @@ export function soloDef(backend, hooks = {}) {
         },
       },
     ],
-  };
+  });
 }
 
 /** S44 · Merkposten anlegen — rein privat (pstate), Dedupe nach Text. */
@@ -140,7 +143,8 @@ export async function merkeMerkposten(backend, data) {
 
 /** Gemeinsame Session (geteilter Raum, Drei-Akt-Struktur lebt im Prompt). */
 export function momentDef(backend, hooks = {}) {
-  return {
+  /* ST2 · Struktur-Modus AN — wie soloDef. */
+  return schalteStruktur({
     id: "moment",
     shared: true,
     titel: "Qualitätszeit",
@@ -229,7 +233,7 @@ export function momentDef(backend, hooks = {}) {
         },
       },
     ],
-  };
+  });
 }
 
 /** Querung ausführen, nachdem die Person im Gate-Panel Wege gewählt hat. */

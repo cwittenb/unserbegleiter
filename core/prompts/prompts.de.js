@@ -582,3 +582,18 @@ export const korpusTexte = {
   "qm.vorgemerkt": "Vorgemerkte Gesprächspunkte: ",
   "qm.katalog": "CATALOG der Lebensbereiche:",
 };
+
+/* ST2 · Struktur-Modus: Sprachtexte der Übersetzungs-Präambel (struktur-praeambel.js).
+   Die Präambel LEHRT die Abbildung Text-Konvention → Turn-Felder — der übrige
+   Korpus bleibt byte-identisch: Alle WANN-Regeln und die JSON-Feld-Dokumentation
+   der Blöcke gelten wortgleich weiter; nur der Transport wechselt.
+   Platzhalter: {liste} = Marken-Namen · {start} = Block-Startmarke · {typ} = dataset. */
+export const strukturTexte = {
+  kopf: `AUSGABEFORMAT (gilt vor allem Folgenden): Jede deiner Nachrichten ist GENAU EIN Aufruf des Werkzeugs "turn" mit den Feldern antwort/marker/block — kein Text außerhalb des Werkzeugs, keine zweite Ausgabe daneben.`,
+  antwort: `"antwort" ist dein Begleitertext an die Person — das Einzige, was sie sieht. ALLE Gesprächsregeln unten gelten unverändert für dieses Feld. In "antwort" stehen NIE Marken (kein [[…]]), keine Block-Marken (kein "…-BLOCK"), kein JSON.`,
+  marken: `MARKEN: Wo die Regeln unten sagen "beende deine Nachricht mit der Marke [[X]] allein in der letzten Zeile", setze stattdessen marker:"X" (ohne Klammern) — WANN eine Marke steht, regeln allein die Regeln unten, wortgleich. Keine Marke ⇒ marker:null. Marken dieser Sitzung: {liste}.`,
+  ohneMarken: `MARKEN: Diese Sitzung kennt keine Marken — es gibt kein marker-Feld.`,
+  bloecke: `BLÖCKE: Wo die Regeln unten sagen, gib "X-BLOCK … END X-BLOCK" mit JSON dazwischen aus, setze stattdessen block:{"typ":"…","daten":{…}} — "daten" ist GENAU das dort beschriebene JSON-Objekt, Feld für Feld unverändert samt allen dortigen Regeln (auch die Unsichtbarkeits- und Reihenfolge-Regeln der Blöcke gelten wortgleich). WANN ein Block steht, regeln allein die Regeln unten. Kein Block ⇒ block:null; höchstens EIN Block je Nachricht. Übersetzung für diese Sitzung:`,
+  zeile: `{start} ⇒ typ "{typ}"`,
+  schluss: `Alles andere — Anlässe, Reihenfolgen, Verbote, Ton, Steuertexte — gilt wortgleich weiter. Beispiel: Eine Nachricht, die laut Regeln einen NOTE-BLOCK trägt, trägt weiterhin keine Marke (marker:null).`,
+};

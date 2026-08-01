@@ -196,6 +196,8 @@ export const de = {
   "chat.tippt": "Die Begleitung schreibt",
   "chat.diktieren": "Diktieren",
   "chat.ausgelastetWarte": "Gerade ist viel los \u2014 ich bleibe dran \u2026",
+  "chat.strukturKorrektur": "Formkorrektur l\u00e4uft (Entwicklungsumgebung) \u2026",
+  "chat.strukturRettung": "Antwortform aus Freitext \u00fcbernommen (Entwicklungsumgebung).",
   "chat.erneutSenden": "Erneut senden",
 
   // Gate (Selbstmitteilung)

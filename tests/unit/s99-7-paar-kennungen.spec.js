@@ -12,7 +12,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { createApp } from "../../core/ui/app.js";
-import { MockLLM } from "../../core/engine/mock-llm.js";
+import { MockLLM, uebersetzeDrehbuchText } from "../../core/engine/mock-llm.js";
 import { Repo } from "../../core/store/repo.js";
 import { Bstate, Pstate } from "../../core/store/bundles.js";
 import { MemoryStore } from "../../core/store/store.js";
@@ -138,13 +138,16 @@ describe("S99.7 · Damit wird die Ausschnitt-Tür überhaupt erreichbar", () => 
       return zug.content.split("\n").slice(1)
         .map(z => z.split(" · ")[0]).filter(x => /^P\d+-\d+$/.test(x));
     };
-    app.engine().llm = (system, messages) => {
+    app.engine().llm = (system, messages, opts) => {
       const ids = kennungen();
+      const text = "Magst du dir Stellen aussuchen, die Bernd lesen darf?\nEXCERPT-BLOCK\n" +
+        JSON.stringify({ pairs: ids.map(id => ({ id, ownerOk: true, companionOk: true, reason: null })) }) +
+        "\nEND EXCERPT-BLOCK";
+      // ST2: Fassaden-Vertrag des Struktur-Modus — data liegt bei (wie MockLLM).
       return Promise.resolve({
-        text: "Magst du dir Stellen aussuchen, die Bernd lesen darf?\nEXCERPT-BLOCK\n" +
-          JSON.stringify({ pairs: ids.map(id => ({ id, ownerOk: true, companionOk: true, reason: null })) }) +
-          "\nEND EXCERPT-BLOCK",
-        stop: "end_turn",
+        text, stop: "end_turn",
+        data: uebersetzeDrehbuchText(text, opts && opts.structured),
+        strukturQuelle: "mock",
       });
     };
     await klick(root.querySelector("#btnChatEnde"));

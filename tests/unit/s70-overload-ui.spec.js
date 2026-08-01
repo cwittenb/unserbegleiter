@@ -11,17 +11,28 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createApp } from "../../core/ui/app.js";
 import { de } from "../../core/i18n/de.js";
 import { setLocale } from "../../core/i18n/index.js";
+import { uebersetzeDrehbuchText } from "../../core/engine/mock-llm.js";
 
 const tick = () => new Promise(r => setTimeout(r, 0));
 const ruhe = async (n = 6) => { for (let i = 0; i < n; i++) await tick(); };
 
 /** LLM, dessen Ausgänge (Antwort / Overload-Fehler / Status-Event) von außen
- *  gesteuert werden. Signatur wie der echte Adapter: (sys, msgs, onDelta, onStatus). */
+ *  gesteuert werden. Signatur wie der echte Adapter — POSITIONAL wie im Textpfad
+ *  ODER Optionen-Objekt wie im Struktur-Modus (ST2: leseAufrufOptionen-Form). */
 function steuerbaresLlm() {
   const offen = [];
-  const fn = async (sys, msgs, onDelta, onStatus) =>
-    new Promise((res, rej) => offen.push({ res, rej, onStatus }));
-  fn.antworte = text => { const o = offen.shift(); if (o) o.res({ text, stop: "end_turn" }); };
+  const fn = async (sys, msgs, drittes, viertes) => {
+    const onStatus = (drittes && typeof drittes === "object") ? drittes.onStatus : viertes;
+    const structured = drittes && typeof drittes === "object" ? drittes.structured : null;
+    return new Promise((res, rej) => offen.push({ res, rej, onStatus, structured }));
+  };
+  fn.antworte = text => {
+    const o = offen.shift();
+    if (!o) return;
+    o.res(o.structured
+      ? { text, stop: "tool_use", data: uebersetzeDrehbuchText(text, o.structured), strukturQuelle: "mock" }
+      : { text, stop: "end_turn" });
+  };
   fn.ueberlaste = () => {
     const o = offen.shift();
     if (!o) return;

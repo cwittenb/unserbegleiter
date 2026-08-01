@@ -183,6 +183,8 @@ export const en = {
   "chat.tippt": "The Companion is writing",
   "chat.diktieren": "Dictate",
   "chat.ausgelastetWarte": "Quite busy right now \u2014 I'll keep at it \u2026",
+  "chat.strukturKorrektur": "Format correction in progress (development environment) \u2026",
+  "chat.strukturRettung": "Answer format recovered from free text (development environment).",
   "chat.erneutSenden": "Send again",
 
   // Gate (personal sharing)
