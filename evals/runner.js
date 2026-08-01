@@ -39,7 +39,7 @@ import { fileURLToPath } from "node:url";
 import { makeAdapter, baueDrossel } from "../core/llm/adapter.js";
 import { leseEvalKonfig, EvalKonfigFehler } from "./eval-konfig.js";
 import { liesEnvDatei, mischeMitEnv } from "./env-datei.js";
-import { laufeAlle, wendeZielAn } from "./runner-kern.js";
+import { laufeAlle, wendeZielAn, varianten } from "./runner-kern.js";
 import { laufeAlleBatch } from "./runner-batch.js";
 import { pruefeJudge } from "./judge/golden.js";
 import { kostenFuer, cacheQuote } from "./preise.js";
@@ -105,6 +105,19 @@ async function main() {
   // evals/ergebnisse/ sind ohne Waechter entstanden — ein Default-Wechsel
   // braeche die Vergleichbarkeit still.
   const waechter = process.argv.includes("--waechter");
+
+  /* ST5.4 · Struktur-Modus des Laufs. Default "aus" — genau wie beim
+     --waechter-Default: Alle Ergebnisse in evals/ergebnisse/ sind über den
+     Textpfad entstanden; ein stiller Default-Wechsel bräche die
+     Vergleichbarkeit. "beides" ist der GATE-Lauf: jedes strukturfähige
+     Szenario (solo, moment) zweimal, im selben Lauf, mit demselben Judge-Stand
+     und derselben Baseline. */
+  const strukturModus = arg("struktur", "aus");
+  if (!["aus", "an", "beides"].includes(strukturModus)) {
+    console.error('Ungültiges --struktur: "' + strukturModus + '" (aus | an | beides).');
+    process.exit(2);
+  }
+
 
   // Drossel gilt pro Provider-Workspace. Gleicher Provider für Pipeline+Judge → EINE
   // geteilte Instanz (S51). Anderer Judge-Provider (S52) → eigenständiges Limit; die
@@ -217,6 +230,7 @@ async function main() {
 
   const stand = {
     coreHash: hash, provider, judgeProvider,
+    struktur: strukturModus,                    // ST5 · Transport-Lesart des Laufs (aus | an | beides)
     pipelineModell, judgeModell,
     judgePromptVersion: JUDGE_PROMPT_VERSION,
     batch: batchModus,
@@ -224,14 +238,14 @@ async function main() {
     waechter,                                   // S94 · Lesart des Laufs: Korpus allein (false) oder ausgeliefertes System (true)
   };
   const bericht = batchModus
-    ? await laufeAlleBatch(szenarien, {
+    ? await laufeAlleBatch(varianten(szenarien, strukturModus), {
         pipelineModell, judgeModell, n, zeit, persistiere, melde, stand, waechter,
         batch: {
           apiKey, intervallMs: batchIntervallMs, maxMs: batchMaxMs,
           fortschritt: () => process.stdout.write("."),
         },
       })
-    : await laufeAlle(szenarien, {
+    : await laufeAlle(varianten(szenarien, strukturModus), {
         pipelineCall, judgeCall, n, zeit, persistiere, weiterBeiFehler, melde, messen, stand, waechter,
       });
 
@@ -248,9 +262,33 @@ async function main() {
   }
   for (const s of bericht.szenarien) {
     if (s.status !== "gruen")
-      console.log("  → " + s.id + ": " + s.status + (s.belegloserVerstoss ? "  ⚠ ohne Beleg — prüfen" : ""));
+      console.log("  → " + s.id + (s.variante ? " [" + s.variante + "]" : "") + ": " + s.status +
+        (s.belegloserVerstoss ? "  ⚠ ohne Beleg — prüfen" : ""));
     if (s.textStrukturSamples)
       console.log("  ⚠ " + s.id + ": " + s.textStrukturSamples + " Bewertung(en) über Text-Rettung (kein tool_use) — deklarierter Pfad, s. strukturQuelle je Sample");
+  }
+
+  /* ST5 · GATE-Gegenüberstellung. Sie steht bewusst VOR der Waechter-Lesart:
+     Im A/B-Lauf ist das die Zahl, wegen der gefahren wurde. */
+  if (bericht.gate) {
+    const g = bericht.gate;
+    const ampel = { gruen: "GRÜN", gelb: "GELB", rot: "ROT" }[g.ampel];
+    console.log("\n──── GATE · Text ↔ Struktur (" + g.paare + " Paare) ────");
+    console.log("Ampel: " + ampel + "  ·  Delta verletzte Samples: " +
+      (g.deltaVerletzt > 0 ? "+" : "") + g.deltaVerletzt +
+      "  ·  abweichend: " + (g.abweichende.length || "keine"));
+    if (g.roteLinienNeu.length)
+      console.log("  ⚠ ROTE LINIE NEU im Strukturpfad: " + g.roteLinienNeu.join(", ") +
+        "  → solo/moment zurück auf Textpfad, Befund vor jeder Weiterarbeit");
+    for (const z of g.zeilen.filter(z => z.abweichung))
+      console.log("  ≠ " + z.id + " [" + z.sprache + "]  Text " + z.text.verletzt + "/" + z.text.n +
+        "  →  Struktur " + z.struktur.verletzt + "/" + z.struktur.n +
+        (z.roteLinieNeu ? "  ⚠ ROTE LINIE" : "") +
+        (z.struktur.unbewertet !== z.text.unbewertet ? "  (unbewertet " + z.text.unbewertet + "→" + z.struktur.unbewertet + ")" : ""));
+    const t = g.telemetrie;
+    console.log("Struktur-Telemetrie: Quellen " + JSON.stringify(t.quellen) +
+      "  ·  Züge mit Block " + t.zuegeMitBlock + "/" + t.zuegeGesamt +
+      (t.gerettet ? "  ⚠ " + t.gerettet + " Text-Rettung(en) — Befund, kein Erfolg" : ""));
   }
 
   // S94 · Lesart und Waechter-Treffer sichtbar machen — ohne sie ist nicht

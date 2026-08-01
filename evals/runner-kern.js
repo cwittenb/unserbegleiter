@@ -14,6 +14,8 @@
 // Fassung — genau das, was die Person in der App zu sehen bekaeme.
 
 import { getPrompts, registerKorpus } from "../core/prompts/prompts.js";
+import { textSchatten } from "../core/engine/text-schatten.js";
+import { strukturFuer, istStrukturfaehig } from "./struktur-bruecke.js";
 import * as korpusEn from "../core/prompts/prompts.en.js";
 
 /* R5 · Der EN-Korpus liegt seit R5 nicht mehr statisch in prompts.js (die
@@ -113,12 +115,32 @@ export function wendeZielAn(szenarien, ziel) {
  * eine Revision stattgefunden hat.
  */
 export async function spieleSample(pipelineCall, szenario, opt = {}) {
-  const system = sysPromptFuer(szenario);
+  /* ST5.3 · Struktur-Variante. `opt.struktur` ist das Ergebnis von
+     strukturFuer(szenario) (Präambel + Turn-Schema) — der Zug kommt dann als
+     {antwort, marker, block} zurück und wird per TEXT-SCHATTEN in die
+     Legacy-Textform gebracht. Damit sehen Judge, Checks und Wächter-Stufe
+     exakt das, was sie im Textlauf sehen; verglichen wird der TRANSPORT,
+     nicht der Korpus (GATE-Invariante, evals/struktur-bruecke.js).
+     Die Struktur-Merkmale (Quelle, Blocktyp) hängen als Spur am Zug — kein
+     Inhalt, der Judge liest weiter nur role/content. */
+  const struktur = opt.struktur || null;
+  const system = struktur ? struktur.system : sysPromptFuer(szenario);
+  const blockDefn = typ => (struktur && (struktur.bloecke || []).find(b => b.dataset === typ)) || null;
   const validator = opt.waechter ? validatorFuer(szenario) : null;
   const messages = [];
   for (const eingabe of szenario.eingaben) {
     messages.push({ role: "user", content: eingabe });
-    let { text, abgeschnitten } = await pipelineCall(system, messages);
+    let text, abgeschnitten, quelle = null, blockTyp = null;
+    if (struktur) {
+      const r = await pipelineCall(system, messages, { structured: struktur.schema });
+      const d = (r && r.data) || {};
+      blockTyp = d.block ? d.block.typ : null;
+      text = textSchatten({ content: d.antwort || "", marker: d.marker, block: d.block }, blockDefn(blockTyp));
+      abgeschnitten = r && r.abgeschnitten;
+      quelle = r && r.strukturQuelle;
+    } else {
+      ({ text, abgeschnitten } = await pipelineCall(system, messages));
+    }
     let treffer = null;
 
     // S94 · Waechter-Stufe: genau eine Revisions-Runde, nie zwei.
@@ -130,9 +152,18 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
           { role: "assistant", content: text },
           { role: "user", content: revision },
         ]);
-        const zweite = await pipelineCall(system, zwischen);
-        text = zweite.text;
-        abgeschnitten = zweite.abgeschnitten;
+        if (struktur) {
+          const zweite = await pipelineCall(system, zwischen, { structured: struktur.schema });
+          const d2 = (zweite && zweite.data) || {};
+          blockTyp = d2.block ? d2.block.typ : null;
+          text = textSchatten({ content: d2.antwort || "", marker: d2.marker, block: d2.block }, blockDefn(blockTyp));
+          abgeschnitten = zweite && zweite.abgeschnitten;
+          quelle = zweite && zweite.strukturQuelle;
+        } else {
+          const zweite = await pipelineCall(system, zwischen);
+          text = zweite.text;
+          abgeschnitten = zweite.abgeschnitten;
+        }
       }
     }
 
@@ -143,6 +174,8 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
     const zug = { role: "assistant", content: text };
     if (abgeschnitten) zug.abgeschnitten = true;
     if (treffer) zug.waechterTreffer = treffer;
+    if (quelle) zug.strukturQuelle = quelle;
+    if (blockTyp) zug.blockTyp = blockTyp;
     messages.push(zug);
     if (!text || !String(text).trim() || abgeschnitten) break;   // nicht weiterkaskadieren (S65/S77)
   }
@@ -203,7 +236,7 @@ export function sampleAusUrteil(szenario, transkript, urteil, nr) {
 }
 
 /** Szenario-Ergebnis aus seinen Samples bauen (geteilt: synchron + Batch, S57). */
-export function szenarioAusSamples(szenario, samples, anzahl) {
+export function szenarioAusSamples(szenario, samples, anzahl, variante) {
   const verletzteSamples = samples.filter(s => s.verletzt).length;
   const unbewerteteSamples = samples.filter(s => s.unbewertet).length;
   // S85: Wie viele Bewertungen kamen über die Text-Rettung (statt tool_use)?
@@ -218,6 +251,7 @@ export function szenarioAusSamples(szenario, samples, anzahl) {
   return {
     id: szenario.id, familie: szenario.familie, version: szenario.version,
     sprache: szenarioSprache(szenario),
+    ...(variante ? { variante } : {}),
     n: anzahl, verletzteSamples, unbewerteteSamples,
     ...(textStrukturSamples ? { textStrukturSamples } : {}),
     ...(wt.aufdeck || wt.urteil ? { waechterTreffer: wt } : {}),
@@ -227,18 +261,22 @@ export function szenarioAusSamples(szenario, samples, anzahl) {
   };
 }
 
-export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter }) {
+export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante }) {
   const anzahl = n || szenario.n || 3;
   const samples = [];
+  // ST5.4: Präambel + Schema EINMAL je Szenario bauen (deterministisch —
+  // identische Serialisierung über alle Samples hält den Prompt-Cache und den
+  // Grammatik-Cache der API treffsicher).
+  const struktur = variante === "struktur" ? strukturFuer(szenario) : null;
   for (let i = 0; i < anzahl; i++) {
-    const transkript = await spieleSample(pipelineCall, szenario, { waechter });
+    const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur });
     const anomalie = anomalieImTranskript(transkript);
     const urteil = anomalie
       ? { bewertet: false, fehler: anomalie.grund + " (Turn " + anomalie.turn + ")" }   // techn. Anomalie, kein Content-Verstoß (S65/S77)
       : await richte(judgeCall, szenario, transkript, judgeOpts);
     samples.push(sampleAusUrteil(szenario, transkript, urteil, i + 1));
   }
-  return szenarioAusSamples(szenario, samples, anzahl);
+  return szenarioAusSamples(szenario, samples, anzahl, variante);
 }
 
 /** Fehler-Szenario: Pipeline/Judge sind nach Retries hart gescheitert.
@@ -280,6 +318,69 @@ function belegLos(r) {
 }
 
 /** Stand-Bericht aus den bisherigen Ergebnissen bauen (kein Gesamt-Score). */
+/**
+ * ST5.5 · GATE-Auswertung: stellt Text- und Struktur-Variante desselben
+ * Szenarios gegenüber. Ohne diese Gegenüberstellung wäre der A/B-Lauf nur
+ * doppelt so teuer wie ein einfacher.
+ *
+ * Verglichen werden die Größen, die über Ausrollen entscheiden: getroffene
+ * rote Linien, verletzte Samples, unbewertete Samples. Zusätzlich die
+ * Struktur-Telemetrie — `quellen` muss durchgehend "schema" sein; jedes
+ * "text" wäre eine S85-Rettung und damit ein Befund, kein Erfolg.
+ *
+ * Rückgabe null, wenn der Lauf keine Paare enthält (kein A/B-Lauf).
+ */
+export function gateVergleich(ergebnisse) {
+  const paare = new Map();
+  for (const r of ergebnisse || []) {
+    if (!r.variante) continue;
+    const e = paare.get(r.id) || {};
+    e[r.variante] = r;
+    paare.set(r.id, e);
+  }
+  const zeilen = [];
+  const telemetrie = { quellen: {}, zuegeMitBlock: 0, zuegeGesamt: 0, gerettet: 0 };
+  for (const [id, p] of paare) {
+    if (!p.text || !p.struktur) continue;         // nur echte Paare vergleichen
+    for (const sample of p.struktur.samples || []) {
+      for (const m of sample.transkript || []) {
+        if (m.role !== "assistant") continue;
+        telemetrie.zuegeGesamt++;
+        if (m.blockTyp) telemetrie.zuegeMitBlock++;
+        if (m.strukturQuelle) {
+          telemetrie.quellen[m.strukturQuelle] = (telemetrie.quellen[m.strukturQuelle] || 0) + 1;
+          if (m.strukturQuelle === "text") telemetrie.gerettet++;
+        }
+      }
+    }
+    const zeile = {
+      id, familie: p.text.familie, sprache: p.text.sprache,
+      text: { verletzt: p.text.verletzteSamples, unbewertet: p.text.unbewerteteSamples, roteLinie: !!p.text.roteLinie, n: p.text.n },
+      struktur: { verletzt: p.struktur.verletzteSamples, unbewertet: p.struktur.unbewerteteSamples, roteLinie: !!p.struktur.roteLinie, n: p.struktur.n },
+    };
+    zeile.delta = zeile.struktur.verletzt - zeile.text.verletzt;
+    zeile.roteLinieNeu = zeile.struktur.roteLinie && !zeile.text.roteLinie;
+    zeile.abweichung = zeile.delta !== 0 || zeile.roteLinieNeu
+      || zeile.struktur.unbewertet !== zeile.text.unbewertet;
+    zeilen.push(zeile);
+  }
+  if (!zeilen.length) return null;
+  const abweichungen = zeilen.filter(z => z.abweichung);
+  const roteLinienNeu = zeilen.filter(z => z.roteLinieNeu).map(z => z.id);
+  return {
+    paare: zeilen.length,
+    deltaVerletzt: zeilen.reduce((a, z) => a + z.delta, 0),
+    abweichende: abweichungen.map(z => z.id),
+    roteLinienNeu,
+    // Ampel nach den ST5-Kriterien (Sprintplan): rot schlägt alles.
+    ampel: roteLinienNeu.length ? "rot"
+      : abweichungen.filter(z => z.delta !== 0).length > 1 ? "gelb"
+      : telemetrie.gerettet > 0 ? "gelb" : "gruen",
+    telemetrie,
+    zeilen,
+  };
+}
+
 export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
   const familien = {};
   const tel = { pipe: leerTok(), judge: leerTok(), ms: 0 };
@@ -296,6 +397,7 @@ export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
     if (r.waechterTreffer) { wtGesamt.aufdeck += r.waechterTreffer.aufdeck; wtGesamt.urteil += r.waechterTreffer.urteil; }
     r.belegloserVerstoss = belegLos(r);         // Triage-Signal (S55) — ändert die Wertung NICHT
   }
+  const gate = gateVergleich(ergebnisse);
   return {
     formatVersion: SZENARIO_FORMAT_VERSION,
     zeit,
@@ -304,6 +406,7 @@ export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
     quotenJeFamilie: familien,                  // bewusst KEIN Gesamt-Score
     telemetrie: tel,                            // Token/Cache/Zeit über den Lauf (Pipeline/Judge getrennt), S55
     waechterTreffer: wtGesamt,                  // S94 · wie oft die Waechter im Lauf gegriffen haben
+    ...(gate ? { gate } : {}),                  // ST5 · A/B-Gegenüberstellung, nur im GATE-Lauf
     szenarien: ergebnisse,
   };
 }
@@ -316,29 +419,53 @@ export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
  * ohne `deps.weiterBeiFehler` bricht der Lauf danach ab (der Teilstand inkl.
  * Fehler-Szenario ist bereits persistiert), mit ihm läuft er weiter.
  */
+/**
+ * ST5.4 · Varianten-Aufteilung für das GATE.
+ *   "aus"    — alles Textpfad (Default; alle Altläufe bleiben vergleichbar)
+ *   "an"     — strukturfähige Sessions über den Strukturpfad
+ *   "beides" — jedes strukturfähige Szenario ZWEIMAL (A/B im selben Lauf:
+ *              geteilter Judge-Stand, geteilter Kern-Hash, geteilte Baseline)
+ * Nicht-strukturfähige Sessions (einzel, gemeinsam, qualitytime) laufen immer
+ * genau einmal im Textpfad — sie sind bis ST6 nicht umgestellt.
+ */
+export function varianten(szenarien, modus = "aus") {
+  const raus = [];
+  for (const sz of szenarien) {
+    const faehig = istStrukturfaehig(sz);
+    if (modus === "aus" || !faehig) { raus.push({ szenario: sz, variante: "text" }); continue; }
+    if (modus === "beides") raus.push({ szenario: sz, variante: "text" });
+    raus.push({ szenario: sz, variante: "struktur" });
+  }
+  return raus;
+}
+
 export async function laufeAlle(szenarien, deps) {
   const { persistiere, weiterBeiFehler, melde, messen } = deps;
   const zeit = deps.zeit || new Date().toISOString();
-  const gesamt = szenarien.length;
+  // ST5.4: Die Liste kann bereits Varianten-Paare tragen ({szenario, variante})
+  // oder — wie bisher — nackte Szenarien. Beides ist zulässig.
+  const laeufe = szenarien.map(x => (x && x.szenario ? x : { szenario: x, variante: undefined }));
+  const gesamt = laeufe.length;
   const ergebnisse = [];
   let i = 0;
-  for (const sz of szenarien) {
+  for (const { szenario: sz, variante } of laeufe) {
     i++;
-    if (typeof melde === "function") melde({ phase: "start", i, gesamt, id: sz.id });
+    if (typeof melde === "function") melde({ phase: "start", i, gesamt, id: sz.id, variante });
     const t0 = Date.now();
     const vor = typeof messen === "function" ? messen() : null;   // Token-Schnappschuss vor dem Szenario
     let r, fehler = null;
     try {
-      r = await laufeSzenario(sz, deps);
+      r = await laufeSzenario(sz, { ...deps, variante });
     } catch (e) {
       fehler = e;
       r = fehlerSzenario(sz, e);
+      if (variante) r.variante = variante;
     }
     const ms = Date.now() - t0;
     if (typeof messen === "function") r.telemetrie = { ...tokenDelta(vor, messen()), ms };
     ergebnisse.push(r);
     if (typeof melde === "function")
-      melde({ phase: "fertig", i, gesamt, id: sz.id, status: r.status, roteLinie: r.roteLinie, ms, telemetrie: r.telemetrie });
+      melde({ phase: "fertig", i, gesamt, id: sz.id, variante, status: r.status, roteLinie: r.roteLinie, ms, telemetrie: r.telemetrie });
     if (typeof persistiere === "function") await persistiere(bauBericht(ergebnisse, deps.stand, zeit, false));
     if (fehler && !weiterBeiFehler) throw fehler;   // Abbruch — Teilstand liegt persistiert vor
   }

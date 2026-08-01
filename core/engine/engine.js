@@ -10,6 +10,7 @@
 //                     privat → geteilt.
 
 import { findeMarker, pruefeMarkerOrder } from "../contracts/marker.js";
+import { textSchatten } from "./text-schatten.js";
 import { findeBlock, parseBlock, korrekturNachricht, korrekturNachrichtStruktur } from "../contracts/block.js";
 import { baueTurnSchema, markerVoll } from "../contracts/turn-schema.js";
 
@@ -190,12 +191,11 @@ export class Engine {
      dann der Block zwischen seinen Marken, dann die Marke allein in der
      letzten Zeile. Uebergangs-Konstruktion — faellt mit der nativen
      Turn-Sicht der Waechter (spaeterer ST-Sprint), dokumentiert im Plan. */
+  /* ST5: eine einzige Implementierung, geteilt mit dem Eval-Runner
+     (core/engine/text-schatten.js) — ein auseinandergelaufener Schatten
+     hiesse, der Eval bewertet anderes als die Engine prueft. */
   _textSchatten(msg, blockDefn) {
-    let t = String(msg.content || "");
-    if (msg.block && blockDefn)
-      t += "\n\n" + blockDefn.start + "\n" + JSON.stringify(msg.block.daten) + "\n" + blockDefn.end;
-    if (msg.marker) t += "\n\n" + markerVoll(msg.marker);
-    return t;
+    return textSchatten(msg, blockDefn);
   }
 
   /** ST1.2 · Dispatcher des Struktur-Modus: Waechter → Marke → Block-Semantik.

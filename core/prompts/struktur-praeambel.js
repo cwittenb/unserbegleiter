@@ -15,12 +15,20 @@
 // die generierten Teile (Marken-Liste, Block-Tabelle) kommen aus der SessionDef
 // selbst — sie können damit nicht von der Registrierung abweichen.
 
-import { K } from "./prompts.js";
+import { K, getPrompts } from "./prompts.js";
 import { markerName } from "../contracts/turn-schema.js";
 
-/** Baut die Präambel einer SessionDef aus den Korpus-Texten + Def-Daten. */
-export function strukturPraeambel(def) {
-  const T = K().strukturTexte;
+/**
+ * Baut die Präambel einer SessionDef aus den Korpus-Texten + Def-Daten.
+ *
+ * `sprache` ist optional und dient dem Eval-Runner (ST5): Der spielt DE- und
+ * EN-Szenarien im SELBEN Lauf, kann also nicht auf den global gesetzten Korpus
+ * bauen — sonst bekäme ein EN-Szenario die deutsche Präambel vor den
+ * englischen Korpus-Prompt. Die App ruft weiter ohne Argument auf und nimmt
+ * den aktiven Korpus.
+ */
+export function strukturPraeambel(def, sprache) {
+  const T = (sprache ? getPrompts(sprache) : K()).strukturTexte;
   const teile = [T.kopf, T.antwort];
   const marker = def.markerOrder || [];
   teile.push(marker.length

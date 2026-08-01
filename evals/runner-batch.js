@@ -10,6 +10,8 @@
 // Nur Anthropic (D1); der Aufrufer erzwingt das.
 
 import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, validatorFuer, waechterArt } from "./runner-kern.js";
+import { strukturFuer } from "./struktur-bruecke.js";
+import { textSchatten } from "../core/engine/text-schatten.js";
 import { baueJudgePrompt, baueJudgeUser, pruefeJudgeDaten, JUDGE_SCHEMA } from "./judge/judge.js";
 import { LLM_PROVIDERS } from "../core/llm/adapter.js";
 import { fuehreBatchAus } from "./batch-anthropic.js";
@@ -35,6 +37,34 @@ const MAX_TOKENS = 4096;   // wie der synchrone Pfad (LLM_DEFAULTS.maxTokens, S7
 const PIPE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_TOKENS, cache: true, cacheTtl: "1h", thinking: "disabled" });
 const JUDGE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_TOKENS, cache: false, thinking: "adaptiv" });   // Judge-Caching AUS (S56)
 
+/* ST5.4b · Struktur-Modus im Batch. Der Turn-Lockstep bleibt unverändert;
+   getauscht werden nur die beiden Berührungspunkte mit dem Provider:
+   der Request-Körper (structuredBody statt body) und die Deutung der Antwort
+   (parseStructured + Text-Schatten statt parse). Beide gehen weiter über die
+   Fassaden-Bausteine — die S82-Regel "EINE Request-Quelle" gilt fort.
+
+   Abgeschnittene Strukturausgaben wirft parseStructured; der bestehende
+   try/catch macht daraus die Anomalie EINES Samples (k.leer), nie den Tod des
+   Laufs — dieselbe S77/S81-Regel wie im Textpfad. */
+const pipeParams = (k, modell, messages) => k.struktur
+  ? LLM_PROVIDERS.anthropic.structuredBody(PIPE_CFG(modell), k.system, messages, k.struktur.schema)
+  : LLM_PROVIDERS.anthropic.body(PIPE_CFG(modell), k.system, messages);
+
+/** Antwort → {text, usage, abgeschnitten, quelle?, blockTyp?}; im Strukturmodus
+ *  ist `text` der Schatten, den Judge, Checks und Waechter lesen. */
+function pipeParse(k, message) {
+  if (!k.struktur) return LLM_PROVIDERS.anthropic.parse(message);
+  const r = LLM_PROVIDERS.anthropic.parseStructured(message, k.struktur.schema.name);
+  const d = r.data || {};
+  const blockTyp = d.block ? d.block.typ : null;
+  const defn = blockTyp ? (k.struktur.bloecke || []).find(b => b.dataset === blockTyp) : null;
+  return {
+    text: textSchatten({ content: d.antwort || "", marker: d.marker, block: d.block }, defn),
+    usage: r.usage, abgeschnitten: false,
+    quelle: r.strukturQuelle, blockTyp,
+  };
+}
+
 export async function laufeAlleBatch(szenarien, deps) {
   const { pipelineModell, judgeModell, stand, melde, batch, waechter } = deps;
   const fuehreBatch = deps.fuehreBatch || fuehreBatchAus;   // injizierbar für Tests
@@ -42,11 +72,20 @@ export async function laufeAlleBatch(szenarien, deps) {
   const t0 = Date.now();   // Gesamt-Wallclock des Batch-Laufs (S65)
 
   // Konversationen: eine je (Szenario × Sample).
+  // ST5.4b: Die Liste kann Varianten-Paare tragen ({szenario, variante}) oder
+  // — wie bisher — nackte Szenarien.
+  const laeufe = szenarien.map(x => (x && x.szenario ? x : { szenario: x, variante: undefined }));
   const konvs = [];
-  for (const sz of szenarien) {
+  for (const { szenario: sz, variante } of laeufe) {
     const anzahl = deps.n || sz.n || 3;
+    // Praeambel + Schema EINMAL je Szenario-Variante (deterministisch → der
+    // Rolling-Prefix-Cache und der Grammatik-Cache bleiben treffsicher).
+    const struktur = variante === "struktur" ? strukturFuer(sz) : null;
+    const kuerzel = variante === "struktur" ? "st" : "tx";
     for (let i = 0; i < anzahl; i++)
-      konvs.push({ konvId: sz.id + "_" + (i + 1), sz, nr: i + 1, system: sysPromptFuer(sz), messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null,
+      konvs.push({ konvId: sz.id + "_" + kuerzel + "_" + (i + 1), sz, variante, struktur, nr: i + 1,
+        system: struktur ? struktur.system : sysPromptFuer(sz),
+        messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null,
         // S95: Validator einmal je Konversation — dieselbe Zuordnung wie im synchronen Pfad.
         validator: waechter ? validatorFuer(sz) : null });
   }
@@ -63,10 +102,7 @@ export async function laufeAlleBatch(szenarien, deps) {
       k.messages.push({ role: "user", content: eingabe });
       const cid = "p_" + k.konvId + "_t" + d;           // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
       idx.set(cid, k);
-      requests.push({
-        custom_id: cid,
-        params: LLM_PROVIDERS.anthropic.body(PIPE_CFG(pipelineModell), k.system, k.messages),
-      });
+      requests.push({ custom_id: cid, params: pipeParams(k, pipelineModell, k.messages) });
     }
     if (!requests.length) continue;
     if (typeof melde === "function") melde({ phase: "batch", label: "Pipeline Turn " + (d + 1) + "/" + maxTurns, gesamt: requests.length });
@@ -77,13 +113,15 @@ export async function laufeAlleBatch(szenarien, deps) {
       if (!r || r.fehler) { k.fehler = "Batch-Fehler (Pipeline Turn " + (d + 1) + "): " + (r ? r.fehler : "kein Ergebnis"); continue; }
       // S81: markiereAbschnitt (S77) wirft bei "abgeschnitten, bevor Text begann".
       // Im Batch ist das die Anomalie EINES Samples — nie der Tod des Gesamtlaufs.
-      let text, usage, abgeschnitten;
-      try { ({ text, usage, abgeschnitten } = LLM_PROVIDERS.anthropic.parse(r.message)); }
+      let text, usage, abgeschnitten, quelle, blockTyp;
+      try { ({ text, usage, abgeschnitten, quelle, blockTyp } = pipeParse(k, r.message)); }
       catch (e) { k.leer = e.message + " (Turn " + (d + 1) + ")"; continue; }
       addUsage(k.pipe, usage);
-      k.messages.push(abgeschnitten
-        ? { role: "assistant", content: text, abgeschnitten: true }
-        : { role: "assistant", content: text });
+      const zugNeu = { role: "assistant", content: text };
+      if (abgeschnitten) zugNeu.abgeschnitten = true;
+      if (quelle) zugNeu.strukturQuelle = quelle;
+      if (blockTyp) zugNeu.blockTyp = blockTyp;
+      k.messages.push(zugNeu);
       if (!text || !String(text).trim()) k.leer = "leere Pipeline-Antwort (Turn " + (d + 1) + ")";   // Anomalie → nicht weiter (S65)
       else if (abgeschnitten) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Turn " + (d + 1) + ")";   // S77-Regel: Halbsätze werden nicht gerichtet
     }
@@ -107,8 +145,7 @@ export async function laufeAlleBatch(szenarien, deps) {
         ridx.set(cid, k);
         rreq.push({
           custom_id: cid,
-          params: LLM_PROVIDERS.anthropic.body(PIPE_CFG(pipelineModell), k.system,
-            k.messages.concat([{ role: "user", content: revision }])),
+          params: pipeParams(k, pipelineModell, k.messages.concat([{ role: "user", content: revision }])),
         });
       }
       if (rreq.length) {
@@ -122,8 +159,8 @@ export async function laufeAlleBatch(szenarien, deps) {
           // Lauf für dieses Sample die Korpus-Lesart und behäuptete die
           // Waechter-Lesart; genau diese Verwechslung soll es nicht geben.
           if (!r || r.fehler) { k.leer = "Waechter-Revision fehlgeschlagen (Turn " + (d + 1) + "): " + (r ? r.fehler : "kein Ergebnis"); continue; }
-          let rtext, rusage, rab;
-          try { ({ text: rtext, usage: rusage, abgeschnitten: rab } = LLM_PROVIDERS.anthropic.parse(r.message)); }
+          let rtext, rusage, rab, rquelle, rblock;
+          try { ({ text: rtext, usage: rusage, abgeschnitten: rab, quelle: rquelle, blockTyp: rblock } = pipeParse(k, r.message)); }
           catch (e) { k.leer = e.message + " (Waechter-Revision Turn " + (d + 1) + ")"; continue; }
           addUsage(k.pipe, rusage);
           // Die verworfene Fassung wird ERSETZT und betritt das Transkript nie —
@@ -132,6 +169,8 @@ export async function laufeAlleBatch(szenarien, deps) {
           zug.content = rtext;
           zug.waechterTreffer = k._treffer;
           if (rab) zug.abgeschnitten = true; else delete zug.abgeschnitten;
+          if (rquelle) zug.strukturQuelle = rquelle;
+          if (rblock) zug.blockTyp = rblock; else delete zug.blockTyp;
           if (!rtext || !String(rtext).trim()) k.leer = "leere Pipeline-Antwort (Waechter-Revision Turn " + (d + 1) + ")";
           else if (rab) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Waechter-Revision Turn " + (d + 1) + ")";
         }
@@ -183,18 +222,21 @@ export async function laufeAlleBatch(szenarien, deps) {
       : k.leer ? { bewertet: false, fehler: k.leer }                       // leere Antwort → unbewertet (S65)
       : (k.urteil || { bewertet: false, fehler: "kein Judge-Ergebnis" });
     const sample = sampleAusUrteil(k.sz, k.messages, urteil, k.nr);
-    if (!proSz.has(k.sz.id)) proSz.set(k.sz.id, { sz: k.sz, samples: [], pipe: leerTok(), judge: leerTok() });
-    const e = proSz.get(k.sz.id);
+    // ST5.4b: Schlüssel ist Szenario UND Variante — im A/B-Lauf tragen zwei
+    // Läufe dieselbe ID, dürfen aber nie in denselben Topf fallen.
+    const schluessel = k.sz.id + "|" + (k.variante || "text");
+    if (!proSz.has(schluessel)) proSz.set(schluessel, { sz: k.sz, variante: k.variante, samples: [], pipe: leerTok(), judge: leerTok() });
+    const e = proSz.get(schluessel);
     e.samples.push(sample);
     addTok(e.pipe, k.pipe); addTok(e.judge, k.judge);
   }
 
   const ergebnisse = [];
-  for (const sz of szenarien) {
-    const e = proSz.get(sz.id);
+  for (const { szenario: sz, variante } of laeufe) {
+    const e = proSz.get(sz.id + "|" + (variante || "text"));
     if (!e) continue;
     e.samples.sort((a, b) => a.nr - b.nr);
-    const r = szenarioAusSamples(sz, e.samples, deps.n || sz.n || 3);
+    const r = szenarioAusSamples(sz, e.samples, deps.n || sz.n || 3, variante);
     r.telemetrie = { pipe: e.pipe, judge: e.judge, ms: 0 };   // Batch: keine sinnvolle Szenario-Wallclock
     ergebnisse.push(r);
     if (typeof deps.persistiere === "function") await deps.persistiere(bauBericht(ergebnisse, stand, zeit, false));
