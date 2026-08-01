@@ -270,6 +270,11 @@ export function createApp({ doc, backend, root, diktat }) {
         <h1 class="rz-h1">${t("prozess.titel")}</h1>
         <p class="rz-sub rz-intro">${t("prozess.intro")}</p>
         <div id="boxMess"></div>
+        <!-- U11.1 · Die Fussmarke gehoert an den unteren Rand, nicht an den
+             Text. Alle anderen Screens tragen dafuer einen rz-fuss
+             (margin-top:auto); scrProzess war der einzige ohne — deshalb klebte
+             "raumzuzweit" direkt unter dem letzten Absatz. -->
+        <div class="rz-fuss"></div>
         <span class="rz-fussmarke" data-rz-marke></span>
       </div>
     </div>
@@ -1673,10 +1678,17 @@ export function createApp({ doc, backend, root, diktat }) {
   function baueEndeFrage() {
     const f = $("chatEndeFrage");
     if (!f) return;
+    /* U11.4 · Abschliessen ist eine HANDLUNG. Die erste Fassung (S99.2) setzte
+       zwei pb-link nebeneinander — das ist die Grammatik fuer Loeschen und
+       Nebenwege, nicht fuer den Griff, den sie ersetzt. Im Haus gilt: "Rahmen =
+       Handlung, Hairline = Navigation und Auswahl". Also traegt die Zusage die
+       Form des Knopfes, an dessen Stelle sie tritt; die Ruecknahme bleibt eine
+       leise Zeile darunter, weil Nichtstun ohnehin die Vorgabe ist. */
     f.innerHTML =
-      `${esc(t("chat.abschliessenFrage"))} ` +
-      `<button class="pb-link" id="btnEndeJa">${esc(t("chat.abschliessenJa"))}</button> · ` +
-      `<button class="pb-link" id="btnEndeNein">${esc(t("chat.abschliessenNein"))}</button>`;
+      `<button class="rz-zeile rz-knopf-flach" id="btnEndeJa">` +
+        `<span>${esc(t("chat.abschliessenJa"))}</span><span class="rz-pfeil">←</span></button>` +
+      `<div class="rz-klein-leise rz-oben-1">${esc(t("chat.abschliessenFrage"))} ` +
+        `<button class="pb-link rz-klein-leise" id="btnEndeNein">${esc(t("chat.abschliessenNein"))}</button></div>`;
   }
 
   /** Frage an die Stelle des Knopfes — nie beide zugleich. */

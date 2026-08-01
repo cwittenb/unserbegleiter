@@ -44,7 +44,10 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     const wahl = paare.filter(x => paarWaehlbar(eignung, x.id));
     if (!wahl.length) return false;      // keine Tür statt einer verschlossenen
     p.classList.remove("pb-hidden");
-    p.innerHTML = `<button class="rz-zeile rz-knopf-flach" id="btnAuswStart"><span>${esc(t("ausschnitt.zugang"))}</span><span class="rz-pfeil">→</span></button>`;
+    // U11.5 · Der Text traegt einen {partner}-Platzhalter — t() holt nur den
+    // Rohtext, gefuellt wird mit fuelle(). Seit S96 stand hier woertlich
+    // "Stellen aussuchen, die {partner} lesen darf".
+    p.innerHTML = `<button class="rz-zeile rz-knopf-flach" id="btnAuswStart"><span>${esc(fuelle(t("ausschnitt.zugang"), { partner: state.info.partner }))}</span><span class="rz-pfeil">→</span></button>`;
     p.querySelector("#btnAuswStart").addEventListener("click", () => {
       p.classList.add("pb-hidden");
       starteAuswahl(paare, eignung, engine);

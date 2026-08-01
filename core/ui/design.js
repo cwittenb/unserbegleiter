@@ -617,8 +617,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          von wenigen Pixeln je Seite faengt overflow-x:clip am Screen ab —
          clip statt hidden, weil hidden einen Rollbereich eroeffnen und die
          senkrechte Bewegung an sich reissen wuerde. */
+      /* U11.3 · Die Abfangregel galt nur ab 900px — dort, wo auch das
+         Ausblut-Rezept greift. Ein waagerechter Ueberlauf kann aber auch
+         darunter entstehen (lange ungetrennte Woerter, ein breites Element im
+         Verlauf), und dann rollte der ganze Chat seitwaerts.
+         clip statt hidden, weil hidden einen Rollbereich eroeffnen und die
+         senkrechte Bewegung an sich reissen wuerde (s. u.). */
+      .rz-app #scrChat{overflow-x:clip}
+      /* Und die Ursache gleich mit: Ein Wort, das breiter ist als die Spalte,
+         schiebt die Zeile hinaus. Umbrechen statt ueberlaufen — Links und
+         Kennungen sind die ueblichen Verdaechtigen. */
+      #scrChat .pb-msg{overflow-wrap:anywhere}
       @media(min-width:900px){
-        .rz-app #scrChat{overflow-x:clip}
         #scrChat .rz-chat-unten{
           margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
           padding-left:calc(50vw - var(--rz-chat-spalte) / 2);
@@ -941,6 +951,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-regal-inhalt:not(.pb-hidden){animation:rzAufklappen .32s var(--rz-kurve) both}
       .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){
         flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;border-bottom:0}
+      /* U11.2 · Die Bildlaufleiste des aufgeklappten Regals gehoert an den
+         SCHIRMRAND, nicht an die Kastenkante.
+         Dass der Inhalt IN der Zone rollt, bleibt richtig (die Seite soll
+         nicht wachsen, s. o.) — falsch war nur, wo die Leiste dabei sitzt:
+         .rz-half traegt seitlich --rz-rand Polster, also stand sie um dieses
+         Mass eingerueckt mitten im Papier.
+         Der Rollbereich reicht jetzt bis an die Zonenkante; das Polster
+         wandert nach innen und bleibt damit sichtbar erhalten. */
+      .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){
+        margin-left:calc(-1 * var(--rz-rand));margin-right:calc(-1 * var(--rz-rand));
+        padding-left:var(--rz-rand);padding-right:var(--rz-rand);
+        scrollbar-gutter:stable}
       @keyframes rzAufklappen{
         from{clip-path:inset(0 0 100% 0);opacity:.4}
         to{clip-path:inset(0 0 0 0);opacity:1}}

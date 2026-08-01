@@ -89,7 +89,7 @@ export const de = {
   // S99.2 · Der Abschluss ist unumkehrbar (Composer weg, Session beendet,
   // kein Wiederoeffnen). Die Rueckfrage steht als Zeile an der Schreibkante —
   // kein schwebender Behaelter (U7: aus dem Dialog wird ein Ort).
-  "chat.abschliessenFrage": "Session abschließen? Danach kannst du hier nicht mehr schreiben.",
+  "chat.abschliessenFrage": "Danach kannst du hier nicht mehr schreiben.",
   // S105.5 · Steht die Gabelung offen, ist ein erneuter Druck KEIN zweiter
   // Abschlussversuch, sondern die Antwort darauf: die dritte Tür.
   "chat.abschliessenOhneTeilen": "Ohne Teilen abschließen",

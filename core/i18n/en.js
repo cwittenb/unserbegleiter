@@ -77,7 +77,7 @@ export const en = {
   "chat.abschliessen": "Close session",
   // S99.2 · Closing is irreversible — the question stands as a line at the
   // writing edge, not as a floating container.
-  "chat.abschliessenFrage": "Close this session? Afterwards you cannot write here any more.",
+  "chat.abschliessenFrage": "Afterwards you cannot write here any more.",
   // S105.5 · With the fork open, pressing again answers it — the third door.
   "chat.abschliessenOhneTeilen": "Close without sharing",
   "chat.abschliessenJa": "Close it",
