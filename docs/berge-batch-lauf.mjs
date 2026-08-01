@@ -34,6 +34,7 @@ import { pruefeJudgeDaten, JUDGE_SCHEMA } from "../evals/judge/judge.js";
 import { SZENARIEN } from "../evals/szenarien/start-katalog.js";
 import { SZENARIEN_EN } from "../evals/szenarien/start-katalog.en.js";
 import { liesEnvDatei, mischeMitEnv } from "../evals/env-datei.js";
+import { kostenFuer, cacheQuote } from "../evals/preise.js";
 
 const WURZEL = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const ENV = mischeMitEnv(process.env, liesEnvDatei(path.join(WURZEL, ".env")));
@@ -105,6 +106,14 @@ console.log("\nErgebnisse werden geholt …");
 const erg = await holeErgebnisse(ids);
 console.log("\nGesamt " + erg.size + " Antworten. Rekonstruiere Konversationen …");
 
+const leerTok = () => ({ in: 0, out: 0, cacheRead: 0, cacheWrite: 0, calls: 0 });
+const addUsage = (akk, u) => {
+  if (!u) return;
+  akk.in += u.in || 0; akk.out += u.out || 0;
+  akk.cacheRead += u.cacheRead || 0; akk.cacheWrite += u.cacheWrite || 0; akk.calls++;
+};
+const addTok = (z, q) => { for (const k of ["in", "out", "cacheRead", "cacheWrite", "calls"]) z[k] += q[k] || 0; };
+
 // 1) Konversationen aus den custom_ids sammeln
 const konvs = new Map();
 for (const cid of erg.keys()) {
@@ -115,7 +124,7 @@ for (const cid of erg.keys()) {
   if (!z) continue;
   const sz = KATALOG.find(s => s.id === z.szId);
   if (!sz) { console.log("  ⚠ unbekanntes Szenario in " + cid); continue; }
-  if (!konvs.has(konvId)) konvs.set(konvId, { konvId, sz, ...z, zuege: new Map(), urteilRoh: null });
+  if (!konvs.has(konvId)) konvs.set(konvId, { konvId, sz, ...z, zuege: new Map(), urteilRoh: null, pipe: leerTok(), judge: leerTok() });
   const k = konvs.get(konvId);
   if (art === "j") k.urteilRoh = erg.get(cid);
   else {
@@ -139,6 +148,7 @@ for (const k of konvs.values()) {
     try {
       if (struktur) {
         const r = LLM_PROVIDERS.anthropic.parseStructured(antwort.message, struktur.schema.name);
+        addUsage(k.pipe, r.usage);
         const d = r.data || {};
         const typ = d.block ? d.block.typ : null;
         const defn = typ ? (struktur.bloecke || []).find(b => b.dataset === typ) : null;
@@ -151,6 +161,7 @@ for (const k of konvs.values()) {
         transkript.push(zug);
       } else {
         const p = LLM_PROVIDERS.anthropic.parse(antwort.message);
+        addUsage(k.pipe, p.usage);
         const zug = { role: "assistant", content: p.text };
         if (p.abgeschnitten) zug.abgeschnitten = true;
         if (antwort.art === "r") zug.waechterTreffer = "revidiert";
@@ -171,21 +182,28 @@ for (const k of [...konvs.values()].sort((a, b) => a.nr - b.nr)) {
     ohneUrteil++;
   } else {
     try {
-      const { data } = LLM_PROVIDERS.anthropic.parseStructured(k.urteilRoh.message, JUDGE_SCHEMA.name);
+      const { data, usage } = LLM_PROVIDERS.anthropic.parseStructured(k.urteilRoh.message, JUDGE_SCHEMA.name);
+      addUsage(k.judge, usage);
       const p = pruefeJudgeDaten(data, k.sz);
       urteil = p.ok ? { bewertet: true, antworten: p.antworten } : { bewertet: false, fehler: p.fehler };
     } catch (e) { urteil = { bewertet: false, fehler: e.message }; ohneUrteil++; }
   }
   const schluessel = k.szId + "|" + k.variante;
-  if (!proSz.has(schluessel)) proSz.set(schluessel, { sz: k.sz, variante: k.variante, samples: [] });
-  proSz.get(schluessel).samples.push(sampleAusUrteil(k.sz, k.transkript, urteil, k.nr));
+  if (!proSz.has(schluessel)) proSz.set(schluessel, { sz: k.sz, variante: k.variante, samples: [], pipe: leerTok(), judge: leerTok() });
+  const eintrag = proSz.get(schluessel);
+  eintrag.samples.push(sampleAusUrteil(k.sz, k.transkript, urteil, k.nr));
+  addTok(eintrag.pipe, k.pipe); addTok(eintrag.judge, k.judge);
 }
 
 // 4) Bericht
 const ergebnisse = [];
 for (const e of proSz.values()) {
   e.samples.sort((a, b) => a.nr - b.nr);
-  ergebnisse.push(szenarioAusSamples(e.sz, e.samples, e.samples.length, e.variante));
+  const r = szenarioAusSamples(e.sz, e.samples, e.samples.length, e.variante);
+  // Token aus den Batch-Antworten — so trägt der geborgene Bericht dieselbe
+  // Kostenrechnung wie ein regulärer Lauf (Batch-Rabatt inbegriffen).
+  r.telemetrie = { pipe: e.pipe, judge: e.judge, ms: 0 };
+  ergebnisse.push(r);
 }
 ergebnisse.sort((a, b) => (a.id + a.variante).localeCompare(b.id + b.variante));
 
@@ -208,6 +226,17 @@ console.log("Konversationen: " + konvs.size + " · Szenario-Läufe: " + ergebnis
   (anomal ? " · anomale Transkripte: " + anomal : "") +
   (ohneUrteil ? " · ohne Urteil: " + ohneUrteil : ""));
 console.log("Geschrieben: " + datei);
+const t = bericht.telemetrie || {};
+if (t.pipe && t.judge) {
+  // Batch: −50 % und 1h-Write-Tarif für die Pipeline (S65); der Judge cacht nicht.
+  const kp = kostenFuer(stand.pipelineModell, t.pipe, { langlebig: true });
+  const kj = kostenFuer(stand.judgeModell, t.judge);
+  if (kp != null && kj != null)
+    console.log("Kosten (Batch −50 %): Pipeline $" + (kp * 0.5).toFixed(2) +
+      " + Judge $" + (kj * 0.5).toFixed(2) + " = $" + ((kp + kj) * 0.5).toFixed(2) +
+      "  ·  Cache-Quote Pipeline " + Math.round(cacheQuote(t.pipe) * 100) + "%");
+  else console.log("Kosten: Preise für " + stand.pipelineModell + "/" + stand.judgeModell + " nicht hinterlegt.");
+}
 if (bericht.gate) {
   const g = bericht.gate;
   console.log("\n──── GATE · Text ↔ Struktur (" + g.paare + " Paare) ────");
