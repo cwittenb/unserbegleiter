@@ -166,7 +166,9 @@ async function laufS3(modus, bericht) {
 
 function pruefeAllgemein(modus, r, bericht) {
   if (modus === "struktur") {
-    if (r.quelle !== "tool") bericht.hart("strukturQuelle=" + r.quelle);
+    // ST3: erzwungene Quellen sind "schema" (output_config) und alt "tool";
+    // "text" wäre die S85-Rettung — hier ein Befund.
+    if (!["schema", "tool"].includes(r.quelle)) bericht.hart("strukturQuelle=" + r.quelle);
     if (leck(r.antwort)) bericht.hart("LECK in antwort: " + r.antwort.slice(0, 120));
   }
   if (!r.antwort.trim()) bericht.hart("antwort leer");

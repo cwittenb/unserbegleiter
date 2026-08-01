@@ -13,16 +13,8 @@ const backend = { pstate: { get: async () => null, set: async () => {} } };
 const soloCtx = () => ({ me: "Anna", partner: "Bernd", kontext: "" });
 
 describe("Struktur-Präambel (ST2)", () => {
-  it("ST2c · solo/moment sind ZURÜCKGENOMMEN — kein Flag, Korpus-Prompt pur", () => {
-    for (const bau of [soloDef, momentDef]) {
-      const d = bau(backend);
-      expect(d.strukturTurn).toBeUndefined();
-      expect(d.sysPrompt({ me: "Anna", partner: "Bernd", kontext: "" }).includes(de.strukturTexte.kopf)).toBe(false);
-    }
-  });
-
-  it("solo: schalteStruktur legt die Präambel VOR den unveränderten Korpus-Prompt", () => {
-    const def = schalteStruktur(soloDef(backend));
+  it("ST4 · solo: Flag AN, Präambel VOR dem unveränderten Korpus-Prompt", () => {
+    const def = soloDef(backend);
     expect(def.strukturTurn).toBe(true);
     const sys = def.sysPrompt(soloCtx());
     expect(sys.startsWith(de.strukturTexte.kopf)).toBe(true);
@@ -35,8 +27,9 @@ describe("Struktur-Präambel (ST2)", () => {
     expect(sys).toContain(de.strukturTexte.ohneMarken);
   });
 
-  it("moment: Marken-Liste sind die NACKTEN Namen der markerOrder", () => {
+  it("moment: Flag AN; Marken-Liste sind die NACKTEN Namen der markerOrder", () => {
     const def = momentDef(backend);
+    expect(def.strukturTurn).toBe(true);
     const p = strukturPraeambel(def);
     expect(p).toContain("CHOICE-CONNECT, META-REVEALED");
     expect(p).not.toContain("[[CHOICE-CONNECT]]");          // Präambel nennt nackte Namen
