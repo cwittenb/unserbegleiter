@@ -13,9 +13,18 @@
 //   C  grenzregel    — Schema wie A + harte Grenz-Regel in der Präambel
 //   D  beides        — B + C
 //
-// AUFRUF:  node docs/probe-st3-blockgrenze.mjs [--n=5] [--model=claude-sonnet-5] [--varianten=A,B,C,D]
-// Key aus der .env im Repo-Root (evals/env-datei.js; process.env gewinnt).
-// Kosten: je Variante n × 2 Modellrunden.
+// PROVIDER-VERGLEICH (st2d): Der Riss trägt Anthropic-Handschrift — das
+// durchblutende Markup IST die Tool-Use-Serialisierung (tool_choice). Mistral
+// erzwingt per response_format json_schema strict (constrained decoding, von
+// S76-Sonden verifiziert): Dort kann dieses Markup nicht entstehen. Der
+// Vergleich trennt Provider-Quirk von Ansatz-Problem und speist die
+// Provider-Strategie der zweigleisigen Pipeline.
+//
+// AUFRUF:  node docs/probe-st3-blockgrenze.mjs [--n=5] [--varianten=A,B,C,D]
+//            [--provider=anthropic,mistral] [--model-anthropic=…] [--model-mistral=…]
+// Keys aus der .env im Repo-Root (ANTHROPIC_API_KEY, MISTRAL_API_KEY;
+// process.env gewinnt). Provider ohne Key wird mit Hinweis übersprungen.
+// Kosten: je Provider × Variante n × 2 Modellrunden.
 //
 // LESART: Gewinner ist die Variante mit n/n sauberen Läufen (Block gültig,
 // kein Leck). Keine sauber ⇒ Präambel-Ansatz an dieser Stelle verworfen,
@@ -39,10 +48,15 @@ const arg = (name, def) => {
   return a ? a.split("=")[1] : def;
 };
 const N = Number(arg("n", 5));
-const MODELL = arg("model", "claude-sonnet-5");
 const VARIANTEN = arg("varianten", "A,B,C,D").split(",");
-if (!ENV.ANTHROPIC_API_KEY) {
-  console.error("ANTHROPIC_API_KEY fehlt — in die .env im Repo-Root eintragen (Vorlage: .env.example).");
+const PROVIDER = arg("provider", "anthropic,mistral").split(",");
+const MODELLE = {
+  anthropic: arg("model-anthropic", arg("model", "claude-sonnet-5")),
+  mistral: arg("model-mistral", "mistral-medium-latest"),
+};
+const KEYS = { anthropic: ENV.ANTHROPIC_API_KEY, mistral: ENV.MISTRAL_API_KEY };
+if (!PROVIDER.some(pv => KEYS[pv])) {
+  console.error("Kein API-Key gefunden — ANTHROPIC_API_KEY und/oder MISTRAL_API_KEY in die .env im Repo-Root (Vorlage: .env.example).");
   process.exit(2);
 }
 
@@ -75,10 +89,32 @@ const KONFIG = {
   D: { schema: schemaBlockZuerst(basisSchema), system: basisSystem + "\n\n" + GRENZREGEL },
 };
 
-const llm = makeAdapter({
-  mode: "direct", provider: "anthropic", apiKey: ENV.ANTHROPIC_API_KEY,
-  models: { anthropic: MODELL }, thinking: "disabled", stream: false,
-});
+function baueLlm(provider) {
+  return makeAdapter({
+    mode: "direct", provider, apiKey: KEYS[provider],
+    models: { [provider]: MODELLE[provider] }, thinking: "disabled", stream: false,
+  });
+}
+
+/* Mistral strict wurde in S76 mit enum:[wert] verifiziert, nicht mit const —
+   für den Vergleich wird const → enum übersetzt (semantisch identisch), damit
+   die Sonde die BLOCKGRENZE misst und nicht eine Schema-Dialektfrage. */
+function konstZuEnum(x) {
+  if (Array.isArray(x)) return x.map(konstZuEnum);
+  if (x && typeof x === "object") {
+    const raus = {};
+    for (const [k, v] of Object.entries(x)) {
+      if (k === "const") raus.enum = [v];
+      else raus[k] = konstZuEnum(v);
+    }
+    return raus;
+  }
+  return x;
+}
+function fuerProvider(provider, k) {
+  if (provider !== "mistral") return k;
+  return { ...k, schema: { name: k.schema.name, description: k.schema.description, schema: konstZuEnum(k.schema.schema) } };
+}
 
 const CLOSE = (K().steuerTexte && K().steuerTexte.soloAbschluss) || "[CLOSE SESSION]";
 const VERLAUF = [
@@ -90,25 +126,28 @@ const VERLAUF = [
 ];
 const LECK = /-BLOCK|\[\[|END |<parameter|<\/an|\{\s*"/;
 
-async function zug(k, messages) {
+async function zug(llm, k, messages) {
   const r = await llm(k.system, messages, { structured: k.schema });
   const d = r.data || {};
   return { antwort: String(d.antwort || ""), block: d.block || null, quelle: r.strukturQuelle };
 }
 
 const ergebnisse = {};
-for (const v of VARIANTEN) {
-  const k = KONFIG[v];
+for (const provider of PROVIDER) {
+  if (!KEYS[provider]) { console.log(`[${provider}] übersprungen — kein Key in der .env.`); continue; }
+  const llm = baueLlm(provider);
+  for (const v of VARIANTEN) {
+  const k = fuerProvider(provider, KONFIG[v]);
   if (!k) { console.error("Unbekannte Variante:", v); continue; }
   const stat = { sauber: 0, leck: 0, keinBlock: 0, schemaFehler: 0, quelle: 0, waechter: 0 };
   for (let lauf = 1; lauf <= N; lauf++) {
     const probleme = [];
     try {
-      const r1 = await zug(k, VERLAUF);
+      const r1 = await zug(llm, k, VERLAUF);
       let final = r1;
       if (!r1.block || r1.block.typ !== "zeit") {
         // Zweistufiger Abschluss (S99): Türen-Frage steht — behalten und schließen.
-        final = await zug(k, [...VERLAUF,
+        final = await zug(llm, k, [...VERLAUF,
           { role: "assistant", content: r1.antwort },
           { role: "user", content: "Für mich behalten. Magst du hier schließen?" },
         ]);
@@ -126,19 +165,21 @@ for (const v of VARIANTEN) {
         }
       }
       if (!probleme.length) stat.sauber++;
-      console.log(`[${v} · Lauf ${lauf}] ` + (probleme.length ? "PROBLEM: " + probleme.join(" | ") : "sauber") +
+      console.log(`[${provider} · ${v} · Lauf ${lauf}] ` + (probleme.length ? "PROBLEM: " + probleme.join(" | ") : "sauber") +
         (LECK.test(final.antwort) ? "  » " + final.antwort.slice(-140).replace(/\n/g, " ⏎ ") : ""));
     } catch (e) {
       stat.keinBlock++;
-      console.log(`[${v} · Lauf ${lauf}] Aufruf-Fehler: ` + e.message.slice(0, 160));
+      console.log(`[${provider} · ${v} · Lauf ${lauf}] Aufruf-Fehler: ` + e.message.slice(0, 160));
     }
   }
-  ergebnisse[v] = stat;
+  ergebnisse[provider + "/" + v] = stat;
+  }
 }
 
-console.log("\n==== ERGEBNIS (je Variante, n=" + N + ") ====");
-for (const [v, s] of Object.entries(ergebnisse))
-  console.log(`${v}: sauber ${s.sauber}/${N} · Leck ${s.leck} · kein Block ${s.keinBlock} · Schema ${s.schemaFehler} · Wächter ${s.waechter} · Quelle ${s.quelle}`);
-const sieger = Object.entries(ergebnisse).filter(([, s]) => s.sauber === N).map(([v]) => v);
-if (sieger.length) console.log("SIEGER (n/n sauber): " + sieger.join(", ") + " → ST3 setzt diese Variante als Turn-Schema-Vorgabe um und wiederholt Sonde v2 komplett.");
-else console.log("KEINE Variante n/n sauber → Präambel-Ansatz an der Blockgrenze verworfen; Fallback Voll-Migration (ST2-Protokoll).");
+console.log("\n==== ERGEBNIS (Provider/Variante, n=" + N + ") ====");
+for (const [pv, s] of Object.entries(ergebnisse))
+  console.log(`${pv}: sauber ${s.sauber}/${N} · Leck ${s.leck} · kein Block ${s.keinBlock} · Schema ${s.schemaFehler} · Wächter ${s.waechter} · Quelle ${s.quelle}`);
+const sieger = Object.entries(ergebnisse).filter(([, s]) => s.sauber === N).map(([pv]) => pv);
+if (sieger.length) console.log("SIEGER (n/n sauber): " + sieger.join(", ") + " → ST3 setzt Variante (und ggf. Provider-Hinweis) als Vorgabe und wiederholt Sonde v2 komplett.");
+else console.log("KEINE Kombination n/n sauber → Präambel-Ansatz an der Blockgrenze verworfen; Fallback Voll-Migration (ST2-Protokoll).");
+console.log("DIFF-Lesart: Ist mistral in A sauber, während anthropic/A reißt, ist der Riss die Tool-Use-Serialisierung (Provider-Quirk) — nicht der Schema-Zuschnitt.");

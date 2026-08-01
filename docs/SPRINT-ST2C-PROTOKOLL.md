@@ -19,6 +19,7 @@ Einordnung Sonde v1→v2: v1 hatte mit dem Runde-1-Block-Kriterium einen Kalibri
    - **C grenzregel** — Schema wie A plus harte Grenz-Regel in der Präambel (antwort endet mit dem letzten Satz; Block ausschließlich ins block-Feld; Selbstprüfung vor Ausgabe)
    - **D beides** — B + C
    Lesart steht im Skript-Kopf: Sieger = n/n sauber → ST3 setzt die Variante als Schema-Vorgabe und wiederholt Sonde v2 komplett; keine sauber → Präambel-Ansatz an der Blockgrenze verworfen, Fallback Voll-Migration.
+4. **Provider-Vergleich (st2d, in die Sonde integriert):** Der Riss trägt Anthropic-Handschrift — das durchblutende Markup IST die Tool-Use-Serialisierung (`tool_choice`). Mistral erzwingt per `response_format json_schema strict` (constrained decoding, S76-verifiziert); dort kann dieses Markup nicht entstehen. Die Sonde fährt deshalb per Default BEIDE Provider über die Varianten-Matrix (`--provider=anthropic,mistral`, Keys aus der `.env`, fehlender Key wird mit Hinweis übersprungen; Modelle: claude-sonnet-5 / mistral-medium-latest, per Flag übersteuerbar). Diff-Lesart: Ist mistral/A sauber, während anthropic/A reißt, ist der Riss ein Provider-Quirk der Serialisierung — nicht der Schema-Zuschnitt; das speist direkt die Provider-Strategie der zweigleisigen Pipeline. Schema-Dialekt: Für Mistral übersetzt die Sonde lokal `const`→`enum:[wert]` (S76 verifizierte die enum-Form), damit die Blockgrenze gemessen wird und nicht eine Dialektfrage.
 
 ## Beobachtungen für ST3
 
