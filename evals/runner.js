@@ -242,7 +242,10 @@ async function main() {
         pipelineModell, judgeModell, n, zeit, persistiere, melde, stand, waechter,
         batch: {
           apiKey, intervallMs: batchIntervallMs, maxMs: batchMaxMs,
-          fortschritt: () => process.stdout.write("."),
+          /* ST5d: Die Batch-ID einmal ausgeben, sobald sie da ist. Läuft der
+             Lauf später in den Cap, ist sie der Schlüssel zu bereits bezahlten
+             Ergebnissen (node docs/berge-batch-lauf.mjs). */
+          fortschritt: ev => process.stdout.write(ev && ev.batchId ? "[" + ev.batchId + "] " : "."),
         },
       })
     : await laufeAlle(varianten(szenarien, strukturModus), {

@@ -45,12 +45,20 @@ export async function fuehreBatchAus(requests, opts = {}) {
   let stand = await erstellt.json();
   const id = stand.id;
   if (!id) throw new Error("Batch-Antwort ohne id");
+  /* ST5d: Die Batch-ID SOFORT sichtbar machen. Läuft der Lauf später in den
+     Cap, ist sie der einzige Schlüssel zu bereits bezahlten Ergebnissen —
+     bisher erschien sie erst in der Timeout-Meldung, und für die
+     vorangegangenen Wellen gar nicht. */
+  if (typeof fortschritt === "function") fortschritt({ batchId: id, fertig: 0, gesamt: requests.length });
 
   // 2) Pollen bis "ended" (oder Timeout)
   const start = jetzt();
   while (stand.processing_status !== "ended") {
     if (jetzt() - start > maxMs)
-      throw new Error("Batch-Timeout nach " + Math.round(maxMs / 60000) + " min — Batch-ID " + id + " (Ergebnisse später über die API abrufbar)");
+      throw new Error("Batch-Timeout nach " + Math.round(maxMs / 60000) + " min — Batch-ID " + id +
+        ". Die Ergebnisse sind bezahlt und 29 Tage abrufbar; Bergung:\n" +
+        "  node docs/berge-batch-lauf.mjs --seit=6h\n" +
+        "Längerer Cap beim nächsten Lauf: --batch-max-min=<minuten>");
     await schlaf(intervallMs);
     const r = await fetchFn(BASIS + "/" + id, { headers: kopf(apiKey) });
     if (!r.ok) throw new Error("Batch-Poll fehlgeschlagen: HTTP " + r.status);
