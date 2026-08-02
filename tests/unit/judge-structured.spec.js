@@ -21,8 +21,8 @@ describe("Judge · Wire-Schema (S76)", () => {
     expect(JUDGE_SCHEMA.schema.additionalProperties).toBe(false);
   });
 
-  it("Prompt j8/S103: strukturierte Form, keyless-Absicherung und Urteils-Konsistenz, volle Härtung", () => {
-    expect(JUDGE_PROMPT_VERSION).toBe("j8");
+  it("Prompt j9/ST6d: strukturierte Form, keyless-Absicherung und volle inhaltliche Härtung", () => {
+    expect(JUDGE_PROMPT_VERSION).toBe("j9");
     const p = baueJudgePrompt("de");
     // j6 sichert Umgebungen OHNE Tool-Erzwingung ab (keyless Artefakt):
     expect(p).toContain("GENAU EINEM reinen JSON-Objekt");

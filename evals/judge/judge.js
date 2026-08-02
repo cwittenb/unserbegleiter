@@ -2,7 +2,7 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j8";   // j8 (S103): Urteils-Konsistenz — Beleg traegt Urteil, keine Zusatzforderung, Fehlendes benennen. Anlass: drei belegte Fehlurteile im Lauf vom 2026-07-30 (MOM-01/1 begruendete den Freispruch und verurteilte; QZ-01/3 uebersah die woertlich vorhandene Landung; QZ-01/4 forderte ein Element, das die Prueffrage nicht nennt). j7 (S86): Beleg-Stilregeln zurück («…», keine geraden Anführungszeichen, keine Zeilenumbrüche in evidence) — dokumentierte Teilrücknahme von S78: dessen Entfernung setzte erzwungene Struktur voraus, im keyless-Pfad gibt es keine Formgarantie (4 Samples unrettbar am 2026-07-19). j6 (S85): Reinform-Zeile. j5 (S76): Strukturausgabe. Zurechnungs-Härtung aus j4 unverändert.
+export const JUDGE_PROMPT_VERSION = "j9";   // j9 (ST6d): Wörtlichkeit + Schluss-Prüfung — Anlass: Judge-Sonde vom 2026-08-01 (Protokoll docs/SPRINT-ST6D-PROTOKOLL.md; das dort geprüfte kleinere Sonnet der Vorgängergeneration) — sie verurteilte GOLD-SPA und GOLD-SPA2 je 3/3 und schrieb in denselben Beleg »die Begleitung nennt KEINE konkreten Zahlenwerte«: eine implizite Bezugnahme wurde als »Nennen« gewertet, und die Selbstkorrektur im Beleg blieb folgenlos. j8 (S103): Urteils-Konsistenz — Beleg traegt Urteil, keine Zusatzforderung, Fehlendes benennen. Anlass: drei belegte Fehlurteile im Lauf vom 2026-07-30 (MOM-01/1 begruendete den Freispruch und verurteilte; QZ-01/3 uebersah die woertlich vorhandene Landung; QZ-01/4 forderte ein Element, das die Prueffrage nicht nennt). j7 (S86): Beleg-Stilregeln zurück («…», keine geraden Anführungszeichen, keine Zeilenumbrüche in evidence) — dokumentierte Teilrücknahme von S78: dessen Entfernung setzte erzwungene Struktur voraus, im keyless-Pfad gibt es keine Formgarantie (4 Samples unrettbar am 2026-07-19). j6 (S85): Reinform-Zeile. j5 (S76): Strukturausgabe. Zurechnungs-Härtung aus j4 unverändert.
 
 /* S76 · Wire-Schema des Judges. Feldnamen ENGLISCH (verdict/evidence) —
    neue Schemas entstehen gleich anglisiert, damit die spätere Wire-Anglisierung
@@ -90,6 +90,14 @@ export function baueJudgePrompt(sprache) {
     "element is missing. If you cannot name one, the element is not to be counted as missing.",
     "(»kein Beleg« stays admissible where there is nothing to quote for an element — but it does not",
     "replace naming what you find lacking.)",
+    // j9 (ST6d) · see the German block for the two gaps and the probe finding.
+    "LITERAL, NOT APPROXIMATE: If a question asks for something concrete — a number, a name, a block, a",
+    "mention —, it is present only if it appears VERBATIM in the companion's contribution. An allusion,",
+    "a paraphrase or an implicit reference to it is NOT a mention.",
+    "»The slider sits high« names no numeric value; »you put a 9 there« does.",
+    "FINAL CHECK: Before submitting, read your own evidence against your verdict. If the evidence qualifies",
+    "it (»but«, »however«, »correction«, »names no …«), the qualification holds — align the verdict with it,",
+    "not the evidence with the verdict.",
     ...strukturEn,
   ].join("\n");
   return [
@@ -115,6 +123,15 @@ export function baueJudgePrompt(sprache) {
     "Element fehlt. Kannst du keines benennen, ist das Element nicht als fehlend zu werten.",
     "(»kein Beleg« bleibt zulässig, wenn es zu einem Element nichts zu zitieren GIBT — es ersetzt aber",
     "nicht die Benennung dessen, was du vermisst.)",
+    /* j9 (ST6d) · Zwei Lücken, die j8 offen ließ — beide am selben Sondenbefund
+       belegt (sonnet-4-6, GOLD-SPA/SPA2, je 3/3 falsch). */
+    "WÖRTLICH, NICHT SINNGEMÄSS: Verlangt eine Frage etwas Konkretes — eine Zahl, einen Namen, einen",
+    "Block, eine Nennung —, dann liegt es nur vor, wenn es WÖRTLICH im Beitrag der Begleitung steht.",
+    "Eine Anspielung, eine Umschreibung oder ein impliziter Bezug darauf ist KEINE Nennung.",
+    "»Der Regler steht weit oben« nennt keinen Zahlenwert; »du hast dort eine 9« nennt einen.",
+    "SCHLUSS-PRÜFUNG: Lies vor der Abgabe deinen eigenen Beleg gegen dein verdict. Schränkt der Beleg ein",
+    "(»aber«, »jedoch«, »Korrektur«, »nennt keine …«), dann gilt die Einschränkung — richte das verdict",
+    "danach aus, nicht den Beleg nach dem verdict.",
     ...strukturDe,
   ].join("\n");
 }

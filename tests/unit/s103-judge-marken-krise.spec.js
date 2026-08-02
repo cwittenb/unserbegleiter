@@ -32,8 +32,9 @@ const backendStumm = () => ({
 /* ═══════════ S103.1 · j8 · Urteil und Beleg müssen zusammenpassen ═══════════ */
 
 describe("S103.1 · Der Judge trägt drei neue Regeln", () => {
-  it("Version ist j8", () => {
-    expect(JUDGE_PROMPT_VERSION).toBe("j8");
+  it("Version ist mindestens j8 — die drei S103-Regeln gelten fort (aktuell j9)", () => {
+    // Diese Spec prüft die S103-REGELN, nicht die Versionsnummer; j9 ergänzt sie.
+    expect(Number(JUDGE_PROMPT_VERSION.slice(1))).toBeGreaterThanOrEqual(8);
   });
 
   it("DE: Beleg trägt Urteil · keine Zusatzforderung · Fehlendes benennen", () => {
