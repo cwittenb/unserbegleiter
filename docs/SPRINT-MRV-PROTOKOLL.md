@@ -167,9 +167,42 @@ Zusatzsatz kostet unsichtbare Zeilen, eine übergangene Person mehr.
 Verdrahtet in beiden geteilten Räumen, Krise hat Vorrang (nie zwei Zusätze je
 Zug). 13 Prüfungen in `tests/unit/mrv-zweiseitigkeit.spec.js`.
 
-**Variante E** ist in der Sonde ergänzt und misst gegen dieselbe Basisrate. Die
-Ausgabe zeigt zusätzlich, *wie oft* geschärft wurde — feuert der Erkenner nicht,
-sagt die Quote nichts über die Wirkung.
+### Gemessen (n=8, 2026-08-02)
+
+| | | Quote |
+| --- | --- | --- |
+| A | Produktionsstand | **8/8** (C2 8 · C1 2) |
+| E | mit Schärfung | **1/8** (C1 1 · C2 1) |
+
+**Schärfung: +0,88.** Der Erkenner hat in allen acht Läufen getroffen
+(»geschärft 1×«) — die Quote misst also den Zusatz und nicht sein Ausbleiben.
+
+Damit ist die Frage beantwortet, an der sich die Entwicklung wiederholt
+aufgehalten hat: **Sprache greift hier, aber nur zur rechten Zeit.** Dieselbe
+Regel bewirkt im Korpus nichts (Position −0,13, Wiedererkennung 0,00) und trägt
+unmittelbar vor der Antwort. Stufe 2 (die App fragt statt der Begleitung) ist
+nicht nötig.
+
+**Zwei Beobachtungen, die offen bleiben:**
+
+1. Der verbleibende Fall ist **C1**, nicht C2 — mehrfaches Nachhol-Angebot
+   (»das lässt sich leicht nachholen … kurz auf dem eigenen Handy«). Das ist
+   dieselbe Klasse, die Variante D erzeugt hatte. Der Zusatz sagt bereits »du
+   drängst nicht auf das Nachholen«; 1/8 statt 2/8 in A könnte Wirkung oder
+   Rauschen sein.
+2. Die Basisrate stieg von 7/8 (erster Lauf) auf 8/8, und C1 trat neu auf
+   (0→2). Dazwischen liegt die Sprecher-Regel aus MRV.2, die den Korpus um ~770
+   Zeichen verlängert hat. Ob das zusammenhängt, ist **nicht gemessen** — der
+   Unterschied liegt im Rauschbereich, aber er steht hier, damit er nicht
+   verlorengeht.
+
+### Ein Fehler in der Sonde, behoben
+
+Die Deutung am Ende schrieb »WEDER NOCH« direkt unter das Ergebnis, dass die
+Schärfung wirkt: Bei nicht gelaufenen Varianten (C, D) fielen die Nullwerte in
+den else-Zweig. Wer nur das Ende liest, zöge den falschen Schluss. Die Sonde
+deutet jetzt nur, was gemessen wurde — ein Deuter, der über Nichtgemessenes
+urteilt, ist schlimmer als keiner.
 
 ---
 
@@ -185,10 +218,12 @@ node docs/probe-mrv-zweiseitigkeit.mjs --n=8 --szenario=SPR-05 --varianten=A
 Der erste misst A gegen E (Schärfung), der zweite die Sprecher-Regel aus MRV.2
 (Ziel ≤ 1/8; Basisrate war 8/8).
 
-**Wenn E nicht wirkt**, ist Sprache als Werkzeug hier erschöpft — Korpus-Position,
-Beispiel und Zeitpunkt sind dann alle gemessen. Dann Stufe 2: die App fragt
-statt der Begleitung. Maßgabe von Cars10 dafür: **nahtlos im Gespräch**, kein
-eingeblendetes Bedienelement mitten im Reden.
+**Stufe 2 entfällt** — E wirkt (siehe §3b). Die Maßgabe dafür wäre gewesen:
+nahtlos im Gespräch, kein eingeblendetes Bedienelement mitten im Reden.
+
+**MRV.4** (MRV-03/C1, Frage-Tür) bleibt offen — 1/3, deutlich schwächer.
+Vorbehalt unverändert: Auch das berührt die Aufdeck-Dramaturgie, die S107 neu
+schreibt.
 
 **MRV.4** (MRV-03/C1, Frage-Tür) — 1/3, deutlich schwächer. Vorbehalt: Auch das
 berührt die Aufdeck-Dramaturgie, die S107 neu schreibt. Zeigt die Sonde Rauschen

@@ -230,7 +230,14 @@ if (schaerf != null) {
                 "  sondern die Konsequenz.");
   console.log("");
 }
-if (pos != null && pos >= DEUTLICH && (wieder == null || wieder < DEUTLICH))
+/* Nur deuten, was gemessen wurde. Die erste Fassung fiel bei fehlenden
+   Varianten in den else-Zweig und schrieb "WEDER NOCH" — direkt unter das
+   Ergebnis, dass die Schärfung wirkt. Wer nur das Ende liest, zog daraus den
+   falschen Schluss. Ein Deuter, der über Nichtgemessenes urteilt, ist
+   schlimmer als keiner. */
+if (pos == null && wieder == null) {
+  // Nichts über Korpus-Varianten zu sagen — E hat oben schon gesprochen.
+} else if (pos != null && pos >= DEUTLICH && (wieder == null || wieder < DEUTLICH))
   console.log("→ POSITION trägt es. S97 nach vorn ziehen; kein neuer Text nötig.");
 else if (wieder != null && wieder >= DEUTLICH && (pos == null || pos < DEUTLICH))
   console.log("→ WIEDERERKENNUNG trägt es. Die Regel wird gelesen, der Anlass nicht\n" +
