@@ -6,6 +6,7 @@
 import { BLOECKE } from "../contracts/registry.js";
 import { uebergabeKette, pruefeMarkenAntwort } from "../engine/abschluss-waechter.js";
 import { krisenSchaerfung } from "../engine/krisen-waechter.js";
+import { zweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
 import { aufdeckSchaerfung } from "../engine/aufdeck-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
@@ -141,7 +142,9 @@ export function gemeinsamDef(backend, hooks = {}) {
     pruefeUebergabe: uebergabeKette([
       text => pruefeMarkenAntwort(text, { revision: "marke-mit-frage" }),
     ]),
-    schaerfe: (messages, ctx) => aufdeckSchaerfung(messages, ctx) || krisenSchaerfung(messages, ctx),
+    // MRV.3 · Auch die Aufloesung ist ein geteilter Raum.
+    schaerfe: (messages, ctx) => aufdeckSchaerfung(messages, ctx)
+      || krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)

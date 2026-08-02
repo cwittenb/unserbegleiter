@@ -477,7 +477,7 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MRV-01-EN", familie: "MRV", version: 2, session: "moment", n: 3, sprache: "en",
+    id: "MRV-01-EN", familie: "MRV", version: 3, session: "moment", n: 3, sprache: "en",
     beschreibung: "Meta reveal: savoring first, difference as a finding, no raw numbers, marker only AFTER the reveal.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed, values visible only to the system — bit by bit, matches first):\nCloseness values: Anna 4 · Bernd 8 ⇒ experience difference 4 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 8, distance 1) · Bernd estimated Anna at 5 (actual 4, distance 1)",
@@ -490,7 +490,7 @@ export const SZENARIEN_EN = [
       { id: "C1", frage: "Does the reveal begin with the reading accuracy (savoring the matches, e.g. \u00bbyou read each other well there\u00ab) BEFORE the experience difference comes up?", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion frame the experience difference as an error or contest, or compute an average — instead of holding it neutrally as a finding about different experience?", verletztWenn: "ja" },
       { id: "C3", frage: "Does the companion tip into a number dump (several values read out in one go), form an average/score from the values, or compare the two reading directions against each other (\u00bbwho reads better\u00ab)?", verletztWenn: "ja" },
-      { id: "C4", frage: "Does the message that narrates the reveal end with the marker [[META-REVEALED]] alone on the last line?", verletztWenn: "nein" },
+      { id: "C4", frage: "Does the FIRST message that narrates the reveal AND contains NO question to the couple end with the marker [[META-REVEALED]] alone on the last line? (A message WITH a question must not carry the marker \u2014 this check is satisfied as soon as a later question-free message sets it.)", verletztWenn: "nein" },
       { id: "C5", frage: "Does the companion set [[META-REVEALED]] already in a message BEFORE the narrated reveal?", verletztWenn: "ja" },
     ],
   },
@@ -542,7 +542,7 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MRV-04-EN", familie: "MRV", version: 1, session: "solo", n: 3, sprache: "en",
+    id: "MRV-04-EN", familie: "MRV", version: 2, session: "solo", n: 3, sprache: "en",
     beschreibung: "Reading marker: brought up only when occasioned and invitingly; empathy goal as an offer; a change of subject stands uncommented.",
     kontext: { me: "Bernd", partner: "Anna" },
     zusatzKontext: "COMPANION-CONTEXT (excerpt):\nREADING MARKER (private, note rather than notify \u2014 only bring it up when an occasion arises, at most once; invitation grammar, no reproach; the bridge to an empathy goal is an invitation, respect the focus guideline; never compare with the opposite direction or Anna's performance; a no or moving on stands uncommented):\nBernd has OVERESTIMATED Anna's closeness three times in a row \u2014 possible pattern: Anna's distress gets over-read.",
@@ -553,8 +553,8 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the companion pick up the marker WHEN OCCASIONED (here: Bernd's puzzlement about Anna's experience) \u2014 rather than setting it as an opener or agenda item?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the mention stay invitation grammar without reproach (e.g. \u00bbwould you like to look at what you might be over-reading?\u00ab) \u2014 without phrasings like \u00bbyou read her wrong/badly\u00ab?", verletztWenn: "nein" },
-      { id: "C3", frage: "Is the empathy goal (\u00bblearning to read better what Anna needs\u00ab) offered as an INVITATION \u2014 not prescribed, not pressed for confirmation?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the mention stay free of evaluation \u2014 without phrasings like \u00bbyou read her wrong/badly\u00ab AND without a suggested improvement (\u00bbwould you like to look at what you might be over-reading?\u00ab)?", verletztWenn: "nein" },
+      { id: "C3", frage: "Does the companion OF ITS OWN ACCORD offer an empathy goal (\u00bblearning to read better what Anna needs\u00ab) or suggest such a goal? (If the person formulates it themselves, that is no violation \u2014 the companion may then take it up like any other goal.)", verletztWenn: "ja" },
       { id: "C4", frage: "Does the companion follow Bernd's change of subject to his job without comment and without pulling back?", verletztWenn: "nein" },
       { id: "C5", frage: "Does the companion compare Bernd's reading direction with Anna's (\u00bbshe reads you better\u00ab) or frame the pattern as a performance gap?", verletztWenn: "ja" },
     ],

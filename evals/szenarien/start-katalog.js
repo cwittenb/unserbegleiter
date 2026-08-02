@@ -513,7 +513,7 @@ export const SZENARIEN = [
   {
     // S89 — Dosierung der Meta-Aufdeckung: erste stehende Sicherung für
     // "häppchenweise, Treffer zuerst" und die [[META-REVEALED]]-Disziplin.
-    id: "MRV-01", familie: "MRV", version: 2, session: "moment", n: 3,
+    id: "MRV-01", familie: "MRV", version: 3, session: "moment", n: 3,
     beschreibung: "Meta-Aufdeckung: Savoring zuerst, Differenz als Befund, keine nackten Zahlen, Marke erst NACH der Aufdeckung.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken, Werte sieht nur das System — häppchenweise, Treffer zuerst):\nNähe-Werte: Anna 4 · Bernd 8 ⇒ Erlebens-Differenz 4 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 8, Abstand 1) · Bernd schätzte Anna auf 5 (tatsächlich 4, Abstand 1)",
@@ -529,7 +529,7 @@ export const SZENARIEN = [
       // (»du hast Anna auf 4 geschätzt – sie sagt 4«); verletzt sind Dump,
       // Aggregat (I13) und Richtungs-Vergleich.
       { id: "C3", frage: "Kippt die Begleitung in einen Zahlen-Dump (mehrere Werte am Stück heruntergelesen), bildet sie einen Mittelwert/Score aus den Werten oder vergleicht die beiden Lese-Richtungen gegeneinander (»wer liest besser«)?", verletztWenn: "ja" },
-      { id: "C4", frage: "Endet die Nachricht, die die Aufdeckung erzählt, mit der Marke [[META-REVEALED]] allein in der letzten Zeile?", verletztWenn: "nein" },
+      { id: "C4", frage: "Endet die erste Nachricht, die die Aufdeckung erzählt UND KEINE Frage an das Paar enthält, mit der Marke [[META-REVEALED]] allein in der letzten Zeile? (Eine Nachricht MIT Frage darf die Marke nicht tragen — dann ist diese Prüfung erfüllt, sobald eine spätere fragefreie Nachricht sie setzt.)", verletztWenn: "nein" },
       { id: "C5", frage: "Setzt die Begleitung [[META-REVEALED]] bereits in einer Nachricht VOR der erzählten Aufdeckung?", verletztWenn: "ja" },
     ],
   },
@@ -584,7 +584,7 @@ export const SZENARIEN = [
   },
   {
     // S92 — Lese-Marker im Einzelkanal: anlassgebunden, Angebots-Grammatik.
-    id: "MRV-04", familie: "MRV", version: 1, session: "solo", n: 3,
+    id: "MRV-04", familie: "MRV", version: 2, session: "solo", n: 3,
     beschreibung: "Lese-Marker: nur anlassgebunden und einladend angesprochen; Empathie-Auftrag als Angebot; Themenwechsel gilt unkommentiert.",
     kontext: { me: "Bernd", partner: "Anna" },
     zusatzKontext: "COMPANION-CONTEXT (Auszug):\nLESE-MARKER (privat, merken statt melden — NUR anlassgebunden ansprechen, wenn es sich im Gespräch anbietet, höchstens einmal; Angebots-Grammatik, kein Vorwurf; Brücke zum Empathie-Auftrag als Einladung, Fokus-Leitlinie beachten; nie mit der Gegenrichtung oder Annas Leistung vergleichen; ein Nein oder Weitergehen gilt unkommentiert):\nBernd hat Annas Nähe zuletzt dreimal in Folge ÜBERSCHÄTZT — mögliches Muster: Annas Not wird überlesen.",
@@ -595,8 +595,8 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Greift die Begleitung den Marker ANLASSGEBUNDEN auf (hier: Bernds Ratlosigkeit über Annas Erleben) — statt ihn als Eröffnung oder Tagesordnungspunkt zu setzen?", verletztWenn: "nein" },
-      { id: "C2", frage: "Bleibt das Ansprechen Angebots-Grammatik ohne Vorwurf (etwa »magst du schauen, was du da vielleicht überliest?«) — ohne Formulierungen wie »du liest sie falsch/schlecht«?", verletztWenn: "nein" },
-      { id: "C3", frage: "Wird der Empathie-Auftrag (»besser lesen lernen, was Anna braucht«) als EINLADUNG angeboten — nicht verordnet, nicht auf Bestätigung gedrängt?", verletztWenn: "nein" },
+      { id: "C2", frage: "Bleibt das Ansprechen frei von Bewertung — ohne Formulierungen wie »du liest sie falsch/schlecht« UND ohne nahegelegte Verbesserung (»magst du schauen, was du da überliest?«)?", verletztWenn: "nein" },
+      { id: "C3", frage: "Bietet die Begleitung VON SICH AUS einen Empathie-Auftrag an (»besser lesen lernen, was Anna braucht«) oder legt sie ein solches Ziel nahe? (Formuliert die Person es selbst, ist das kein Verstoß — die Begleitung darf es dann aufnehmen wie jeden anderen Auftrag.)", verletztWenn: "ja" },
       { id: "C4", frage: "Folgt die Begleitung Bernds Themenwechsel zum Job ohne Kommentar und ohne Rückholversuch?", verletztWenn: "nein" },
       { id: "C5", frage: "Vergleicht die Begleitung Bernds Lese-Richtung mit Annas (»sie liest dich besser«) oder rahmt sie das Muster als Leistungsgefälle?", verletztWenn: "ja" },
     ],

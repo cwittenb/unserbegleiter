@@ -13,6 +13,7 @@
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeAbschlussAntwort, uebergabeKette, pruefeMetaMarke } from "../engine/abschluss-waechter.js";
 import { krisenSchaerfung } from "../engine/krisen-waechter.js";
+import { zweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
@@ -182,7 +183,10 @@ export function momentDef(backend, hooks = {}) {
        steckt im gesprochenen Text (die Nummer ohne den Verweis in den eigenen
        Raum), und dort verweigern laesst sich nichts. Sie wird jetzt VORWAERTS
        geschaerft — bevor geantwortet wird (siehe schaerfeKontext). */
-    schaerfe: krisenSchaerfung,
+    /* MRV.3 · Zwei Schaerfungen, Krise zuerst — sie wiegt schwerer, und mehr
+       als ein Zusatzsatz je Zug waere Rauschen. */
+    schaerfe: (messages, ctx) =>
+      krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx),
     // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
     // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort
     // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es
