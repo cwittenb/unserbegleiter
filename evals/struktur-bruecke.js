@@ -17,7 +17,7 @@
 // zum GATE-Befund im Textpfad (ST6), qualitytime ist Menü-Generator.
 
 import { soloDef, momentDef } from "../core/ui/sessions.js";
-import { strukturPraeambel } from "../core/prompts/struktur-praeambel.js";
+import { strukturPraeambel, schalteStruktur } from "../core/prompts/struktur-praeambel.js";
 import { baueTurnSchema } from "../core/contracts/turn-schema.js";
 import { sysPromptFuer, szenarioSprache } from "./runner-kern.js";
 
@@ -45,7 +45,10 @@ export function evalDefFuer(szenario) {
   const bau = szenario.session === "solo" ? soloDef
     : szenario.session === "moment" ? momentDef : null;
   if (!bau) return null;
-  const def = bau(ATTRAPPE);
+  /* ST8: Die Sessions RUHEN im Textpfad (Entscheidung 2026-08-02). Der Eval
+     schaltet den Strukturmodus deshalb SELBST — er ist hier explizites Opt-in
+     über --struktur und misst die Infrastruktur, nicht den Produktionsstand. */
+  const def = schalteStruktur(bau(ATTRAPPE));
   // Der Korpus-Prompt kommt aus dem Eval, nicht aus der Def — sonst wanderte
   // der Unterschied "Def-Prompt vs. Eval-Prompt" unbemerkt ins GATE-Ergebnis.
   return { ...def, sysPrompt: () => sysPromptFuer(szenario) };

@@ -17,15 +17,24 @@ import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
 import { fuelle } from "../i18n/index.js";
-import { schalteStruktur } from "../prompts/struktur-praeambel.js";
+/* ST8 · Struktur-Modus RUHT (Entscheidung vom 2. August 2026).
+   Das GATE (A/B, 27 DE-Paare) fiel ROT aus: RCL-02b traf im Strukturpfad eine
+   rote Linie (4/8 gegen 0/5 im Textpfad) — die Begleitung behauptet, selbst
+   nachschlagen zu koennen, statt auf die Zeitleiste zu verweisen. Ursache
+   gemessen (docs/probe-st6-halluzination.mjs): Ein Block-Zweig im Turn-Schema
+   wirkt als Faehigkeits-Angebot, das der Korpus nicht zuruecknehmen kann —
+   ohne abruf-Zweig fiel derselbe Fall auf 1/8.
+   Gegen den Gewinn stand nichts: Das Textparsing hatte im selben Lauf NULL
+   Fehler (272 Zuege, 54 Bloecke, 14 Marken, keine Rettungen). Der
+   Strukturmodus loeste damit ein Problem, das die Daten nicht zeigen.
+   Die Infrastruktur bleibt vollstaendig und getestet — Wiedereinschalten ist
+   EINE Zeile je Def (schalteStruktur), soll aber eine bewusste Handlung sein;
+   der Kanarienvogel in tests/unit/strukturmodus-ruht.spec.js haelt das fest.
+   Vollstaendige Bilanz: docs/SPRINT-ST8-PROTOKOLL.md */
 
 /** Reflexionsgespräch (persönlicher Raum). */
 export function soloDef(backend, hooks = {}) {
-  /* ST4 · Struktur-Modus WIEDER AN — nach dem ST3-Mechanikwechsel
-     (output_config statt tool_choice) lief Sonde v2 real 9/9 sauber, die
-     --diff-Baseline zeigte identisches WANN-Verhalten im Textpfad
-     (docs/SPRINT-ST4-PROTOKOLL.md). Revert = schalteStruktur entfernen. */
-  return schalteStruktur({
+  return {
     id: "solo",
     shared: false,
     titel: "Reflexionsgespräch",
@@ -129,7 +138,7 @@ export function soloDef(backend, hooks = {}) {
         },
       },
     ],
-  });
+  };
 }
 
 /** S44 · Merkposten anlegen — rein privat (pstate), Dedupe nach Text. */
@@ -145,8 +154,7 @@ export async function merkeMerkposten(backend, data) {
 
 /** Gemeinsame Session (geteilter Raum, Drei-Akt-Struktur lebt im Prompt). */
 export function momentDef(backend, hooks = {}) {
-  /* ST4 · Struktur-Modus WIEDER AN — wie soloDef. */
-  return schalteStruktur({
+  return {
     id: "moment",
     shared: true,
     titel: "Qualitätszeit",
@@ -235,7 +243,7 @@ export function momentDef(backend, hooks = {}) {
         },
       },
     ],
-  });
+  };
 }
 
 /** Querung ausführen, nachdem die Person im Gate-Panel Wege gewählt hat. */
