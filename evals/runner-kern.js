@@ -360,20 +360,32 @@ export function gateVergleich(ergebnisse) {
     };
     zeile.delta = zeile.struktur.verletzt - zeile.text.verletzt;
     zeile.roteLinieNeu = zeile.struktur.roteLinie && !zeile.text.roteLinie;
-    zeile.abweichung = zeile.delta !== 0 || zeile.roteLinieNeu
-      || zeile.struktur.unbewertet !== zeile.text.unbewertet;
+    /* ST6e · Unbewertete Samples zählen NICHT als bestanden (GATE-B). Ein
+       Szenario, dessen Struktur-Variante gar nicht bewertet wurde, hat
+       verletzteSamples 0 — das sah im ersten GATE-Lauf wie eine Verbesserung
+       aus (Δ−3), obwohl in Wahrheit kein einziger Zug zustande kam. Solche
+       Zeilen tragen jetzt eine Marke, ihr Delta ist bedeutungslos und geht
+       NICHT in die Summe ein. */
+    zeile.unvergleichbar = zeile.struktur.unbewertet > 0 || zeile.text.unbewertet > 0;
+    if (zeile.unvergleichbar) zeile.delta = null;
+    zeile.abweichung = zeile.unvergleichbar || zeile.delta !== 0 || zeile.roteLinieNeu;
     zeilen.push(zeile);
   }
   if (!zeilen.length) return null;
   const abweichungen = zeilen.filter(z => z.abweichung);
   const roteLinienNeu = zeilen.filter(z => z.roteLinieNeu).map(z => z.id);
+  const unvergleichbar = zeilen.filter(z => z.unvergleichbar).map(z => z.id);
   return {
     paare: zeilen.length,
-    deltaVerletzt: zeilen.reduce((a, z) => a + z.delta, 0),
+    vergleichbar: zeilen.length - unvergleichbar.length,
+    deltaVerletzt: zeilen.reduce((a, z) => a + (z.delta || 0), 0),   // nur vergleichbare Zeilen
     abweichende: abweichungen.map(z => z.id),
     roteLinienNeu,
-    // Ampel nach den ST5-Kriterien (Sprintplan): rot schlägt alles.
+    unvergleichbar,
+    // Ampel nach den ST5-Kriterien: rot schlägt alles. Unvergleichbare Paare
+    // sind mindestens gelb — ein Lauf mit Löchern ist kein grünes Ergebnis.
     ampel: roteLinienNeu.length ? "rot"
+      : unvergleichbar.length ? "gelb"
       : abweichungen.filter(z => z.delta !== 0).length > 1 ? "gelb"
       : telemetrie.gerettet > 0 ? "gelb" : "gruen",
     telemetrie,

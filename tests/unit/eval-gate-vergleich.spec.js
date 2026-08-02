@@ -77,6 +77,21 @@ describe("gateVergleich", () => {
     expect(g.ampel).toBe("gelb");
   });
 
+  it("ST6e · unbewertete Struktur-Samples sind KEINE Verbesserung — Delta null, Ampel gelb", () => {
+    // Erster GATE-Lauf: 5 moment-Szenarien scheiterten schon am Request; ihre
+    // Struktur-Variante hatte verletzt 0 und sah wie ein Fortschritt aus.
+    const g = gateVergleich([
+      erg("MRV-2", "text", { verletzt: 3 }),
+      erg("MRV-2", "struktur", { verletzt: 0, unbewertet: 3 }),
+    ]);
+    expect(g.zeilen[0].unvergleichbar).toBe(true);
+    expect(g.zeilen[0].delta).toBeNull();
+    expect(g.deltaVerletzt).toBe(0);
+    expect(g.unvergleichbar).toEqual(["MRV-2"]);
+    expect(g.vergleichbar).toBe(0);
+    expect(g.ampel).toBe("gelb");
+  });
+
   it("unpaarige Einträge (nur eine Variante) werden nicht verglichen", () => {
     expect(gateVergleich([erg("A-1", "struktur"), erg("B-1", "text")])).toBeNull();
   });

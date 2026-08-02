@@ -51,7 +51,31 @@ export function anthropicSoDialekt(knoten) {
 
   const raus = {};
   for (const [k, v] of Object.entries(rest)) raus[k] = anthropicSoDialekt(v);
-  if (raus.type === "object" && raus.properties && !("additionalProperties" in raus))
-    raus.additionalProperties = false;
+
+  /* (d) FREIE WÖRTERBÜCHER (ST6e): Ein Knoten {type:"object"} OHNE properties
+     beschreibt ein Objekt mit dynamischen Schlüsseln — etwa
+     AUFTRAG-BLOCK/changes[].baseline, semantisch {Name:number}. Der
+     Grammatik-Compiler kann das nicht übersetzen; der Request scheitert mit 400.
+     Im GATE-Lauf vom 2026-08-01 traf das ALLE fünf moment-Szenarien: 15 Samples
+     ohne einen einzigen Zug, sichtbar erst bei der Bergung.
+     Behandlung nach Pflichtigkeit — und niemals still:
+       · OPTIONAL  → das Feld entfällt im generierten Schema. Der Vertrag bleibt
+                     gewahrt, denn die semantische Wahrheit ist der JS-Validator
+                     (Rollenteilung ST1); liefert das Modell den Wert nicht, ist
+                     das erlaubt. Der Textpfad ist unberührt.
+       · PFLICHT   → WURF. Ein Pflichtfeld stillschweigend zu streichen würde den
+                     Vertrag brechen; hier muss das JSON-Pendant konkretisiert
+                     werden (z. B. feste properties statt freiem Wörterbuch). */
+  if (raus.type === "object" && raus.properties) {
+    const pflicht = new Set(raus.required || []);
+    for (const [name, feld] of Object.entries(raus.properties)) {
+      if (!feld || feld.type !== "object" || feld.properties) continue;
+      if (pflicht.has(name))
+        throw new Error("Schema-Dialekt: Pflichtfeld \"" + name + "\" ist ein freies Objekt ohne properties — " +
+          "für Structured Outputs nicht übersetzbar. JSON-Pendant konkretisieren (schemas-json.js).");
+      delete raus.properties[name];
+    }
+    if (!("additionalProperties" in raus)) raus.additionalProperties = false;
+  }
   return raus;
 }

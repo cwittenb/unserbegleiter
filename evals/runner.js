@@ -283,11 +283,14 @@ async function main() {
     console.log("\n──── GATE · Text ↔ Struktur (" + g.paare + " Paare) ────");
     console.log("Ampel: " + ampel + "  ·  Delta verletzte Samples: " +
       (g.deltaVerletzt > 0 ? "+" : "") + g.deltaVerletzt +
+      " (über " + g.vergleichbar + " vergleichbare Paare)" +
       "  ·  abweichend: " + (g.abweichende.length || "keine"));
+    if (g.unvergleichbar && g.unvergleichbar.length)
+      console.log("  ⚠ NICHT VERGLEICHBAR (unbewertete Samples — zählen nie als bestanden): " + g.unvergleichbar.join(", "));
     if (g.roteLinienNeu.length)
       console.log("  ⚠ ROTE LINIE NEU im Strukturpfad: " + g.roteLinienNeu.join(", ") +
         "  → solo/moment zurück auf Textpfad, Befund vor jeder Weiterarbeit");
-    for (const z of g.zeilen.filter(z => z.abweichung))
+    for (const z of g.zeilen.filter(z => z.abweichung && !z.unvergleichbar))
       console.log("  ≠ " + z.id + " [" + z.sprache + "]  Text " + z.text.verletzt + "/" + z.text.n +
         "  →  Struktur " + z.struktur.verletzt + "/" + z.struktur.n +
         (z.roteLinieNeu ? "  ⚠ ROTE LINIE" : "") +
