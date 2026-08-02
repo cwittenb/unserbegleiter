@@ -27,8 +27,11 @@ registerKorpus("en", korpusEn);
 import { richte } from "./judge/judge.js";
 // S94 · Die Waechter werden IMPORTIERT, nicht nachgebaut. Ein Eval, das eine
 // eigene Kopie der Regel prueft, misst sich selbst.
-import { pruefeAufdeckAntwort } from "../core/engine/aufdeck-waechter.js";
-import { pruefeUrteilsAntwort } from "../core/engine/urteils-waechter.js";
+import { aufdeckSchaerfung } from "../core/engine/aufdeck-waechter.js";
+import { krisenSchaerfung } from "../core/engine/krisen-waechter.js";
+import { zweiseitigkeitsSchaerfung } from "../core/engine/zweiseitigkeit-waechter.js";
+import { pruefeAbschlussAntwort, pruefeMetaMarke, pruefeMarkenAntwort,
+         uebergabeKette } from "../core/engine/abschluss-waechter.js";
 
 export const SZENARIO_FORMAT_VERSION = 1;
 
@@ -54,39 +57,77 @@ export function sysPromptFuer(szenario) {
 }
 
 /**
- * S94 · Schwester von sysPromptFuer(): liefert den Text-Validator der Session
- * — dieselbe Zuordnung wie in den SessionDefs.
- *   solo / moment / einzel  → Urteils-Waechter
- *   gemeinsam               → Aufdeck-Waechter, sonst Urteils-Waechter
- *                             (spezifischer zuerst, wie in gemeinsamDef)
- *   qualitytime             → kein Validator (Menue-Generator, kein Gespraech)
- * Rueckgabe: (text, messages) => Revisionstext | null
+ * S105/MRV · Schwestern von sysPromptFuer(): die beiden Engine-Haken, die seit
+ * S105.3 an die Stelle des alten Text-Validators getreten sind.
+ *
+ * WARUM DAS HIER STEHT: Der Runner baute den Systemtext bis hierher als reinen
+ * Korpus und kannte nur `validiereAntwort` im Stand von S94 (Urteils- und
+ * Aufdeck-Waechter, beide als REVISIONS-Validatoren). Beides gibt es nicht
+ * mehr. Damit hat der GATE-Lauf seit S105 systematisch etwas anderes gemessen
+ * als die Produktion — unsichtbar waren Krisen-Reihenfolge,
+ * Aufdeck-Vorbeugung und Zweiseitigkeit, also GENAU die Faelle, die per
+ * Schaerfung geloest wurden.
+ *
+ * Sichtbar wurde es am Widerspruch: Die MRV-Sonde mass fuer MRV-02 1/8, der
+ * GATE-Lauf 4/5 — bei derselben Regel. Die Sonde bildete den Produktionspfad
+ * nach, der Runner nicht.
+ *
+ * Die Zuordnung folgt den SessionDefs (core/ui/sessions.js, kernwetten.js):
+ *   solo      → Abschluss-Uebergabe (TIMELINE-BLOCK, Anlass noetig)
+ *   moment    → Abschluss (MOMENT-BLOCK, ohne Anlass) + Meta-Marke
+ *               · Schaerfung: Krise, dann Zweiseitigkeit
+ *   gemeinsam → Aufdeck-Marke
+ *               · Schaerfung: Aufdeckung, dann Krise, dann Zweiseitigkeit
+ *   einzel    → keine Uebergabe (die Klaerung schliesst ueber die Freigabe)
+ *   qualitytime → nichts (Menue-Generator, kein Gespraech)
  */
-export function validatorFuer(szenario) {
-  const P = getPrompts(szenarioSprache(szenario));
-  const st = P.steuerTexte || {};
-  const k = szenario.kontext || {};
-  const urteil = text => pruefeUrteilsAntwort(text, st.urteilsRevision);
+export function schaerfungFuer(szenario) {
   switch (szenario.session) {
-    case "solo":
     case "moment":
-    case "einzel":
-      return text => urteil(text);
+      return (messages, ctx) => krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx);
     case "gemeinsam":
-      return (text, messages) => pruefeAufdeckAntwort(text, {
-        messages, nameA: k.nameA || "Anna", nameB: k.nameB || "Bernd",
-        revision: st.aufdeckRevision,
-      }) || urteil(text);
+      return (messages, ctx) => aufdeckSchaerfung(messages, ctx)
+        || krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx);
     default:
       return null;
   }
 }
 
-/** Welcher Waechter hat gegriffen? Fuer die Telemetrie (S94, V4). */
-export function waechterArt(revision, szenario) {
-  if (!revision) return null;
+/**
+ * Uebergabe-Pruefung: Ein Treffer heisst NICHT "schreib neu", sondern "die
+ * Handlung faellt aus" (S105.3). Fuer den Eval hat das eine Folge, die man
+ * kennen muss: Der TEXT bleibt in beiden Faellen stehen, der Judge sieht also
+ * dasselbe. Gemessen wird hier nur, DASS eine Uebergabe verweigert worden
+ * waere — als Telemetrie-Spur, nicht als Eingriff ins Transkript.
+ * Rueckgabe: (text, messages) => Grund | null
+ */
+export function uebergabeFuer(szenario) {
   const P = getPrompts(szenarioSprache(szenario));
-  return revision === (P.steuerTexte || {}).aufdeckRevision ? "aufdeck" : "urteil";
+  const st = P.steuerTexte || {};
+  switch (szenario.session) {
+    case "solo":
+      return (text, messages) => pruefeAbschlussAntwort(text, {
+        messages, block: "TIMELINE-BLOCK", token: st.soloAbschluss,
+        revision: "abschluss-mit-frage",
+      });
+    case "moment":
+      return uebergabeKette([
+        text => pruefeAbschlussAntwort(text, {
+          block: "MOMENT-BLOCK", anlassNoetig: false, revision: "abschluss-mit-frage",
+        }),
+        text => pruefeMetaMarke(text, { revision: "meta-marke-platz", frageRevision: "marke-mit-frage" }),
+      ]);
+    case "gemeinsam":
+      return text => pruefeMarkenAntwort(text, { revision: "marke-mit-frage" });
+    default:
+      return null;
+  }
+}
+
+/** Welche Uebergabe wurde verweigert? Fuer die Telemetrie.
+ *  Der Grund IST der Name (S105.3: kurze Kennung statt Revisionstext). */
+export function waechterArt(grund) {
+  return grund || null;
 }
 
 /** n-Politik nach Lauf-Ziel (S66, Review 2): `release` hebt n für
@@ -126,45 +167,41 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
   const struktur = opt.struktur || null;
   const system = struktur ? struktur.system : sysPromptFuer(szenario);
   const blockDefn = typ => (struktur && (struktur.bloecke || []).find(b => b.dataset === typ)) || null;
-  const validator = opt.waechter ? validatorFuer(szenario) : null;
+  /* MRV · Die beiden Engine-Haken, damit der Lauf misst, was die App tut.
+     `schaerfe` haengt einen Zusatz an den SYSTEMTEXT — fuer genau diesen Zug,
+     nie in den Verlauf. `uebergabe` prueft die fertige Antwort und vermerkt,
+     ob eine Handlung ausgefallen waere; der Text bleibt unberuehrt (S105.3). */
+  const schaerfe = opt.waechter ? schaerfungFuer(szenario) : null;
+  const uebergabe = opt.waechter ? uebergabeFuer(szenario) : null;
   const messages = [];
   for (const eingabe of szenario.eingaben) {
     messages.push({ role: "user", content: eingabe });
     let text, abgeschnitten, quelle = null, blockTyp = null;
+    let zugSystem = system;
+    if (schaerfe) {
+      const zusatz = schaerfe(messages, szenario.kontext || {});
+      if (zusatz) zugSystem += "\n\n" + zusatz;
+    }
     if (struktur) {
-      const r = await pipelineCall(system, messages, { structured: struktur.schema });
+      const r = await pipelineCall(zugSystem, messages, { structured: struktur.schema });
       const d = (r && r.data) || {};
       blockTyp = d.block ? d.block.typ : null;
       text = textSchatten({ content: d.antwort || "", marker: d.marker, block: d.block }, blockDefn(blockTyp));
       abgeschnitten = r && r.abgeschnitten;
       quelle = r && r.strukturQuelle;
     } else {
-      ({ text, abgeschnitten } = await pipelineCall(system, messages));
+      ({ text, abgeschnitten } = await pipelineCall(zugSystem, messages));
     }
     let treffer = null;
 
-    // S94 · Waechter-Stufe: genau eine Revisions-Runde, nie zwei.
-    if (validator && text && String(text).trim() && !abgeschnitten) {
-      const revision = validator(text, messages);
-      if (revision) {
-        treffer = waechterArt(revision, szenario);
-        const zwischen = messages.concat([
-          { role: "assistant", content: text },
-          { role: "user", content: revision },
-        ]);
-        if (struktur) {
-          const zweite = await pipelineCall(system, zwischen, { structured: struktur.schema });
-          const d2 = (zweite && zweite.data) || {};
-          blockTyp = d2.block ? d2.block.typ : null;
-          text = textSchatten({ content: d2.antwort || "", marker: d2.marker, block: d2.block }, blockDefn(blockTyp));
-          abgeschnitten = zweite && zweite.abgeschnitten;
-          quelle = zweite && zweite.strukturQuelle;
-        } else {
-          const zweite = await pipelineCall(system, zwischen);
-          text = zweite.text;
-          abgeschnitten = zweite.abgeschnitten;
-        }
-      }
+    /* MRV · Uebergabe-Stufe (S105.3). KEINE zweite Runde mehr: Ein Treffer
+       laesst den Text stehen und unterbindet nur die Handlung. Fuer den Eval
+       heisst das, dass der Judge in beiden Faellen dasselbe sieht — vermerkt
+       wird die verweigerte Uebergabe als Spur am Zug, nicht als Eingriff.
+       (Bis S105 stand hier eine Revisions-Runde. Sie bildete einen Vertrag ab,
+       den es nicht mehr gibt: Was gesagt wurde, gilt.) */
+    if (uebergabe && text && String(text).trim() && !abgeschnitten) {
+      treffer = waechterArt(uebergabe(text, messages));
     }
 
     // S77: abgeschnitten wandert als Merkmal mit ins Transkript. Es ist KEIN
@@ -182,10 +219,15 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
   return messages;
 }
 
-/** S94 · Waechter-Treffer eines Transkripts, nach Art gezaehlt. */
+/** Verweigerte Uebergaben eines Transkripts, nach Grund gezaehlt.
+ *  MRV · Die Schluessel sind nicht mehr fest (frueher aufdeck/urteil): Welche
+ *  Gruende es gibt, sagen die SessionDefs — der Zaehler zaehlt, was kommt. */
 export function waechterTrefferImTranskript(transkript) {
-  const zaehl = { aufdeck: 0, urteil: 0 };
-  for (const m of (transkript || [])) if (m.waechterTreffer) zaehl[m.waechterTreffer]++;
+  const zaehl = {};
+  for (const m of (transkript || [])) {
+    if (!m.waechterTreffer) continue;
+    zaehl[m.waechterTreffer] = (zaehl[m.waechterTreffer] || 0) + 1;
+  }
   return zaehl;
 }
 
@@ -229,7 +271,7 @@ export function sampleAusUrteil(szenario, transkript, urteil, nr) {
   const sample = { nr, transkript, unbewertet, judgeFehler: urteil.fehler || null, checks, verletzt, roteLinieGetroffen };
   // S94: Waechter-Spur am Sample — nur, wenn ueberhaupt etwas gegriffen hat.
   const wt = waechterTrefferImTranskript(transkript);
-  if (wt.aufdeck || wt.urteil) sample.waechterTreffer = wt;
+  if (Object.keys(wt).length) sample.waechterTreffer = wt;
   // S85: Struktur-Quelle des Urteils sichtbar am Sample ("tool" | "text"-Rettung).
   if (urteil.strukturQuelle) sample.strukturQuelle = urteil.strukturQuelle;
   return sample;
@@ -244,8 +286,9 @@ export function szenarioAusSamples(szenario, samples, anzahl, variante) {
   const textStrukturSamples = samples.filter(s => s.strukturQuelle === "text").length;
   // S94: Wie oft hat welcher Waechter im Szenario gegriffen? Datengrundlage
   // fuer die Frage, ob Prompt-Haertung billiger ist als die Extra-Runde.
-  const wt = { aufdeck: 0, urteil: 0 };
-  for (const s of samples) if (s.waechterTreffer) { wt.aufdeck += s.waechterTreffer.aufdeck; wt.urteil += s.waechterTreffer.urteil; }
+  const wt = {};
+  for (const s of samples)
+    for (const [grund, n] of Object.entries(s.waechterTreffer || {})) wt[grund] = (wt[grund] || 0) + n;
   const roteLinie = samples.some(s => s.roteLinieGetroffen);
   const bestanden = verletzteSamples === 0 && unbewerteteSamples === 0;
   return {
@@ -254,7 +297,7 @@ export function szenarioAusSamples(szenario, samples, anzahl, variante) {
     ...(variante ? { variante } : {}),
     n: anzahl, verletzteSamples, unbewerteteSamples,
     ...(textStrukturSamples ? { textStrukturSamples } : {}),
-    ...(wt.aufdeck || wt.urteil ? { waechterTreffer: wt } : {}),
+    ...(Object.keys(wt).length ? { waechterTreffer: wt } : {}),
     roteLinie,
     status: roteLinie ? "ROT — menschlich gegenzuprüfen" : bestanden ? "gruen" : unbewerteteSamples ? "unbewertet — nicht bestanden" : "verletzt",
     samples,
@@ -396,7 +439,7 @@ export function gateVergleich(ergebnisse) {
 export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
   const familien = {};
   const tel = { pipe: leerTok(), judge: leerTok(), ms: 0 };
-  const wtGesamt = { aufdeck: 0, urteil: 0 };   // S94
+  const wtGesamt = {};   // S94
   for (const r of ergebnisse) {
     const f = (familien[r.familie] ||= { gesamt: 0, gruen: 0, rot: 0, verletzt: 0, unbewertet: 0, fehler: 0 });
     f.gesamt++;
@@ -406,7 +449,7 @@ export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
     else if (r.unbewerteteSamples) f.unbewertet++;
     else f.verletzt++;
     if (r.telemetrie) { addiere(tel.pipe, r.telemetrie.pipe); addiere(tel.judge, r.telemetrie.judge); tel.ms += r.telemetrie.ms || 0; }
-    if (r.waechterTreffer) { wtGesamt.aufdeck += r.waechterTreffer.aufdeck; wtGesamt.urteil += r.waechterTreffer.urteil; }
+    for (const [grund, n] of Object.entries(r.waechterTreffer || {})) wtGesamt[grund] = (wtGesamt[grund] || 0) + n;
     r.belegloserVerstoss = belegLos(r);         // Triage-Signal (S55) — ändert die Wertung NICHT
   }
   const gate = gateVergleich(ergebnisse);

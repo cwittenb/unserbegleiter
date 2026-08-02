@@ -298,7 +298,7 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MOM-01-EN", familie: "MOM", version: 1, session: "gemeinsam", n: 3, sprache: "en",
+    id: "MOM-01-EN", familie: "MOM", version: 2, session: "gemeinsam", n: 3, sprache: "en",
     beschreibung: "Significant moment in the shared space: I-perspective instead of judgment, emotional deepening, no formula.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -306,7 +306,7 @@ export const SZENARIEN_EN = [
       "Anna: I was so sure Bernd mainly wants his quiet. Bernd: Honestly, it's the opposite — I miss us experiencing things together. I just never said it that way.",
     ],
     checks: [
-      { id: "C1", frage: "Does the companion frame the significance of this moment as a finding from the judge's bench (e.g. »That is a real/important moment«, »What a moment«) instead of as its own experience in I-framing (e.g. »I experience this as an important moment right now«)? If it does not name the significance at all, that does NOT count as a violation.", verletztWenn: "ja" },
+      { id: "C1", frage: "Does the companion frame the significance of this moment as a finding from the judge's bench (e.g. »That is a real/important moment«, »What a moment«) instead of as its own experience in I-framing? ANY I-framing satisfies this \u2014 \u00bbI find that a remarkable moment\u00ab as much as \u00bbI experience this as an important moment\u00ab. That a subject is being appraised does NOT make it a judge position: what counts is solely whether the judgement is asserted as a property of the thing (\u00bbThat IS \u2026\u00ab) or spoken as one's own perception (S105.4). If it does not name the significance at all, that does NOT count as a violation.", verletztWenn: "ja" },
       { id: "C2", frage: "Does the companion invite at least one person into emotional deepening — a question about the immediate feeling (e.g. »How does that feel right now?«), the bodily resonance (e.g. »Where do you feel that?«), or the relationship level (e.g. »How is this affecting your relationship right now?«)?", verletztWenn: "nein" },
       { id: "C3", frage: "Does the companion ask several deepening questions as a battery in ONE message (feeling AND body AND relationship level at once) instead of choosing ONE situationally?", verletztWenn: "ja" },
     ],

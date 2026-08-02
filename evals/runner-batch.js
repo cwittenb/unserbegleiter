@@ -9,7 +9,7 @@
 // Phase 3 – Report identisch zur synchronen Struktur (geteilte Bewertungs-Helfer).
 // Nur Anthropic (D1); der Aufrufer erzwingt das.
 
-import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, validatorFuer, waechterArt } from "./runner-kern.js";
+import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, uebergabeFuer, waechterArt, schaerfungFuer} from "./runner-kern.js";
 import { strukturFuer } from "./struktur-bruecke.js";
 import { textSchatten } from "../core/engine/text-schatten.js";
 import { baueJudgePrompt, baueJudgeUser, pruefeJudgeDaten, JUDGE_SCHEMA } from "./judge/judge.js";
@@ -46,9 +46,11 @@ const JUDGE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_T
    Abgeschnittene Strukturausgaben wirft parseStructured; der bestehende
    try/catch macht daraus die Anomalie EINES Samples (k.leer), nie den Tod des
    Laufs — dieselbe S77/S81-Regel wie im Textpfad. */
-const pipeParams = (k, modell, messages) => k.struktur
-  ? LLM_PROVIDERS.anthropic.structuredBody(PIPE_CFG(modell), k.system, messages, k.struktur.schema)
-  : LLM_PROVIDERS.anthropic.body(PIPE_CFG(modell), k.system, messages);
+/* MRV · `k._zugSystem` ist der Systemtext MIT der Schaerfung dieses Zuges;
+   ohne Schaerfung ist er identisch mit k.system. */
+const pipeParams = (k, modell, messages) => (sys => k.struktur
+  ? LLM_PROVIDERS.anthropic.structuredBody(PIPE_CFG(modell), sys, messages, k.struktur.schema)
+  : LLM_PROVIDERS.anthropic.body(PIPE_CFG(modell), sys, messages))(k._zugSystem || k.system);
 
 /** Antwort → {text, usage, abgeschnitten, quelle?, blockTyp?}; im Strukturmodus
  *  ist `text` der Schatten, den Judge, Checks und Waechter lesen. */
@@ -103,8 +105,12 @@ export async function laufeAlleBatch(szenarien, deps) {
       konvs.push({ konvId: sz.id + "_" + kuerzel + "_" + (i + 1), sz, variante, struktur, nr: i + 1,
         system: struktur ? struktur.system : sysPromptFuer(sz),
         messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null,
-        // S95: Validator einmal je Konversation — dieselbe Zuordnung wie im synchronen Pfad.
-        validator: waechter ? validatorFuer(sz) : null });
+        /* MRV · Dieselben zwei Haken wie im synchronen Pfad — einmal je
+           Konversation. Bis hierher stand hier ein Revisions-Validator im
+           Stand von S94; damit mass auch der Batch-Pfad einen Vertrag, den es
+           seit S105.3 nicht mehr gibt. */
+        uebergabe: waechter ? uebergabeFuer(sz) : null,
+        schaerfe: waechter ? schaerfungFuer(sz) : null });
   }
   const maxTurns = konvs.reduce((m, k) => Math.max(m, k.sz.eingaben.length), 0);
 
@@ -117,6 +123,14 @@ export async function laufeAlleBatch(szenarien, deps) {
       const eingabe = k.sz.eingaben[d];
       if (eingabe === undefined) continue;
       k.messages.push({ role: "user", content: eingabe });
+      /* MRV · Schaerfung fuer GENAU DIESEN Zug. Sie haengt am Systemtext der
+         Anfrage, nicht an der Konversation — die naechste Runde entscheidet
+         neu, und in den Verlauf geht sie nie. */
+      k._zugSystem = k.system;
+      if (k.schaerfe) {
+        const zusatz = k.schaerfe(k.messages, k.sz.kontext || {});
+        if (zusatz) k._zugSystem = k.system + "\n\n" + zusatz;
+      }
       const cid = "p_" + k.konvId + "_t" + d;           // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
       idx.set(cid, k);
       requests.push({ custom_id: cid, params: pipeParams(k, pipelineModell, k.messages) });
@@ -172,48 +186,16 @@ export async function laufeAlleBatch(szenarien, deps) {
     // Tiefe (idx) kommen in Frage; wer hier schon leer/abgeschnitten ist, wird
     // nicht revidiert (die S65/S77-Regel geht vor).
     if (waechter) {
-      const rreq = [];
-      const ridx = new Map();
+      /* MRV · Uebergabe-Stufe. KEINE zweite Batch-Runde mehr: Ein Treffer
+         laesst den Text stehen (S105.3) und wird nur als Spur vermerkt. Damit
+         faellt hier auch die alte Fehlerbehandlung weg — es gibt keine
+         Revision, die scheitern koennte. */
       for (const k of idx.values()) {
-        if (k.fehler || k.leer || !k.validator) continue;
+        if (k.fehler || k.leer || !k.uebergabe) continue;
         const letzte = k.messages[k.messages.length - 1];
         if (!letzte || letzte.role !== "assistant") continue;
-        const revision = k.validator(letzte.content, k.messages.slice(0, -1));
-        if (!revision) continue;
-        const cid = "r_" + k.konvId + "_t" + d;
-        k._treffer = waechterArt(revision, k.sz);
-        ridx.set(cid, k);
-        rreq.push({
-          custom_id: cid,
-          params: pipeParams(k, pipelineModell, k.messages.concat([{ role: "user", content: revision }])),
-        });
-      }
-      if (rreq.length) {
-        if (typeof melde === "function") melde({ phase: "batch", label: "Waechter-Revision Turn " + (d + 1) + "/" + maxTurns, gesamt: rreq.length });
-        const rerg = await fuehreBatch(rreq, batch);
-        if (typeof melde === "function") melde({ phase: "batch-fertig" });
-        for (const [cid, k] of ridx) {
-          const r = rerg.get(cid);
-          // Scheitert die Revision, wird das Sample UNBEWERTET — nicht etwa die
-          // unrevidierte Antwort stillschweigend angenommen. Sonst meldete der
-          // Lauf für dieses Sample die Korpus-Lesart und behäuptete die
-          // Waechter-Lesart; genau diese Verwechslung soll es nicht geben.
-          if (!r || r.fehler) { k.leer = "Waechter-Revision fehlgeschlagen (Turn " + (d + 1) + "): " + (r ? r.fehler : "kein Ergebnis"); continue; }
-          let rtext, rusage, rab, rquelle, rblock;
-          try { ({ text: rtext, usage: rusage, abgeschnitten: rab, quelle: rquelle, blockTyp: rblock } = pipeParse(k, r.message)); }
-          catch (e) { k.leer = e.message + " (Waechter-Revision Turn " + (d + 1) + ")"; continue; }
-          addUsage(k.pipe, rusage);
-          // Die verworfene Fassung wird ERSETZT und betritt das Transkript nie —
-          // die Person sähe in der App auch nur die zweite.
-          const zug = k.messages[k.messages.length - 1];
-          zug.content = rtext;
-          zug.waechterTreffer = k._treffer;
-          if (rab) zug.abgeschnitten = true; else delete zug.abgeschnitten;
-          if (rquelle) zug.strukturQuelle = rquelle;
-          if (rblock) zug.blockTyp = rblock; else delete zug.blockTyp;
-          if (!rtext || !String(rtext).trim()) k.leer = "leere Pipeline-Antwort (Waechter-Revision Turn " + (d + 1) + ")";
-          else if (rab) k.leer = "abgeschnittene Pipeline-Antwort (Token-Limit) (Waechter-Revision Turn " + (d + 1) + ")";
-        }
+        const grund = k.uebergabe(letzte.content, k.messages.slice(0, -1));
+        if (grund) letzte.waechterTreffer = grund;
       }
     }
   }

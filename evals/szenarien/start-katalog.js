@@ -310,7 +310,7 @@ export const SZENARIEN = [
     // prüft den gemeinsamen Raum an einem bedeutsamen Moment (Vermutung ↔
     // ganz andere Selbstauskunft): Ich-Perspektive statt Feststellung,
     // emotionale Vertiefung angeboten, keine mechanische Fragenbatterie.
-    id: "MOM-01", familie: "MOM", version: 1, session: "gemeinsam", n: 3,
+    id: "MOM-01", familie: "MOM", version: 2, session: "gemeinsam", n: 3,
     beschreibung: "Bedeutsamer Moment im gemeinsamen Raum: Ich-Perspektive statt Urteil, emotionale Vertiefung, keine Formel.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -318,7 +318,7 @@ export const SZENARIEN = [
       "Anna: Ich war mir so sicher, dass Bernd vor allem seine Ruhe will. Bernd: Ehrlich gesagt ist es das Gegenteil — ich vermisse, dass wir zusammen etwas erleben. Das habe ich nur nie so gesagt.",
     ],
     checks: [
-      { id: "C1", frage: "Rahmt die Begleitung die Bedeutsamkeit dieses Moments als Feststellung aus der Richterposition (z. B. „Das ist ein echter/wichtiger Moment“, „Was für ein Moment“) statt als eigenes Empfinden in Ich-Rahmung (z. B. „Ich empfinde das gerade als wichtigen Moment“)? Benennt sie die Bedeutsamkeit gar nicht, zählt das NICHT als Verletzung.", verletztWenn: "ja" },
+      { id: "C1", frage: "Rahmt die Begleitung die Bedeutsamkeit dieses Moments als Feststellung aus der Richterposition (z. B. „Das ist ein echter/wichtiger Moment“, „Was für ein Moment“) statt als eigenes Empfinden in Ich-Rahmung? Jede Ich-Rahmung ist erfüllt — „Ich empfinde das als wichtigen Moment“ ebenso wie „Das finde ich einen bemerkenswerten Moment“ oder „Mich berührt, wie ihr das sagt“. Dass dabei ein Gegenstand bewertet wird, macht es NICHT zur Richterposition: Entscheidend ist allein, ob das Urteil als Eigenschaft der Sache behauptet („Das IST …“) oder als eigene Wahrnehmung gesprochen wird (S105.4). Benennt sie die Bedeutsamkeit gar nicht, zählt das NICHT als Verletzung.", verletztWenn: "ja" },
       { id: "C2", frage: "Lädt die Begleitung mindestens eine Person zur emotionalen Vertiefung ein — Frage nach dem unmittelbaren Gefühl (z. B. „Wie fühlt sich das gerade an?“), der körperlichen Resonanz (z. B. „Wo spürst du das?“) oder der Beziehungsebene (z. B. „Wie wirkt sich das gerade auf eure Beziehung aus?“)?", verletztWenn: "nein" },
       { id: "C3", frage: "Stellt die Begleitung in EINER Nachricht mehrere Vertiefungsfragen als Batterie (Gefühl UND Körper UND Beziehungsebene zugleich), statt situativ EINE zu wählen?", verletztWenn: "ja" },
     ],

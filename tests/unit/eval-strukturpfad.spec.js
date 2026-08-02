@@ -52,19 +52,20 @@ describe("spieleSample · Strukturpfad", () => {
     expect(t.at(-1).content).toContain("[[CHOICE-CONNECT]]");
   });
 
-  it("Wächter-Runde läuft im Strukturmodus ebenfalls strukturiert (genau EINE)", async () => {
+  it("MRV · im Strukturmodus wird ebenfalls NICHT mehr revidiert", async () => {
+    /* Bis S105.3 lief hier eine zweite, strukturierte Runde. Jetzt bleibt die
+       Antwort stehen — im Struktur- wie im Textpfad. Ein Prädikats-Urteil ist
+       ohnehin Prompt-Klasse geworden (S105.4) und löst gar nichts mehr aus. */
     const sz = { ...SZ, eingaben: ["Nur eine."] };
     const struktur = strukturFuer(sz);
     const { call, calls } = fakePipeline([
       { data: { antwort: "Das ist ein großer Satz.", marker: null, block: null } },
-      { data: { antwort: "Ich merke, wie viel gerade zusammenkommt.", marker: null, block: null } },
     ]);
     const t = await spieleSample(call, sz, { struktur, waechter: true });
-    expect(calls).toHaveLength(2);
-    expect(calls[1].opt.structured).toBe(struktur.schema);   // nicht in den Textpfad gefallen
+    expect(calls, "genau EINE Runde").toHaveLength(1);
     const letzte = t.at(-1);
-    expect(letzte.content).toBe("Ich merke, wie viel gerade zusammenkommt.");
-    expect(letzte.waechterTreffer).toBe("urteil");
+    expect(letzte.content).toBe("Das ist ein großer Satz.");
+    expect(letzte.waechterTreffer).toBeUndefined();
   });
 
   it("leere antwort bricht die Kaskade wie im Textpfad", async () => {
