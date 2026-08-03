@@ -1318,15 +1318,10 @@ export function createApp({ doc, backend, root, diktat }) {
           backend.bstate.get("momentLog").catch(() => null),
           backend.pstate.get("merkposten").catch(() => null),
         ]);
-        /* S107 · Der Lese-Marker ist entfallen. Er meldete eine wiederkehrend
-           schwache Lese-Richtung als Material in den Einzelraum — also eine
-           Aussage ueber eine PERSON, abgeleitet aus einer Trefferquote. Mit dem
-           Empathie-Signal faellt seine Grundlage weg.
-           `leseMarker` bleibt als Parameter von baueSoloKontext bestehen (der
-           Kontext-Bauer laesst ihn schlicht aus, wenn er null ist) — so bleibt
-           die Stelle sichtbar, an der spaeter ein Nachfolger stehen koennte,
-           ohne dass jetzt etwas Halbes dasteht. */
-        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten, leseMarker: null });
+        /* S107/S109 · Der Lese-Marker ist entfallen — samt Parameter und
+           Korpus-Kopftext. Ein Nachfolge-Muster ueber das Beziehungswesen liegt
+           im Backlog (docs/designnotiz-beziehungswesen.md §5). */
+        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten });
         if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
         /* U8.6 · Der Anlass kommt NACH dem Kontext: Er verweist auf einen
            Eintrag, den der Kontext gerade eingefuehrt hat (samt {vid:…}), und

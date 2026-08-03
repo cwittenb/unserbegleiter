@@ -92,7 +92,78 @@ Dazu vier Prüfungen in `s107-beziehungswesen.spec.js` für die Reste aus §2.
 
 ---
 
-## 5 · Merkposten
+## 5 · Der Sprachschnitt-Test — die Absicherung
+
+Die Frage nach dem Fund: **Gibt es weitere Stellen, und lässt sich das generell
+absichern?**
+
+**Weitere Stellen:** Eine systematische Suche über alle vier Textquellen (Korpus
+DE/EN, i18n DE/EN, die vier Prompts) fand noch `sk.leseMarkerKopf` — den
+Kopftext des Lese-Markers, ohne Aufrufer seit S107. Entfernt, samt dem
+Parameter `leseMarker` in `baueSoloKontext`, der seither immer `null` trug.
+
+**Die Absicherung:** `tests/unit/s109-sprachschnitte.spec.js`.
+
+### Die Idee
+
+Wird eine Entscheidung getroffen (»Genauigkeits-Sprache ist raus«), gilt sie für
+den **gesamten** Korpus — nicht nur für die Stelle, an der sie umgesetzt wurde.
+Genau das lässt sich prüfen: eine Liste verbotener Wendungen mit Begründung,
+geprüft über alle Textquellen. Vorbild ist der grep-Wächter aus S35d (keine
+Modell-Literale im Code).
+
+```js
+{
+  id: "S107 · Empathie-Signal",
+  grund: "Die Lese-Genauigkeit ist als Maß verworfen — …",
+  de: /Lese-Genauigkeit|Lese-Richtung|Empathie-Signal|…/i,
+  en: /reading accuracy|reading direction|…/i,
+  wo:   ["korpus", "i18n", "moment"],
+  aber: [],
+}
+```
+
+### Warum mit Geltungsbereich und benannten Ausnahmen
+
+Ein reiner Wortlisten-Test wäre naiv. »Treffer zuerst« steht auch im
+**Auflösungs**-Prompt — dort geht es um HANDOVER-Vermutungen (G-Items gegen
+S-Items), einen Mechanismus, den es weiterhin gibt. **Gleiche Worte,
+verschiedene Sachen.** Deshalb trägt jeder Schnitt seinen Geltungsbereich, und
+Ausnahmen stehen als Liste da: Jede ist eine Behauptung, die jemand prüfen kann;
+eine stillschweigende wäre unsichtbar.
+
+Dieselbe Sorgfalt bei der Verbotsregel selbst: `KEIN EMPATHIE-AUFTRAG VON DIR`
+nennt den Begriff, den sie verbietet — das ist ihr Zweck, also eine benannte
+Ausnahme.
+
+### Zwei Selbstprüfungen
+
+Ein Verbotstest, dessen Muster nichts mehr findet, ist immer grün — auch wenn er
+ins Leere zielt. Deshalb zwei Gegenproben:
+
+* Die Muster treffen die Sätze, die vor S107 **wörtlich** im Korpus standen.
+* Sie treffen **nicht**, was weiterhin gilt (die Treffer-Phase der Auflösung).
+
+Dazu: Jeder Schnitt muss eine Begründung tragen. Ein Verbot ohne Grund wird beim
+nächsten Umbau zu Recht entfernt.
+
+### Was er leistet — und was nicht
+
+Er fängt **überholte Sprache**: Text, der eine abgeschaffte Regel weiterträgt.
+Das war der Fall bei `mk.prozessKopf` und `mein.messSub`.
+
+Er fängt **nicht** den Fall, dass zwei Stellen inhaltlich auseinanderlaufen, ohne
+dass eine verbotene Wendung fällt — etwa der MRV-01-Widerspruch aus S108 (»frage
+in die Differenz« gegen »diese Nachricht enthält keine Frage«). Dort waren beide
+Sätze für sich richtig. Für solche Fälle gibt es kein billiges Netz; sie brauchen
+das Nachlesen oder einen Lauf.
+
+**Der Test hat sich beim ersten Lauf bewährt:** Er meldete `sk.leseMarkerKopf`,
+den ich beim manuellen Durchgehen übersehen hatte.
+
+---
+
+## 6 · Merkposten
 
 Beide Fundstellen waren **verwaiste Texte** — Korpus- und i18n-Einträge, deren
 Aufrufer verschwunden ist oder deren Inhalt überholt wurde. Die Suite sieht das

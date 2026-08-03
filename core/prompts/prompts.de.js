@@ -532,7 +532,6 @@ export const korpusTexte = {
   "klaerung.vorgemerkt": "Für die Klärung vorgemerkt: ",
   "sk.kopf": "COMPANION-CONTEXT (app-intern; nicht zitieren, keine Tokens nennen — dramaturgisch einbringen):",
   "sk.merkpostenKopf": "MERKPOSTEN (offen — von dir früher vorgemerkte bedeutsame Themen; aktiv, aber behutsam wieder aufgreifen und am Sitzungsende Teilen anbieten, nie automatisch queren; Sicherheits-Weiche gilt):",
-  "sk.leseMarkerKopf": "LESE-MARKER — S107: entfällt, der Schlüssel bleibt nur, damit alte Daten nichts brechen. (privat, merken statt melden — NUR anlassgebunden ansprechen, wenn es sich im Gespräch anbietet, höchstens einmal; Angebots-Grammatik, kein Vorwurf; Brücke zum Empathie-Auftrag als Einladung, Fokus-Leitlinie beachten; nie mit der Gegenrichtung oder {partner}s Leistung vergleichen; ein Nein oder Weitergehen gilt unkommentiert):",
   "sk.materialKopf": "FREIGEGEBENES MATERIAL (gemeinsame Schicht, von beiden):",
   "sk.zeitleisteKopf": "EIGENE ZEITLEISTE (jüngste Einträge):",
   "sk.sessionsKopf": "LETZTE GEMEINSAME SESSIONS:",

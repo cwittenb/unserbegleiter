@@ -500,7 +500,6 @@ export const korpusTexte = {
   "klaerung.vorgemerkt": "Set aside for the clarification: ",
   "sk.kopf": "COMPANION-CONTEXT (app-internal; do not quote, do not name tokens — weave it in dramaturgically):",
   "sk.merkpostenKopf": "MEMOS (open — meaningful topics you noted earlier; pick them up actively but gently and offer to share at the end of the session, never crossing automatically; the concerns-switch applies):",
-  "sk.leseMarkerKopf": "READING MARKER (private, note rather than notify \u2014 only bring it up when an occasion arises, at most once; invitation grammar, no reproach; the bridge to an empathy goal is an invitation, respect the focus guideline; never compare with the opposite direction or {partner}'s performance; a no or moving on stands uncommented):",
   "sk.materialKopf": "RELEASED MATERIAL (shared layer, from both):",
   "sk.zeitleisteKopf": "OWN TIMELINE (most recent entries):",
   "sk.sessionsKopf": "RECENT SHARED SESSIONS:",

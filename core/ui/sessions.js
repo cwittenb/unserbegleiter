@@ -308,7 +308,7 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
  * freigegebenes Material BEIDER (gemeinsame Schicht), die EIGENE Zeitleiste
  * und die letzten gemeinsamen Sessions. Gibt null zurück, wenn nichts da ist
  * (kalter Start — die Begleitung eröffnet dann bei null). */
-export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkposten, leseMarker }) {
+export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkposten }) {
   const KT = key => K().korpusTexte[key];
   const teile = [];
 
@@ -318,10 +318,12 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkpost
   if (offeneMerk.length)
     teile.push(KT("sk.merkpostenKopf") + "\n" + offeneMerk.map(m => "- " + m.text).join("\n"));
 
-  // S92 · Lese-Marker (merken statt melden): vorformatierter Block inkl.
-  // Umgangsregeln im Kopf — kommt nur EINMAL je Musterlage herein (Schlüssel
-  // in pstate.leseMarker, geprüft vor dem Kontextbau in app.js).
-  if (leseMarker) teile.push(leseMarker);
+  /* S109 · Der Lese-Marker ist entfallen. Er meldete eine wiederkehrend
+     schwache Lese-Richtung in den Einzelraum — eine Aussage ueber eine PERSON,
+     abgeleitet aus einer Trefferquote. Mit dem Empathie-Signal (S107) faellt
+     seine Grundlage weg; hier standen bis zuletzt der Parameter (immer null)
+     und der Korpus-Kopftext (ohne Aufrufer). Beide entfernt.
+     Ein Nachfolge-Muster ueber das Beziehungswesen liegt im Backlog. */
 
   const aktive = ((goals && goals.items) || []).filter(a => a.status !== "closed");
   if (aktive.length)
