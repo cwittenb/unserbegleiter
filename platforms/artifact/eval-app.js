@@ -64,6 +64,10 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
           <input id="evN" class="ev-inp" inputmode="numeric" placeholder="je Szenario"></div>
       </div>
       <label style="display:block;font-size:13px;margin:10px 0">
+        <input type="checkbox" id="evWaechter" checked> Das <b>ausgelieferte System</b> messen: Schärfungen vor der Antwort (Krise, Aufdeckung, Zweiseitigkeit) und Übergabe-Prüfung danach
+      </label>
+      <div class="ev-hint" id="evWaechterHint" style="margin:-6px 0 10px 22px"></div>
+      <label style="display:block;font-size:13px;margin:10px 0">
         <input type="checkbox" id="evGleich"> Gleiches Modell für Judge und Pipeline ausdrücklich erlauben (verletzt die Judge-Trennung)
       </label>
       <button class="ev-btn primary" id="evStart">Eval-Lauf starten</button>
@@ -121,6 +125,15 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
     const nRoh = $("evN").value.trim();
     const n = nRoh ? parseInt(nRoh, 10) : undefined;
     if (nRoh && (!Number.isInteger(n) || n < 1)) { status("n muss eine positive ganze Zahl sein."); return; }
+    /* S111 · Die Lesart des Laufs: Korpus allein oder ausgeliefertes System.
+       Vorgabe hier AN — anders als beim CLI-Runner, wo der Default aus
+       Vergleichbarkeitsgruenden aus bleibt (alle Ergebnisse in
+       evals/ergebnisse/ sind ohne Waechter entstanden).
+       Im Artefakt gibt es diese Historie nicht, und wer von Hand einen Lauf
+       startet, will fast immer wissen, was die APP tut. Ohne den Haken sind
+       Krisen-Reihenfolge, Aufdeck-Vorbeugung und Zweiseitigkeit unsichtbar —
+       genau die Faelle, die per Schaerfung geloest sind. */
+    const waechter = $("evWaechter").checked;
 
     state.laeuft = true;
     $("evStart").disabled = true;
@@ -143,17 +156,17 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
       for (let i = 0; i < auswahl.length; i++) {
         aktuell = auswahl[i].id + " (" + (i + 1) + "/" + auswahl.length + ")";
         zeige();
-        ergebnisse.push(await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n }));
+        ergebnisse.push(await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n, waechter }));
       }
       // Aggregation wie laufeAlle — bewusst KEIN Gesamt-Score.
-      baueBericht(ergebnisse, pm, jm, null);
+      baueBericht(ergebnisse, pm, jm, null, waechter);
       zeigeErgebnis();
       status("Fertig. " + pCalls + " Pipeline- und " + jCalls + " Judge-Aufrufe.");
       await speichere();
     } catch (e) {
       abbruch = deutlicherFehler(e);
       if (ergebnisse.length) {                       // Teilergebnis retten — die Samples sind bezahlt
-        baueBericht(ergebnisse, pm, jm, abbruch);
+        baueBericht(ergebnisse, pm, jm, abbruch, waechter);
         zeigeErgebnis();
         await speichere();
         status("Abgebrochen nach " + ergebnisse.length + " von " + auswahl.length + " Szenarien — Teilbericht unten. " + abbruch, "ev-rot");
@@ -177,7 +190,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
     return e.message;
   }
 
-  function baueBericht(ergebnisse, pm, jm, abbruch) {
+  function baueBericht(ergebnisse, pm, jm, abbruch, waechter) {
       const familien = {};
       for (const r of ergebnisse) {
         const f = (familien[r.familie] ||= { gesamt: 0, gruen: 0, rot: 0, verletzt: 0, unbewertet: 0 });
@@ -195,6 +208,10 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
           provider: "anthropic (keyless, Artefakt)",
           pipelineModell: pm, judgeModell: jm,
           judgePromptVersion: JUDGE_PROMPT_VERSION,
+          /* S111 · Die Lesart des Laufs gehoert in den Bericht. Ohne sie sind
+             zwei Berichte nicht vergleichbar: MRV-02 misst mit Schaerfung
+             etwas anderes als ohne (2/5 gegen 4/5 im selben Kern). */
+          waechter,
         },
         quotenJeFamilie: familien,
         szenarien: ergebnisse,
@@ -256,6 +273,19 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt }) {
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   }
+
+  /* S111 · Der Haken erklaert sich selbst — sonst ist er ein Kaestchen, dessen
+     Wirkung man nur im Protokoll nachlesen kann. Und der Text sagt beides:
+     was AN bedeutet und was AUS bedeutet. */
+  function zeigeWaechterHinweis() {
+    const h = $("evWaechterHint");
+    if (!h) return;
+    h.textContent = $("evWaechter").checked
+      ? "Misst, was die App tut. Szenarien, die davon leben (MRV-02, KRIS), sind nur so vergleichbar mit dem Betrieb."
+      : "Misst den KORPUS ALLEIN — Schärfungen und Übergabe-Prüfung bleiben aus. Vergleichbar mit älteren Läufen, aber nicht mit der App.";
+  }
+  $("evWaechter").addEventListener("change", zeigeWaechterHinweis);
+  zeigeWaechterHinweis();
 
   $("evStart").addEventListener("click", () => { starte(); });
   $("evDownload").addEventListener("click", download);

@@ -135,6 +135,47 @@ describe("Eval-Artefakt · Läufe (echter Eval-Kern)", () => {
     expect(root.querySelector("#evSzErg").textContent).toContain("✓ KOR-01 grün");
   });
 
+  /* S111 · Die Lesart des Laufs im Artefakt.
+     Bis hierher lief das Artefakt IMMER ohne Wächter — es maß also den Korpus
+     allein, während die App seit S105.3 mit Schärfungen arbeitet (Krise,
+     Aufdeckung, Zweiseitigkeit). Die Berichte sagten das nicht einmal.
+     Vorgabe hier AN, anders als beim CLI-Runner: Dort bleibt der Default aus,
+     weil alle Ergebnisse in evals/ergebnisse/ ohne Wächter entstanden sind und
+     ein stiller Wechsel die Vergleichbarkeit bräche. Diese Historie gibt es im
+     Artefakt nicht. */
+  it("Wächter-Haken ist vorgewählt und steht im Bericht", async () => {
+    const app = createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: fakeMachAdapter() });
+    expect(root.querySelector("#evWaechter").checked, "Vorgabe AN").toBe(true);
+    nurSzenario("KOR-01");
+    root.querySelector("#evN").value = "1";
+    await klick(root.querySelector("#evStart"), 14);
+    expect(app._state.bericht.stand.waechter, "die Lesart gehört in den Bericht").toBe(true);
+  });
+
+  it("abgewählt misst er den Korpus allein — und sagt es", async () => {
+    const app = createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: fakeMachAdapter() });
+    const haken = root.querySelector("#evWaechter");
+    haken.checked = false;
+    haken.dispatchEvent(new Event("change"));
+    // Der Hinweis erklärt beide Stellungen — sonst ist der Haken ein Kästchen.
+    expect(root.querySelector("#evWaechterHint").textContent).toContain("KORPUS ALLEIN");
+
+    nurSzenario("KOR-01");
+    root.querySelector("#evN").value = "1";
+    await klick(root.querySelector("#evStart"), 14);
+    expect(app._state.bericht.stand.waechter).toBe(false);
+  });
+
+  it("der Hinweis wechselt mit dem Haken", () => {
+    createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: fakeMachAdapter() });
+    const haken = root.querySelector("#evWaechter"), hint = root.querySelector("#evWaechterHint");
+    expect(hint.textContent, "AN erklärt sich").toContain("was die App tut");
+    haken.checked = false; haken.dispatchEvent(new Event("change"));
+    expect(hint.textContent).toContain("KORPUS ALLEIN");
+    haken.checked = true; haken.dispatchEvent(new Event("change"));
+    expect(hint.textContent).toContain("was die App tut");
+  });
+
   it("rote Linie: EIN Treffer macht das Szenario ROT — sichtbar mit Warnung und Beleg", async () => {
     const app = createEvalApp({
       doc: document, root, szenarien: SZENARIEN,
