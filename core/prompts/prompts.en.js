@@ -518,8 +518,9 @@ export const korpusTexte = {
   "mk.fruehereKopf": "PREVIOUS MOMENTS (most recent last):",
   "mk.fruehereLeer": "PREVIOUS MOMENTS: none — this is the first meeting (no open door).",
   "mk.impulsWar": " · the Gentle Invitation was: ",
-  "mk.prozessKopf": "META-REFLECTION (to be revealed — the values never appear in the UI and are never read out as a block; you may speak single numbers bit by bit, matches first — at most one pair of values per conversational step, the two reading directions never back to back; never a number dump, never an average or score, never a comparison of the two reading directions, not even as a juxtaposition of two accuracy verdicts):",
-  "mk.prozessNachtrag": "META-REFLECTION now ready (submitted late — same rules: single numbers bit by bit, matches first, at most one pair of values per conversational step; never a dump, never an average/score, never a direction comparison; set [[META-REVEALED]] after the reveal):",
+  // S109 · see the German file: the head carried the pre-S107 language.
+  "mk.prozessKopf": "META-REFLECTION (to be revealed — the values never appear in the UI and are never read out as a block; do NOT speak out numbers, tell it in words (»there you are close to each other« / »there is a stretch in between«); begin with the relationship being, then fit and efficacy per topic; the two views never in the same breath, never an average or score):",
+  "mk.prozessNachtrag": "META-REFLECTION now ready (submitted late — same rules: do not speak out numbers, tell it in words; relationship being first, then fit and efficacy; the two views never in the same breath, never an average/score; set [[META-REVEALED]] after the reveal — in a message WITHOUT a question):",
   "mk.prozessVerlauf": "MEASUREMENT HISTORY (last revealed rounds — material ONLY for the trajectory deepening: a door, never a statement — the first sentence about it is the question; the progress belongs to the couple; no aggregate, no score, do not speak out numbers):",
   "mk.prozessLeer": "META-REFLECTION: none pending.",
   "mk.zwischenzeitKopf": "IN-BETWEEN MATERIAL (released):",
@@ -549,11 +550,10 @@ export const korpusTexte = {
   "choice.arrive.ohne": "Continue without an arrival moment",
   "choice.farewell.titel": "Would you like to take a small invitation with you?",
   "choice.farewell.ohne": "Say goodbye without an invitation",
+  /* S109 · mess.markerDistanz/Ueber/Unter entfernt — sie gehoerten zu
+     pruefeLeserichtung, das mit S107 ersatzlos entfallen ist. */
   "mess.wirksam": "Efficacy per topic: ",
   "mess.verlaufZeile": "{datum}: relationship being {nameA} {a} \u00b7 {nameB} {b} (distance {diff})",
-  "mess.markerDistanz": "{me} was clearly off (\u2265{deutlich} points) from {partner}'s actual experience three times in a row.",
-  "mess.markerUeber": "{me} has OVERESTIMATED {partner}'s closeness three times in a row \u2014 possible pattern: {partner}'s distress gets over-read.",
-  "mess.markerUnter": "{me} has UNDERESTIMATED {partner}'s closeness three times in a row \u2014 possible pattern: reading distance where there is none.",
   "mess.fit": "Goal fit: ",
   "qm.kopf": "MATERIAL (shared layer):",
   "qm.auftraege": "Goals: ",

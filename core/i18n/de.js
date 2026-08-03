@@ -78,7 +78,8 @@ export const de = {
   "mein.zeitleiste": "Meine Zeitleiste",
   "mein.mess": "Prozessreflexion",
   "mein.einzelSub": "Wo wünschst du dir Entwicklung — und wohin darf ich euch begleiten?",
-  "mein.messSub": "Ein kurzer, verdeckter Blick auf eure Nähe und eure Aufträge — aufgedeckt wird gemeinsam.",
+  // S109 · "eure Nähe" war die alte Frage (closeness). Jetzt: das Dritte.
+  "mein.messSub": "Ein kurzer, verdeckter Blick auf euer Beziehungswesen und eure Themen — aufgedeckt wird gemeinsam.",
   "mein.gruppeRegale": "Mein Weg.",
   // Gemeinsamer Raum
   "teil.intro": "Für alles, was ihr zu zweit macht. In den Regalen liegt nur, was freigegeben wurde — die Räume betretet ihr bewusst.",

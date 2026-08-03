@@ -550,8 +550,14 @@ export const korpusTexte = {
   "mk.fruehereKopf": "PREVIOUS MOMENTS (jüngste zuletzt):",
   "mk.fruehereLeer": "PREVIOUS MOMENTS: keine — dies ist der erste Termin (keine offene Tür).",
   "mk.impulsWar": " · Zwischenzeit-Impuls war: ",
-  "mk.prozessKopf": "META-REFLECTION (aufzudecken — die Werte stehen nie in der UI und werden nie als Block vorgelesen; einzelne Zahlen darfst du häppchenweise aussprechen, Treffer zuerst — höchstens ein Wertepaar je Gesprächsschritt, die beiden Lese-Richtungen nie unmittelbar nacheinander; nie Zahlen-Dump, nie Mittelwert oder Score, nie Richtungs-Vergleich, auch nicht als Nebeneinander zweier Genauigkeits-Urteile):",
-  "mk.prozessNachtrag": "META-REFLECTION jetzt bereit (nachgereicht — gleiche Regeln: einzelne Zahlen häppchenweise, Treffer zuerst, höchstens ein Wertepaar je Gesprächsschritt; nie Dump, nie Mittelwert/Score, nie Richtungs-Vergleich; nach der Aufdeckung [[META-REVEALED]] setzen):",
+  /* S109 · Der Kopf trug bis hierher die Sprache VOR dem Beziehungswesen
+     ("Treffer zuerst", "Lese-Richtungen", "einzelne Zahlen darfst du
+     aussprechen") — und damit das Gegenteil dessen, was der Prompt seit S107
+     sagt. Er steht naeher an den Daten als der Prompt; ein Widerspruch an
+     dieser Stelle ist derselbe Fehler wie der in MRV-01 (S108), nur zwischen
+     Kontext und Prompt statt innerhalb des Prompts. */
+  "mk.prozessKopf": "META-REFLECTION (aufzudecken — die Werte stehen nie in der UI und werden nie als Block vorgelesen; sprich KEINE Zahlen aus, sondern erzähle in Worten (»da liegt ihr nah beieinander« / »da liegt ein Stück dazwischen«); beginne mit dem Beziehungswesen, danach Passung und Wirksamkeit je Thema; die beiden Sichten nie im selben Atemzug, nie Mittelwert oder Score):",
+  "mk.prozessNachtrag": "META-REFLECTION jetzt bereit (nachgereicht — gleiche Regeln: keine Zahlen aussprechen, in Worten erzählen; Beziehungswesen zuerst, dann Passung und Wirksamkeit; die beiden Sichten nie im selben Atemzug, nie Mittelwert/Score; nach der Aufdeckung [[META-REVEALED]] setzen — in einer Nachricht OHNE Frage):",
   "mk.prozessVerlauf": "MESS-VERLAUF (letzte aufgedeckte Runden — NUR Material für die Trajektorien-Vertiefung: eine Tür, nie eine Feststellung — der erste Satz dazu ist die Frage; der Fortschritt gehört dem Paar; kein Aggregat, kein Score, keine Zahlen aussprechen):",
   "mk.prozessLeer": "META-REFLECTION: keine ausstehend.",
   "mk.zwischenzeitKopf": "IN-BETWEEN MATERIAL (freigegeben):",
@@ -585,11 +591,10 @@ export const korpusTexte = {
   "choice.farewell.ohne": "Ohne Einladung verabschieden",
   /* S107 · Passung × Wirksamkeit je Thema. Hohe Passung bei niedriger
      Wirksamkeit ist die Stelle, an der das Paar Hilfe braucht. */
+  /* S109 · mess.markerDistanz/Ueber/Unter entfernt — sie gehoerten zu
+     pruefeLeserichtung, das mit S107 ersatzlos entfallen ist. */
   "mess.wirksam": "Wirksamkeit je Thema: ",
   "mess.verlaufZeile": "{datum}: Beziehungswesen {nameA} {a} · {nameB} {b} (Abstand {diff})",
-  "mess.markerDistanz": "{me} lag zuletzt dreimal in Folge deutlich (≥{deutlich} Punkte) neben {partner}s tatsächlichem Erleben.",
-  "mess.markerUeber": "{me} hat {partner}s Nähe zuletzt dreimal in Folge ÜBERSCHÄTZT — mögliches Muster: {partner}s Not wird überlesen.",
-  "mess.markerUnter": "{me} hat {partner}s Nähe zuletzt dreimal in Folge UNTERSCHÄTZT — mögliches Muster: Distanz lesen, wo keine ist.",
   "mess.fit": "Auftrags-Passung: ",
   "qm.kopf": "MATERIAL (gemeinsame Ebene):",
   "qm.auftraege": "Aufträge: ",

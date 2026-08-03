@@ -177,3 +177,44 @@ describe("S107 · Die Mess-Runde im Vorraum", () => {
     expect(root.querySelectorAll('input[type="range"]')).toHaveLength(3);
   });
 });
+
+/* ═══════════ S109 · Kontext und Prompt sagen dasselbe ═══════════ */
+
+describe("S109 · Kein Rest der alten Sprache", () => {
+  it("die Kontext-Kopftexte tragen die neue Regel (de+en)", async () => {
+    /* Gefunden beim Nachsehen, nicht durch einen Lauf: `mk.prozessKopf` sagte
+       weiterhin "einzelne Zahlen darfst du häppchenweise aussprechen, Treffer
+       zuerst" — das Gegenteil des Prompts seit S107. Der Kontext steht NÄHER an
+       den Daten als der Prompt; ein Widerspruch dort wiegt schwerer.
+       Derselbe Fehlertyp wie MRV-01 in S108, nur zwischen Kontext und Prompt
+       statt innerhalb des Prompts. */
+    const de = await import("../../core/prompts/prompts.de.js");
+    const en = await import("../../core/prompts/prompts.en.js");
+    expect(de.korpusTexte["mk.prozessKopf"]).toContain("sprich KEINE Zahlen aus");
+    expect(en.korpusTexte["mk.prozessKopf"]).toContain("do NOT speak out numbers");
+  });
+
+  it("der Nachtrag nennt auch die fragefreie Nachricht (S108)", async () => {
+    const de = await import("../../core/prompts/prompts.de.js");
+    expect(de.korpusTexte["mk.prozessNachtrag"]).toContain("OHNE Frage");
+  });
+
+  it("die verwaisten Lese-Marker-Texte sind entfernt", async () => {
+    // Sie gehörten zu pruefeLeserichtung — ohne Aufrufer, aber im Korpus.
+    const de = await import("../../core/prompts/prompts.de.js");
+    const en = await import("../../core/prompts/prompts.en.js");
+    for (const k of ["mess.markerDistanz", "mess.markerUeber", "mess.markerUnter"]) {
+      expect(de.korpusTexte[k], k).toBeUndefined();
+      expect(en.korpusTexte[k], k).toBeUndefined();
+    }
+  });
+
+  it("der sichtbare Untertitel verspricht nicht mehr die alte Frage", async () => {
+    const { de } = await import("../../core/i18n/de.js");
+    const { en } = await import("../../core/i18n/en.js");
+    expect(de["mein.messSub"]).toContain("Beziehungswesen");
+    expect(de["mein.messSub"]).not.toContain("Nähe");
+    expect(en["mein.messSub"]).toContain("relationship being");
+    expect(en["mein.messSub"]).not.toContain("closeness");
+  });
+});

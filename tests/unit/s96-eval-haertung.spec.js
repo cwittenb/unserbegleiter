@@ -94,10 +94,24 @@ describe("S96 · Reveal-Zahlenregel und Trajektorien-Tür (MRV-01/03)", () => {
     });
   });
 
-  it("die Kontext-Kopftexte tragen die Wertepaar-Regel mit", () => {
+  /* S109 · Die Absicht dieses Tests war richtig und bleibt: Der KONTEXT muss
+     dasselbe sagen wie der Prompt. Er steht näher an den Daten — ein
+     Widerspruch dort wiegt schwerer als einer im Prompt.
+     Geprüft wurde bis hierher die Regel VOR dem Beziehungswesen ("höchstens
+     ein Wertepaar je Gesprächsschritt"). Sie ist mit S107 gefallen; der
+     Kopftext hatte sie noch getragen und dem Prompt widersprochen. */
+  it("die Kontext-Kopftexte sagen dasselbe wie der Prompt", () => {
     beide(sp => {
       const kt = K().korpusTexte;
-      expect(kt["mk.prozessKopf"], sp).toContain(sp === "de" ? "höchstens ein Wertepaar je Gesprächsschritt" : "at most one pair of values per conversational step");
+      const kopf = kt["mk.prozessKopf"], nachtrag = kt["mk.prozessNachtrag"];
+      // Keine Zahlen — dieselbe Regel wie im momentPrompt.
+      expect(kopf, sp).toContain(sp === "de" ? "sprich KEINE Zahlen aus" : "do NOT speak out numbers");
+      expect(nachtrag, sp).toContain(sp === "de" ? "keine Zahlen aussprechen" : "do not speak out numbers");
+      // Reihenfolge: Wesen zuerst.
+      expect(kopf, sp).toContain(sp === "de" ? "beginne mit dem Beziehungswesen" : "begin with the relationship being");
+      // Und die alte Sprache ist fort.
+      for (const t of [kopf, nachtrag])
+        expect(t, sp).not.toMatch(sp === "de" ? /Treffer zuerst|Lese-Richtung|Wertepaar/ : /matches first|reading direction|pair of values/);
       expect(kt["mk.prozessVerlauf"], sp).toContain(sp === "de" ? "der erste Satz dazu ist die Frage" : "the first sentence about it is the question");
     });
   });

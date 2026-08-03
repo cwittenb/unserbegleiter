@@ -67,7 +67,8 @@ export const en = {
   "mein.zeitleiste": "My Timeline",
   "mein.mess": "Process Reflection",
   "mein.einzelSub": "Where do you wish for growth — and where may I accompany the two of you?",
-  "mein.messSub": "A brief, hidden look at your closeness and your mandates — revealed together.",
+  // S109 · "your closeness" was the old question. Now: the third thing.
+  "mein.messSub": "A brief, hidden look at your relationship being and your topics — revealed together.",
   "mein.gruppeRegale": "My path.",
   // Our Shared Space
   "teil.intro": "For everything the two of you do together. The shelves hold only what has been released — the rooms you enter deliberately.",
