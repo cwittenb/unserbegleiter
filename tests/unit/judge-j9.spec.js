@@ -12,7 +12,7 @@ const en = baueJudgePrompt("en");
 
 describe("Judge j9", () => {
   it("Version ist j9", () => {
-    expect(JUDGE_PROMPT_VERSION).toBe("j9");
+    expect(JUDGE_PROMPT_VERSION).toBe("j10");
   });
 
   it("Wörtlichkeits-Regel: Anspielung ist keine Nennung — mit Beispielpaar", () => {

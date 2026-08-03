@@ -22,10 +22,13 @@
 //                   [--judge-key <key>]        Key für den Judge-Provider (sonst dessen Env-Key)
 //                   [--batch]                  kompletter Lauf über die Anthropic Batches API (−50%; nur Anthropic)
 //                   [--batch-intervall 20] [--batch-max-min 60]   Polling-Intervall / Zeit-Cap
-//                   [--waechter]               Waechter-Stufe an: greift ein Waechter, laeuft GENAU
-//                                              EINE Revisions-Runde wie in der Engine. Default AUS —
-//                                              ohne Flag misst der Lauf den Korpus allein, wie bisher.
-//                                              Im Batch: eine Revisions-Welle je Turn-Tiefe (S95).
+//                   [--waechter]               Misst das AUSGELIEFERTE SYSTEM statt des Korpus allein:
+//                                              Schaerfungen vor der Antwort (Krise, Aufdeckung,
+//                                              Zweiseitigkeit) und die Uebergabe-Pruefung danach.
+//                                              Default AUS — dann laeuft der Korpus nackt, und alles,
+//                                              was per Schaerfung geloest ist, faellt aus der Messung.
+//                                              KEINE Revisions-Runde mehr (S105.3: nichts wird
+//                                              zurueckgenommen); die zweite Welle im Batch entfaellt.
 //                   [--erlaube-gleiches-modell]
 //
 // Modell-Konfiguration ist PFLICHT (S35d): kein Modell-Default im Code — fehlt
@@ -105,6 +108,18 @@ async function main() {
   // evals/ergebnisse/ sind ohne Waechter entstanden — ein Default-Wechsel
   // braeche die Vergleichbarkeit still.
   const waechter = process.argv.includes("--waechter");
+  /* MRV/S108 · Der Default kostet inzwischen mehr, als er schuetzt. Ohne Flag
+     misst der Lauf den Korpus nackt — und seit S105.3 sind Krisen-Reihenfolge,
+     Aufdeck-Vorbeugung und Zweiseitigkeit VORWAERTS geschaerft, also unsichtbar.
+     Der Lauf vom 03.08. zeigte das: MRV-02 blieb bei 4/5, obwohl die Sonde 1/8
+     gemessen hatte — `waechterTreffer: null` im Bericht war die Spur.
+     Der Default bleibt AUS (die alten Ergebnisse sind so entstanden, ein
+     stiller Wechsel braeche die Vergleichbarkeit), aber der Lauf sagt jetzt
+     laut, was er misst. */
+  if (!waechter)
+    console.log("Hinweis: ohne --waechter misst dieser Lauf den KORPUS ALLEIN. " +
+      "Schaerfungen (Krise, Aufdeckung, Zweiseitigkeit) und Uebergabe-Pruefung bleiben aus — " +
+      "Szenarien, die davon leben (MRV-02, KRIS), messen dann etwas anderes als die App tut.");
 
   /* ST5.4 · Struktur-Modus des Laufs. Default "aus" — genau wie beim
      --waechter-Default: Alle Ergebnisse in evals/ergebnisse/ sind über den
@@ -169,8 +184,8 @@ async function main() {
   // S95 · Der Batch-Pfad kennt die Waechter-Stufe jetzt (eigene Welle je Turn-
   // Tiefe). Preis ist die Wanduhr: bis zu doppelt so viele Wellen, weil die
   // Batch-Durchlaufzeit kaum an der Wellengroesse haengt. Einmal ansagen.
-  if (waechter && batchModus)
-    console.log("Hinweis: --waechter verdoppelt im Batch die Zahl der Wellen (je Turn-Tiefe eine Revisions-Welle).");
+  // S105.3 · Die Revisions-Welle ist entfallen — --waechter kostet im Batch
+  // keine zusaetzlichen Wellen mehr.
   if (batchModus && (provider !== "anthropic" || judgeProvider !== "anthropic")) {
     console.error("--batch unterstützt nur Anthropic (Pipeline UND Judge). Aktuell: Pipeline " +
       provider + ", Judge " + judgeProvider + ".");

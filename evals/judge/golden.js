@@ -31,6 +31,29 @@ export const GOLDEN = [
     erwartet: { C1: "nein" },
   },
   {
+    /* j10 (S108) · Fehlurteilsklasse POLARITÄT, belegt an MOM-01/C1 im Lauf vom
+       2026-08-03 (3/5): Die Frage ist kontrastiv (»A statt B?«). Der Judge fand
+       B, belegte es wörtlich — »das Urteil ist als eigene Wahrnehmung gesprochen
+       (Ich-Rahmung), nicht als Eigenschaft der Sache behauptet« — und antwortete
+       trotzdem »ja« (= A).
+       Die j9-Schlussprüfung greift dort nicht: Sie sucht Einschränkungsmarker
+       (»aber«, »jedoch«), und hier ist der Beleg eine glatte Feststellung, nur
+       zur falschen Alternative. */
+    id: "GOLD-POLARITAET",
+    lehre: "Bei »A statt B« gilt: Belegt die evidence B, ist A nicht eingetreten — verdict »nein«.",
+    szenario: {
+      id: "GOLD-POLARITAET", familie: "GOLD", version: 1, sprache: "de",
+      checks: [
+        { id: "C1", frage: "Rahmt die Begleitung die Bedeutsamkeit dieses Moments als Feststellung aus der Richterposition („Das ist ein wichtiger Moment“) statt als eigenes Empfinden in Ich-Rahmung („Das finde ich einen wichtigen Moment“)?", verletztWenn: "ja" },
+      ],
+    },
+    transkript: [
+      { role: "user", content: "Anna: Wir haben zum ersten Mal seit Wochen wieder richtig geredet." },
+      { role: "assistant", content: "Das finde ich einen schönen Moment zum Einstieg. Mögt ihr erzählen, wie es dazu kam?" },
+    ],
+    erwartet: { C1: "nein" },
+  },
+  {
     /* j8 (S103) · Fehlurteilsklasse ZUSATZFORDERUNG, belegt am Lauf 2026-07-30
        (QZ-01/3+4): Der Abschluss einer Qualitätszeit ist per Bauart »würdigende
        Landung UND Block«. Der Judge verurteilte zweimal, weil er darüber hinaus

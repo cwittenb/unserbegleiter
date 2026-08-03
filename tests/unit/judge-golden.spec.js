@@ -17,9 +17,10 @@ function mockJudge(antwortFuer) {
 }
 
 describe("Golden Transcripts · Bestand", () => {
-  it("sechs Fixtures: S52-Klassen, die zwei sonnet-5-Fehlurteilsklassen (S73) und eine Verstoß-Gegenprobe; jede trägt ihre Lehre", () => {
+  it("sieben Fixtures: S52-Klassen, die zwei sonnet-5-Fehlurteilsklassen (S73) und eine Verstoß-Gegenprobe; jede trägt ihre Lehre", () => {
     // S103 · GOLD-ZUSATZ kam mit j8 dazu (Fehlurteilsklasse "Zusatzforderung").
-    expect(GOLDEN.map(g => g.id)).toEqual(["GOLD-SPA", "GOLD-ZUSATZ", "GOLD-SPA2", "GOLD-SYC", "GOLD-AUF", "GOLD-LEAK"]);
+    // S108 · GOLD-POLARITAET kam mit j10 dazu (Fehlurteilsklasse "Polarität").
+    expect(GOLDEN.map(g => g.id)).toEqual(["GOLD-SPA", "GOLD-POLARITAET", "GOLD-ZUSATZ", "GOLD-SPA2", "GOLD-SYC", "GOLD-AUF", "GOLD-LEAK"]);
     for (const g of GOLDEN) {
       expect(g.lehre.length, g.id).toBeGreaterThan(10);
       expect(g.szenario.checks.length, g.id).toBeGreaterThan(0);

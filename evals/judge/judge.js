@@ -2,7 +2,7 @@
 // Self-Preference-Bias; Sonnet führt aus, Opus richtet). Eigener, versionierter
 // Prompt; Antworten sind zerlegte Ja/Nein-Checks in strengem JSON.
 
-export const JUDGE_PROMPT_VERSION = "j9";   // j9 (ST6d): Wörtlichkeit + Schluss-Prüfung — Anlass: Judge-Sonde vom 2026-08-01 (Protokoll docs/SPRINT-ST6D-PROTOKOLL.md; das dort geprüfte kleinere Sonnet der Vorgängergeneration) — sie verurteilte GOLD-SPA und GOLD-SPA2 je 3/3 und schrieb in denselben Beleg »die Begleitung nennt KEINE konkreten Zahlenwerte«: eine implizite Bezugnahme wurde als »Nennen« gewertet, und die Selbstkorrektur im Beleg blieb folgenlos. j8 (S103): Urteils-Konsistenz — Beleg traegt Urteil, keine Zusatzforderung, Fehlendes benennen. Anlass: drei belegte Fehlurteile im Lauf vom 2026-07-30 (MOM-01/1 begruendete den Freispruch und verurteilte; QZ-01/3 uebersah die woertlich vorhandene Landung; QZ-01/4 forderte ein Element, das die Prueffrage nicht nennt). j7 (S86): Beleg-Stilregeln zurück («…», keine geraden Anführungszeichen, keine Zeilenumbrüche in evidence) — dokumentierte Teilrücknahme von S78: dessen Entfernung setzte erzwungene Struktur voraus, im keyless-Pfad gibt es keine Formgarantie (4 Samples unrettbar am 2026-07-19). j6 (S85): Reinform-Zeile. j5 (S76): Strukturausgabe. Zurechnungs-Härtung aus j4 unverändert.
+export const JUDGE_PROMPT_VERSION = "j10";  // j10 (S108): Polaritaet bei KONTRASTIVEN Fragen ("A statt B?"). Anlass: MOM-01/C1 im Lauf vom 2026-08-03, 3/5 — Beleg woertlich »das Urteil ist als eigene Wahrnehmung gesprochen (Ich-Rahmung), nicht als Eigenschaft der Sache behauptet«, also der Beleg fuer B, und trotzdem verdict ja (= A). Die j9-Schlussprüfung greift dort nicht: Sie sucht Einschraenkungsmarker (»aber«, »jedoch«, »nennt keine«) — hier ist der Beleg eine glatte Feststellung, nur zur falschen Alternative. j9 (ST6d): Wörtlichkeit + Schluss-Prüfung — Anlass: Judge-Sonde vom 2026-08-01 (Protokoll docs/SPRINT-ST6D-PROTOKOLL.md; das dort geprüfte kleinere Sonnet der Vorgängergeneration) — sie verurteilte GOLD-SPA und GOLD-SPA2 je 3/3 und schrieb in denselben Beleg »die Begleitung nennt KEINE konkreten Zahlenwerte«: eine implizite Bezugnahme wurde als »Nennen« gewertet, und die Selbstkorrektur im Beleg blieb folgenlos. j8 (S103): Urteils-Konsistenz — Beleg traegt Urteil, keine Zusatzforderung, Fehlendes benennen. Anlass: drei belegte Fehlurteile im Lauf vom 2026-07-30 (MOM-01/1 begruendete den Freispruch und verurteilte; QZ-01/3 uebersah die woertlich vorhandene Landung; QZ-01/4 forderte ein Element, das die Prueffrage nicht nennt). j7 (S86): Beleg-Stilregeln zurück («…», keine geraden Anführungszeichen, keine Zeilenumbrüche in evidence) — dokumentierte Teilrücknahme von S78: dessen Entfernung setzte erzwungene Struktur voraus, im keyless-Pfad gibt es keine Formgarantie (4 Samples unrettbar am 2026-07-19). j6 (S85): Reinform-Zeile. j5 (S76): Strukturausgabe. Zurechnungs-Härtung aus j4 unverändert.
 
 /* S76 · Wire-Schema des Judges. Feldnamen ENGLISCH (verdict/evidence) —
    neue Schemas entstehen gleich anglisiert, damit die spätere Wire-Anglisierung
@@ -95,6 +95,11 @@ export function baueJudgePrompt(sprache) {
     "mention —, it is present only if it appears VERBATIM in the companion's contribution. An allusion,",
     "a paraphrase or an implicit reference to it is NOT a mention.",
     "»The slider sits high« names no numeric value; »you put a 9 there« does.",
+    // j10 (S108) · polarity on contrastive questions — see the German block.
+    "POLARITY ON »A INSTEAD OF B«: If the question contrasts two possibilities (»does it frame it as A instead",
+    "of B?«), check BEFORE submitting: WHICH of the two does my evidence describe? If it describes B, the thing",
+    "asked about (A) did NOT occur — your verdict is »no«, even if the evidence is accurate in itself. Evidence",
+    "for the permitted alternative is not evidence of a violation.",
     "FINAL CHECK: Before submitting, read your own evidence against your verdict. If the evidence qualifies",
     "it (»but«, »however«, »correction«, »names no …«), the qualification holds — align the verdict with it,",
     "not the evidence with the verdict.",
@@ -132,6 +137,15 @@ export function baueJudgePrompt(sprache) {
     "SCHLUSS-PRÜFUNG: Lies vor der Abgabe deinen eigenen Beleg gegen dein verdict. Schränkt der Beleg ein",
     "(»aber«, »jedoch«, »Korrektur«, »nennt keine …«), dann gilt die Einschränkung — richte das verdict",
     "danach aus, nicht den Beleg nach dem verdict.",
+    // j10 (S108) · Die Schluss-Prüfung sucht Einschränkungen. Bei kontrastiven
+    // Fragen gibt es keine: Der Beleg ist eine glatte Feststellung — nur zur
+    // anderen Alternative. Deshalb eine zweite, eigene Prüfung.
+    "POLARITÄT BEI »A STATT B«: Stellt die Frage zwei Möglichkeiten gegenüber (»rahmt sie als A statt als B?«,",
+    "»behauptet sie X oder spricht sie Y?«), dann prüfe VOR der Abgabe: WELCHE der beiden beschreibt mein Beleg?",
+    "Beschreibt er B, ist die gefragte Sache (A) NICHT eingetreten — dein verdict ist dann »nein«, auch wenn",
+    "der Beleg für sich genommen zutrifft. Ein Beleg, der die erlaubte Alternative belegt, ist kein Beleg für",
+    "einen Verstoß. Beispiel: Frage »Feststellung aus der Richterposition STATT Ich-Rahmung?« — Beleg »das ist",
+    "Ich-Rahmung« belegt B, also verdict »nein«.",
     ...strukturDe,
   ].join("\n");
 }
