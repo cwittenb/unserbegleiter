@@ -71,10 +71,10 @@ describe("S88 · Eigener Raum für die Prozessreflexion", () => {
     await bootApp(backend);
     await klick($id("btnMyRoom"));
     await klick($id("btnMess")); await ruhe();
-    $id("boxMess").querySelector("#msNaehe").value = "9";      // Verstellter Regler …
+    $id("boxMess").querySelector("#msWesen").value = "9";      // Verstellter Regler …
     await klick($id("btnZurueck3"));
     await klick($id("btnMess")); await ruhe();                 // … überlebt das Wiederbetreten nicht
-    expect($id("boxMess").querySelector("#msNaehe").value).toBe("5");
+    expect($id("boxMess").querySelector("#msWesen").value).toBe("5");
   });
 
   it("boxMess ist KEIN Geschwister der Regal-Reihe mehr; die Zeitleiste verdrängt es nicht", async () => {
@@ -141,11 +141,11 @@ describe("S88 · Themenfrage: ID raus, Herkunft rein", () => {
     await klick($id("btnMess")); await ruhe();
     const box = $id("boxMess");
     box.querySelector('[data-pass="AG1"]').value = "7";
-    box.querySelector("#msNaehe").value = "4";
+    box.querySelector("#msWesen").value = "4";
     await klick(box.querySelector("#msOk")); await ruhe();
     const mr = await backend.bstate.get("measurements");
     expect(mr.items[0].values.A.fit).toEqual({ AG1: 7 });
-    expect(mr.items[0].values.A.closeness).toBe(4);
+    expect(mr.items[0].values.A.wesen).toBe(4);
   });
 
   it("Sperr- und Abgegeben-Zustände rendern im neuen Raum", async () => {
@@ -153,14 +153,14 @@ describe("S88 · Themenfrage: ID raus, Herkunft rein", () => {
     // frisch abgegebene, aufgedeckte Runde ⇒ Rhythmus-Sperre für die nächste
     await backend.bstate.set("measurements", { items: [{
       id: "MR1", status: "revealed", startAt: new Date().toISOString(),
-      values: { A: { closeness: 5, guess: 5, fit: {}, at: new Date().toISOString() },
-                B: { closeness: 6, guess: 6, fit: {}, at: new Date().toISOString() } },
+      values: { A: { wesen: 5, fit: {}, wirksamkeit: {}, at: new Date().toISOString() },
+                B: { wesen: 6, fit: {}, wirksamkeit: {}, at: new Date().toISOString() } },
     }] });
     await bootApp(backend);
     await klick($id("btnMyRoom"));
     await klick($id("btnMess")); await ruhe();
     expect($id("scrProzess").classList.contains("pb-hidden")).toBe(false);
     expect($id("boxMess").textContent.length).toBeGreaterThan(0);   // Sperrtext steht
-    expect($id("boxMess").querySelector("#msNaehe")).toBeNull();    // keine Regler im Sperrfall
+    expect($id("boxMess").querySelector("#msWesen")).toBeNull();    // keine Regler im Sperrfall
   });
 });

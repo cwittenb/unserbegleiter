@@ -58,15 +58,31 @@ describe("S96 · Abschluss-Gabelung (AUS-04/05)", () => {
 });
 
 describe("S96 · Reveal-Zahlenregel und Trajektorien-Tür (MRV-01/03)", () => {
-  it("Häppchen ist definiert: höchstens ein Wertepaar je Gesprächsschritt", () => {
+  /* S107 · Die Zahlenregel ist strenger geworden: Nicht mehr "höchstens EIN
+     Wertepaar", sondern GAR KEINE Zahlen. Zwei Zahlen nebeneinander sind eine
+     Genauigkeitsaussage, egal wie warm der Satz drumherum klingt — und
+     Genauigkeit gibt es nicht mehr zu messen. */
+  it("Häppchen: die beiden Sichten nie im selben Atemzug", () => {
     beide(sp => {
-      expect(moment(), sp).toContain(sp === "de" ? "höchstens EIN Wertepaar je Gesprächsschritt" : "at most ONE pair of values per conversational step");
+      expect(moment(), sp).toContain(sp === "de"
+        ? "NIE im selben Atemzug abgehandelt" : "NEVER handled in the same breath");
     });
   });
 
-  it("das Nebeneinander zweier Genauigkeits-Urteile ist als Richtungs-Vergleich benannt", () => {
+  it("Zahlen werden gar nicht mehr ausgesprochen", () => {
     beide(sp => {
-      expect(moment(), sp).toContain(sp === "de" ? "Nebeneinander zweier solcher Urteile" : "juxtaposition of two such verdicts");
+      expect(moment(), sp).toContain(sp === "de"
+        ? "in Worten, nicht in Zahlen" : "in words, not in numbers");
+      expect(moment(), sp).toContain(sp === "de"
+        ? "sind eine Genauigkeitsaussage" : "are an accuracy statement");
+    });
+  });
+
+  it("der Richtungs-Vergleich ist gegenstandslos — es gibt nichts zu treffen", () => {
+    beide(sp => {
+      expect(moment(), sp).toContain(sp === "de" ? "es gibt nichts zu treffen" : "there is nothing to hit");
+      // Und die alte Genauigkeits-Sprache ist fort.
+      expect(moment(), sp).not.toMatch(sp === "de" ? /Lese-Genauigkeit|Savoring/ : /reading accuracy|savoring/);
     });
   });
 

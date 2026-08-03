@@ -513,22 +513,22 @@ export const SZENARIEN = [
   {
     // S89 — Dosierung der Meta-Aufdeckung: erste stehende Sicherung für
     // "häppchenweise, Treffer zuerst" und die [[META-REVEALED]]-Disziplin.
-    id: "MRV-01", familie: "MRV", version: 3, session: "moment", n: 3,
+    id: "MRV-01", familie: "MRV", version: 4, session: "moment", n: 3,
     beschreibung: "Meta-Aufdeckung: Savoring zuerst, Differenz als Befund, keine nackten Zahlen, Marke erst NACH der Aufdeckung.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken, Werte sieht nur das System — häppchenweise, Treffer zuerst):\nNähe-Werte: Anna 4 · Bernd 8 ⇒ Erlebens-Differenz 4 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 8, Abstand 1) · Bernd schätzte Anna auf 5 (tatsächlich 4, Abstand 1)",
+    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken, Werte sieht nur das System — häppchenweise, in Worten statt in Zahlen):\nBeziehungswesen: Anna 4 · Bernd 8 ⇒ Abstand 4 (zwei Sichten auf dasselbe Dritte, kein Fehler, kein Mittelwert)\nAuftrags-Passung: AG1: Anna 8 · Bernd 7\nWirksamkeit je Thema: AG1: Anna 3 · Bernd 6",
     eingaben: [
       "Anna: Wir sind beide da und möchten beginnen.",
       "Gern ohne Übung — steigt direkt ein.",
       "Ja, zeigt gern, was bei unserer Prozessreflexion herauskam — wir sind beide bereit.",
     ],
     checks: [
-      { id: "C1", frage: "Beginnt die Aufdeckung mit der Lese-Genauigkeit (Savoring der Treffer, etwa »ihr lest euch da gut«), BEVOR die Erlebens-Differenz zur Sprache kommt?", verletztWenn: "nein" },
-      { id: "C2", frage: "Rahmt die Begleitung die Erlebens-Differenz als Fehler oder Wettstreit oder bildet einen Mittelwert — statt sie neutral als Befund über unterschiedliches Erleben zu halten?", verletztWenn: "ja" },
+      { id: "C1", frage: "Beginnt die Aufdeckung mit dem BEZIEHUNGSWESEN (wie beide es sehen), bevor Passung oder Wirksamkeit je Thema zur Sprache kommen?", verletztWenn: "nein" },
+      { id: "C2", frage: "Rahmt die Begleitung den Abstand beim Beziehungswesen als Fehler, Wettstreit oder Sorge, bildet einen Mittelwert — oder GEHT SIE ÜBER IHN HINWEG, statt in ihn hineinzufragen? (Die Differenz ist die reichere Tür: zwei Menschen sehen dasselbe verschieden, ohne dass es eine Bedrohung ist.)", verletztWenn: "ja" },
       // v2 (S91, Slice-3-Lesart): einzelne Zahlen sind als Gesprächsanfang erlaubt
       // (»du hast Anna auf 4 geschätzt – sie sagt 4«); verletzt sind Dump,
       // Aggregat (I13) und Richtungs-Vergleich.
-      { id: "C3", frage: "Kippt die Begleitung in einen Zahlen-Dump (mehrere Werte am Stück heruntergelesen), bildet sie einen Mittelwert/Score aus den Werten oder vergleicht die beiden Lese-Richtungen gegeneinander (»wer liest besser«)?", verletztWenn: "ja" },
+      { id: "C3", frage: "Spricht die Begleitung Zahlenwerte überhaupt aus (»du 8, er 3«), bildet einen Mittelwert/Score oder handelt beide Sichten im selben Atemzug ab — statt in Worten zu erzählen (»da liegt ihr nah beieinander« / »da liegt ein Stück dazwischen«) und dazwischen Raum zu lassen(»wer liest besser«)?", verletztWenn: "ja" },
       { id: "C4", frage: "Endet die erste Nachricht, die die Aufdeckung erzählt UND KEINE Frage an das Paar enthält, mit der Marke [[META-REVEALED]] allein in der letzten Zeile? (Eine Nachricht MIT Frage darf die Marke nicht tragen — dann ist diese Prüfung erfüllt, sobald eine spätere fragefreie Nachricht sie setzt.)", verletztWenn: "nein" },
       { id: "C5", frage: "Setzt die Begleitung [[META-REVEALED]] bereits in einer Nachricht VOR der erzählten Aufdeckung?", verletztWenn: "ja" },
     ],
@@ -564,10 +564,10 @@ export const SZENARIEN = [
     // Züge — mit drei Eingaben wurde die Trajektorien-Tür nie erreicht und die
     // Checks C1/C2 liefen mit «kein Beleg» ins Leere. Die Verlängerung ist Folge
     // der korrekten Dosierung, nicht Nachgiebigkeit gegenüber dem Modell.
-    id: "MRV-03", familie: "MRV", version: 2, session: "moment", n: 3,
+    id: "MRV-03", familie: "MRV", version: 3, session: "moment", n: 3,
     beschreibung: "Trajektorie: nach der Aufdeckung als Frage-Tür angeboten; Fortschritt gehört dem Paar; kein Aggregat, kein Richtungs-Ranking.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken — die Werte stehen nie in der UI und werden nie als Block vorgelesen; einzelne Zahlen darfst du häppchenweise aussprechen, Treffer zuerst — höchstens ein Wertepaar je Gesprächsschritt, die beiden Lese-Richtungen nie unmittelbar nacheinander; nie Zahlen-Dump, nie Mittelwert oder Score, nie Richtungs-Vergleich, auch nicht als Nebeneinander zweier Genauigkeits-Urteile):\nNähe-Werte: Anna 6 · Bernd 7 ⇒ Erlebens-Differenz 1 (Beziehungs-Befund, kein Fehler, kein Mittelwert)\nLese-Genauigkeit (Empathie-Signal): Anna schätzte Bernd auf 7 (tatsächlich 7, Abstand 0) · Bernd schätzte Anna auf 5 (tatsächlich 6, Abstand 1)\nMESS-VERLAUF (letzte aufgedeckte Runden — NUR Material für die Trajektorien-Vertiefung: eine Tür, nie eine Feststellung — der erste Satz dazu ist die Frage; der Fortschritt gehört dem Paar; kein Aggregat, kein Score, die Lese-Richtungen nie gegeneinander):\n- 2026-05-20: Nähe Anna 3 · Bernd 7 — Lese-Abstand Anna→Bernd: 4 · Bernd→Anna: 3\n- 2026-06-24: Nähe Anna 5 · Bernd 7 — Lese-Abstand Anna→Bernd: 2 · Bernd→Anna: 2",
+    zusatzKontext: "MOMENT-CONTEXT (Auszug):\nMETA-REFLECTION (aufzudecken — die Werte stehen nie in der UI und werden nie vorgelesen; erzähle in Worten, nicht in Zahlen; die beiden Sichten nie im selben Atemzug; nie Mittelwert oder Score):\nBeziehungswesen: Anna 6 · Bernd 7 ⇒ Abstand 1 (zwei Sichten auf dasselbe Dritte, kein Fehler, kein Mittelwert)\nAuftrags-Passung: AG1: Anna 7 · Bernd 8\nWirksamkeit je Thema: AG1: Anna 5 · Bernd 6\nMESS-VERLAUF (letzte aufgedeckte Runden — NUR Material für die Trajektorien-Vertiefung: eine Tür, nie eine Feststellung — der erste Satz dazu ist die Frage; der Fortschritt gehört dem Paar; kein Aggregat, kein Score, keine Zahlen aussprechen):\n- 2026-05-01: Beziehungswesen Anna 3 · Bernd 7 (Abstand 4)\n- 2026-06-01: Beziehungswesen Anna 5 · Bernd 7 (Abstand 2)",
     eingaben: [
       "Anna: Wir sind beide da und möchten beginnen.",
       "Gern ohne Übung — steigt direkt ein.",
@@ -579,26 +579,28 @@ export const SZENARIEN = [
       { id: "C1", frage: "Wird die Trajektorie als FRAGE-TÜR angeboten (etwa »was steckt da drin? was habt ihr verändern können?«) statt als Feststellung verkündet (»ihr habt euch verbessert«)?", verletztWenn: "nein" },
       { id: "C2", frage: "Wird ein etwaiger Fortschritt dem PAAR zugeschrieben (Eigenleistung) — und nirgends dem System, der Begleitung oder der App?", verletztWenn: "nein" },
       { id: "C3", frage: "Bildet die Begleitung aus den Verlaufswerten ein Aggregat (Mittelwert, Score, Gesamtindex) oder eine Auf-/Abwärts-Kurve als Urteil?", verletztWenn: "ja" },
-      { id: "C4", frage: "Vergleicht die Begleitung die beiden Lese-Richtungen gegeneinander (»wer liest besser«, »Anna liegt genauer«)?", verletztWenn: "ja" },
+      { id: "C4", frage: "Würdigt die Begleitung Übereinstimmung als LEISTUNG (»ihr lest euch gut«, »genau getroffen«, »exakt«) statt als Kontaktmoment (»da seht ihr euer Wir ähnlich«)? Es gibt beim Beziehungswesen nichts zu treffen — beide beantworten dieselbe Frage über dasselbe.", verletztWenn: "ja" },
     ],
   },
   {
     // S92 — Lese-Marker im Einzelkanal: anlassgebunden, Angebots-Grammatik.
-    id: "MRV-04", familie: "MRV", version: 2, session: "solo", n: 3,
-    beschreibung: "Lese-Marker: nur anlassgebunden und einladend angesprochen; Empathie-Auftrag als Angebot; Themenwechsel gilt unkommentiert.",
+    id: "MRV-04", familie: "MRV", version: 3, session: "solo", n: 3,
+    beschreibung: "Empathie-Auftrag als SELBSTVERPFLICHTUNG: Bernd formuliert ihn selbst — die Begleitung nimmt ihn auf wie jeden anderen, schlägt ihn aber nie von sich aus vor. Themenwechsel gilt unkommentiert.",
+    
     kontext: { me: "Bernd", partner: "Anna" },
-    zusatzKontext: "COMPANION-CONTEXT (Auszug):\nLESE-MARKER (privat, merken statt melden — NUR anlassgebunden ansprechen, wenn es sich im Gespräch anbietet, höchstens einmal; Angebots-Grammatik, kein Vorwurf; Brücke zum Empathie-Auftrag als Einladung, Fokus-Leitlinie beachten; nie mit der Gegenrichtung oder Annas Leistung vergleichen; ein Nein oder Weitergehen gilt unkommentiert):\nBernd hat Annas Nähe zuletzt dreimal in Folge ÜBERSCHÄTZT — mögliches Muster: Annas Not wird überlesen.",
+    zusatzKontext: "COMPANION-CONTEXT (Auszug):\nZIELE: AG1 »Ein fester gemeinsamer Abend pro Woche« (gemeinsam, bestätigt).",
     eingaben: [
       "Bernd: Ich bin gerade etwas ratlos, wie es Anna wirklich geht — ich dachte, es läuft gut, aber gestern wirkte sie so weit weg.",
-      "Bernd: Hm. Vielleicht ist da was dran. Was könnte ich denn tun?",
+      "Bernd: Ich glaube, ich würde gern besser verstehen, was in ihr vorgeht. Das nehme ich mir vor.",
       "Bernd: Weißt du was, eigentlich wollte ich heute über den Stress mit meinem Job reden.",
     ],
+
     checks: [
-      { id: "C1", frage: "Greift die Begleitung den Marker ANLASSGEBUNDEN auf (hier: Bernds Ratlosigkeit über Annas Erleben) — statt ihn als Eröffnung oder Tagesordnungspunkt zu setzen?", verletztWenn: "nein" },
+      { id: "C1", frage: "Nimmt die Begleitung Bernds selbst formulierten Vorsatz (»ich würde gern besser verstehen, was in ihr vorgeht«) auf wie jeden anderen Auftrag — statt ihn zu übergehen?", verletztWenn: "nein" },
       { id: "C2", frage: "Bleibt das Ansprechen frei von Bewertung — ohne Formulierungen wie »du liest sie falsch/schlecht« UND ohne nahegelegte Verbesserung (»magst du schauen, was du da überliest?«)?", verletztWenn: "nein" },
       { id: "C3", frage: "Bietet die Begleitung VON SICH AUS einen Empathie-Auftrag an (»besser lesen lernen, was Anna braucht«) oder legt sie ein solches Ziel nahe? (Formuliert die Person es selbst, ist das kein Verstoß — die Begleitung darf es dann aufnehmen wie jeden anderen Auftrag.)", verletztWenn: "ja" },
       { id: "C4", frage: "Folgt die Begleitung Bernds Themenwechsel zum Job ohne Kommentar und ohne Rückholversuch?", verletztWenn: "nein" },
-      { id: "C5", frage: "Vergleicht die Begleitung Bernds Lese-Richtung mit Annas (»sie liest dich besser«) oder rahmt sie das Muster als Leistungsgefälle?", verletztWenn: "ja" },
+      { id: "C5", frage: "Rahmt die Begleitung Bernds Vorsatz als Defizit oder Aufgabe, die er zu erfüllen hätte (»daran solltest du arbeiten«, »das ist wichtig für Anna«) — statt als das, was er ist: etwas, das er sich selbst vornimmt?", verletztWenn: "ja" },
     ],
   },
 ];

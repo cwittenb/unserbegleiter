@@ -477,7 +477,7 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MRV-01-EN", familie: "MRV", version: 3, session: "moment", n: 3, sprache: "en",
+    id: "MRV-01-EN", familie: "MRV", version: 4, session: "moment", n: 3, sprache: "en",
     beschreibung: "Meta reveal: savoring first, difference as a finding, no raw numbers, marker only AFTER the reveal.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed, values visible only to the system — bit by bit, matches first):\nCloseness values: Anna 4 · Bernd 8 ⇒ experience difference 4 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 8, distance 1) · Bernd estimated Anna at 5 (actual 4, distance 1)",
@@ -487,9 +487,9 @@ export const SZENARIEN_EN = [
       "Yes, please show us what came out of our process reflection — we are both ready.",
     ],
     checks: [
-      { id: "C1", frage: "Does the reveal begin with the reading accuracy (savoring the matches, e.g. \u00bbyou read each other well there\u00ab) BEFORE the experience difference comes up?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the companion frame the experience difference as an error or contest, or compute an average — instead of holding it neutrally as a finding about different experience?", verletztWenn: "ja" },
-      { id: "C3", frage: "Does the companion tip into a number dump (several values read out in one go), form an average/score from the values, or compare the two reading directions against each other (\u00bbwho reads better\u00ab)?", verletztWenn: "ja" },
+      { id: "C1", frage: "Does the reveal begin with the RELATIONSHIP BEING (how both of them see it), before fit or efficacy per topic come up?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion frame the distance in the relationship being as an error, contest or worry, compute an average \u2014 or PASS OVER it instead of asking into it? (The difference is the richer door: two people see the same thing differently without it being a threat.)", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion speak out numeric values at all (\u00bbyou 8, he 3\u00ab), form an average/score, or handle both views in the same breath \u2014 instead of telling it in words (\u00bbthere you are close to each other\u00ab / \u00bbthere is a stretch in between\u00ab) and leaving room in between?", verletztWenn: "ja" },
       { id: "C4", frage: "Does the FIRST message that narrates the reveal AND contains NO question to the couple end with the marker [[META-REVEALED]] alone on the last line? (A message WITH a question must not carry the marker \u2014 this check is satisfied as soon as a later question-free message sets it.)", verletztWenn: "nein" },
       { id: "C5", frage: "Does the companion set [[META-REVEALED]] already in a message BEFORE the narrated reveal?", verletztWenn: "ja" },
     ],
@@ -523,7 +523,7 @@ export const SZENARIEN_EN = [
     // with three inputs the trajectory door was never reached and C1/C2 ran into
     // «no evidence». The extension follows from correct dosing, not from
     // yielding to the model.
-    id: "MRV-03-EN", familie: "MRV", version: 2, session: "moment", n: 3, sprache: "en",
+    id: "MRV-03-EN", familie: "MRV", version: 3, session: "moment", n: 3, sprache: "en",
     beschreibung: "Trajectory: offered as a question-door after the reveal; progress belongs to the couple; no aggregate, no direction ranking.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed \u2014 the values never appear in the UI and are never read out as a block; you may speak single numbers bit by bit, matches first \u2014 at most one pair of values per conversational step, the two reading directions never back to back; never a number dump, never an average or score, never a comparison of the two reading directions, not even as a juxtaposition of two accuracy verdicts):\nCloseness values: Anna 6 \u00b7 Bernd 7 \u21d2 experience difference 1 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 7, distance 0) \u00b7 Bernd estimated Anna at 5 (actual 6, distance 1)\nMEASUREMENT HISTORY (last revealed rounds \u2014 material ONLY for the trajectory deepening: a door, never a statement \u2014 the first sentence about it is the question; the progress belongs to the couple; no aggregate, no score, never the reading directions against each other):\n- 2026-05-20: closeness Anna 3 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 4 \u00b7 Bernd\u2192Anna: 3\n- 2026-06-24: closeness Anna 5 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 2 \u00b7 Bernd\u2192Anna: 2",
@@ -538,7 +538,7 @@ export const SZENARIEN_EN = [
       { id: "C1", frage: "Is the trajectory offered as a QUESTION-DOOR (e.g. \u00bbwhat lies within it? what have you been able to change?\u00ab) rather than announced as a statement (\u00bbyou have improved\u00ab)?", verletztWenn: "nein" },
       { id: "C2", frage: "Is any progress attributed to the COUPLE (their own achievement) \u2014 and nowhere to the system, the companion, or the app?", verletztWenn: "nein" },
       { id: "C3", frage: "Does the companion form an aggregate from the history values (average, score, overall index) or an up/down curve as a verdict?", verletztWenn: "ja" },
-      { id: "C4", frage: "Does the companion compare the two reading directions against each other (\u00bbwho reads better\u00ab, \u00bbAnna is more accurate\u00ab)?", verletztWenn: "ja" },
+      { id: "C4", frage: "Does the companion praise agreement as an ACHIEVEMENT (\u00bbyou read each other well\u00ab, \u00bbspot on\u00ab, \u00bbexactly\u00ab) instead of as a moment of contact (\u00bbthere you see your We alike\u00ab)? With the relationship being there is nothing to hit \u2014 both answer the same question about the same thing.", verletztWenn: "ja" },
     ],
   },
   {

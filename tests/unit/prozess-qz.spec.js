@@ -38,20 +38,24 @@ const TAG = 86400000;
 const vor = tage => new Date(Date.now() - tage * TAG).toISOString();
 
 describe("Mess-Runden · Datenzyklus", () => {
-  it("erster Beitrag öffnet Runde, zweiter macht sie bereit; Erlebens-Differenz ≠ Lese-Genauigkeit", async () => {
+  it("erster Beitrag öffnet Runde, zweiter macht sie bereit; Wesen · Passung · Wirksamkeit", async () => {
     const backend = memoryBackend(null);
-    const r1 = await trageMessbeitragEin(backend, "A", { closeness: 4, guess: 7, fit: { AG1: 6 } });
+    const r1 = await trageMessbeitragEin(backend, "A", { wesen: 4, fit: { AG1: 6 }, wirksamkeit: { AG1: 3 } });
     expect(r1.status).toBe("open");
     expect(bereiteRunde(await backend.bstate.get("measurements"))).toBeNull();
-    const r2 = await trageMessbeitragEin(backend, "B", { closeness: 8, guess: 5, fit: { AG1: 9 } });
+    const r2 = await trageMessbeitragEin(backend, "B", { wesen: 8, fit: { AG1: 9 }, wirksamkeit: { AG1: 7 } });
     expect(r2.status).toBe("ready");
 
     const txt = formatiereMessrunde(r2, "Anna", "Bernd");
-    expect(txt).toContain("Erlebens-Differenz 4");                       // |4−8|, Beziehungs-Befund
-    expect(txt).toContain("Anna schätzte Bernd auf 7 (tatsächlich 8, Abstand 1)");   // Empathie-Signal
-    expect(txt).toContain("Bernd schätzte Anna auf 5 (tatsächlich 4, Abstand 1)");
-    expect(txt).toContain("AG1: Anna 6 · Bernd 9");
-    expect(txt).toContain("kein Fehler, kein Mittelwert");
+    /* S107 · Beide bewerten DASSELBE Dritte. Der Abstand ist kein Fehler,
+       sondern zwei Sichten — und es gibt nichts mehr zu schätzen. */
+    expect(txt).toContain("Beziehungswesen: Anna 4 · Bernd 8");
+    expect(txt).toContain("Abstand 4");
+    expect(txt).toContain("zwei Sichten auf dasselbe Dritte, kein Fehler, kein Mittelwert");
+    expect(txt).toContain("AG1: Anna 6 · Bernd 9");            // Passung
+    expect(txt).toMatch(/Wirksamkeit je Thema.*AG1: Anna 3/s);
+    // Nichts über Genauigkeit — es gibt keine.
+    expect(txt).not.toMatch(/schätzte|tatsächlich|Lese-/);
   });
 });
 
@@ -67,9 +71,9 @@ describe("UI · Prozessreflexion-Widget (verdeckt)", () => {
     const box = root.querySelector("#boxMess");
     expect(box.textContent).toContain("verdeckt");
     expect(box.textContent).toContain("Wöchentlicher Abend");            // Passung je aktivem AG
-    box.querySelector("#msNaehe").value = "4";
-    box.querySelector("#msZweit").value = "7";
+    box.querySelector("#msWesen").value = "4";
     box.querySelector('[data-pass="AG1"]').value = "6";
+    box.querySelector('[data-wirk="AG1"]').value = "3";   // S107 · Wirksamkeit
     await klick(box.querySelector("#msOk"));
     expect(box.textContent).toContain("verdeckt abgelegt");
 
@@ -78,10 +82,10 @@ describe("UI · Prozessreflexion-Widget (verdeckt)", () => {
     expect(root.querySelector("#scrProzess").classList.contains("pb-hidden")).toBe(true);
     await klick(root.querySelector("#btnMess"));                          // … dann frisch betreten
     expect(box.textContent).toContain("Dein Beitrag ist abgegeben");
-    expect(box.querySelector("#msNaehe")).toBeNull();
+    expect(box.querySelector("#msWesen")).toBeNull();
 
     const mr = await backendA.bstate.get("measurements");
-    expect(mr.items[0].values.A).toMatchObject({ closeness: 4, guess: 7, fit: { AG1: 6 } });   // S39: Beitrag trägt zusätzlich einen Zeitstempel (at)
+    expect(mr.items[0].values.A).toMatchObject({ wesen: 4, fit: { AG1: 6 }, wirksamkeit: { AG1: 3 } });   // S39: Beitrag trägt zusätzlich einen Zeitstempel (at)
   });
 });
 
@@ -146,14 +150,14 @@ describe("UI · Aufdeckung im Moment", () => {
       "MOMENT-BLOCK\n" + moment + "\nEND MOMENT-BLOCK",
     ]);
     const backend = memoryBackend(mock);
-    await trageMessbeitragEin(backend, "A", { closeness: 4, guess: 7, fit: {} });
-    await trageMessbeitragEin(backend, "B", { closeness: 8, guess: 5, fit: {} });
+    await trageMessbeitragEin(backend, "A", { wesen: 4, fit: {}, wirksamkeit: {} });
+    await trageMessbeitragEin(backend, "B", { wesen: 8, fit: {}, wirksamkeit: {} });
     const app = createApp({ doc: document, backend, root });
     await app.boot();
     await app.startChat("moment");
     await tick();
 
-    expect(mock.calls[0].messages[0].content).toContain("Erlebens-Differenz 4");   // verdeckt im Kontext
+    expect(mock.calls[0].messages[0].content).toContain("Beziehungswesen: Anna 4 · Bernd 8");   // verdeckt im Kontext
 
     root.querySelector("#pbInput").value = "Zeigt her.";
     await klick(root.querySelector("#btnSend"));

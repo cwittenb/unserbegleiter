@@ -13,7 +13,7 @@ import { paareAusVerlauf, baueAusschnitt, paarWaehlbar, paarGrund, waehleUm,
 import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
 import { K, setKorpusSprache, stelleKorpusBereit } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
-  trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf, pruefeLeserichtung, formatiereLeseMarker } from "./prozess.js";
+  trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf } from "./prozess.js";
 import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser } from "./design.js";
 import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
@@ -1310,26 +1310,23 @@ export function createApp({ doc, backend, root, diktat }) {
       // Aufträgen, freigegebenem Material beider, EIGENER Zeitleiste und den
       // letzten gemeinsamen Sessions. Ist nichts da → kalter Start (kein Kontext).
       if (art === "solo") {
-        const [goals, freiA, freiB, timeline, momentLog, merkposten, messungenSolo, markerAlt] = await Promise.all([
+        const [goals, freiA, freiB, timeline, momentLog, merkposten] = await Promise.all([
           backend.bstate.get("goals").catch(() => null),
           Promise.resolve().then(() => backend.handover.get("A")).catch(() => null),
           Promise.resolve().then(() => backend.handover.get("B")).catch(() => null),
           backend.pstate.get("timeline").catch(() => null),
           backend.bstate.get("momentLog").catch(() => null),
           backend.pstate.get("merkposten").catch(() => null),
-          backend.bstate.get("measurements").catch(() => null),
-          backend.pstate.get("leseMarker").catch(() => null),
         ]);
-        // S92 · Marker-Regel (Slice 3): wiederkehrend schwache Lese-Richtung —
-        // je Musterlage EINMAL als Material eingespielt (merken statt melden,
-        // Schlüssel in pstate); das Ansprechen bleibt anlassgebunden beim Modell.
-        let leseMarker = null;
-        const befund = pruefeLeserichtung(messungenSolo, info.role);
-        if (befund && befund.schluessel !== (markerAlt && markerAlt.schluessel)) {
-          leseMarker = formatiereLeseMarker(befund, info.name, info.partner);
-          backend.pstate.set("leseMarker", { schluessel: befund.schluessel, at: new Date().toISOString() }).catch(() => {});
-        }
-        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten, leseMarker });
+        /* S107 · Der Lese-Marker ist entfallen. Er meldete eine wiederkehrend
+           schwache Lese-Richtung als Material in den Einzelraum — also eine
+           Aussage ueber eine PERSON, abgeleitet aus einer Trefferquote. Mit dem
+           Empathie-Signal faellt seine Grundlage weg.
+           `leseMarker` bleibt als Parameter von baueSoloKontext bestehen (der
+           Kontext-Bauer laesst ihn schlicht aus, wenn er null ist) — so bleibt
+           die Stelle sichtbar, an der spaeter ein Nachfolger stehen koennte,
+           ohne dass jetzt etwas Halbes dasteht. */
+        const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten, leseMarker: null });
         if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
         /* U8.6 · Der Anlass kommt NACH dem Kontext: Er verweist auf einen
            Eintrag, den der Kontext gerade eingefuehrt hat (samt {vid:…}), und

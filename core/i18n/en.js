@@ -294,9 +294,15 @@ export const en = {
   "messiv.rhTage": "every {n} days",
   "mess.abgegeben": "Your part is in — it will be revealed together in the next shared moment, bit by bit.",
   "mess.verdeckt": "Process Reflection — face down; {partner} sees your values only at the shared reveal",
-  "mess.closeness": "How close did you feel to {partner} {zeitraum}? (1–10)",
-  "mess.guess": "And your guess: how close did {partner} feel to you {zeitraum}? (1–10)",
+  "mess.gruppeWesen": "Your relationship being",
+  /* S107 · The relationship being replaces closeness/guess — both rate the
+     same THIRD, not each other. See docs/designnotiz-beziehungswesen.md. */
+  "mess.wesen": "How is your relationship being doing {zeitraum}? (1–10)",
+  "mess.wesenHilfe": "Suppose your relationship were a being of its own, with its own needs and feelings — how has it been faring lately?",
   "mess.fit": "How closely does the theme \u201c{text}\u201d match your current development focus? (1–10)",
+  // S107 · Efficacy: felt individually. A difference between the two on the
+  // SAME topic is a conversation opener in itself.
+  "mess.wirksam": "How effective do you feel on the topic \"{text}\"? (1\u201310)",
   "mess.abgeben": "Submit Face Down",
   "mess.danke": "Thank you — placed face down.",
   "mess.bereit": " You have both taken your turn: the reveal awaits in your next quality time.",

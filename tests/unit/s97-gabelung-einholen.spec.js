@@ -76,11 +76,13 @@ describe("S97 · Katalog", () => {
     }
   });
 
-  it("MRV-03 v2: fünf Eingaben, damit die Trajektorie erreichbar ist (de + en)", () => {
+  it("MRV-03: fünf Eingaben, damit die Trajektorie erreichbar ist (de + en)", () => {
+    // S107 · Die Version zählt hoch, sobald sich Checks oder Kontext ändern —
+    // hier geprüft wird der Zuschnitt (fünf Eingaben), nicht die Zahl.
     for (const id of ["MRV-03", "MRV-03-EN"]) {
       const s = byId(id);
       expect(s, id).toBeTruthy();
-      expect(s.version, id).toBe(2);
+      expect(s.version, id).toBeGreaterThanOrEqual(2);
       expect(s.eingaben.length, id).toBe(5);
     }
   });

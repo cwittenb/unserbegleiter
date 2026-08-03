@@ -251,24 +251,32 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
     const aktive = (((goals && goals.items) || [])).filter(a => a.status === "active" && a.art === "shared");
     box.innerHTML =
       `<div class="pb-sub">${t("mess.verdeckt", { partner: esc(state.info.partner) })}</div>` +
-      `<label class="rz-fein-block">${t("mess.closeness", { partner: esc(state.info.partner), zeitraum })}<br><input id="msNaehe" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
-      `<label class="rz-fein-block">${t("mess.guess", { partner: esc(state.info.partner), zeitraum })}<br><input id="msZweit" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
+      /* S107 · Das Beziehungswesen statt closeness/guess. Die Erläuterung steht
+         DABEI, nicht in einem Hinweis: Die Metapher trägt nur, wenn sie im
+         Moment des Antwortens da ist. */
+      `<div class="pb-sub rz-oben-3">${t("mess.gruppeWesen")}</div>` +
+      `<p class="rz-klein-leise">${t("mess.wesenHilfe")}</p>` +
+      `<label class="rz-fein-block">${t("mess.wesen", { zeitraum })}<br><input id="msWesen" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
       // S88 · Themen-Regler: Gruppenzeile sagt die Herkunft (und implizit,
       // warum individuelle Ziele hier fehlen); die Frage traegt KEINE Wire-ID
       // mehr — die ID bleibt im data-pass-Attribut und im fit-Objekt (Wire
       // unberuehrt: formatiereMessrunde/Agenda zeigen sie weiter als Referenz).
       (aktive.length ? `<div class="pb-sub rz-oben-3">${t("mess.gruppeThemen")}</div>` : "") +
+      /* S107 · Zwei Regler je Thema: Passung UND Wirksamkeit. Zusammen ergeben
+         sie eine Diagnostik, die es bisher nicht gab — hohe Passung bei
+         niedriger Wirksamkeit ist die Stelle, an der das Paar Hilfe braucht. */
       aktive.map(a =>
-        `<label class="rz-fein-block">${t("mess.fit", { text: esc(a.text) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" class="rz-voll"></label>`
+        `<label class="rz-fein-block">${t("mess.fit", { text: esc(a.text) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
+        `<label class="rz-fein-block">${t("mess.wirksam", { text: esc(a.text) })}<br><input data-wirk="${esc(a.id)}" type="range" min="1" max="10" value="5" class="rz-voll"></label>`
       ).join("") +
       `<button class="pb-btn primary" id="msOk">${t("mess.abgeben")}</button>`;
     box.querySelector("#msOk").addEventListener("click", async () => {
-      const fit = {};
+      const fit = {}, wirksamkeit = {};
       for (const inp of box.querySelectorAll("[data-pass]")) fit[inp.getAttribute("data-pass")] = +inp.value;
+      for (const inp of box.querySelectorAll("[data-wirk]")) wirksamkeit[inp.getAttribute("data-wirk")] = +inp.value;
       const runde = await trageMessbeitragEin(backend, state.info.role, {
-        closeness: +box.querySelector("#msNaehe").value,
-        guess: +box.querySelector("#msZweit").value,
-        fit,
+        wesen: +box.querySelector("#msWesen").value,
+        fit, wirksamkeit,
       });
       await zeitleistenEintrag(t("zeitleiste.tpMess"), t("zeitleiste.eintragMess"));
       box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p class="rz-klein">${t("mess.danke")}` +

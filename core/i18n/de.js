@@ -307,9 +307,17 @@ export const de = {
   "messiv.rhTage": "alle {n} Tage",
   "mess.abgegeben": "Dein Beitrag ist abgegeben — aufgedeckt wird gemeinsam im nächsten Moment, häppchenweise.",
   "mess.verdeckt": "Prozessreflexion — verdeckt; {partner} sieht deine Werte erst bei der gemeinsamen Aufdeckung",
-  "mess.closeness": "Wie nah hast du dich {partner} {zeitraum} gefühlt? (1–10)",
-  "mess.guess": "Und was schätzt du: Wie nah hat sich {partner} dir {zeitraum} gefühlt? (1–10)",
+  "mess.gruppeWesen": "Euer Beziehungswesen",
+  /* S107 · Das Beziehungswesen tritt an die Stelle von closeness/guess.
+     Beide bewerten DASSELBE Dritte statt einander — damit gibt es keinen wahren
+     Wert mehr, an dem jemand falsch liegen könnte, und keine Rollen (Ratender /
+     Geratener). Siehe docs/designnotiz-beziehungswesen.md. */
+  "mess.wesen": "Wie geht es eurem Beziehungswesen {zeitraum}? (1–10)",
+  "mess.wesenHilfe": "Angenommen, eure Beziehung wäre ein eigenständiges Wesen mit eigenen Bedürfnissen und Gefühlen — wie ergeht es ihm in der letzten Zeit?",
   "mess.fit": "Wie genau trifft das Thema „{text}\" euren aktuellen Entwicklungsfokus? (1–10)",
+  // S107 · Wirksamkeit: individuell erlebt. Ein Unterschied zwischen euch beim
+  // SELBEN Thema ist ein Gesprächsanlass für sich.
+  "mess.wirksam": "Wie wirksam fühlst du dich beim Thema „{text}\"? (1–10)",
   "mess.abgeben": "Verdeckt abgeben",
   "mess.danke": "Danke — verdeckt abgelegt.",
   "mess.bereit": " Ihr seid beide dran gewesen: Die Aufdeckung wartet in eurer nächsten Qualitätszeit.",

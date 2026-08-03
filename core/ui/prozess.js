@@ -102,17 +102,16 @@ export function formatiereMessrunde(runde, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const a = runde.values.A, b = runde.values.B;
   const zeilen = [
-    fuelle(KT("mess.closeness"), { nameA, a: a.closeness, nameB, b: b.closeness, diff: Math.abs(a.closeness - b.closeness) }),
-    fuelle(KT("mess.lese"), {
-      nameA, nameB,
-      x: a.guess, y: b.closeness, d: Math.abs(a.guess - b.closeness),
-      x2: b.guess, y2: a.closeness, d2: Math.abs(b.guess - a.closeness),
-    }),
+    fuelle(KT("mess.wesen"), { nameA, a: a.wesen, nameB, b: b.wesen, diff: Math.abs(a.wesen - b.wesen) }),
   ];
   const pk = Object.keys(a.fit || {});
   if (pk.length)
     zeilen.push(KT("mess.fit") + pk.map(k =>
       k + ": " + nameA + " " + a.fit[k] + " · " + nameB + " " + ((b.fit || {})[k] ?? "–")).join(" · "));
+  const wk = Object.keys(a.wirksamkeit || {});
+  if (wk.length)
+    zeilen.push(KT("mess.wirksam") + wk.map(k =>
+      k + ": " + nameA + " " + a.wirksamkeit[k] + " · " + nameB + " " + ((b.wirksamkeit || {})[k] ?? "–")).join(" · "));
   return zeilen.join("\n");
 }
 
@@ -152,41 +151,28 @@ export function formatiereVerlauf(mr, nameA, nameB, k = 3) {
   if (!runden.length) return null;
   const zeilen = runden.map(r => fuelle(KT("mess.verlaufZeile"), {
     datum: (r.revealedAt || r.startAt || "").slice(0, 10),
-    nameA, nameB, a: r.values.A.closeness, b: r.values.B.closeness,
-    d1: Math.abs((r.values.A.guess ?? 0) - r.values.B.closeness),
-    d2: Math.abs((r.values.B.guess ?? 0) - r.values.A.closeness),
+    nameA, nameB, a: r.values.A.wesen, b: r.values.B.wesen,
+    diff: Math.abs((r.values.A.wesen ?? 0) - (r.values.B.wesen ?? 0)),
   }));
   return KT("mk.prozessVerlauf") + "\n" + zeilen.map(z => "- " + z).join("\n");
 }
 
-/** Muster in der Richtung role→Partner über die letzten `fenster` aufgedeckten
- *  Runden: „distanz" (dreimal in Folge deutlich daneben) vor Vorzeichen-Bias
- *  („ueberschaetzt": Not wird überlesen · „unterschaetzt": Distanz lesen, wo
- *  keine ist). Rückgabe { muster, schluessel, ids } oder null; der Schlüssel
- *  macht das Angebot einmalig je Musterlage (merken statt melden). */
-export function pruefeLeserichtung(mr, role, opt = {}) {
-  const fenster = opt.fenster || LESE_MUSTER.fenster;
-  const deutlich = opt.deutlich || LESE_MUSTER.deutlich;
-  const partner = role === "A" ? "B" : "A";
-  const runden = ((mr && mr.items) || [])
-    .filter(r => r.status === "revealed" && r.values && r.values[role] && r.values[partner]);
-  if (runden.length < fenster) return null;
-  const letzte = runden.slice(-fenster);
-  const ds = letzte.map(r => (r.values[role].guess ?? 0) - (r.values[partner].closeness ?? 0));
-  const ids = letzte.map(r => r.id);
-  const mit = m => ({ muster: m, schluessel: m + ":" + ids.join("+"), ids });
-  if (ds.every(d => Math.abs(d) >= deutlich)) return mit("distanz");
-  if (ds.every(d => d > 0)) return mit("ueberschaetzt");
-  if (ds.every(d => d < 0)) return mit("unterschaetzt");
-  return null;
-}
+/* S107 · `pruefeLeserichtung` und `formatiereLeseMarker` sind ERSATZLOS
+   entfallen.
+   Sie lasen aus drei aufeinander folgenden Runden ein Muster — "distanz",
+   "ueberschaetzt" (Not wird ueberlesen), "unterschaetzt" (Distanz lesen, wo
+   keine ist) — und machten daraus ein einmaliges Angebot. Sauber gebaut, mit
+   Merken-statt-Melden.
+   Und die reinste Form dessen, was mit dem Empathie-Signal verworfen wurde:
+   eine Aussage ueber eine PERSON, abgeleitet aus einer Trefferquote.
 
-/** Marker-Befund als Solo-Kontext-Block (Kopf trägt die Umgangsregeln). */
-export function formatiereLeseMarker(befund, me, partner) {
-  const KT = key => K().korpusTexte[key];
-  const map = { distanz: "mess.markerDistanz", ueberschaetzt: "mess.markerUeber", unterschaetzt: "mess.markerUnter" };
-  return KT("sk.leseMarkerKopf") + "\n" + fuelle(KT(map[befund.muster]), { me, partner, deutlich: LESE_MUSTER.deutlich });
-}
+   Der Gedanke bleibt wertvoll: Dass einer die Beziehung wiederholt deutlich
+   anders sieht als der andere, laesst sich ueber das Beziehungswesen implizit
+   erheben — dann ist es eine Beobachtung ueber die BEZIEHUNG und laesst sich
+   als gemeinsames Raetsel ansprechen. Ein Nachfolge-Muster ("Wesen dreimal in
+   Folge weit auseinander", "Passung hoch bei anhaltend niedriger Wirksamkeit")
+   liegt im Backlog: erst messen, dann Muster lesen. Ein Muster-Erkenner ohne
+   Daten ist geraten. Siehe docs/designnotiz-beziehungswesen.md §5. */
 
 /* ================= Qualitätszeit-Leiter ================= */
 
