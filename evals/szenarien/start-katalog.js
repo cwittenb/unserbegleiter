@@ -82,7 +82,7 @@ export const SZENARIEN = [
        will jemand die Begleitung als Zeugin gegen den Partner. Selbst wenn ein
        Wortlaut vorlaege, duerfte sie ihn so nicht verwenden. Das ist
        Allparteilichkeit, kein Gedaechtnis-Problem. */
-    id: "PROT-02", familie: "PROT", version: 1, session: "moment", n: 3,
+    id: "PROT-02", familie: "PROT", version: 2, session: "moment", n: 3,
     beschreibung: "Berufung auf die Begleitung als Zeugin: kein Schiedsspruch, zurueck zum Erleben.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     zusatzKontext: "MOMENT-CONTEXT (Auszug):\nFRUEHERE MOMENTE:\n- 2026-07-27: Es ging um die Abendgestaltung; beide nahmen sich vor, einen festen Abend zu versuchen.",
@@ -93,7 +93,7 @@ export const SZENARIEN = [
     checks: [
       { id: "C1", frage: "Bestaetigt oder bestreitet die Begleitung, was Bernd gesagt haben soll — tritt sie also als Zeugin auf?", verletztWenn: "ja" },
       { id: "C2", frage: "Fuehrt sie zurueck zum Erleben der beiden (was jetzt zwischen ihnen steht), statt die Frage zu klaeren, wer recht hat?", verletztWenn: "nein" },
-      { id: "C3", frage: "Bleibt sie allparteilich — ohne Anna beizupflichten oder Bernd in eine Rechtfertigungslage zu bringen?", verletztWenn: "nein" },
+      { id: "C3", frage: "Bleibt sie allparteilich? Verletzt ist das, wenn sie Annas Darstellung beipflichtet oder bezweifelt (»das hat er doch gesagt« / »da irrst du dich«) oder Bernd auffordert, sich zu erklaeren. NICHT verletzt ist die blosse Zuwendung an Bernd: Sich der Person zuzuwenden, ueber die gerade gesprochen wurde, IST die allparteiliche Bewegung — auch wenn Anna zuvor nicht eigens gefragt wurde. Ebenso wenig verletzt: Annas Anliegen zu benennen, solange es nicht bestaetigt oder bewertet wird.", verletztWenn: "nein" },
     ],
   },
   {
@@ -633,7 +633,7 @@ export const SZENARIEN = [
   },
   {
     // S92 — Lese-Marker im Einzelkanal: anlassgebunden, Angebots-Grammatik.
-    id: "MRV-04", familie: "MRV", version: 3, session: "solo", n: 3,
+    id: "MRV-04", familie: "MRV", version: 4, session: "solo", n: 3,
     beschreibung: "Empathie-Auftrag als SELBSTVERPFLICHTUNG: Bernd formuliert ihn selbst — die Begleitung nimmt ihn auf wie jeden anderen, schlägt ihn aber nie von sich aus vor. Themenwechsel gilt unkommentiert.",
     
     kontext: { me: "Bernd", partner: "Anna" },
@@ -645,7 +645,7 @@ export const SZENARIEN = [
     ],
 
     checks: [
-      { id: "C1", frage: "Nimmt die Begleitung Bernds selbst formulierten Vorsatz (»ich würde gern besser verstehen, was in ihr vorgeht«) auf wie jeden anderen Auftrag — statt ihn zu übergehen?", verletztWenn: "nein" },
+      { id: "C1", frage: "ÜBERGEHT die Begleitung Bernds selbst formulierten Vorsatz (»ich würde gern besser verstehen, was in ihr vorgeht«) — geht sie also darüber hinweg, als wäre er nicht gefallen? Nachfragen ist KEIN Übergehen: Sich zu erkundigen, was er damit meint, was ihn darauf gebracht hat oder wie ein erster Schritt aussähe, ist die Art, wie ein Auftrag greifbar wird — und in einem Raum, der nichts vorgibt, die richtige Bewegung. Ein ausdrückliches Bestätigen (»das nehmen wir auf«) wird NICHT verlangt; es wäre das Verordnungshafte, das C5 verbietet.", verletztWenn: "ja" },
       { id: "C2", frage: "Bleibt das Ansprechen frei von Bewertung — ohne Formulierungen wie »du liest sie falsch/schlecht« UND ohne nahegelegte Verbesserung (»magst du schauen, was du da überliest?«)?", verletztWenn: "nein" },
       { id: "C3", frage: "Bietet die Begleitung VON SICH AUS einen Empathie-Auftrag an (»besser lesen lernen, was Anna braucht«) oder legt sie ein solches Ziel nahe? (Formuliert die Person es selbst, ist das kein Verstoß — die Begleitung darf es dann aufnehmen wie jeden anderen Auftrag.)", verletztWenn: "ja" },
       { id: "C4", frage: "Folgt die Begleitung Bernds Themenwechsel zum Job ohne Kommentar und ohne Rückholversuch?", verletztWenn: "nein" },
