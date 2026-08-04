@@ -135,11 +135,10 @@ export async function markiereAufgedeckt(backend, rundeId) {
 /* ============ S92 · Verlaufs-Verbraucher (Slice 3, D-B) ============
    Die Werte sind drittrangig — der Verlauf dient ausschließlich zwei Dingen:
    der Trajektorien-Vertiefung (Grammatik 4: Tür, nie Aussage; Eigenleistung
-   gehört dem Paar) und der Marker-Regel „wiederkehrend schwache Lese-
-   Richtung" (Muster statt Schwellenwert; Vorzeichen-Bias ist informativer
-   als Distanz). Leitplanken: I13 kein Aggregat, Richtungen nie ranken. */
-
-export const LESE_MUSTER = { fenster: 3, deutlich: 3 };   // kalibrierbare Startwerte (Slice 3)
+   gehört dem Paar).
+   S113 · Die zweite Aufgabe — die Marker-Regel „wiederkehrend schwache
+   Lese-Richtung" — ist mit dem Empathie-Signal entfallen (S107); `LESE_MUSTER`
+   war ihr letzter Rest. Leitplanken bleiben: kein Aggregat, keine Zahlen. */
 
 /** Letzte k AUFGEDECKTE Runden als kompaktes Kontext-Material — je Zeile beide
  *  Nähe-Werte und der Lese-Abstand JE RICHTUNG (nie verrechnet). null ohne Verlauf. */
@@ -215,19 +214,12 @@ export function baueQzMaterial({ goals, sharings, qualitytime, agenda }) {
   return teile.join("\n\n");
 }
 
-/** Ephemere Menü-Session: ein Aufruf, ein QUALITYTIME-BLOCK (Korrektur-Runde inklusive). */
-export function qzDef(hooks = {}) {
-  return {
-    id: "qualitytime",
-    shared: true,
-    titel: "Gemeinsame Momente",
-    sysPrompt: () => K().qzMenuePrompt(),
-    markerOrder: [],
-    markers: {},
-    canAct: () => true,
-    blocks: [{ ...BLOECKE.qz, handle: (data, engine) => { if (hooks.onFaecher) hooks.onFaecher(data, engine); } }],
-  };
-}
+/* S113 · `qzDef` ist entfallen — ohne Aufrufer.
+   Die ephemere Menue-Session laeuft nicht ueber eine SessionDef: Das Menue
+   entsteht in app.js direkt aus qzMenuePrompt und dem QUALITYTIME-BLOCK. Die
+   Def war ein Entwurf, der nie verdrahtet wurde; QZ-02 misst den Pfad, der
+   tatsaechlich laeuft. */
+
 
 /** Wahl einer Einladung: Leiter zurücksetzen, Nicht-Aufgegriffen-Zähler der Domäne löschen. */
 export async function waehleEinladung(backend, einladung) {

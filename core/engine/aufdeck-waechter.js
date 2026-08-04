@@ -78,26 +78,17 @@ export function tafelSchonGezeigt(messages) {
 // wird von der SessionDef bzw. dem Eval-Runner sprachrichtig hereingereicht.
 // Diese Konstante bleibt der deutsche Rückfall — für Aufrufer ohne Korpus
 // (ältere Tests, Werkzeuge) und damit das Modul importfrei bleibt.
-export const AUFDECK_REVISION =
-  "[SYSTEM-REVISION: Deine letzte Nachricht gibt Inhalte der Stapel im Text wieder — " +
-  "die zeigt ausschließlich die Tafel der App (STAPEL-WIEDERGABE-VERBOT). " +
-  "Wiederhole die Nachricht ohne jede Wiedergabe von Stapel-Inhalten; nenne höchstens die RICHTUNG. " +
-  "Wenn beide zugestimmt haben und die Richtung gewählt ist, beende die Nachricht mit genau einer " +
-  "Aufdeck-Marke ([[REVEAL-A]] oder [[REVEAL-B]]) allein in der letzten Zeile.]";
 
-/**
- * Validator für gemeinsamDef (Engine-Hook `validiereAntwort`):
- * liefert die Revisions-Nachricht oder null.
- */
-export function pruefeAufdeckAntwort(text, { messages, nameA, nameB, revision }) {
-  const erste = (messages || []).find(m => m.role === "user");
-  if (!imAufdeckPfad(erste && erste.content)) return null;      // S73: nur im Aufdeck-Pfad
-  if (tafelSchonGezeigt(messages)) return null;
-  if (/\[\[REVEAL(-A|-B)?\]\]/.test(text || "")) return null;   // Marke gesetzt → App übernimmt
-  const items = extrahiereStapelItems(erste && erste.content, [nameA || "", nameB || ""]);
-  if (!items.length) return null;
-  return findetStapelLeck(text || "", items) ? (revision || AUFDECK_REVISION) : null;
-}
+/* S113 · `pruefeAufdeckAntwort` und `AUFDECK_REVISION` sind entfallen.
+   Sie prueften die FERTIGE Antwort auf durchgereichte Stapel-Inhalte und
+   liessen sie neu schreiben. Seit S105.3 nimmt nichts mehr zurueck: Was
+   gestreamt wurde, war gelesen — das Verstecken raeumte nur das Protokoll auf.
+   An ihre Stelle trat `aufdeckSchaerfung` (unten): Sie beugt VOR, solange die
+   Tafel nicht gezeigt ist, und fragt dafuer den ZUSTAND statt den Text.
+   Die Hilfsfunktionen bleiben — `imAufdeckPfad` und `tafelSchonGezeigt` traegt
+   die Schaerfung, `findetStapelLeck` und `extrahiereStapelItems` sind weiterhin
+   einzeln geprueft. */
+
 
 /* S105.3 · VORWAERTS statt rueckwaerts.
    Der Waechter unten prueft die fertige Antwort auf durchgereichte

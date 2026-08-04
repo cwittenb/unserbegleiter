@@ -86,25 +86,11 @@ export function findetUrteil(text) {
 
 // S94 · Wortlaut im Korpus (steuerTexte.urteilsRevision); diese Konstante ist
 // der deutsche Rückfall für Aufrufer ohne Korpus. Siehe aufdeck-waechter.js.
-export const URTEILS_REVISION =
-  "[SYSTEM-REVISION: Deine letzte Nachricht enthält ein Urteil aus der Richterposition " +
-  "(\"Das ist …\", \"Das klingt …\", \"eine starke Fassung\" o. ä.). Auch positive Urteile sind Urteile. " +
-  "Wiederhole die Nachricht ohne jede Benotung: Spiegle nah an den Worten der Person, " +
-  "oder — wenn du eine eigene Wahrnehmung anbietest — aus der Ich-Perspektive MIT Rückfrage " +
-  "(\"Für mich klingt das wie … – stimmt das für dich?\"). Fällt dir nichts Substanzielles auf, " +
-  "ist die beste Spiegelung kurz oder keine: Stell die nächste Frage. " +
-  "Inhalt und Länge bleiben sonst gleich.]";
 
-/**
- * Validator für alle vier SessionDefs (Engine-Hook `validiereAntwort`):
- * liefert die Revisions-Nachricht oder null.
- *
- * Marken-/Block-Antworten sind ausgenommen: dort gehört die letzte Zeile der
- * App, und eine Revisions-Runde würde die Dramaturgie verzögern.
- */
-export function pruefeUrteilsAntwort(text, revision) {
-  const t = String(text || "");
-  if (/\[\[[A-Z][A-Z0-9-]*\]\]/.test(t)) return null;   // Marke → App übernimmt
-  if (/\b[A-Z]+-BLOCK\b/.test(t)) return null;          // Block → Protokoll, kein Spiegel
-  return findetUrteil(t) ? (revision || URTEILS_REVISION) : null;
-}
+/* S113 · `pruefeUrteilsAntwort` und `URTEILS_REVISION` sind entfallen.
+   Ein Praedikats-Urteil steckt im TEXT selbst — verweigern laesst sich da
+   nichts, und zurueckgenommen wird seit S105.3 nichts mehr. Die Regel traegt
+   seit S105.4 der Prompt allein, samt der Form, die richtig waere ("Das finde
+   ich einen schoenen Impuls" statt "Das ist ein schoener Impuls").
+   `findetUrteil` bleibt: Es ist der Erkenner, einzeln geprueft, und ein
+   moeglicher Baustein, falls die Regel je wieder ein Netz braucht. */

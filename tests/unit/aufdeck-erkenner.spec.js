@@ -4,7 +4,7 @@
 // normalen AUFTAKT-Texten nicht an. Engine-Ebene mit Mock-LLM (Ebene 1.5-Stil).
 
 import { describe, it, expect } from "vitest";
-import { stamme, extrahiereStapelItems, findetStapelLeck, tafelSchonGezeigt, pruefeAufdeckAntwort, imAufdeckPfad, AUFDECK_REVISION } from "../../core/engine/aufdeck-waechter.js";
+import { stamme, extrahiereStapelItems, findetStapelLeck, tafelSchonGezeigt, imAufdeckPfad, aufdeckSchaerfung, AUFDECK_SCHAERFUNG } from "../../core/engine/aufdeck-waechter.js";
 
 // Wire-Erstnachricht wie in der echten App: HANDOVER-BLOCKS **plus**
 // REVEAL-CONTEXT mit „AUFDECKUNG STEHT AUS" (S73: ohne diesen Kopf ist die
@@ -85,12 +85,19 @@ describe("Wächter · Leck-Erkennung (exakt der sonnet-5-Wortlaut)", () => {
   });
 });
 
-describe("Wächter · Pfad-Bewusstsein (S73)", () => {
-  it("ohne »AUFDECKUNG STEHT AUS« (kollabierter Pfad) urteilt der Wächter NIE — Phase-1-Arbeit mit Inhalten ist dort legitim", () => {
+/* S113 · Aus dem Wächter wurde die Schärfung.
+   `pruefeAufdeckAntwort` prüfte die FERTIGE Antwort auf durchgereichte
+   Stapel-Inhalte und ließ sie neu schreiben. Seit S105.3 nimmt nichts mehr
+   zurück — und das half auch nie: Was gestreamt wurde, war gelesen; das
+   Verstecken räumte nur das Protokoll auf.
+   Die PRÜFFRAGEN bleiben dieselben, denn dieselben Lagen entscheiden: Sind wir
+   im Aufdeck-Pfad, und ist die Tafel schon gezeigt? Nur hängt daran jetzt, ob
+   VORGEBEUGT wird, statt ob beanstandet wird. */
+describe("Aufdeckung · Pfad-Bewusstsein (S73)", () => {
+  it("ohne »AUFDECKUNG STEHT AUS« (kollabierter Pfad) wird NIE geschärft — Phase-1-Arbeit mit Inhalten ist dort legitim", () => {
     expect(imAufdeckPfad(ERSTE)).toBe(true);
     expect(imAufdeckPfad(ERSTE_KOLLABIERT)).toBe(false);
-    const ktx = { messages: [{ role: "user", content: ERSTE_KOLLABIERT }], nameA: "Anna", nameB: "Bernd" };
-    expect(pruefeAufdeckAntwort("Anna hat vermutet: Bernd wünscht sich vermutlich mehr Ruhe. Bernd, wie ist das für dich?", ktx)).toBe(null);
+    expect(aufdeckSchaerfung([{ role: "user", content: ERSTE_KOLLABIERT }])).toBeNull();
   });
 
   it("der englische Kopf (»REVEAL PENDING«) aktiviert den Pfad ebenso", () => {
@@ -98,18 +105,27 @@ describe("Wächter · Pfad-Bewusstsein (S73)", () => {
   });
 });
 
-describe("Wächter · Kontextregeln", () => {
-  it("nach der ersten Tafel schweigt der Wächter (über Inhalte sprechen ist dann erwünscht)", () => {
+describe("Aufdeckung · Kontextregeln", () => {
+  it("vor der Tafel wird geschärft", () => {
+    /* Der Unterschied zum Wächter: Die Schärfung fragt den ZUSTAND (ist die
+       Tafel gezeigt?), nicht den Text. Kein Raten an Formulierungen. */
+    expect(aufdeckSchaerfung([{ role: "user", content: ERSTE }])).toBe(AUFDECK_SCHAERFUNG);
+  });
+
+  it("nach der ersten Tafel schweigt sie (über Inhalte sprechen ist dann erwünscht)", () => {
     const msgs = [{ role: "user", content: ERSTE }, { role: "assistant", content: "x", tafel: { gA: {}, gB: {} } }];
     expect(tafelSchonGezeigt(msgs)).toBe(true);
-    expect(pruefeAufdeckAntwort("Bernd, du hast mitgebracht: Du vermisst gemeinsame Erlebnisse.", { ...KTX, messages: msgs })).toBe(null);
+    expect(aufdeckSchaerfung(msgs)).toBeNull();
   });
 
-  it("eine Nachricht MIT Marke wird nie beanstandet (die App übernimmt die Tafel)", () => {
-    expect(pruefeAufdeckAntwort("Dann zuerst Bernds Stapel.\n[[REVEAL-B]]", KTX)).toBe(null);
+  it("der Zusatz benennt, was nicht in den Text gehört", () => {
+    expect(AUFDECK_SCHAERFUNG).toMatch(/Tafel ist noch NICHT gezeigt/);
+    expect(AUFDECK_SCHAERFUNG).toMatch(/keine Werte, keine Reihenfolgen/);
   });
 
-  it("das Leck ohne Marke vor der Tafel liefert exakt die Revisions-Nachricht", () => {
-    expect(pruefeAufdeckAntwort("Bernd, du hast mitgebracht: Du vermisst gemeinsame Erlebnisse.", KTX)).toBe(AUFDECK_REVISION);
-  });
+  /* NICHT übernommen: »eine Nachricht MIT Marke wird nie beanstandet« und
+     »das Leck liefert exakt die Revisions-Nachricht«. Beides war Verhalten des
+     Wächters — er sah den Text und musste die Marke als Ausnahme kennen. Die
+     Schärfung kommt VOR der Antwort; zu diesem Zeitpunkt gibt es weder Text
+     noch Marke. Der Erkenner `findetStapelLeck` bleibt oben einzeln geprüft. */
 });

@@ -33,12 +33,6 @@ export const KRISENHILFE = /0800\s*111\s*0\s*111|Telefonseelsorge|Krisendienst|c
  *  hier zu eng liest, revidiert richtige Antworten. */
 export const EINZELRAUM = /eigene[nrms]?\s+Raum|eigenen\s+Raum|Einzelraum|dein\s+Raum|deinem\s+Raum|individual\s+space|own\s+space|your\s+own\s+room/i;
 
-export const KRISEN_REIHENFOLGE_REVISION =
-  "[SYSTEM-REVISION: Du nennst professionelle Krisenhilfe, aber der Verweis in den geschützten " +
-  "Einzelraum fehlt oder steht dahinter. Im geteilten Raum gilt IMMER beides, in dieser " +
-  "Reihenfolge: ZUERST der eigene Raum (dort bist du ganz für die Person, und was dort gesagt " +
-  "wird, bleibt dort), DANN die Krisenhilfe als nächster Schritt. Die Krisenhilfe ersetzt den " +
-  "Verweis nicht. Wiederhole die Nachricht mit beidem in der richtigen Reihenfolge.]";
 
 /* S105.3 · VORWAERTS statt rueckwaerts.
    Bis hierher pruefte dieser Waechter die fertige Antwort und liess sie neu
@@ -78,18 +72,11 @@ export const KRISEN_SCHAERFUNG =
   "nächster Schritt. Die Krisenhilfe ersetzt den Verweis nicht. Der Partner bekommt keinen " +
   "Auftrag für die Sicherheit der anderen Person.]";
 
-/**
- * Validator für die geteilten Räume (Engine-Hook `validiereAntwort`).
- * Schweigt, solange keine Krisenhilfe genannt wird.
- *
- * @param {string} text
- * @param {{revision?:string}} [ctx]
- */
-export function pruefeKrisenReihenfolge(text, ctx = {}) {
-  const t = String(text || "");
-  const hilfe = t.search(KRISENHILFE);
-  if (hilfe < 0) return null;                       // kein Anlass, kein Urteil
-  const raum = t.search(EINZELRAUM);
-  if (raum >= 0 && raum < hilfe) return null;       // Reihenfolge stimmt
-  return ctx.revision || KRISEN_REIHENFOLGE_REVISION;
-}
+/* S113 · `pruefeKrisenReihenfolge` und `KRISEN_REIHENFOLGE_REVISION` sind
+   entfallen. Sie prueften die fertige Antwort und liessen sie neu schreiben —
+   beides passt seit S105.3 nicht mehr: Zurueckgenommen wird nichts, und
+   verweigern laesst sich hier nichts, weil der Fehler im gesprochenen Text
+   steckt (die Nummer ohne den Verweis in den eigenen Raum), nicht in einer
+   Uebergabe. `krisenSchaerfung` (oben) greift stattdessen VOR der Antwort.
+   Die Erkenner KRISENHILFE und EINZELRAUM bleiben — sie sind einzeln geprueft
+   und benennen, woran die Lage erkannt wird. */

@@ -187,21 +187,9 @@ export function uebergabeKette(pruefer) {
   };
 }
 
-/* S100.3 · Wächter-Kette.
-   Vier Sessions hielten je eine handgeschriebene ||-Kette samt Kommentar zur
-   Reihenfolge. Der Gewinn der Liste ist nicht die Zeilenersparnis, sondern die
-   Beantwortbarkeit: "Welche Wächter hat diese Session?" ist eine Frage an die
-   Daten, nicht an vier Funktionsrümpfe.
-   Die Reihenfolge bleibt bedeutsam — die Engine gewährt genau EINE
-   Revisionsrunde je Antwort (Vertrag 2), also gewinnt der erste Treffer, und
-   der spezifischere Wächter steht vorn. */
-export function waechterKette(waechter) {
-  const liste = (waechter || []).filter(w => typeof w === "function");
-  return (text, engine) => {
-    for (const w of liste) {
-      const revision = w(text, engine);
-      if (revision) return revision;
-    }
-    return null;
-  };
-}
+/* S113 · `waechterKette` ist entfallen — ohne Aufrufer.
+   Sie verkettete REVISIONS-Waechter (Vertrag 2: genau eine Runde). Seit S105.3
+   gibt es keine Revision mehr; an ihre Stelle trat `uebergabeKette` unten,
+   gleiche Bauart, andere Bedeutung des Ergebnisses: nicht "schreib neu",
+   sondern "fuehre die Uebergabe nicht aus". */
+

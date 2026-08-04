@@ -14,7 +14,7 @@ import { describe, it, expect } from "vitest";
 import { JUDGE_PROMPT_VERSION, baueJudgePrompt } from "../../evals/judge/judge.js";
 import { GOLDEN } from "../../evals/judge/golden.js";
 import { pruefeMetaMarke, META_PLATZ_REVISION } from "../../core/engine/abschluss-waechter.js";
-import { pruefeKrisenReihenfolge, KRISEN_REIHENFOLGE_REVISION } from "../../core/engine/krisen-waechter.js";
+import { KRISENHILFE, EINZELRAUM } from "../../core/engine/krisen-waechter.js";
 import { momentDef } from "../../core/ui/sessions.js";
 import { gemeinsamDef } from "../../core/ui/kernwetten.js";
 import { bausteine, reflexionsPrompt, momentPrompt, aufloesungsPrompt, steuerTexte } from "../../core/prompts/prompts.de.js";
@@ -183,33 +183,34 @@ describe("S103.4 · Der Zweck-Kontrast wird nicht halbiert", () => {
 
 const eng0 = { chat: { messages: [] }, ctx: { nameA: "Anna", nameB: "Bernd" } };
 
-describe("S103.5 · Die Nummer allein genügt nicht", () => {
+/* S113 · Aus dem Wächter wurden zwei Erkenner.
+   `pruefeKrisenReihenfolge` prüfte die fertige Antwort und ließ sie neu
+   schreiben — beides passt seit S105.3 nicht mehr. Verweigern ließe sich hier
+   ohnehin nichts: Der Fehler steckt im gesprochenen Text (die Nummer ohne den
+   vorangehenden Verweis in den eigenen Raum), nicht in einer Übergabe.
+   Was bleibt und weiter geprüft wird, sind die ERKENNER: Woran ist die Lage
+   überhaupt zu erkennen? Sie tragen jetzt die Schärfung. */
+describe("S103.5 · Woran die Krisenlage erkannt wird", () => {
   const RAUM = "Dafür ist dein eigener Raum da — dort bin ich ganz für dich.";
   const HILFE = "Ein nächster Schritt kann die Telefonseelsorge sein: 0800 111 0 111.";
 
-  it("richtige Reihenfolge ⇒ frei", () => {
-    expect(pruefeKrisenReihenfolge(RAUM + " " + HILFE)).toBeNull();
+  it("die Krisenhilfe wird erkannt — auch mit abweichenden Abständen", () => {
+    expect(KRISENHILFE.test(HILFE)).toBe(true);
+    expect(KRISENHILFE.test("Ruf dort an: 0800 111 0 111")).toBe(true);
+    expect(KRISENHILFE.test("Der Krisendienst ist erreichbar.")).toBe(true);
+    expect(KRISENHILFE.test("Was beschäftigt euch gerade?")).toBe(false);
   });
 
-  it("Krisenhilfe ohne Einzelraum ⇒ Revision (der beobachtete Fall KRIS-02/3)", () => {
-    expect(pruefeKrisenReihenfolge("Ich höre dich. " + HILFE))
-      .toBe(KRISEN_REIHENFOLGE_REVISION);
+  it("der Verweis in den eigenen Raum ebenso", () => {
+    expect(EINZELRAUM.test(RAUM)).toBe(true);
+    expect(EINZELRAUM.test("dort bin ich in deinem eigenen Raum für dich")).toBe(true);
+    expect(EINZELRAUM.test("Wir sprechen hier gemeinsam.")).toBe(false);
   });
 
-  it("Einzelraum ZU SPÄT ⇒ Revision — die Reihenfolge ist die Regel", () => {
-    expect(pruefeKrisenReihenfolge(HILFE + " " + RAUM))
-      .toBe(KRISEN_REIHENFOLGE_REVISION);
-  });
-
-  it("ohne Krisenhilfe schweigt der Wächter", () => {
-    expect(pruefeKrisenReihenfolge("Was beschäftigt euch gerade?")).toBeNull();
-    expect(pruefeKrisenReihenfolge(RAUM)).toBeNull();
-  });
-
-  it("erkennt die Nummer auch mit abweichenden Abständen", () => {
-    expect(pruefeKrisenReihenfolge("Ruf dort an: 0800 111 0 111")).toBeTruthy();
-    expect(pruefeKrisenReihenfolge("Der Krisendienst ist erreichbar.")).toBeTruthy();
-  });
+  /* NICHT übernommen: die Reihenfolge-Prüfung (»Einzelraum ZU SPÄT ⇒
+     Revision«). Sie war die Logik des Wächters. Die Reihenfolge selbst gilt
+     unverändert — sie steht jetzt in der Schärfung und im Korpus, und der
+     nächste Test prüft, dass sie dort ankommt. */
 
   it("S105.3 · beide geteilten Räume schärfen jetzt VORWÄRTS statt zu revidieren", () => {
     /* Der Fehler steckt im gesprochenen Text (die Nummer ohne den Verweis in

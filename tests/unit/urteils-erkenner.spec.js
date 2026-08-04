@@ -7,13 +7,13 @@
 // hier ausdrücklich auch die Ruhezone geprüft.
 
 import { describe, it, expect } from "vitest";
-import { findetUrteil, pruefeUrteilsAntwort, URTEILS_REVISION } from "../../core/engine/urteils-waechter.js";
+import { findetUrteil } from "../../core/engine/urteils-waechter.js";
 
 describe("Urteils-Wächter · Treffer", () => {
   it("erkennt den realen Befund aus der privaten Session", () => {
     const t = "Das ist eine starke Fassung – deine Stimme ist klar drin.";
     expect(findetUrteil(t).stufe).toBe(1);
-    expect(pruefeUrteilsAntwort(t)).toBe(URTEILS_REVISION);
+    expect(findetUrteil(t)).toBeTruthy();
   });
 
   it.each([
@@ -47,28 +47,14 @@ describe("Urteils-Wächter · Ruhezone", () => {
     "Ein Teil von dir will Nähe, ein anderer Ruhe – nehme ich das richtig wahr?",
   ])("schweigt bei %j", (text) => {
     expect(findetUrteil(text)).toBeNull();
-    expect(pruefeUrteilsAntwort(text)).toBeNull();
+    expect(findetUrteil(text)).toBeNull();
   });
 
-  it("schweigt bei Marken-Antworten – dort gehört die letzte Zeile der App", () => {
-    expect(pruefeUrteilsAntwort("Das ist ein schöner Satz.\n[[RANKING]]")).toBeNull();
-  });
-
-  it("schweigt bei Block-Antworten – Protokoll ist kein Spiegel", () => {
-    const t = "Das ist eine starke Fassung.\nGATE-BLOCK\n{}\nEND GATE-BLOCK";
-    expect(pruefeUrteilsAntwort(t)).toBeNull();
-  });
-
+  
+  
   it("schweigt bei leerem Text", () => {
-    expect(pruefeUrteilsAntwort("")).toBeNull();
-    expect(pruefeUrteilsAntwort(null)).toBeNull();
+    expect(findetUrteil("")).toBeNull();
+    expect(findetUrteil(null)).toBeNull();
   });
 });
 
-describe("Urteils-Wächter · Revisionstext", () => {
-  it("ist eine SYSTEM-REVISION und nennt den Ausweg (Ich-Perspektive mit Rückfrage)", () => {
-    expect(URTEILS_REVISION).toContain("SYSTEM-REVISION");
-    expect(URTEILS_REVISION).toContain("Ich-Perspektive");
-    expect(URTEILS_REVISION).toContain("Rückfrage");
-  });
-});

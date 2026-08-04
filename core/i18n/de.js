@@ -205,7 +205,6 @@ export const de = {
   "gate.titel": "Deine Selbstmitteilung zur Freigabe",
   "gate.wish": "Wunsch: ",
   "ausschnitt.zugang": "Stellen aussuchen, die {partner} lesen darf",
-  "ausschnitt.anleitung": "Tippen wählt aus, Gedrückthalten nimmt alles bis dorthin mit.",
   "ausschnitt.luecken": "Manches aus diesem Gespräch bleibt hier. Tippen wählt aus, Gedrückthalten nimmt alles bis dorthin mit.",
   "ausschnitt.zaehler": "{n} Paare",
   "ausschnitt.richtwert": "Das ist inzwischen eine Menge Text. Magst du enger auswählen?",
@@ -266,11 +265,6 @@ export const de = {
   "weg.optRueckblickSpaeter": "Nach einiger Zeit kannst du auch in die vergangenen Gespräche schauen und die Zwischenzeit reflektieren.",
   "weg.optRueckblick": "Oder schaue in die vergangenen Gespräche und beantworte die Prozessreflexion.",
   /* Paarsprache — beidseitig bestätigter Wechsel (S30·C3) */
-  "paarspr.titel": "Begleitungssprache (Paar)",
-  "paarspr.uiWechsel": "Nur UI-Sprache ändern ({sprache})",
-  "paarspr.uiHinweis": "Die UI-Sprache betrifft nur deine Ansicht der Oberfläche — für {partner} ändert sich nichts.",
-  "paarspr.link": "Begleitungssprache: {sprache} · ändern",
-  "paarspr.linkOffen": "Begleitungssprache: {sprache} · ein Vorschlag ist offen",
   "paarspr.aktuell": "Eure gemeinsame Begleitungssprache: {sprache}.",
   "paarspr.vorschlagen": "Wechsel zu {sprache} vorschlagen",
   "paarspr.wartet": "Dein Vorschlag ({sprache}) wartet auf die Bestätigung von {partner}.",
@@ -439,10 +433,8 @@ export const de = {
   "einst.titel": "Einstellungen",
   "einst.ansicht": "Ansicht",
   "einst.sprache": "Sprache der Oberfläche",
-  "einst.paarsprache": "Die Begleitung spricht {sprache}.",
   "einst.vorschlagen": "Sprachwechsel vorschlagen ({sprache})",
   "einst.antragOffen": "Ein Wechsel zu {sprache} steht in der Agenda.",
-  "einst.paarspracheHinweis": "Das ändert ihr gemeinsam — in der Agenda im gemeinsamen Raum.",
   // U7 · Der Screen trennt nach REICHWEITE, nicht nach Thema: oben, was nur
   // auf diesem Gerät gilt; unten, was Folgen hat. Deshalb stehen Sprachwahl
   // und Sprachvorschlag in verschiedenen Zonen.

@@ -448,18 +448,12 @@ export async function markiereGelesen(backend, itemId) {
   if (setzeRegalGelesen(regal, itemId, (await backend.info()).role)) await backend.bstate.set("shelf", regal);
 }
 
-/* S95.3 - Ablage, Ruecknahme und Hebung laufen ueber den Regal-Kern. Auf
-   Cloudflare uebernimmt der Worker (PUT-Riegel auf shelf, I11-Redaktion beim
-   Lesen); ohne Server laufen dieselben Funktionen lokal - die Karenz ist dort
-   UI-Zusicherung statt Speicher-Garantie, dokumentierte Restgrenze wie I12. */
-export async function legeRegalAb(backend, entwurf) {
-  if (backend.regal && backend.regal.freigabe) return backend.regal.freigabe(entwurf);
-  const info = await backend.info();
-  const regal = (await backend.bstate.get("shelf")) || { items: [] };
-  const { regal: neu, item } = legeRegalItemAb(regal, { ...entwurf, by: info.name, role: info.role });
-  await backend.bstate.set("shelf", neu);
-  return item;
-}
+/* S113 · `legeRegalAb` ist entfallen — ohne Aufrufer.
+   Die Ablage laeuft ueber `legeRegalItemAb` aus dem Regal-Kern, direkt aus
+   app.js; die Huelle hier war ein Zwischenschritt aus S95.3, der nie
+   verdrahtet wurde. Die dokumentierte Restgrenze (Karenz ist ohne Server eine
+   UI-Zusicherung, keine Speicher-Garantie) gilt unveraendert. */
+
 
 /** Ruecknahme in der Karenz - nur der Owner, nur solange unsichtbar (D5). */
 export async function nimmFreigabeZurueckAb(backend, freigabeId) {
