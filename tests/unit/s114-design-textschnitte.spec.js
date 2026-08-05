@@ -240,6 +240,19 @@ describe("S114.11a · Das Ortsetikett steht an seiner Zeile", () => {
     expect(root.querySelector("#scrStart .rz-papier .rz-caps-ueber")).toBeTruthy();
     expect(DESIGN_CSS).toContain(".rz-caps-unter{margin-top:11px}");
   });
+
+  /* S114.11b · Der Abstand hielt nur auf dem Handy. Ab 900px stand das
+     Etikett in BEIDEN Flankenregeln: erst bekam es die Flankenhoehe, dann
+     nahm die Nullstellung sie ihm wieder ab — und mit ihr die eigenen 11px
+     (0-3-2 sticht 0-1-0). Auf dem Desktop klebte es damit an der Haarlinie. */
+  it("die Desktop-Flanke fasst das Etikett nicht an", () => {
+    const desktop = DESIGN_CSS.slice(DESIGN_CSS.indexOf("@media(min-width:900px){"));
+    const flanke = desktop.slice(0, desktop.indexOf("Grundbaustein B"));
+    expect(flanke).not.toContain(">.rz-half:last-child>.rz-caps");
+    expect(flanke).not.toContain(">.rz-half:last-child>.rz-zeile~.rz-caps");
+    // Die Flanke misst weiter, was ZUERST in der Haelfte steht.
+    expect(flanke).toContain(">.rz-half:last-child>.rz-zeile,");
+  });
 });
 
 describe("S114.12 · Keine waagerechte Bildlaufleiste über der Naht", () => {

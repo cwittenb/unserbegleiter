@@ -274,12 +274,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            die erste Zeile deshalb sichtbar dichter am Badge als links die
            letzte. Jetzt lesen beide Seiten denselben Token — nur eben nach
            unten statt nach oben. */
+        /* S114.11b · Das Ortsetikett (.rz-caps-unter) gehoert NICHT in diese
+           Rechnung. Es stand hier in beiden Regeln — erst bekam es die
+           Flankenhoehe, dann nahm die Nullstellung sie ihm wieder ab, und mit
+           ihr die 11px seines eigenen Abstands: 0-3-2 sticht 0-1-0. Auf dem
+           Handy fiel es nicht auf (die Regeln gelten erst ab 900px), auf dem
+           Desktop klebte das Etikett an der Haarlinie.
+           Die Flanke misst, was ZUERST in der Haelfte steht — das ist die
+           Betreten-Zeile, nie das Etikett darunter. Es braucht deshalb weder
+           die eine Regel noch die andere. */
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile,
-        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-caps,
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen{
           margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))}
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile~.rz-zeile,
-        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile~.rz-caps,
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen~*{margin-top:0}
       }
 
