@@ -191,6 +191,20 @@ describe("L1.4 · Desktop-Besonderheiten", () => {
   });
 });
 
+describe("L1a · Der Kreis-Nachsatz steht in BEIDEN Fassungen", () => {
+  // Das Designdokument setzt hier je Breite einen anderen Satz. Uebernommen
+  // wird die Qualitaetszeit-Formulierung — sie traegt eine Aussage, die es
+  // sonst auf der Seite nicht gibt, und die darf mobil nicht wegfallen.
+  it("genau ein Nachsatz, ohne Breiten-Schalter", () => {
+    const nachsaetze = [...doc.querySelectorAll(".rz-kreis-nachsatz")];
+    expect(nachsaetze).toHaveLength(1);
+    expect(nachsaetze[0].textContent).toBe("Und Zeit zum Genießen? Begleitete "
+      + "Qualitätszeit ist die Basis und das verbindende Element. Sie gehört euch jederzeit.");
+    expect(nachsaetze[0].className).toBe("rz-kreis-nachsatz");
+    expect(HTML).not.toContain("Im Zentrum steht euer Fokus");
+  });
+});
+
 describe("L1.5 · Mobile Besonderheiten", () => {
   const svg = embleme.mobil;
 
