@@ -678,10 +678,27 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       /* Die Schreibkante bringt ihr flex:none schon mit (= 0 0 auto): Sie
          kann nicht schrumpfen, ein langer Composer gibt der rollenden Zone
          nicht nach. Eine zweite Regel dafuer waere Doppelpflege gewesen. */
+      /* S114c · Die Ausblut-Rechnung gilt jetzt in JEDER Breite, nicht erst
+         ab 900px. Vorher standen hier zwei Rezepte nebeneinander:
+           schmal  -> margin:calc(-1 * var(--rz-rand))   (bis zur Screenkante)
+           ab 900  -> margin:calc(50% - 50vw)            (bis zur Fensterkante)
+         Dazwischen klaffte eine Luecke. Sobald das Fenster breiter ist als die
+         Lesespalte plus Raender (640 + 2x24 ≈ 690px), ist .rz-chat-innen
+         schmaler als das Fenster und zentriert — die Screenkante liegt dann
+         nicht mehr an der Fensterkante. Von ~690px bis 899px reichte das erste
+         Rezept deshalb nicht mehr hinaus und das zweite noch nicht: die
+         Schreibkante stand als freies Rechteck auf Papier. Genau der Befund,
+         den T2h fuer breite Schirme geloest hat — nur eine Stufe frueher.
+         Die eine Rechnung deckt beide Faelle: Prozente rechnen gegen die
+         Spalte, bei schmalem Fenster ergibt calc(50% - 50vw) exakt
+         -var(--rz-rand), also das alte Verhalten. Das Polster braucht die
+         Klammer nach unten (max), sonst wird es negativ, sobald das Fenster
+         schmaler als die Lesespalte ist. */
       #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-tiefgruen);
-        margin:var(--rz-r-5) calc(-1 * var(--rz-rand))
+        margin:var(--rz-r-5) calc(50% - 50vw)
                calc(-1 * var(--rz-rand) - env(safe-area-inset-bottom,0px));
-        padding:40px var(--rz-rand) calc(22px + env(safe-area-inset-bottom,0px));
+        padding:40px max(var(--rz-rand), calc(50vw - var(--rz-chat-spalte) / 2))
+                calc(22px + env(safe-area-inset-bottom,0px));
         display:flex;flex-direction:column}
       #scrChat .rz-chat-unten .pb-composer{margin-top:0;border-top:0;padding-top:0}
       /* T2h (Handover Turn 40 §3.8, Entscheidung K3) · Auf breiten Schirmen
@@ -709,12 +726,8 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          schiebt die Zeile hinaus. Umbrechen statt ueberlaufen — Links und
          Kennungen sind die ueblichen Verdaechtigen. */
       #scrChat .pb-msg{overflow-wrap:anywhere}
-      @media(min-width:900px){
-        #scrChat .rz-chat-unten{
-          margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
-          padding-left:calc(50vw - var(--rz-chat-spalte) / 2);
-          padding-right:calc(50vw - var(--rz-chat-spalte) / 2)}
-      }
+      /* S114c · Die frueher hier stehende @media(min-width:900px)-Regel ist in
+         die Grundregel aufgegangen — eine Rechnung fuer alle Breiten. */
       /* ---- D12-2c · der gemeinsame Chat traegt die Toene seines Raums ----
          Die Zonen bekommen dieselben Klassen wie in den Vorraeumen; damit
          greifen alle bestehenden Regeln (.rz-tiefgruen .rz-zurueck, .rz-sub,

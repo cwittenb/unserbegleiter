@@ -265,6 +265,38 @@ describe("S114.12 · Keine waagerechte Bildlaufleiste über der Naht", () => {
   });
 });
 
+/* S114c · Die Schreibkante hatte ZWEI Ausblut-Rezepte mit einer Luecke
+   dazwischen: unter ~690px reichte der negative Screenrand bis zur
+   Fensterkante, ab 900px griff calc(50% - 50vw). Im Bereich dazwischen ist
+   .rz-chat-innen bereits schmaler als das Fenster (max-width:640px, zentriert)
+   — der negative Rand endet dort an der Spaltenkante, nicht an der Fenster-
+   kante. Die Schreibkante stand als freies Rechteck auf Papier. */
+describe("S114c · Die Schreibkante blutet in jeder Breite aus", () => {
+  const kante = () => {
+    const ab = DESIGN_CSS.slice(DESIGN_CSS.indexOf("#scrChat .rz-chat-unten{"));
+    return ab.slice(0, ab.indexOf("}") + 1);
+  };
+
+  it("eine Rechnung, keine Breitenschranke", () => {
+    expect(kante()).toContain("calc(50% - 50vw)");
+    // Das alte Rezept fuer schmale Schirme ist aufgegangen, nicht ergaenzt:
+    // sonst stuenden wieder zwei Zahlen fuer dieselbe Kante.
+    expect(kante()).not.toContain("var(--rz-r-5) calc(-1 * var(--rz-rand))");
+  });
+
+  it("das Polster kann nicht negativ werden", () => {
+    // Ist das Fenster schmaler als die Lesespalte, wird 50vw - spalte/2
+    // negativ — ohne Klammer nach unten fiele das Screenpolster weg.
+    expect(kante()).toContain("max(var(--rz-rand), calc(50vw - var(--rz-chat-spalte) / 2))");
+  });
+
+  it("keine zweite Regel in einer 900px-Query mehr", () => {
+    const queries = DESIGN_CSS.split("@media(min-width:900px){");
+    for (const q of queries.slice(1))
+      expect(q.slice(0, q.indexOf("\n      }"))).not.toContain(".rz-chat-unten");
+  });
+});
+
 describe("S114.13/14 · Die Pille ist fort", () => {
   it("Knöpfe sind flach und kantig, nicht rund und gefüllt", () => {
     expect(DESIGN_CSS).toMatch(/\.pb-btn\{[^}]*border-radius:0/);

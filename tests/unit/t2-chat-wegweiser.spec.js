@@ -170,9 +170,17 @@ describe("T2h · die Schreibkante ist auf breiten Schirmen eine Zone", () => {
     expect(KOMPONENTEN).toContain(".rz-chat-innen{max-width:var(--rz-chat-spalte)");
   });
 
-  it("der Block blutet aus, der Inhalt bleibt auf der Spalte", () => {
-    expect(block).toContain("margin-left:calc(50% - 50vw)");
-    expect(block).toContain("padding-left:calc(50vw - var(--rz-chat-spalte) / 2)");
+  /* S114c · Das Rezept steht nicht mehr in einer 900px-Query, sondern in der
+     Grundregel: eine Rechnung fuer alle Breiten. Vorher klaffte zwischen den
+     beiden Rezepten (schmal: -var(--rz-rand), ab 900px: calc(50% - 50vw)) eine
+     Luecke ab ~690px, in der die Schreibkante als freies Rechteck stand. */
+  it("der Block blutet aus, der Inhalt bleibt auf der Spalte — in jeder Breite", () => {
+    const kante = KOMPONENTEN.slice(KOMPONENTEN.indexOf("#scrChat .rz-chat-unten{"));
+    const regel = kante.slice(0, kante.indexOf("}"));
+    expect(regel).toContain("calc(50% - 50vw)");
+    expect(regel).toContain("max(var(--rz-rand), calc(50vw - var(--rz-chat-spalte) / 2))");
+    // Und zwar ohne Breitenschranke: keine Query mehr um dieses Rezept.
+    expect(block).not.toContain("@media(min-width:900px){");
   });
 
   it("kein nacktes 100vw in der Schreibkante — das brächte einen Bildlauf mit", () => {

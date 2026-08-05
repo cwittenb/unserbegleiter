@@ -62,7 +62,10 @@ describe("T2a · der Screenrand hängt an einem Token", () => {
 
   it("die Schreibkante rechnet ihre negativen Ränder aus demselben Token", () => {
     const r = regel(KOMPONENTEN_CSS, "#scrChat .rz-chat-unten");
-    expect(r).toContain("calc(-1 * var(--rz-rand))");
+    // S114c · Seitlich blutet die Kante jetzt ueber calc(50% - 50vw) aus (eine
+    // Rechnung fuer alle Breiten); unten bleibt es der Token gegen das
+    // Screenpolster. Beides ohne Literal.
+    expect(r).toContain("calc(-1 * var(--rz-rand) - env(safe-area-inset-bottom,0px))");
     expect(r).toContain("var(--rz-rand)");
     // Der eigentliche Befund aus §3.8: ein Literal hier und ein Literal beim
     // Screenpolster können auseinanderlaufen. Kein negatives px mehr.
