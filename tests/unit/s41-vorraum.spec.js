@@ -67,7 +67,7 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     await klick(root.querySelector("#btnSharedRoom"));
     await ruhe();
     const raum = root.querySelector("#scrShared");
-    expect(raum.querySelector("#sharedIntro").textContent).toContain("Für alles, was ihr zu zweit macht");
+    expect(raum.querySelector("#sharedIntro").textContent).toContain("Raum für eure gemeinsame Zeit");
     // D3: Wegweiser als Naht-Panel mit Badge, Sessions als Zeilen in der
     // Raum-Zone, Regal-Zeilen in der Regal-Zone, Zurück im Kopf.
     expect(raum.querySelector("#wegTeil").classList.contains("rz-weg-panel")).toBe(true);
@@ -89,7 +89,8 @@ describe("S41 · Vorraum in 4 Zeilen", () => {
     expect(root.querySelector("#btnGemeinsam").disabled).toBe(true);
     const g = root.querySelector("#gemeinsamHinweis");
     expect(g.classList.contains("pb-hidden")).toBe(false);
-    expect(g.textContent).toContain("sobald ihr beide eure Auftragsklärung freigegeben habt");
+    // S114.3 · Der Hinweis nennt jetzt auch, WO freigegeben wird.
+    expect(g.textContent).toContain("aus eurem eigenen Raum freigegeben habt");
   });
 
   it("… und öffnen sich mit beidseitiger Freigabe / Aufdeck-Wahl", async () => {

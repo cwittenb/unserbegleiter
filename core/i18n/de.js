@@ -62,13 +62,18 @@ export const de = {
   "rec.labelAdresse": "Deine Adresse",
   "rec.labelCode": "Der Code aus der E-Mail",
   // D3 · Vorraum-Zonen (Design Turn 17c/d)
-  "zone.raum": "Der Raum.",
+  // S114.1 · Der Titel nennt jetzt, WESSEN Raum das ist. Der alte,
+  // gemeinsame Schluessel zone.raum ist damit ohne Aufrufer und entfernt
+  // (S113-Waechter: keine toten Schluessel).
+  "zone.raumMein": "Raum für dich.",
+  "zone.raumTeil": "Raum für euch.",
   "zone.regal": "Das Regal.",
   // D4 · Chat ohne Blasen (Design 17e)
   "chat.begleitung": "Begleitung",
 
   // Mein Raum
-  "mein.intro": "Dieser Raum ist nur für dich — nichts von hier erreicht {partner}, außer du gibst es ausdrücklich frei. Wenn du magst, kannst du Erarbeitetes jederzeit teilen: Die Begleitung hilft dir dann bei einer Formulierung, und erst dein Häkchen gibt sie frei. Nimm dir die Zeit, die du brauchst.",
+  // S114.2 · Ohne Platzhalter: der Text nennt den Partner nicht mehr.
+  "mein.intro": "Dieser Raum ist ein geschützter Raum nur für dich. Hier begleite ich nur dich. Wenn du magst, kannst du Erfahrungen aus diesem Raum teilen — ich unterstütze dich dabei. Nimm dir die Zeit, die du brauchst.",
   "mein.solo": "Reflexionsgespräch beginnen",
   // S99.1 · Eine laufende Reflexion sagt das auch (Muster mein.einzelWeiter,
   // teil.momentWeiter, teil.gemeinsamWeiter).
@@ -82,7 +87,7 @@ export const de = {
   "mein.messSub": "Ein kurzer, verdeckter Blick auf euer Beziehungswesen und eure Themen — aufgedeckt wird gemeinsam.",
   "mein.gruppeRegale": "Mein Weg.",
   // Gemeinsamer Raum
-  "teil.intro": "Für alles, was ihr zu zweit macht. In den Regalen liegt nur, was freigegeben wurde — die Räume betretet ihr bewusst.",
+  "teil.intro": "Oben der Raum für eure gemeinsame Zeit. Unten das Wissen — was ihr aus eurem Raum mit dem anderen teilt und welche Themen ihr im Fokus habt.",
   "teil.gruppeRegale": "Euer gemeinsamer Boden.",
   "teil.moment": "Qualitätszeit beginnen",
   "teil.momentWeiter": "Qualitätszeit fortsetzen",
@@ -96,7 +101,6 @@ export const de = {
   "chat.abschliessenOhneTeilen": "Ohne Teilen abschließen",
   "chat.abschliessenJa": "Abschließen",
   "chat.abschliessenNein": "Zurück",
-  "momente.titel": "Gemeinsame Momente",
   "momente.intro": "Euer geteilter Zeitstrahl: die Protokolle eurer Sessions zu zweit — zum Nachlesen als Erinnerung.",
   "momente.leer": "Noch keine gemeinsamen Momente — nach eurer ersten Qualitätszeit liegt hier das Protokoll.",
   "momente.artQz": "Qualitätszeit",
@@ -105,13 +109,13 @@ export const de = {
   "momente.impuls": "Zwischenzeit-Impuls:",
   "momente.artProzess": "Prozessreflexion",
   "momente.prozessStandard": "Ihr habt eure Prozessreflexion gemeinsam aufgedeckt.",
-  "teil.gateAufloesung": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung freigegeben habt.",
+  "teil.gateAufloesung": "Die Gemeinsame Auflösung öffnet, sobald ihr beide eure Auftragsklärung aus eurem eigenen Raum freigegeben habt.",
   "teil.gemeinsam": "Gemeinsame Auflösung beginnen",
   "teil.gemeinsamSub": "Startet gemeinsam mit der Auflösung eurer Spekulationen, daraus entstehen die Ziele für die Begleitung.",
   "teil.gemeinsamWeiter": "Gemeinsame Auflösung fortsetzen",
   "teil.gemeinsamWeiterSub": "Ihr macht genau dort weiter, wo ihr pausiert habt.",
   "teil.regal": "Geteiltes",
-  "teil.agenda": "Agenda ansehen",
+  "teil.agenda": "Gemeinsamer Fokus",
   "teil.qz": "Gemeinsame Momente",
 
   // Zeitleiste
@@ -142,7 +146,7 @@ export const de = {
   "zeit.vorMonaten": "vor {m} Monaten",
   "zeit.vorJahr": "vor einem Jahr",
   "zeit.vorJahren": "vor {j} Jahren",
-  "zeitleiste.titel": "Zeitleiste",
+  "zeitleiste.hilfe": "Hier findest du Einträge aller Gespräche mit Zusammenfassung und im Detail, zum Nachlesen und falls noch etwas geteilt werden mag.",
   "rank.frei": "frei — hierhin ziehen oder antippen",
   "zeitleiste.tpAuftrag": "Auftragsklärung",
   "zeitleiste.tpMess": "Prozessreflexion",
@@ -150,11 +154,12 @@ export const de = {
   "zeitleiste.detailsAuf": "Freigegebene Punkte ansehen",
   "zeitleiste.detailsZu": "Freigegebene Punkte ausblenden",
   "zeitleiste.eintragMess": "Verdeckter Beitrag abgegeben — aufgedeckt wird gemeinsam in eurer nächsten Session.",
-  "zeitleiste.leer": "Noch keine Einträge — sie entstehen aus deinen Reflexionsgesprächen, mit Datum und Kurzfassung.",
+  "zeitleiste.leer": "Noch keine Einträge — sie entstehen aus deinen Gesprächen.",
 
   // Regal (Geteiltes)
-  "regal.titel": "Ein Regal — zum Lesen von geteilten Gesprächen, wenn und wann du magst.",
-  "regal.intro": "Hier liegt, was {nameA} und {nameB} aus ihrer Einzelreflexion lesbar gemacht haben — als ihre Erfahrung, nicht als Nachricht oder Anforderung. Reagieren ist frei; der beste Ort dafür ist das Gespräch.",
+  // S114.4 · Der Fussnoten-Text (regal.intro) ist hier aufgegangen; der
+  // Schluessel bleibt, seine Render-Stelle ist entfallen.
+  "regal.titel": "Hier liegt, was ihr aus euren Einzelreflexionen lesbar gemacht habt — als eure Erfahrungen, nicht als Nachricht oder Anforderung. Zum Lesen, wenn und wann du magst. Reagieren ist frei, der beste Ort dafür ist das Gespräch.",
   "regal.leer": "Es gibt noch keine geteilten Erfahrungen.",
   "regal.stGelesen": "gelesen",
   "regal.stInAgenda": "in der Agenda",
@@ -166,8 +171,10 @@ export const de = {
   "regal.btnZiel": "Als Ziel vorschlagen",
 
   // Agenda
-  "agenda.titel": "Gemeinsame Agenda",
-  "weg.optQzTeil": "Qualitätszeit — gestaltet eure gemeinsame Zeit; ich begleite euch, ob ihr etwas zu besprechen habt oder einfach Zeit miteinander verbringen wollt.",
+  // S114.4 · Statt einer Ueberschrift, die die Regalzeile wiederholt,
+  // steht in der Box jetzt der Hilfetext.
+  "agenda.hilfe": "Die Zusammenfassung eurer gemeinsam vereinbarten Fokusthemen und Absprachen.",
+  "weg.optQzTeil": "Qualitätszeit — gestaltet eure gemeinsame Zeit; ich begleite euch dabei, ob ihr etwas zu besprechen habt oder einfach Zeit miteinander verbringen wollt.",
   "weg.aufloesungStart": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung im gemeinsamen Raum, um eure gemeinsamen Ziele zu finden.",
   "weg.aufloesungStartMitAufdeck": "Eure Freigaben liegen bereit: Startet eure Gemeinsame Auflösung im gemeinsamen Raum — sie beginnt mit der Auflösung eurer Rate-Runde aus der Auftragsklärung und führt zu euren gemeinsamen Zielen.",
   "weg.optRegalTeil": "In den Regalen findet ihr geteilte Erlebnisse aus den Einzelsessions, Erinnerungen an gemeinsame Sessions und eure Vereinbarungen.",

@@ -70,27 +70,31 @@ describe("D12-2b · Regal-Sektion", () => {
     expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}");
   });
 
-  it("der Pfeil der Sektionszeile zeigt nach oben, die anderen nach unten", async () => {
+  /* S114.7 · Umgekehrt gegen D12-2b: Der Pfeil zeigt die BEWEGUNG, nicht die
+     Lage. Geschlossen faehrt der Kasten nach oben (↑), offen faehrt er
+     dorthin zurueck, woher er kam (↓). */
+  it("der Pfeil zeigt die Bewegung: geschlossen nach oben, offen nach unten", async () => {
     await bootApp();
     await klick(root.querySelector("#btnSharedRoom"));
     const pfeil = id => root.querySelector("#" + id + " .rz-pfeil").textContent;
+    expect(pfeil("btnRegal")).toBe("\u2191");
+    await klick(root.querySelector("#btnRegal"));
     expect(pfeil("btnRegal")).toBe("\u2193");
+    expect(pfeil("btnAgenda")).toBe("\u2191");
     await klick(root.querySelector("#btnRegal"));
     expect(pfeil("btnRegal")).toBe("\u2191");
-    expect(pfeil("btnAgenda")).toBe("\u2193");
-    await klick(root.querySelector("#btnRegal"));
-    expect(pfeil("btnRegal")).toBe("\u2193");
   });
 
-  it("im Kasten: Einleitung vor den Eintraegen, Erklaerzeile am Fuss", async () => {
+  /* S114.4 · Die Erklaerzeile am Fuss (regal.intro) ist in regal.titel
+     aufgegangen: EINE Erklaerung am Kopf statt zweier an beiden Enden. */
+  it("im Kasten: die Einleitung steht vor den Eintraegen, und sie steht allein", async () => {
     await bootApp();
     await klick(root.querySelector("#btnSharedRoom"));
     await klick(root.querySelector("#btnRegal"));
     const box = root.querySelector("#boxRegal");
     const kinder = [...box.children].map(e => e.id);
     expect(kinder.indexOf("regalTitel")).toBeLessThan(kinder.indexOf("regalItems"));
-    expect(kinder.indexOf("regalIntro")).toBeGreaterThan(kinder.indexOf("regalItems"));
-    expect(root.querySelector("#regalIntro").classList.contains("rz-regal-fussnote")).toBe(true);
+    expect(root.querySelector("#regalIntro")).toBe(null);
     expect(root.querySelector("#regalTitel").textContent).toBe(de["regal.titel"]);
   });
 
@@ -109,7 +113,9 @@ describe("D12-2b · Regal-Sektion", () => {
 describe("D12-2b · Wegweiser faehrt mit der Kante", () => {
   it("das Badge wird im offenen Zustand nicht mehr unsichtbar gemacht", () => {
     expect(DESIGN_CSS).not.toMatch(/\.rz-regal-offen \.rz-weg-badge[^{]*\{[^}]*opacity:0/);
-    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:6}");
+    /* S114.8 · Sichtbar bleibt es (es markiert weiter die Naht), still ist es
+       trotzdem: bei aufgeklapptem Regal nimmt es keine Klicks mehr an. */
+    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}");
   });
 
   it("die Kulisse tritt weiterhin ab", () => {

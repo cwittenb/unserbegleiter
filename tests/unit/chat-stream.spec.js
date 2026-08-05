@@ -66,6 +66,43 @@ async function sende(text) {
   await ruhe(2);
 }
 
+/* S114.6 · Das Sprecherlabel faellt an DREI Orten: Voll-Render, Stream-Blase
+   und Warte-Blase. Bis S114 kannte die Warte-Blase die Regel nicht — sie
+   entstand nackt, und beim ersten Token kam das Label dazu und schob den Text
+   um seine Hoehe nach unten, genau beim Lesen. */
+describe("S114.6 · Das Label steht schon im Ladezustand", () => {
+  it("die Warte-Blase haengt in einer Sprechgruppe mit Label", async () => {
+    await sende("Mich beschäftigt etwas.");
+    const blase = streamBlase();
+    const gruppe = blase.closest(".rz-sprechgruppe");
+    expect(gruppe).toBeTruthy();
+    expect(gruppe.querySelector(".rz-sprecher").textContent).toBe("Begleitung");
+  });
+
+  it("das Label bleibt dasselbe ueber Warten → Stream → fertige Antwort", async () => {
+    await sende("Mich beschäftigt etwas.");
+    const vorher = streamBlase().closest(".rz-sprechgruppe").querySelector(".rz-sprecher").textContent;
+    llm.delta("Magst du");
+    const waehrend = streamBlase().closest(".rz-sprechgruppe").querySelector(".rz-sprecher").textContent;
+    llm.antworte("Magst du mehr erzählen?");
+    await ruhe();
+    const labels = [...root.querySelectorAll("#pbMsgs .rz-sprecher")].map(e => e.textContent);
+    expect(vorher).toBe("Begleitung");
+    expect(waehrend).toBe("Begleitung");
+    // Eine Antwort, ein Label — kein zweites, das nachtraeglich dazukaeme.
+    expect(labels.filter(x => x === "Begleitung").length).toBe(2);   // Eroeffnung + diese Antwort
+  });
+
+  it("auf eine Begleitungs-Nachricht folgt KEIN zweites Label", async () => {
+    // Sonst wandert das Ruckeln bloss in den Fall zweier Antworten in Folge.
+    const vorher = root.querySelectorAll("#pbMsgs .rz-sprecher").length;
+    await sende("Ja.");
+    llm.antworte("Erzähl mehr.");
+    await ruhe();
+    expect(root.querySelectorAll("#pbMsgs .rz-sprecher").length).toBe(vorher + 1);
+  });
+});
+
 describe("Chat-UX · Streaming-Anzeige", () => {
   it("Deltas erscheinen live in der Blase; die fertige Antwort ersetzt sie ohne Duplikat", async () => {
     await sende("Mich beschäftigt etwas.");

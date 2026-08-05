@@ -125,7 +125,9 @@ describe("Nutzerführung · Begrüßung, Raum-Erklärungen, System eröffnet (Sp
     expect(root.querySelector("#startMeinSub").textContent).toContain("Bernd");     // Partner namentlich
     expect(root.querySelector("#startTeilSub").textContent).toContain("gemeinsame Zeit");
     expect(root.querySelector("#meinIntro").textContent).toContain("nur für dich");
-    expect(root.querySelector("#sharedIntro").textContent).toContain("freigegeben");
+    // S114.2 · Das Intro nennt nicht mehr die Freigabe-Regel, sondern die
+    // Aufteilung des Raums: oben die gemeinsame Zeit, unten das Geteilte.
+    expect(root.querySelector("#sharedIntro").textContent).toContain("gemeinsame Zeit");
   });
 
   it("Session-Start: KEINE fingierte User-Nachricht sichtbar — die Begleitung eröffnet von sich aus", async () => {

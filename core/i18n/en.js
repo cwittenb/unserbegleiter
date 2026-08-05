@@ -52,13 +52,17 @@ export const en = {
   "rec.labelAdresse": "Your address",
   "rec.labelCode": "The code from the email",
   // D3 · Anteroom zones (design turn 17c/d)
-  "zone.raum": "The Room.",
+  // S114.1 · The title now says WHOSE room this is. The old shared key
+  // zone.raum has no caller left and is gone (S113 guard: no dead keys).
+  "zone.raumMein": "Room for you.",
+  "zone.raumTeil": "Room for the two of you.",
   "zone.regal": "The Shelf.",
   // D4 · Chat without bubbles (design 17e)
   "chat.begleitung": "Companion",
 
   // My Private Space
-  "mein.intro": "This space is yours alone — nothing from here reaches {partner} unless you explicitly release it. Whenever you like, you can share what you've worked out: your companion helps you find a formulation, and only your checkmark releases it. Take the time you need.",
+  // S114.2 · No placeholder any more: the text no longer names the partner.
+  "mein.intro": "This space is a protected space for you alone. Here I accompany only you. If you like, you can share experiences from this space — I will support you with that. Take the time you need.",
   "mein.solo": "Start a Supported Reflection Session",
   // S99.1 · A running reflection says so (pattern: mein.einzelWeiter).
   "mein.soloWeiter": "Continue Your Supported Reflection Session",
@@ -71,7 +75,7 @@ export const en = {
   "mein.messSub": "A brief, hidden look at your relationship being and your topics — revealed together.",
   "mein.gruppeRegale": "My path.",
   // Our Shared Space
-  "teil.intro": "For everything the two of you do together. The shelves hold only what has been released — the rooms you enter deliberately.",
+  "teil.intro": "Above, the space for your time together. Below, what you know — what each of you shares from your own space, and which topics you have in focus.",
   "teil.gruppeRegale": "Your common ground.",
   "teil.moment": "Begin quality time",
   "teil.momentWeiter": "Continue quality time",
@@ -83,7 +87,6 @@ export const en = {
   "chat.abschliessenOhneTeilen": "Close without sharing",
   "chat.abschliessenJa": "Close it",
   "chat.abschliessenNein": "Back",
-  "momente.titel": "Shared moments",
   "momente.intro": "Your shared timeline: the protocols of your sessions together — to read back as a keepsake.",
   "momente.leer": "No shared moments yet — after your first quality time, its protocol will live here.",
   "momente.artQz": "Quality time",
@@ -92,13 +95,13 @@ export const en = {
   "momente.impuls": "In-between impulse:",
   "momente.artProzess": "Process reflection",
   "momente.prozessStandard": "You revealed your process reflection together.",
-  "teil.gateAufloesung": "The shared resolution opens once you have both released your mandate clarification.",
+  "teil.gateAufloesung": "The shared resolution opens once you have both released your mandate clarification from your own space.",
   "teil.gemeinsam": "Start a Shared Resolution",
   "teil.gemeinsamSub": "Together you start by resolving your speculations \u2014 out of this grow the goals for the accompaniment.",
   "teil.gemeinsamWeiter": "Continue the Shared Resolution",
   "teil.gemeinsamWeiterSub": "You continue exactly where you paused.",
   "teil.regal": "What's shared",
-  "teil.agenda": "View the Agenda",
+  "teil.agenda": "Shared Focus",
   "teil.qz": "Shared Moments",
 
   // Timeline
@@ -129,7 +132,7 @@ export const en = {
   "zeit.vorMonaten": "{m} months ago",
   "zeit.vorJahr": "a year ago",
   "zeit.vorJahren": "{j} years ago",
-  "zeitleiste.titel": "Timeline",
+  "zeitleiste.hilfe": "Here you find entries for every conversation, with a summary and in full, to read back and in case something still wants to be shared.",
   "rank.frei": "free — drag here or tap",
   "zeitleiste.tpAuftrag": "Mandate clarification",
   "zeitleiste.tpMess": "Process reflection",
@@ -137,11 +140,12 @@ export const en = {
   "zeitleiste.detailsAuf": "View released items",
   "zeitleiste.detailsZu": "Hide released items",
   "zeitleiste.eintragMess": "Hidden contribution submitted — it will be revealed together in your next session.",
-  "zeitleiste.leer": "No entries yet — they grow out of your reflection sessions, with a date and a short summary.",
+  "zeitleiste.leer": "No entries yet — they grow out of your conversations.",
 
   // Shelf (What's shared)
-  "regal.titel": "A shelf — to read shared conversations, if and when you like.",
-  "regal.intro": "What lives here is what {nameA} and {nameB} made readable from a private reflection — as their experience, not as a message or a demand. Responding is entirely optional; the best place for that is the conversation.",
+  // S114.4 · The footnote text (regal.intro) has been folded in here; the
+  // key stays, its render site is gone.
+  "regal.titel": "What lives here is what the two of you made readable from your private reflections — as your experiences, not as a message or a demand. To read, if and when you like. Responding is entirely optional; the best place for that is the conversation.",
   "regal.leer": "There are no shared experiences yet.",
   "regal.stGelesen": "read",
   "regal.stInAgenda": "added to agenda",
@@ -153,8 +157,10 @@ export const en = {
   "regal.btnZiel": "Propose as a goal",
 
   // Agenda
-  "agenda.titel": "Shared Agenda",
-  "weg.optQzTeil": "Quality time — shape your time together; I accompany you, whether you have something to talk through or simply want to spend time with each other.",
+  // S114.4 · Instead of a heading that repeats the shelf line, the box now
+  // carries the help text.
+  "agenda.hilfe": "The summary of the focus topics and arrangements you agreed on together.",
+  "weg.optQzTeil": "Quality time — shape your time together; I accompany you in that, whether you have something to talk through or simply want to spend time with each other.",
   "weg.aufloesungStart": "Your releases are in place: start your Shared Resolution in the shared space to find your shared goals.",
   "weg.aufloesungStartMitAufdeck": "Your releases are in place: start your Shared Resolution in the shared space — it opens by revealing your guessing round from the mandate clarification and leads to your shared goals.",
   "weg.optRegalTeil": "The shelves hold shared glimpses from the individual sessions, keepsakes of your joint sessions, and your agreements.",

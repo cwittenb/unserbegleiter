@@ -99,23 +99,30 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     return null;
   }
 
+  /* S114.6 · Das Label faellt an DREI Orten: beim Voll-Render, an der
+     Stream-Blase und an der Warte-Blase. Bis S114 kannte nur der Voll-Render
+     und die Stream-Blase die Regel; die Warte-Blase (state.warten in
+     renderMsgs) entstand nackt. Ergebnis: waehrend des Ladens stand kein
+     Label, beim ersten Token kam es dazu — und schob den Text um seine Hoehe
+     nach unten, genau beim Lesen. Die Regel steht jetzt EINMAL. */
+  function haengeAnSprechgruppe(box, d, mitLabel) {
+    if (!mitLabel) { box.appendChild(d); return d; }
+    const gruppe = el("div", "rz-sprechgruppe");
+    const lbl = el("div", "rz-sprecher");
+    lbl.textContent = t("chat.begleitung");
+    gruppe.appendChild(lbl);
+    gruppe.appendChild(d);
+    box.appendChild(gruppe);
+    return d;
+  }
+
   /** Erzeugt die Stream-Blase samt Sprechgruppe, falls nötig. */
   function baueStreamBlase(box) {
     let d = box.querySelector("#pbStream");
     if (d) return d;
     d = el("div", "pb-msg ai");
     d.id = "pbStream";
-    if (letzteSichtbareRolle() !== "assistant") {
-      const gruppe = el("div", "rz-sprechgruppe");
-      const lbl = el("div", "rz-sprecher");
-      lbl.textContent = t("chat.begleitung");
-      gruppe.appendChild(lbl);
-      gruppe.appendChild(d);
-      box.appendChild(gruppe);
-    } else {
-      box.appendChild(d);
-    }
-    return d;
+    return haengeAnSprechgruppe(box, d, letzteSichtbareRolle() !== "assistant");
   }
 
   /** Live-Update der Stream-Blase — gezielt, ohne Voll-Rerender je Delta. */
@@ -250,10 +257,14 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
       }
     }
     if (state.warten) {
+      // S114.6 · Dieselbe Label-Entscheidung wie oben — die Warte-Blase traegt
+      // das Label VON ANFANG AN, sonst springt der Text beim ersten Token.
+      // letzteRolle ist hier der Stand nach der Schleife: die Rolle der
+      // letzten sichtbaren Nachricht.
       const d = el("div", "pb-msg ai");
       d.id = "pbStream";
       d.innerHTML = '<span class="pb-typing" aria-label="' + t("chat.tippt") + '"><span></span><span></span><span></span></span>';
-      box.appendChild(d);
+      haengeAnSprechgruppe(box, d, letzteSichtbareRolle() !== "assistant");
     }
     if (nah) scrolleZumEingabefeld();
     aktualisiereSkala();

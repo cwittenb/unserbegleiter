@@ -66,9 +66,19 @@ describe("D2 · Zweiteilung", () => {
     const h1 = root.querySelector("#scrStart #startHallo");
     expect(h1.classList.contains("rz-h1")).toBe(true);
     expect(h1.textContent).toContain("Lena");
-    const fuss = root.querySelector("#scrStart .rz-tiefgruen .rz-fuss");
+    const zone = root.querySelector("#scrStart .rz-tiefgruen");
+    const fuss = zone.querySelector(".rz-fuss");
     expect(fuss.querySelector(".rz-h2")).toBeTruthy();
-    expect(fuss.querySelector(".rz-caps")).toBeTruthy();
+    /* S114.11a · Das Ortsetikett steht nicht mehr im Zonenfuss unter dem
+       Spaltentitel, sondern direkt UNTER der Hairline seiner Betreten-Zeile —
+       Spiegelbild der ersten Haelfte, wo es (rz-caps-ueber) darueber steht. */
+    const etikett = zone.querySelector(".rz-caps-unter");
+    expect(etikett).toBeTruthy();
+    expect(fuss.querySelector(".rz-caps")).toBeFalsy();
+    const kinder = [...zone.children];
+    expect(kinder.indexOf(etikett))
+      .toBeGreaterThan(kinder.indexOf(root.querySelector("#btnSharedRoom")));
+    expect(kinder.indexOf(etikett)).toBeLessThan(kinder.indexOf(fuss));
   });
 
   it("reiner Wegweiser: Feature-Subtexte ausgeblendet, aber im DOM erhalten", async () => {

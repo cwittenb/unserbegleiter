@@ -126,9 +126,13 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeStart">${IKON.wegweiser}<span>${t("weg.badge")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegStart"></div>
         <button class="rz-zeile rz-unten" id="btnSharedRoom"><span>${t("start.betreteTeil")}</span><span class="rz-lz-leiste" id="lzStart"></span><span class="rz-pfeil">↓</span></button>
+        <!-- S114.11a · Das Ortsetikett steht UNTER der Hairline der Betreten-
+             Zeile — Spiegelbild der ersten Haelfte, wo es (rz-caps-ueber) ueber
+             der Linie steht. Vorher lag es im Zonenfuss unter dem Spaltentitel
+             und war von seiner Zeile getrennt. -->
+        <div class="rz-caps rz-caps-unter">${t("start.capsTeil")}</div>
         <div class="rz-fuss">
           <h2 class="rz-h2">${t("start.teilTitel")}</h2>
-          <div class="rz-caps">${t("start.capsTeil")}</div>
         </div>
         <span class="rz-fussmarke" id="pbKern" data-rz-marke></span>
       </div>
@@ -140,7 +144,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <span class="rz-signatur" data-rz-signatur></span>
           <span class="rz-zurueck rz-blind">←</span>
         </div>
-        <h1 class="rz-h1">${t("zone.raum")}</h1>
+        <h1 class="rz-h1">${t("zone.raumMein")}</h1>
         <p class="rz-sub rz-intro" id="meinIntro"></p>
         <p class="rz-sub rz-still-aus" id="einzelSubP">${t("mein.einzelSub")}</p>
         <p class="rz-sub rz-still-aus" id="messSubP">${t("mein.messSub")}</p>
@@ -154,8 +158,8 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeMein">${IKON.wegweiser}<span>${t("weg.badgeMein")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegMein"></div>
         <div class="rz-regal-reihen">
-          <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↓</span></button>
-          <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><div class="rz-caps">${t("zeitleiste.titel")}</div><div id="zlItems"></div></div>
+          <button class="rz-zeile rz-unten" id="btnZeitleiste" data-box="boxZeitleiste"><span>${t("mein.zeitleiste")}</span><span class="rz-pfeil">↑</span></button>
+          <div class="rz-regal-inhalt pb-hidden" id="boxZeitleiste"><p class="rz-sub rz-eng">${t("zeitleiste.hilfe")}</p><div id="zlItems"></div></div>
           <!-- S95.7e · Leseansicht eines abgeschlossenen Gespraechs. Eigene
                Flaeche, keine Eingabe, kein Panel — lesen aendert nichts. -->
           <div class="rz-regal-inhalt pb-hidden" id="boxLesen">
@@ -211,12 +215,12 @@ export function createApp({ doc, backend, root, diktat }) {
                Aufklapp-Mechanik dieselbe ist wie im Regal (data-box). -->
           <div class="rz-einst-gruppe">
             <div class="rz-caps">${t("einst.gruppeGeraet")}</div>
-            <button class="rz-zeile rz-unten pb-hidden" id="btnRecovery" data-box="boxRecovery"><span>${t("rec.titel")}</span><span class="rz-pfeil">↓</span></button>
+            <button class="rz-zeile rz-unten pb-hidden" id="btnRecovery" data-box="boxRecovery"><span>${t("rec.titel")}</span><span class="rz-pfeil">↑</span></button>
             <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
             <!-- 3.7 · Endgueltige Handlung, deshalb keine normale Zeile: sie
                  klappt auf, nennt die Zahl und fragt erst dann. Dieselbe
                  Bewegung wie beim Wiedereinstieg — kein System-confirm. -->
-            <button class="rz-zeile rz-unten" id="btnVerlaeufeWeg" data-box="boxVerlaeufeWeg"><span>${t("verlauf.alleLoeschen")}</span><span class="rz-pfeil">↓</span></button>
+            <button class="rz-zeile rz-unten" id="btnVerlaeufeWeg" data-box="boxVerlaeufeWeg"><span>${t("verlauf.alleLoeschen")}</span><span class="rz-pfeil">↑</span></button>
             <div class="rz-regal-inhalt pb-hidden" id="boxVerlaeufeWeg"></div>
           </div>
         </div>
@@ -234,7 +238,7 @@ export function createApp({ doc, backend, root, diktat }) {
           <span class="rz-signatur" data-rz-signatur></span>
           <span class="rz-zurueck rz-blind">←</span>
         </div>
-        <h1 class="rz-h1">${t("zone.raum")}</h1>
+        <h1 class="rz-h1">${t("zone.raumTeil")}</h1>
         <p class="rz-sub rz-intro" id="sharedIntro">${t("teil.intro")}</p>
         <div class="rz-fuss">
           <button class="rz-zeile" id="btnMoment"><span id="momentLabel">${t("teil.moment")}</span><span class="rz-pfeil">↑</span></button>
@@ -246,11 +250,11 @@ export function createApp({ doc, backend, root, diktat }) {
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeTeil">${IKON.wegweiser}<span>${t("weg.badgeTeil")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegTeil"></div>
         <div class="rz-regal-reihen">
-          <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↓</span></button>
-          <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><p class="rz-sub rz-eng" id="regalTitel"></p><div id="regalItems"></div><p class="rz-sub rz-regal-fussnote" id="regalIntro"></p></div>
-          <button class="rz-zeile rz-unten" id="btnAgenda" data-box="boxAgenda"><span>${t("teil.agenda")}</span><span class="rz-pfeil">↓</span></button>
-          <div class="rz-regal-inhalt pb-hidden" id="boxAgenda"><div class="rz-caps">${t("agenda.titel")}</div><div id="agendaItems"></div></div>
-          <button class="rz-zeile rz-unten" id="btnQz" data-box="boxQz"><span>${t("teil.qz")}</span><span class="rz-pfeil">↓</span></button>
+          <button class="rz-zeile rz-unten" id="btnRegal" data-box="boxRegal"><span>${t("teil.regal")}</span><span class="rz-lz-leiste pb-hidden" id="lzRegal"></span><span class="rz-pfeil">↑</span></button>
+          <div class="rz-regal-inhalt pb-hidden" id="boxRegal"><p class="rz-sub rz-eng" id="regalTitel"></p><div id="regalItems"></div></div>
+          <button class="rz-zeile rz-unten" id="btnAgenda" data-box="boxAgenda"><span>${t("teil.agenda")}</span><span class="rz-pfeil">↑</span></button>
+          <div class="rz-regal-inhalt pb-hidden" id="boxAgenda"><p class="rz-sub rz-eng">${t("agenda.hilfe")}</p><div id="agendaItems"></div></div>
+          <button class="rz-zeile rz-unten" id="btnQz" data-box="boxQz"><span>${t("teil.qz")}</span><span class="rz-pfeil">↑</span></button>
           <div class="rz-regal-inhalt pb-hidden" id="boxQz"></div>
         </div>
         <div class="rz-fuss">
@@ -523,8 +527,22 @@ export function createApp({ doc, backend, root, diktat }) {
       const ziel = $(z.getAttribute("data-box"));
       const auf = !!ziel && !ziel.classList.contains("pb-hidden");
       z.classList.toggle("rz-auf", auf);
+      // S114.7 · Der Pfeil zeigt die BEWEGUNG, nicht die Lage: geschlossen
+      // fährt der Kasten nach oben (↑), offen fährt er dorthin zurück, woher
+      // er kam (↓). D12-2b hatte es umgekehrt gelesen — als Ortsangabe.
       const pfeil = z.querySelector(".rz-pfeil");
-      if (pfeil) pfeil.textContent = auf ? "\u2191" : "\u2193";
+      if (pfeil) pfeil.textContent = auf ? "\u2193" : "\u2191";
+    }
+
+    // S114.8 · Der Wegweiser ist bei aufgeklapptem Regal still: Ein Panel,
+    // das sich jetzt aus der Naht faltet, legt sich quer ueber die neu
+    // geordnete Zone. Ein offenes Panel wird dabei geschlossen — sonst bliebe
+    // es stehen und liesse sich nicht mehr wegtippen.
+    const badge = screen.querySelector(".rz-weg-badge");
+    if (badge) {
+      badge.disabled = offen;
+      badge.setAttribute("aria-disabled", offen ? "true" : "false");
+      if (offen) for (const pnl of screen.querySelectorAll(".rz-weg-panel.rz-offen")) pnl.classList.remove("rz-offen");
     }
 
     const misst = zone && typeof zone.getBoundingClientRect === "function";
@@ -2268,7 +2286,8 @@ export function createApp({ doc, backend, root, diktat }) {
     $("startIntro").textContent = t("start.intro");
     $("startMeinSub").textContent = t("start.meinSub", { partner: state.info.partner });
     $("startTeilSub").textContent = t("start.teilSub");
-    $("meinIntro").textContent = t("mein.intro", { partner: state.info.partner });
+    // S114.2 · Der Text nennt den Partner nicht mehr — kein Platzhalter.
+    $("meinIntro").textContent = t("mein.intro");
     $("pbBusyTxt").textContent = t("allg.arbeitet");
     zeigeRecovery();
     betrete("scrStart");

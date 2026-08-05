@@ -116,8 +116,9 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       (await backend.bstate.get("shelf")) || { items: [] }, state.info.role);
     zeigeNur("boxRegal");
     $("boxRegal").classList.remove("pb-hidden");
+    // S114.4 · Der Fussnoten-Text ist in regal.titel aufgegangen — eine
+    // Erklaerung am Kopf statt zweier an beiden Enden des Kastens.
     $("regalTitel").textContent = t("regal.titel");
-    $("regalIntro").textContent = t("regal.intro", { nameA: state.info.nameA, nameB: state.info.nameB });
     $("regalItems").innerHTML = regal.items.length
       ? regal.items.map(i => {
           const fremd = i.by !== state.info.name;
@@ -306,8 +307,7 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
     if (revealLog && revealLog.at)
       eintraege.push({ at: revealLog.at, art: t("momente.artAufdeck"), text: revealLog.summary || t("momente.aufdeckStandard"), themen: "", impuls: null });
     eintraege.sort((a, b) => (a.at < b.at ? -1 : 1));
-    box.innerHTML = `<div class="pb-sub">${t("momente.titel")}</div>` +
-      `<p class="pb-sub rz-eng">${t("momente.intro")}</p>` +
+    box.innerHTML = `<p class="pb-sub rz-eng">${t("momente.intro")}</p>` +
       (eintraege.length ? eintraege.map(e2 => {
         /* U9 · Dieselbe Zeitsprache wie die Chronik: "vor 3 Tagen" statt
            "2026-07-23". Beide Ansichten sind Rückblicke, und wer sie

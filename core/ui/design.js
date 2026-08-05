@@ -4,9 +4,9 @@ import { zeichen } from "./kulisse.js";
 // Design auf Dokument-Ebene: <style> + Kulisse + Theme-Umschalter, einmalig
 // beim Booten angewendet (idempotent), damit ALLE Screens dasselbe Theme tragen.
 
-// Mobile-Härtung (M3), im CSS bewusst unkommentiert (i18n-Kanarie scannt das
-// Literal): Textfelder nie unter 16px (iOS-Fokus-Zoom), Composer hält per
-// scroll-margin Abstand zur Tastatur, Haupt-Aktionen min. 44px Touch-Höhe,
+// Mobile-Haertung (M3), im CSS bewusst unkommentiert (i18n-Kanarie scannt das
+// Literal): Textfelder nie unter 16px (iOS-Fokus-Zoom), Composer haelt per
+// scroll-margin Abstand zur Tastatur, Haupt-Aktionen min. 44px Touch-Hoehe,
 // Safe-Area-Insets an #app und fixiertem Chrome (Theme/Busy).
 export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
 `
@@ -50,13 +50,23 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-unten-1{margin-bottom:var(--rz-r-1)}
       .rz-block-oben-1{display:block;margin-top:var(--rz-r-1)}
       .rz-polster-y{padding:var(--rz-r-1) 0}
-      .rz-pille-eng{padding:3px 10px}
-      .rz-rechts-pille{padding:2px var(--rz-r-2);float:right}
+      /* S114.13 · Ohne Radius ist das kein Pillen-Polster mehr, sondern das
+         enge Mass eines Zeilen-Knopfes. Der Name bleibt (er steht an ~8
+         Aufrufstellen), die Gestalt folgt .pb-btn. */
+      .rz-pille-eng{padding:6px 10px;min-height:0}
+      .rz-rechts-pille{padding:2px var(--rz-r-2);min-height:0;float:right}
       .rz-reihe-verteilt{display:flex;justify-content:space-between}
       .rz-reihe-umbruch{display:flex;gap:var(--rz-r-3);flex-wrap:wrap}
       .rz-flex-spalte{flex:1;min-width:150px}
-      .rz-blockknopf{display:block;width:100%;text-align:left;margin:var(--rz-r-2) 0}
-      .rz-blockknopf-leise{display:block;width:100%;text-align:left;margin:var(--rz-r-3) 0 0;opacity:.85}
+      /* S114.14 · Die Wahl-Karten ("Womit moechtet ihr ankommen?") sind
+         AUSWAHL, nicht Handlung — nach S93 also die Sprache der Haarlinie.
+         Sie erben von .pb-btn (kein Radius mehr) und tauschen den Rahmen
+         gegen eine Trennlinie; die letzte Karte schliesst den Block ab. */
+      .rz-blockknopf,.rz-blockknopf-leise{display:block;width:100%;text-align:left;
+        border:0;border-top:1px solid var(--rz-hairline);padding:15px 0;margin:0}
+      .rz-blockknopf-leise{opacity:.85;border-bottom:1px solid var(--rz-hairline)}
+      .rz-blockknopf:hover,.rz-blockknopf-leise:hover{background:none;color:var(--rz-akzent-ink)}
+      .rz-tiefgruen .rz-blockknopf,.rz-tiefgruen .rz-blockknopf-leise{border-color:var(--rz-hairline-gruen)}
       .rz-code{letter-spacing:5px;font-size:var(--rz-fs-text);margin:var(--rz-r-1) 0 var(--rz-r-3)}
       .rz-marke-links{font-weight:700;border-left:3px solid var(--rz-akzent);padding-left:var(--rz-r-2)}
       .rz-hinweis-blatt{border-color:var(--rz-hinweis-rand);background:var(--rz-hinweis-flaeche);
@@ -68,15 +78,33 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .pb-h1{font-family:var(--rz-serif);font-size:var(--rz-fs-titel);font-weight:300;margin:0;letter-spacing:.005em;line-height:var(--rz-lh-titel)}
       .pb-sub{color:var(--rz-sek2);font-size:var(--rz-fs-fein)}
       .pb-brand .pb-sub{letter-spacing:.2em;text-transform:uppercase;font-size:var(--rz-fs-caps)}
-      .pb-card{background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:var(--rz-rund-karte);padding:24px 26px;margin:16px 0;
-               backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-      .pb-btn{display:inline-block;border:1px solid var(--rz-akzent);background:transparent;color:var(--rz-akzent-ink);
-              border-radius:var(--rz-rund-pille);padding:10px 22px;font-family:inherit;font-size:var(--rz-fs-text);cursor:pointer;margin:6px 8px 0 0;transition:.22s}
-      .pb-btn:hover{background:var(--rz-akzent);color:var(--rz-auf-akzent)}
-      .pb-btn.primary{background:var(--rz-akzent);color:var(--rz-auf-akzent)}
+      /* S114.13 · Die Karte behaelt ihre Flaeche (sie hebt die Aufdeck-Tafel
+         und das Hinweisblatt vom Grund ab), verliert aber Radius und Weichzeichner
+         — beides stammt aus der Zeit vor der Themeengine und liest sich neben
+         den Haarlinien wie ein Fremdkoerper. */
+      .pb-card{background:var(--rz-flaeche-hoch);border:1px solid var(--rz-hairline);border-radius:0;padding:20px 22px;margin:16px 0}
+      /* ---- S114.13 · Die Pille ist fort ----
+         .pb-btn war der letzte Ort mit der Optik VOR der Themeengine: Pille
+         mit vollem Radius, Akzentrahmen, bei .primary eine gefuellte Flaeche.
+         Sie sass in der Agenda, im Regal, in den Kapitel-Panels, an den
+         Auswahl-Karten der Sessions und im Kernwetten-Werkzeug — also
+         ausgerechnet dort, wo die Oberflaeche sonst in Haarlinien spricht.
+         Die Regel wird an EINER Stelle umgeschrieben statt an ~40
+         Aufrufstellen: dieselbe Klasse, neue Gestalt (S93-Grammatik).
+         RAHMEN = HANDLUNG: flach, kantig, ohne Radius — wie .rz-knopf-flach.
+         .primary betont ueber die KANTE (Akzent), nicht ueber die Flaeche;
+         eine gefuellte Flaeche waere in einer Oberflaeche aus Linien der
+         lauteste Ton ueberhaupt. */
+      .pb-btn{display:inline-block;border:1px solid var(--rz-hairline);background:transparent;color:inherit;
+              border-radius:0;padding:12px 16px;font-family:inherit;font-size:var(--rz-fs-text);cursor:pointer;
+              margin:var(--rz-r-2) var(--rz-r-2) 0 0;transition:background .22s,border-color .22s}
+      .pb-btn:hover{background:var(--rz-flaeche-hoch)}
+      .pb-btn.primary{border-color:var(--rz-akzent);color:var(--rz-akzent-ink)}
+      .pb-btn.primary:hover{background:var(--rz-flaeche-hoch)}
       .pb-btn[disabled]{opacity:.45;cursor:not-allowed}
-      .pb-btn[disabled]:hover{background:transparent;color:var(--rz-akzent-ink)}
-      .pb-btn.primary:hover{filter:brightness(1.05)}
+      .pb-btn[disabled]:hover{background:transparent}
+      /* In der gruenen Zone traegt die Haarlinie ihren eigenen Ton (T2e). */
+      .rz-tiefgruen .pb-btn{border-color:var(--rz-hairline-gruen)}
       .pb-msgs{display:flex;flex-direction:column;gap:13px;margin:16px 0}
       .pb-msg{max-width:82%;padding:14px 19px;border-radius:var(--rz-rund-karte);font-size:var(--rz-fs-zeile);line-height:var(--rz-lh-text);white-space:pre-wrap}
       .pb-msg.ai{background:var(--rz-blase-du);border:1px solid var(--rz-blase-du-rand);align-self:flex-start;border-bottom-left-radius:6px;
@@ -101,7 +129,10 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .pb-msg.ai strong{font-weight:500}
       .pb-msg.ai code{background:var(--rz-blase-du-rand);border-radius:var(--rz-rund-fein);padding:0 4px;font-family:ui-monospace,Menlo,monospace;font-size:var(--rz-fs-fein)}
       .pb-err{background:rgba(188,74,74,.12);border:1px solid rgba(188,74,74,.34);border-radius:var(--rz-rund-knopf);padding:11px 15px;font-size:var(--rz-fs-text);margin:12px 0}
-      .pb-item{border-bottom:1px solid var(--rz-karte-rand);padding:11px 0;font-size:var(--rz-fs-text)}
+      /* S114.13 · Karten-Rand → Haarlinie, und das Tapziel der Zeile (44px)
+         gilt auch hier: Eintraege tragen Knoepfe. */
+      .pb-item{border-bottom:1px solid var(--rz-hairline);padding:var(--rz-r-4) 0;font-size:var(--rz-fs-text)}
+      .rz-tiefgruen .pb-item{border-bottom-color:var(--rz-hairline-gruen)}
       .pb-busydots{display:inline-flex;gap:4px;align-items:center}
       .pb-busydots span{width:6px;height:6px;border-radius:50%;background:var(--rz-sek2);animation:pbBlink 1.2s infinite}
       .pb-busydots span:nth-child(2){animation-delay:.2s}.pb-busydots span:nth-child(3){animation-delay:.4s}
@@ -148,12 +179,22 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
              text-align:center;letter-spacing:.02em;background:var(--rz-akzent);color:var(--rz-auf-akzent);
              border-radius:var(--rz-rund-mini) var(--rz-rund-mini) 0 0;clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - 5px),0 100%);
              box-shadow:0 1px 2px rgba(0,0,0,.18)}
-      .pb-ag-block{border:1px solid var(--rz-karte-rand);border-radius:var(--rz-rund-knopf);padding:8px 12px 10px;margin-top:10px;background:var(--rz-karte)}
-      .pb-ag-ziele{border-left:4px solid var(--rz-akzent)}
-      .pb-ag-kopf{font-size:var(--rz-fs-fein);font-weight:650;color:var(--rz-sek);letter-spacing:.02em}
-      .pb-platz{border:1px solid var(--rz-karte-rand);border-radius:var(--rz-rund-knopf);padding:9px 13px;margin:6px 0;cursor:grab}
-      .pb-platz.leer{border-style:dashed;color:var(--rz-sek2);cursor:default}
-      .pb-platz.gewaehlt{border-color:var(--rz-akzent);box-shadow:0 0 0 1px var(--rz-akzent) inset}
+      /* S114.13 · Die Agenda war eine Kartensammlung in einem Regal aus
+         Haarlinien — Kasten im Kasten, mit Radius, Flaeche und einer 4px-Kante
+         an der Ziel-Gruppe. Jetzt gliedern Ueberschriften, nicht Rahmen: der
+         Gruppenkopf spricht die Caps-Sprache des Regals, die Eintraege sind
+         Zeilen. Die Ziel-Gruppe braucht keine Sonderkante mehr — sie steht
+         ohnehin zuerst und traegt ihren Namen. */
+      .pb-ag-block{border:0;border-radius:0;padding:0;margin-top:var(--rz-r-5);background:none}
+      .pb-ag-kopf{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--rz-label)}
+      .rz-tiefgruen .pb-ag-kopf{color:var(--rz-label-auf-gruen)}
+      /* Der Rangfolge-Platz bleibt greifbar (cursor:grab), verliert aber die
+         Kartenform: eine Zeile mit Haarlinie, gewaehlt an der Kante markiert. */
+      .pb-platz{border:0;border-bottom:1px solid var(--rz-hairline);border-radius:0;
+                padding:var(--rz-r-3) 0;margin:0;cursor:grab}
+      .pb-platz.leer{border-bottom-style:dashed;color:var(--rz-sek2);cursor:default}
+      .pb-platz.gewaehlt{box-shadow:inset 2px 0 0 var(--rz-akzent);padding-left:var(--rz-r-3)}
       #kwPool [draggable]{cursor:grab}
 
       /* ============ D1 · Grundbaustein A — Zweiteilung / Naht ============
@@ -227,10 +268,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            als T2d-2 im Protokoll.
            Im aufgeklappten Regal gilt das alles nicht: dort ordnet die Zone neu. */
         .rz-split:not(.rz-regal-offen)>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
+        /* S114.11 · Der Abstand zur Naht war einseitig: die erste Haelfte
+           haelt ihn ueber .rz-fuss{padding-bottom:var(--rz-nahtfrei)}, die
+           zweite hatte nur die 30px Zonenpolster gegengerechnet. Rechts stand
+           die erste Zeile deshalb sichtbar dichter am Badge als links die
+           letzte. Jetzt lesen beide Seiten denselben Token — nur eben nach
+           unten statt nach oben. */
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile,
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-caps,
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen{
-          margin-top:calc(50dvh - 30px)}
+          margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))}
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile~.rz-zeile,
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile~.rz-caps,
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen~*{margin-top:0}
       }
 
@@ -361,6 +410,10 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       /* Nur auf dem Startscreen steht das Ortsetikett ueber der Betreten-Zeile;
          in den Vorraeumen traegt das Badge den Ort (Turn 27, §1). */
       .rz-caps-ueber{margin-bottom:11px}
+      /* S114.11a · Das Gegenstueck in der zweiten Haelfte: Dort traegt die
+         Zeile ihre Hairline UNTEN (.rz-zeile.rz-unten), das Etikett steht
+         also darunter statt darueber. Gleicher Abstand, gespiegelte Seite. */
+      .rz-caps-unter{margin-top:11px}
       /* Der Sessionname verlaesst den Kopf und wird zur leisen Zeile ueber der
          ersten Nachricht — der Ort steht im Badge, die Session hier. */
       .rz-sessionname{font-family:var(--rz-serif);font-size:var(--rz-fs-text);font-weight:300;
@@ -423,11 +476,24 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Scrollbalken mit, wie vw es taete.
          Der Block steht bewusst HINTER der Grundregel — gleiche Spezifitaet,
          also entscheidet die Reihenfolge. */
+      /* S114.9 · Beide Regeln standen ohne .rz-split davor und trafen damit
+         auch den Wegweiser IM Gespraech. Dort gibt es keine senkrechte Naht:
+         das Panel rutschte auf halbe Hoehe der Schreibkante — also nach unten
+         aus dem Bild — und wurde doppelt so breit. Was als "oeffnet nach unten
+         und zeigt nichts" ankam, war diese eine fehlende Bindung.
+         Der Chat behaelt damit die Grundregel: an der Kante seiner Zone,
+         volle Breite dieser Zone. */
       @media(min-width:900px){
-        .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}
+        .rz-split .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}
         /* T2d · im zugeklappten Zustand ankert das Panel am .rz-split und ist
            damit ohnehin schon volle Breite — die 200%/-100%-Kruecke von oben
-           wuerde es auf die doppelte Fensterbreite ziehen. */
+           wuerde es auf die doppelte Fensterbreite ziehen.
+           S114.10 · Diese Regel ist der Normalfall, nicht die Ausnahme: Sie
+           gilt fuer JEDEN Zustand ausser dem aufgeklappten Regal, also auch
+           waehrend des Aufklappens. Vorher entschied die Reihenfolge zweier
+           gleich spezifischer Regeln, und die Breite wechselte mitten in der
+           Bewegung — das Panel ging erst in der Spalte auf und sprang danach
+           auf volle Breite. */
         .rz-split:not(.rz-regal-offen) .rz-weg-panel{right:0;width:auto;margin-left:0}
       }
       @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
@@ -592,8 +658,16 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          aus der Naht. Die Sonderregel ist deshalb entfallen — .rz-weg-badge
          bringt cursor:pointer schon mit. */
       /* U10.4 · DIESE Zone rollt — und nur sie. */
+      /* S114.12 · overflow-y:auto allein macht die andere Achse implizit zu
+         "auto" (visible ist mit auto nicht kombinierbar). Jeder waagerechte
+         Ueberlauf im Verlauf — ein breites Panel, eine lange Kennung, die
+         Aufdeck-Tafel — legte deshalb eine Bildlaufleiste an den UNTEREN Rand
+         genau dieser Zone: direkt ueber der Naht. Die Abfangregel dagegen
+         (.rz-app #scrChat{overflow-x:clip}) sitzt eine Ebene hoeher und wurde
+         nie erreicht. Sie steht jetzt auch dort, wo gerollt wird.
+         clip statt hidden: hidden eroeffnete einen zweiten Rollbereich. */
       #scrChat .rz-chat-oben{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0;
-        overflow-y:auto;overscroll-behavior:contain}
+        overflow-y:auto;overflow-x:clip;overscroll-behavior:contain}
       /* Die Schreibkante bringt ihr flex:none schon mit (= 0 0 auto): Sie
          kann nicht schrumpfen, ein langer Composer gibt der rollenden Zone
          nicht nach. Eine zweite Regel dafuer waere Doppelpflege gewesen. */
@@ -942,7 +1016,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          unter der Kopfzeile sitzt. Nur die Kulisse tritt ab — sie haengt am
          Zonenfuss, der gerade unterwegs ist. */
       .rz-regal-offen .rz-kulisse-fuss{opacity:0;pointer-events:none;transition:opacity .2s ease}
-      .rz-regal-offen .rz-weg-badge{z-index:6}
+      /* S114.8 · Bei aufgeklapptem Regal ordnet die Zone neu; ein Panel, das
+         sich jetzt aus der Naht faltet, legt sich quer ueber das Layout. Das
+         Badge bleibt sichtbar (es markiert weiter die Naht), nimmt aber keine
+         Klicks mehr an. pointer-events allein reicht nicht — die Tastatur
+         kaeme weiter durch; deshalb setzt regalModus() zusaetzlich disabled. */
+      .rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}
       .rz-regal-offen>.rz-half:last-child .rz-fuss{display:none}
       .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){animation:rzEinblenden .28s .08s both}
       .rz-regal-offen .rz-regal-reihen{flex:1 1 auto}
@@ -1039,9 +1118,9 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
    rechts, in der CSS nur das WECHSELZIEL zeigt (Sonne bzw. Mond). Sie ist
    ausserdem der Wirt fuer die Push-Glocke (M7a, client.js sucht .pb-theme). */
 
-/** Läuft die App als installierte PWA (eigenes Fenster statt Browser-Tab)?
- *  Reine Funktion über dem window-Objekt: display-mode aus dem Manifest
- *  (standalone) oder das ältere iOS-Signal navigator.standalone. */
+/** Laeuft die App als installierte PWA (eigenes Fenster statt Browser-Tab)?
+ *  Reine Funktion ueber dem window-Objekt: display-mode aus dem Manifest
+ *  (standalone) oder das aeltere iOS-Signal navigator.standalone. */
 export function istStandalone(win) {
   if (!win) return false;
   try {
@@ -1050,11 +1129,11 @@ export function istStandalone(win) {
   return win.navigator ? win.navigator.standalone === true : false;
 }
 
-/* D1 · Wegweiser-Panel-Verdrahtung (Grundbaustein C). Öffnen per Tap aufs
- * Badge, Schließen per Tap irgendwohin — das Badge stoppt die Propagation,
- * damit derselbe Tap das Panel nicht sofort wieder schließt. Der Dokument-
+/* D1 · Wegweiser-Panel-Verdrahtung (Grundbaustein C). Oeffnen per Tap aufs
+ * Badge, Schliessen per Tap irgendwohin — das Badge stoppt die Propagation,
+ * damit derselbe Tap das Panel nicht sofort wieder schliesst. Der Dokument-
  * Listener wird nur EINMAL gesetzt (Marker am document), egal wie viele
- * Badges es gibt; er schließt alle offenen Panels. Ab D2 von den Screens
+ * Badges es gibt; er schliesst alle offenen Panels. Ab D2 von den Screens
  * benutzt. */
 export function verdrahteWegweiser(doc, badge, panel) {
   if (!badge || !panel) return;
@@ -1092,12 +1171,12 @@ export const CHROME_HTML = String.raw`<div class="rz-ecke pb-theme" role="group"
 export function applyDesign(doc) {
   // D12-2d · Der Waechter galt frueher fuer die GANZE Funktion. Das war
   // brauchbar, solange nur das Stylesheet daranhing — aber die Bedien-Ecke
-  // lebt im Body, und wer den Body neu baut (Hüllenwechsel, Relaunch), stand
+  // lebt im Body, und wer den Body neu baut (Huellenwechsel, Relaunch), stand
   // ohne Ecke da, weil das Stylesheet im Head ueberlebt hatte. Jetzt wacht
   // jeder Teil ueber sich selbst.
   if (!doc.getElementById("pbDesign")) {
     // Standalone-Haken (M3): CSS kann per html[data-standalone] reagieren —
-    // z. B. künftige Installations-Hinweise ausblenden, wenn schon installiert.
+    // z. B. kuenftige Installations-Hinweise ausblenden, wenn schon installiert.
     if (istStandalone(doc.defaultView)) doc.documentElement.setAttribute("data-standalone", "1");
     doc.documentElement.setAttribute("data-vollbild", "1");   // D8: randlos, egal welche Huelle
     const st = doc.createElement("style");

@@ -56,7 +56,8 @@ describe("D3 · Zwei Zonen", () => {
     const zonen = raum.querySelectorAll(":scope > .rz-half");
     expect(zonen[0].classList.contains("rz-papier")).toBe(true);
     expect(zonen[1].classList.contains("rz-tiefgruen")).toBe(true);
-    expect(zonen[0].querySelector(".rz-h1").textContent).toBe("Der Raum.");
+    // S114.1 · Der Titel nennt, wessen Raum das ist.
+    expect(zonen[0].querySelector(".rz-h1").textContent).toBe("Raum für dich.");
     // D12-2 · Turn 27: ein Titel je Zone — unten traegt die Regalgruppe.
     expect(zonen[1].querySelector(".rz-fuss .rz-h2").textContent).toBe("Mein Weg.");
   });
@@ -73,7 +74,7 @@ describe("D3 · Zwei Zonen", () => {
     expect(zonen[1].classList.contains("rz-tiefgruen")).toBe(true);
     const intro = zonen[0].querySelector("#sharedIntro");
     expect(intro.classList.contains("rz-intro")).toBe(true);
-    expect(intro.textContent).toContain("Für alles, was ihr zu zweit macht");
+    expect(intro.textContent).toContain("Raum für eure gemeinsame Zeit");
   });
 });
 

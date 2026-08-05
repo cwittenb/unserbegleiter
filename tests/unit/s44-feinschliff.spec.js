@@ -271,15 +271,19 @@ describe("S44 · Zeitleiste: freigegebene Punkte aufklappbar", () => {
 /* ─────────────── Regal, Button, Momente-Intro ─────────────── */
 
 describe("S44 · Beschriftungen & personalisiertes Regal", () => {
-  it("Button heißt 'Geteiltes'; das Regal nennt beide Namen", async () => {
+  /* S114.4 · Die Fussnote mit den beiden Namen ist entfallen: Sie sagte
+     dasselbe wie die Einleitung am Kopf, nur mit Namen statt "ihr". Die
+     Einleitung spricht das Paar jetzt direkt an — eine Erklaerung, nicht zwei. */
+  it("Button heißt 'Geteiltes'; die Einleitung spricht das Paar direkt an", async () => {
     await bootApp(memoryBackend(null));
     expect(root.querySelector("#btnRegal").textContent).toContain("Geteiltes");
     await klick(root.querySelector("#btnSharedRoom"));
     await klick(root.querySelector("#btnRegal"));
     await ruhe();
-    const intro = root.querySelector("#regalIntro").textContent;
-    expect(intro).toContain("Anna");
-    expect(intro).toContain("Bernd");
+    expect(root.querySelector("#regalIntro")).toBe(null);
+    const titel = root.querySelector("#regalTitel").textContent;
+    expect(titel).toContain("euren Einzelreflexionen");
+    expect(titel).toContain("eure Erfahrungen");
   });
 
   it("Gemeinsame Momente: entdoppelter Untertitel", async () => {

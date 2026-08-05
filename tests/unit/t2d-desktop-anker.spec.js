@@ -84,7 +84,11 @@ describe("T2d · der aufgeklappte Zustand bleibt unberührt", () => {
 describe("T2d · die Flanken rechnen weiter mit 50dvh — jetzt zu Recht", () => {
   it("beide Flanken hängen an derselben Zahl", () => {
     expect(D1).toContain(".rz-split:not(.rz-regal-offen)>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}");
-    expect(D1).toContain("margin-top:calc(50dvh - 30px)");
+    /* S114.11 · Die rechte Flanke rechnet zusaetzlich das Nahtpolster mit,
+       das links seit T2b als .rz-fuss{padding-bottom:var(--rz-nahtfrei)}
+       steht — vorher stand die erste Zeile rechts sichtbar dichter am Badge
+       als links die letzte. Dieselbe Zahl, derselbe Token, gespiegelte Seite. */
+    expect(D1).toContain("margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))");
   });
 
   it("der Kommentar trägt den offenen Rest (T2d-2), statt ihn zu verschweigen", () => {

@@ -264,7 +264,11 @@ describe("Q3 · Desktop-Feinschliff", () => {
   it("die Linkgruppen flankieren die Naht — links darüber, rechts darunter", async () => {
     const d = await desktop();
     expect(d).toContain(">.rz-half:first-child .rz-fuss{margin-bottom:50dvh}");
-    expect(d).toContain("margin-top:calc(50dvh - 30px)");
+    /* S114.11 · Die rechte Flanke rechnet zusaetzlich das Nahtpolster mit,
+       das links seit T2b als .rz-fuss{padding-bottom:var(--rz-nahtfrei)}
+       steht — vorher stand die erste Zeile rechts sichtbar dichter am Badge
+       als links die letzte. Dieselbe Zahl, derselbe Token, gespiegelte Seite. */
+    expect(d).toContain("margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))");
     // Im offenen Regal ordnet die Zone neu — dort darf die Regel nicht greifen.
     expect(d).toContain(".rz-split:not(.rz-regal-offen)");
   });
