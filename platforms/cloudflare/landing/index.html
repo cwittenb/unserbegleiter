@@ -1,170 +1,346 @@
 <!doctype html>
-<!-- D7 · Landing fuer die Apex-Domain raumzuzweit.de (Design 11a/12a).
-     Self-contained: Inline-CSS, Inline-SVG-Kulisse, Fonts via Google.
-     Texte = Copy-VORSCHLAG lt. Handoff (K2) — Textreview folgt.
-     Signup ist reine Oberflaeche (K6): der Backend-Teil kommt als eigener
-     Sprint; bis dahin antwortet das Formular mit einer stillen Notiz. -->
+<!-- L1 · Landing fuer die Apex-Domain raumzuzweit.de — Design Turn 44 (44a/44b).
+     Loest die Fassung 11a/12a aus Sprint D7 ab.
+
+     Self-contained: Inline-CSS, Inline-SVG, Schriften ueber Google Fonts.
+     Die Landing ist KEIN App-Screen — kein app.js, keine Zonen-Navigation,
+     kein Wegweiser. Gleiche Bausteine, drei bewusste Abweichungen:
+       5a  Das Naht-Badge nennt eine Bedingung, keinen Ort (ohne Zeichen).
+       5b  entfaellt — Entscheidung F3b: KEINE Display-Stufe, der Desktop-Hero
+           faellt auf 30px wie mobil. theme.js bleibt unberuehrt.
+       5c  Links sind hier echte Links (Fuss), in der App gibt es nur Zeilen.
+
+     Farben: ausschliesslich aus core/ui/theme.js, hier als :root-Block
+     gespiegelt (die Landing importiert den Kern bewusst nicht). KEIN
+     Farbliteral ausserhalb dieses Blocks — tests/unit/l1-1-* wacht darueber.
+     Typo ausschliesslich auf der Skala 11/13/15/17/24/30.
+     Kein Dark-Mode (Entscheidung F8a): der Zweiklang Papier/Tiefgruen IST die
+     Aussage, invertiert bleibt von ihr nichts. Alle Kontraste in Turn 44 sind
+     auf #faf8f2 gemessen.
+     Signup ist reine Oberflaeche (D7/K6): kein fetch, kein action. -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>raumzuzweit — Eine Paarbegleitung.</title>
-<meta name="description" content="Ein Raum, der dir gehört. Ein Raum, der euch gehört. Eine Paarbegleitung — nur auf Einladung.">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="description" content="Ein Raum, der dir gehört. Ein Raum, der euch gehört. Eine Paarbegleitung — nur mit Einladung.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --papier:#faf8f2;--papier-regal:#f0ece0;--hairline:#e3dfd0;
-  --tiefgruen:#1e2a22;--ink:#23291f;--ink-hell:#eef0e7;
-  --sek:#6b7261;--sek-hell:#b9c3ac;--gedimmt:#a3a894;
-  --akzent:#8fae74;--akzent-text:#14201a;--akzent-tief:#7d9b62;
-  --label:#7d9b62;--label-hell:#9db08f;
-  --serif:'Source Serif 4',Georgia,serif;--sans:'Instrument Sans',system-ui,sans-serif;
-}
-@media(prefers-color-scheme:dark){
-  :root{--papier:#242b21;--papier-regal:#20261d;--hairline:#39412f;
-    --tiefgruen:#101b14;--ink:#ece9da;--sek:#b9c3ac;--label:#aeca8d}
+  /* ---- Palette: 1:1 aus core/ui/theme.js (helle Fassung) ---- */
+  --rz-serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --rz-sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
+  --rz-papier:#faf8f2;
+  --rz-hairline:#e3dfd0;
+  --rz-hairline-gruen:rgba(157,176,143,.28);
+  --rz-tiefgruen:#1e2a22;
+  --rz-ink:#23291f;
+  --rz-ink-auf-gruen:#eef0e7;
+  --rz-sek:#6b7261;
+  --rz-sek-auf-gruen:#b9c3ac;
+  --rz-sek2-auf-gruen:#8a9e7c;
+  --rz-marke:#5c6653;
+  --rz-akzent:#8fae74;
+  --rz-akzent-text:#14201a;
+  --rz-akzent-hell:#7d9b62;
+  --rz-akzent-ink:#41562c;
+  --rz-pfeil-auf-gruen:#a9c88b;
+  --rz-label-auf-gruen:#9db08f;
+  --rz-kulisse-baum:#7d9b62;
+  /* Der Fuss steht in 44a/44b auf #141f18. theme.js kennt diesen Ton nicht;
+     §2.1 verlangt aber ausdruecklich "kein neuer Farbton". Genommen wird
+     daher --rz-akzent-text #14201a — der dunkelste Ton der Palette, Abstand
+     zum Entwurf unter der Wahrnehmungsschwelle (G 31->32, B 24->26). */
+  --rz-fuss:#14201a;
+
+  /* ---- Typo-Skala (theme.js). Keine Display-Stufe: F3b. ---- */
+  --rz-fs-caps:11px;    --rz-lh-caps:1.3;
+  --rz-fs-fein:13px;
+  --rz-fs-text:15px;    --rz-lh-text:1.65;
+  --rz-fs-zeile:17px;   --rz-lh-zeile:1.3;
+  --rz-fs-sektion:24px;
+  --rz-fs-titel:30px;   --rz-lh-titel:1.18;
+
+  /* ---- Masse (§8) ---- */
+  --rz-rand:24px;             /* Screenrand mobil   */
+  --rz-rand-weit:44px;        /* Screenrand Desktop */
+  --rz-kulissenfrei:96px;     /* NICHT --rz-nahtfrei (32px) — §4.4 */
+  --rz-tapziel-finger:44px;
 }
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--papier);font-size:15px;line-height:1.65}
-.caps{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--label)}
-.tief .caps{color:var(--label-hell)}
-h1,h2{font-family:var(--serif);font-weight:300;line-height:1.15;margin:0}
-/* ---- Hero: Zweiteilung, Naht vertikal ab 900px ---- */
-.hero{display:flex;flex-direction:column;min-height:100dvh}
-.hero>section{flex:1;padding:34px 26px;display:flex;flex-direction:column;position:relative;overflow:hidden}
-.hero .papier{background:var(--papier)}
-.hero .tief{background:var(--tiefgruen);color:var(--ink-hell)}
-.hero h1{font-size:clamp(34px,6vw,54px);margin-top:14px}
-.hero p{max-width:34ch;color:var(--sek);margin:14px 0 0}
-.hero .tief p{color:var(--sek-hell)}
-.marke{font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--label)}
-.naht-badge{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:3;
-  background:var(--akzent);color:var(--akzent-text);font-size:11px;font-weight:600;
-  letter-spacing:.16em;text-transform:uppercase;padding:9px 18px;white-space:nowrap}
-.runter{margin-top:auto;padding-top:26px;display:inline-block;color:inherit;text-decoration:none;
-  font-family:var(--serif);font-size:19px;border-top:1px solid rgba(157,176,143,.28)}
-.runter span{color:#a9c88b;font-family:var(--sans);font-size:15px;float:right}
-.unterzeile{margin-top:auto;padding-top:20px;font-family:var(--serif);font-size:17px;color:var(--sek)}
-@media(min-width:900px){
-  .hero{flex-direction:row}
-  .naht-badge{left:0;top:50%}
-  .hero>section{padding:48px 56px}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--rz-papier);color:var(--rz-ink);
+     font-family:var(--rz-sans);font-size:var(--rz-fs-text);line-height:var(--rz-lh-text)}
+h1,h2{font-family:var(--rz-serif);font-weight:300;margin:0;text-wrap:pretty}
+p{margin:0;text-wrap:pretty}
+
+/* Radien 0, keine Schatten, keine Karten — auf der ganzen Seite. */
+
+.rz-caps{font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.2em;
+         line-height:var(--rz-lh-caps);text-transform:uppercase;color:var(--rz-akzent-ink)}
+.rz-tief .rz-caps{color:var(--rz-label-auf-gruen)}
+/* §2.3 · Marken-Spur .34em, nicht die Badge-Spur .16em. */
+.rz-marke{font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.34em;
+          line-height:var(--rz-lh-caps);text-transform:uppercase;color:var(--rz-marke);
+          text-decoration:none}
+.rz-lead{font-size:var(--rz-fs-text);line-height:var(--rz-lh-text);color:var(--rz-sek)}
+.rz-fein{font-size:var(--rz-fs-fein);line-height:var(--rz-lh-text);color:var(--rz-sek)}
+.rz-nur-desktop{display:none}
+
+/* ============ 1 · Hero ============ */
+.rz-hero{display:flex;flex-direction:column}
+.rz-hero-papier{background:var(--rz-papier);color:var(--rz-ink);
+  padding:30px var(--rz-rand) var(--rz-kulissenfrei);
+  display:flex;flex-direction:column;gap:14px;min-height:400px}
+.rz-hero-tief{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
+  padding:40px var(--rz-rand) 30px;
+  display:flex;flex-direction:column;gap:14px;position:relative;min-height:360px}
+.rz-hero-papier>.rz-marke{margin-bottom:auto}
+.rz-hero h1,.rz-hero h2{font-size:var(--rz-fs-titel);line-height:var(--rz-lh-titel)}
+.rz-hero-tief .rz-lead{color:var(--rz-sek-auf-gruen)}
+.rz-hero-mitte{display:flex;flex-direction:column;gap:14px;position:relative}
+.rz-hero-marke-rechts{font-size:var(--rz-fs-fein);color:var(--rz-sek2-auf-gruen);position:relative}
+.rz-hero-marke-links{font-size:var(--rz-fs-fein);color:var(--rz-sek)}
+/* §4.3 · In den unteren 96px der Tiefgruen-Haelfte steht kein Text. */
+.rz-runter{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);
+  color:var(--rz-pfeil-auf-gruen);text-decoration:none;margin-top:auto;position:relative}
+/* §5a · Bedingung statt Ort, ohne Wegweiser-Zeichen. */
+.rz-badge{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:3;
+  background:var(--rz-akzent);color:var(--rz-akzent-text);
+  font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.16em;
+  text-transform:uppercase;padding:9px 18px;white-space:nowrap}
+
+/* §4 · Kulisse. Mobil an der Naht wie in der App (ueber der Tiefgruen-Zone,
+   translateY(-100%)); die Papier-Haelfte haelt dafuer --rz-kulissenfrei frei. */
+.rz-kulisse{position:absolute;left:0;right:0;top:0;height:84px;
+  overflow:hidden;pointer-events:none;transform:translateY(-100%)}
+.rz-kulisse svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* ============ 2 · Ein geschlossener Kreis ============ */
+.rz-kreis{background:var(--rz-papier);color:var(--rz-ink);padding:44px 0;
+  display:flex;flex-direction:column;gap:14px}
+/* Das Emblem laeuft randlos, jedes Textkind steht auf der Screenkante. */
+.rz-kreis>:not(.rz-emblem){padding:0 var(--rz-rand)}
+.rz-emblem{width:100%;display:block}
+.rz-emblem-mobil{margin:6px 0 2px}
+.rz-emblem-desktop{margin:24px 0 8px}
+.rz-kreis h2{font-size:var(--rz-fs-sektion);line-height:1.2}
+.rz-kreis-nachsatz{font-family:var(--rz-serif);font-size:var(--rz-fs-text);
+  font-style:italic;line-height:1.7;color:var(--rz-sek)}
+
+/* ============ 3 · Eine tragende Struktur ============ */
+.rz-struktur{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);
+  padding:44px var(--rz-rand)}
+.rz-struktur .rz-caps{display:block;margin-bottom:4px}
+.rz-satz{border-top:1px solid var(--rz-hairline-gruen);padding:18px 0;
+  font-family:var(--rz-serif);font-size:var(--rz-fs-sektion);font-weight:300;
+  line-height:1.3;text-wrap:pretty}
+.rz-satz:last-child{border-bottom:1px solid var(--rz-hairline-gruen)}
+
+/* ============ 4 · Einladung ============ */
+.rz-einladung{background:var(--rz-papier);color:var(--rz-ink);
+  padding:44px var(--rz-rand);display:flex;flex-direction:column;gap:14px}
+.rz-einladung h2{font-size:var(--rz-fs-sektion);line-height:1.2}
+/* §2.5 · Eine ZEILE, kein Kasten: dieselbe Signatur wie .rz-zeile in der App.
+   Damit hat die Landing keinen gerahmten Container mehr. */
+.rz-eintrag{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  min-height:var(--rz-tapziel-finger);padding:15px 0;margin-top:8px;
+  border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
+  background:none;width:100%;text-align:left}
+.rz-eintrag input{flex:1;min-width:0;border:0;background:none;padding:0;outline:none;
+  font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-style:italic;
+  line-height:var(--rz-lh-zeile);color:var(--rz-ink)}
+.rz-eintrag input::placeholder{color:var(--rz-sek);opacity:1}
+.rz-eintrag button{flex:none;border:0;background:none;padding:0;cursor:pointer;
+  font-family:var(--rz-sans);font-size:var(--rz-fs-text);color:var(--rz-akzent-ink)}
+.rz-eintrag button .rz-wort{display:none}
+.rz-notiz[hidden]{display:none}
+
+/* ============ 5 · Fuss ============ */
+.rz-fuss{background:var(--rz-fuss);color:var(--rz-sek2-auf-gruen);
+  padding:26px var(--rz-rand);font-size:var(--rz-fs-fein);
+  display:flex;flex-direction:column;align-items:center;gap:14px}
+/* §5c · Hier sind Links echte Links. */
+.rz-fuss a{color:var(--rz-sek2-auf-gruen);text-decoration:none}
+.rz-fuss-links{display:flex;gap:20px}
+
+/* ============ Desktop (44a) ============ */
+@media (min-width:900px){
+  .rz-nur-desktop{display:block}
+  .rz-nur-mobil{display:none}
+
+  .rz-hero{display:grid;grid-template-columns:1fr 1fr;min-height:560px}
+  .rz-hero-papier,.rz-hero-tief{padding:40px var(--rz-rand-weit);min-height:0;gap:0}
+  .rz-hero-mitte{margin:auto 0}
+  .rz-hero .rz-lead{max-width:34ch}
+  .rz-hero-tief{text-align:right;align-items:flex-end}
+  .rz-hero-tief .rz-hero-mitte{align-items:flex-end}
+  .rz-hero-marke-rechts{align-self:flex-end}
+  .rz-runter{align-self:flex-end;margin-bottom:56px}
+  /* Naht senkrecht in der Mitte: das Badge sitzt auf der linken Kante der
+     Tiefgruen-Haelfte, also genau auf der Naht. */
+  .rz-badge{left:0;top:50%}
+  /* §4.1 · Das Band steht waagerecht als Boden der Tiefgruen-Haelfte,
+     nie auf der senkrechten Naht. */
+  .rz-kulisse{top:auto;bottom:0;height:var(--rz-kulissenfrei);transform:none}
+  /* §4.2 · Auf dunklem Grund .85, sonst tragen die Eigen-Deckkraefte nicht. */
+  .rz-kulisse-figuren{opacity:.85}
+
+  .rz-kreis{padding:72px 0}
+  .rz-kreis>:not(.rz-emblem){padding:0 var(--rz-rand-weit)}
+  .rz-kreis h2{font-size:var(--rz-fs-titel);line-height:1.2}
+  .rz-kreis p{max-width:62ch}
+
+  .rz-struktur{padding:72px var(--rz-rand-weit)}
+  .rz-satz{padding:22px 0;line-height:1.35}
+
+  .rz-einladung{padding:72px var(--rz-rand-weit)}
+  .rz-einladung>*{max-width:520px;margin-left:auto;margin-right:auto;width:100%}
+  .rz-einladung h2{font-size:var(--rz-fs-titel)}
+  .rz-eintrag{gap:16px;margin-top:12px}
+  .rz-eintrag button .rz-wort{display:inline}
+
+  .rz-fuss{padding:26px var(--rz-rand-weit);flex-direction:row;
+    justify-content:space-between;align-items:baseline}
+  .rz-fuss-links{gap:26px}
 }
-/* ---- Kulisse ---- */
-.kulisse{position:absolute;left:0;right:0;bottom:0;height:84px;pointer-events:none;color:var(--akzent-tief)}
-.kulisse svg{position:absolute;bottom:0;left:0;width:100%;height:100%}
-/* ---- Sektionen ---- */
-main section.block{padding:64px 26px;max-width:860px;margin:0 auto}
-.block h2{font-size:clamp(28px,4.5vw,40px);margin:10px 0 18px}
-.block .lead{max-width:56ch;color:var(--sek)}
-/* Kreis */
-.kreis{display:flex;flex-wrap:wrap;gap:0;margin-top:28px;border-top:1px solid var(--hairline)}
-.kreis div{flex:1 1 160px;padding:16px 14px 16px 0;border-bottom:1px solid var(--hairline)}
-.kreis b{display:block;font-family:var(--serif);font-weight:400;font-size:18px}
-.kreis small{color:var(--gedimmt);font-size:12.5px}
-.agenda-hin{margin-top:14px;font-size:13px;color:var(--sek)}
-/* Regel */
-.regel{background:var(--papier-regal)}
-.regel .innen{max-width:860px;margin:0 auto;padding:64px 26px}
-.regel p{font-family:var(--serif);font-size:clamp(20px,3.4vw,28px);font-weight:300;line-height:1.4;
-  margin:0;padding:18px 0;border-bottom:1px solid var(--hairline)}
-.regel p:first-of-type{border-top:1px solid var(--hairline)}
-/* Signup */
-.signup{background:var(--tiefgruen);color:var(--ink-hell)}
-.signup .innen{max-width:860px;margin:0 auto;padding:72px 26px}
-.signup h2{color:var(--ink-hell)}
-.signup .lead{color:var(--sek-hell)}
-.signup form{margin-top:26px;display:flex;gap:0;max-width:460px;border-bottom:1px solid rgba(157,176,143,.4)}
-.signup input{flex:1;background:none;border:0;color:var(--ink-hell);font:italic 300 17px var(--serif);
-  padding:12px 0;outline:none}
-.signup input::placeholder{color:rgba(185,195,172,.7)}
-.signup button{background:var(--akzent);color:var(--akzent-text);border:0;cursor:pointer;
-  font:600 11px var(--sans);letter-spacing:.16em;text-transform:uppercase;padding:0 20px}
-.signup .notiz{margin-top:12px;font-size:12.5px;color:var(--sek-hell);visibility:hidden}
-/* Footer */
-footer{background:var(--tiefgruen);color:var(--sek-hell);border-top:1px solid rgba(157,176,143,.2)}
-footer .innen{max-width:860px;margin:0 auto;padding:26px;display:flex;justify-content:space-between;
-  flex-wrap:wrap;gap:12px;font-size:12.5px}
-footer a{color:inherit;text-decoration:none;margin-left:18px}
-footer a:first-child{margin-left:0}
 </style>
 </head>
 <body>
 
-<header class="hero">
-  <section class="papier">
-    <span class="marke">raumzuzweit</span>
-    <span class="caps" style="margin-top:26px">Raum für mich</span>
-    <h1>Ein Raum,<br>der dir gehört.</h1>
-    <p>Nachdenken, sortieren, wachsen — mit einer Begleitung, die zuhört. Du teilst, was dir wichtig ist.</p>
-    <div class="unterzeile">Für jede und jeden von euch. Eine Paarbegleitung.</div>
-    <div class="kulisse" aria-hidden="true">
-      <svg viewBox="0 0 390 84" preserveAspectRatio="xMaxYMax meet">
-        <path d="M0 60 Q100 48 195 58 T390 54 V84 H0Z" fill="currentColor" opacity=".07"></path>
-        <g fill="currentColor" opacity=".13"><polygon points="288,22 278,50 298,50"></polygon><polygon points="288,12 281,32 295,32"></polygon><rect x="286.5" y="49" width="3" height="6"></rect></g>
-        <g fill="currentColor" opacity=".22"><polygon points="338,34 322,80 354,80"></polygon><polygon points="338,18 326,52 350,52"></polygon><rect x="335.5" y="78" width="5" height="6"></rect></g>
-      </svg>
+<header class="rz-hero">
+  <section class="rz-hero-papier">
+    <span class="rz-marke">raumzuzweit</span>
+    <div class="rz-hero-mitte">
+      <div class="rz-caps">Raum für mich</div>
+      <h1>Ein Raum,<br>der dir gehört.</h1>
+      <p class="rz-lead">Nachdenken, sortieren, in Ruhe hinschauen — mit einer Begleitung, die zuhört und immer Zeit hat. Sie ist kein Mensch, sondern eine KI. Du entscheidest, was den Raum verlässt.</p>
     </div>
+    <span class="rz-hero-marke-links rz-nur-desktop">Für beide von euch.</span>
   </section>
-  <section class="tief">
-    <div class="naht-badge">Nur auf Einladung</div>
-    <span class="caps">Raum für uns</span>
-    <h1>Ein Raum,<br>der euch gehört.</h1>
-    <p>Qualitätszeit, Begegnung — und alles, was ihr miteinander teilen wollt.</p>
-    <a class="runter" href="#signup">Informiert werden <span>↓</span></a>
+  <section class="rz-hero-tief rz-tief">
+    <div class="rz-kulisse" aria-hidden="true"><svg viewBox="0 0 390 84" preserveAspectRatio="none"><path d="M0 60 Q100 48 195 58 T390 54 V84 H0Z" fill="var(--rz-kulisse-baum)" opacity=".07"></path></svg><svg class="rz-kulisse-figuren" viewBox="0 0 390 84" preserveAspectRatio="xMaxYMax meet" fill="var(--rz-kulisse-baum)"><g opacity="0.13"><polygon points="288,34 278,50 298,50"></polygon><polygon points="288,22 281,34.6 295,34.6"></polygon><rect x="286.5" y="49" width="3" height="6"></rect></g><g opacity="0.22"><polygon points="338,46 322,80 354,80"></polygon><polygon points="338,34 326.8,54.7 349.2,54.7"></polygon><rect x="336.5" y="79" width="3" height="6"></rect></g><g opacity="0.16"><polygon points="240,42 228,62 252,62"></polygon><polygon points="240,30 231.6,44.4 248.4,44.4"></polygon><rect x="238.5" y="61" width="3" height="6"></rect></g><g opacity="0.18"><polygon points="196,52 182,74 210,74"></polygon><polygon points="196,40 186.2,55.3 205.8,55.3"></polygon><rect x="194.5" y="73" width="3" height="6"></rect></g><g opacity="0.12"><polygon points="148,42 139,56 157,56"></polygon><polygon points="148,30 141.7,41.7 154.3,41.7"></polygon><rect x="146.5" y="55" width="3" height="6"></rect></g></svg></div>
+    <span class="rz-badge">Nur mit Einladung</span>
+    <span class="rz-hero-marke-rechts rz-nur-desktop">Eine Paarbegleitung.</span>
+    <div class="rz-hero-mitte">
+      <div class="rz-caps">Raum für uns</div>
+      <h2>Ein Raum,<br>der euch gehört.</h2>
+      <p class="rz-lead">Qualitätszeit, Begegnung — und alles, was ihr einander bewusst zeigen wollt.</p>
+    </div>
+    <a class="rz-runter" href="#einladung">Informiert werden ↓</a>
   </section>
 </header>
 
 <main>
-  <section class="block">
-    <span class="caps">So begleiten wir euch</span>
-    <h2>Ein Kreis,<br>der sich wiederholt.</h2>
-    <p class="lead">Den Einstieg macht ihr einzeln mit der Auftragsklärung — dann deckt ihr gemeinsam auf. So entsteht eure Agenda. Daran arbeitet ihr im Kreis: reflektieren, teilen, besprechen, weitergehen.</p>
-    <div class="kreis">
-      <div><b>Einzelreflexion</b><small>einzeln, in deinem Raum</small></div>
-      <div><b>Erfahrungen teilen</b><small>wenn du magst</small></div>
-      <div><b>Gemeinsame Session</b><small>zu zweit, mit Begleitung</small></div>
-      <div><b>Prozessreflexion</b><small>einzeln, dann aufdecken</small></div>
-      <div><b>Agenda</b><small>eure Ziele &amp; Themen</small></div>
-    </div>
-    <p class="agenda-hin">Und Qualitätszeit? Die gehört euch jederzeit — außerhalb des Kreises.</p>
+  <section class="rz-kreis">
+    <div><span class="rz-caps">So begleiten wir euch</span></div>
+
+    <!-- 44b · Mobil: dieselbe Grafik, nur die vier Ueberschriften, Naht
+         waagerecht. Die Namen sitzen ober- und unterhalb des Kreises: an der
+         Diagonale waeren bei 390px hoechstens 119px frei, "Standortbestimmung"
+         braucht bei 17px Serif 165,9px. -->
+    <svg class="rz-emblem rz-emblem-mobil rz-nur-mobil" viewBox="0 0 390 320" data-naht="quer"
+         xmlns="http://www.w3.org/2000/svg" role="img"
+         aria-label="Vier Schritte auf einem geschlossenen Kreis, im Kern der gemeinsame Fokus auf der Naht">
+      <defs>
+        <clipPath id="rz44b-kern-oben"><rect x="154" y="129" width="82" height="41"></rect></clipPath>
+        <clipPath id="rz44b-kern-unten"><rect x="154" y="170" width="82" height="41"></rect></clipPath>
+      </defs>
+      <circle cx="195" cy="170" r="104" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="2.6" opacity=".05"></circle>
+      <circle cx="195" cy="170" r="97" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="3.8" opacity=".07"></circle>
+      <circle cx="195" cy="170" r="87" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="11.6" opacity=".42"></circle>
+      <circle cx="195" cy="170" r="74" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="7.6" opacity=".12"></circle>
+      <circle cx="195" cy="170" r="62" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="8.7" opacity=".3"></circle>
+      <circle cx="195" cy="170" r="50" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="6.4" opacity=".14"></circle>
+      <circle cx="128.53" cy="103.53" r="5" fill="var(--rz-papier)" stroke="var(--rz-akzent-ink)" stroke-width="1.8"></circle>
+      <circle cx="251.21" cy="113.79" r="5" fill="var(--rz-akzent-hell)"></circle>
+      <circle cx="243.30" cy="218.30" r="5" fill="var(--rz-tiefgruen)"></circle>
+      <circle cx="155.83" cy="209.17" r="5" fill="var(--rz-akzent-ink)"></circle>
+      <path d="M154 170 A41 41 0 0 1 236 170 Z" fill="var(--rz-papier)"></path>
+      <path d="M236 170 A41 41 0 0 1 154 170 Z" fill="var(--rz-tiefgruen)"></path>
+      <path d="M154 170 A41 41 0 0 1 236 170" fill="none" stroke="var(--rz-hairline)" stroke-width="1"></path>
+      <text x="195" y="178" text-anchor="middle" font-family="'Source Serif 4',Georgia,serif" font-size="24" font-weight="300" fill="var(--rz-ink)" clip-path="url(#rz44b-kern-oben)">Fokus</text>
+      <text x="195" y="178" text-anchor="middle" font-family="'Source Serif 4',Georgia,serif" font-size="24" font-weight="300" fill="var(--rz-ink-auf-gruen)" clip-path="url(#rz44b-kern-unten)">Fokus</text>
+      <text x="24" y="36" text-anchor="start" font-family="'Source Serif 4',Georgia,serif" font-size="17" font-weight="300" fill="var(--rz-ink)">Einzelreflexion</text>
+      <text x="200" y="50" text-anchor="start" font-family="'Source Serif 4',Georgia,serif" font-size="17" font-weight="300" fill="var(--rz-ink)">Erfahrungen teilen</text>
+      <text x="200" y="308" text-anchor="start" font-family="'Source Serif 4',Georgia,serif" font-size="17" font-weight="300" fill="var(--rz-ink)">Gemeinsame Session</text>
+      <text x="190" y="294" text-anchor="end" font-family="'Source Serif 4',Georgia,serif" font-size="17" font-weight="300" fill="var(--rz-ink)">Standortbestimmung</text>
+    </svg>
+
+    <!-- 44a · Desktop: randlos ueber die ganze Breite, der senkrechte Schnitt
+         im Kern liegt exakt auf der Hero-Naht (beide bei x = 500). -->
+    <svg class="rz-emblem rz-emblem-desktop rz-nur-desktop" viewBox="0 0 1000 410" data-naht="mitte"
+         xmlns="http://www.w3.org/2000/svg" role="img"
+         aria-label="Vier Schritte als Spirale auf einem geschlossenen Kreis, im Kern der gemeinsame Fokus auf der Naht">
+      <defs>
+        <clipPath id="rz44-kern-links"><rect x="443" y="148" width="57" height="114"></rect></clipPath>
+        <clipPath id="rz44-kern-rechts"><rect x="500" y="148" width="57" height="114"></rect></clipPath>
+      </defs>
+      <circle cx="500" cy="205" r="178" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="4.5" opacity=".05"></circle>
+      <circle cx="500" cy="205" r="167" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="6.5" opacity=".07"></circle>
+      <circle cx="500" cy="205" r="150" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="20" opacity=".42"></circle>
+      <circle cx="500" cy="205" r="127" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="13" opacity=".12"></circle>
+      <circle cx="500" cy="205" r="106" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="15" opacity=".3"></circle>
+      <circle cx="500" cy="205" r="86" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="11" opacity=".14"></circle>
+      <circle cx="500" cy="205" r="70" fill="none" stroke="var(--rz-akzent-hell)" stroke-width="8" opacity=".09"></circle>
+      <circle cx="385.45" cy="90.45" r="6" fill="var(--rz-papier)" stroke="var(--rz-akzent-ink)" stroke-width="2"></circle>
+      <circle cx="596.87" cy="108.13" r="6" fill="var(--rz-akzent-hell)"></circle>
+      <circle cx="582.73" cy="287.73" r="6" fill="var(--rz-tiefgruen)"></circle>
+      <circle cx="432.82" cy="272.18" r="6" fill="var(--rz-akzent-ink)"></circle>
+      <path d="M500 148 A57 57 0 0 0 500 262 Z" fill="var(--rz-papier)"></path>
+      <path d="M500 148 A57 57 0 0 1 500 262 Z" fill="var(--rz-tiefgruen)"></path>
+      <path d="M500 148 A57 57 0 0 0 500 262" fill="none" stroke="var(--rz-hairline)" stroke-width="1"></path>
+      <text x="500" y="215" text-anchor="middle" font-family="'Source Serif 4',Georgia,serif" font-size="30" font-weight="300" fill="var(--rz-ink)" clip-path="url(#rz44-kern-links)">Fokus</text>
+      <text x="500" y="215" text-anchor="middle" font-family="'Source Serif 4',Georgia,serif" font-size="30" font-weight="300" fill="var(--rz-ink-auf-gruen)" clip-path="url(#rz44-kern-rechts)">Fokus</text>
+      <text x="300" y="84" text-anchor="end" font-family="'Source Serif 4',Georgia,serif" font-size="24" font-weight="300" fill="var(--rz-ink)">Einzelreflexion</text>
+      <text x="300" y="108" text-anchor="end" font-family="'Instrument Sans',system-ui,sans-serif" font-size="15" fill="var(--rz-sek)">für dich, in deinem Raum</text>
+      <text x="700" y="104" text-anchor="start" font-family="'Source Serif 4',Georgia,serif" font-size="24" font-weight="300" fill="var(--rz-ink)">Erfahrungen teilen</text>
+      <text x="700" y="128" text-anchor="start" font-family="'Instrument Sans',system-ui,sans-serif" font-size="15" fill="var(--rz-sek)">wenn du magst</text>
+      <text x="700" y="282" text-anchor="start" font-family="'Source Serif 4',Georgia,serif" font-size="24" font-weight="300" fill="var(--rz-ink)">Gemeinsame Session</text>
+      <text x="700" y="306" text-anchor="start" font-family="'Instrument Sans',system-ui,sans-serif" font-size="15" fill="var(--rz-sek)">zu zweit, mit Begleitung</text>
+      <text x="300" y="266" text-anchor="end" font-family="'Source Serif 4',Georgia,serif" font-size="24" font-weight="300" fill="var(--rz-ink)">Standortbestimmung</text>
+      <text x="300" y="290" text-anchor="end" font-family="'Instrument Sans',system-ui,sans-serif" font-size="15" fill="var(--rz-sek)">einzeln, dann aufdecken</text>
+    </svg>
+
+    <h2>Ein geschlossener Kreis.</h2>
+    <p class="rz-lead">Den Einstieg macht ihr einzeln mit der Auftragsklärung — dann deckt ihr gemeinsam auf. So entsteht euer Fokus und wiederkehrende gemeinsame Entwicklung: reflektieren, teilen, besprechen, weitergehen.</p>
+    <p class="rz-kreis-nachsatz rz-nur-mobil">Im Zentrum steht euer Fokus — eure Ziele und Themen.</p>
+    <p class="rz-kreis-nachsatz rz-nur-desktop">Und Zeit zum Genießen? Begleitete Qualitätszeit ist die Basis und das verbindende Element. Sie gehört euch jederzeit.</p>
   </section>
 
-  <section class="regel">
-    <div class="innen">
-      <span class="caps">Eine einfache Regel</span>
-      <p>Was in deinem Raum bleibt, bleibt bei dir.</p>
-      <p>Geteilt wird nur, was du bewusst teilst.</p>
-      <p>Ihr seht immer genau, was der andere sieht.</p>
-    </div>
+  <section class="rz-struktur rz-tief">
+    <span class="rz-caps">Eine tragende Struktur</span>
+    <div class="rz-satz">Was in deinem Raum ist, bleibt bei dir.</div>
+    <div class="rz-satz">Geteilt wird, was du bewusst auswählst.</div>
+    <div class="rz-satz">Ob gemeinsam oder für dich, ihr seid in Begleitung.</div>
+    <div class="rz-satz">Eure Begleitung ist eine KI — sie hat immer Zeit und erzählt nichts weiter.</div>
   </section>
 
-  <section class="signup" id="signup">
-    <div class="innen">
-      <span class="caps">Wir starten in kleinen Schritten</span>
-      <h2>Raumzuzweit öffnet nur auf Einladung.</h2>
-      <p class="lead">Trag dich ein — wir melden uns, sobald es losgeht. Sonst nichts.</p>
-      <form id="signupForm" autocomplete="off">
-        <input type="email" placeholder="dein@postfach.de" aria-label="E-Mail-Adresse" required>
-        <button type="submit">Informiert werden</button>
-      </form>
-      <p class="notiz" id="signupNotiz">Die Eintragung öffnet in Kürze — schau bald wieder vorbei.</p>
-    </div>
+  <section class="rz-einladung" id="einladung">
+    <h2>Entwicklung passiert in kleinen Schritten.</h2>
+    <p class="rz-lead">Raumzuzweit öffnet nur mit Einladung. Trag dich ein — wir melden uns, sobald es losgeht.</p>
+    <form class="rz-eintrag" id="rz-eintrag" autocomplete="off">
+      <input type="email" id="rz-adresse" placeholder="dein@postfach.de" aria-label="E-Mail-Adresse" required>
+      <button type="submit"><span class="rz-wort">Informiert werden </span>→</button>
+    </form>
+    <p class="rz-fein rz-notiz" id="rz-notiz" hidden>Die Eintragung öffnet in Kürze — schau bald wieder vorbei.</p>
+    <p class="rz-fein">Nur eine Nachricht zum Start. Keine Neuigkeiten, kein Verteiler.</p>
   </section>
 </main>
 
-<footer>
-  <div class="innen">
-    <span class="marke" style="color:inherit">raumzuzweit</span>
-    <span><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="mailto:hallo@raumzuzweit.de">Kontakt</a></span>
-  </div>
+<footer class="rz-fuss">
+  <span class="rz-fuss-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="/impressum">Kontakt</a></span>
+  <span class="rz-marke">raumzuzweit</span>
 </footer>
 
 <script>
-/* K6 · Signup-Backend folgt als eigener Sprint — bis dahin still bleiben. */
-document.getElementById("signupForm").addEventListener("submit", function (e) {
+/* D7/K6 · Das Signup-Backend kommt als eigener Sprint. Bis dahin: kein Netz,
+   keine Behauptung, dass etwas gespeichert wurde — nur eine stille Notiz. */
+document.getElementById("rz-eintrag").addEventListener("submit", function (e) {
   e.preventDefault();
-  document.getElementById("signupNotiz").style.visibility = "visible";
+  document.getElementById("rz-notiz").hidden = false;
 });
 </script>
 </body>

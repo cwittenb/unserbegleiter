@@ -20,6 +20,18 @@ function ermittleKvId() {
   return null;
 }
 
+/** Kopiert einen Verzeichnisbaum rekursiv. Bewusst ohne cp -r aus fs/promises
+ *  mit `recursive:true`, damit der Vorgang auf allen unterstuetzten Node-
+ *  Staenden identisch laeuft und im Fehlerfall der Pfad in der Meldung steht. */
+async function kopiereBaum(von, nach) {
+  await mkdir(nach, { recursive: true });
+  for (const eintrag of await readdir(von, { withFileTypes: true })) {
+    const q = path.join(von, eintrag.name), z = path.join(nach, eintrag.name);
+    if (eintrag.isDirectory()) await kopiereBaum(q, z);
+    else await copyFile(q, z);
+  }
+}
+
 export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") } = {}) {
   const hash = await coreHash();
   await mkdir(path.join(outDir, "public"), { recursive: true });
@@ -141,10 +153,12 @@ html,body{height:100%}
   // D7 · Landing fuer die Apex-Domain (raumzuzweit.de): eigenstaendiges,
   // statisches Artefakt neben der App (app.raumzuzweit.de) — bewusst NICHT
   // unter public/, damit die beiden Deploy-Ziele getrennt bleiben.
-  await mkdir(path.join(outDir, "landing"), { recursive: true });
-  await copyFile(
-    path.join(ROOT, "platforms/cloudflare/landing/index.html"),
-    path.join(outDir, "landing/index.html")
+  // L1 · Seit Turn 44 sind es MEHRERE Seiten (/, /impressum, /datenschutz —
+  // §5 DDG verlangt eigene, verlinkbare Adressen). Kopiert wird deshalb der
+  // ganze Ordner rekursiv, nicht mehr eine einzelne Datei.
+  await kopiereBaum(
+    path.join(ROOT, "platforms/cloudflare/landing"),
+    path.join(outDir, "landing")
   );
 
   return { outDir, hash };

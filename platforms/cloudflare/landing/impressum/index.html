@@ -1,0 +1,133 @@
+<!doctype html>
+<!-- L1 · Impressum (Design Turn 44c) — eigene Adresse /impressum.
+     §5 DDG verlangt "leicht erkennbar, unmittelbar erreichbar und staendig
+     verfuegbar"; App-Stores und Zahlungsanbieter verlangen zusaetzlich eine
+     verlinkbare URL. Deshalb eine eigene Seite, kein Aufklapper im Landing-Fuss.
+
+     Kontakt ist bewusst KEINE eigene Seite: die Angaben stehen hier, der
+     Fuss-Link "Kontakt" springt hierher — drei Links, zwei Ziele.
+
+     §6a/F6 · Ohne Naht: reine Papier-Seite mit Tiefgruen-Fuss. Es gibt hier
+     nichts Gemeinsames und nichts mit Folgen, also nichts zu trennen.
+
+     ACHTUNG (§7.3): alle Werte sind PLATZHALTER. Sie muessen von der
+     Anwaeltin kommen, insbesondere der Satz zur Streitschlichtung. Der
+     Entwurf legt Struktur, Typo und die technischen Bedingungen fest. -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Impressum — raumzuzweit</title>
+<meta name="description" content="Impressum und Kontakt für raumzuzweit — Angaben nach § 5 DDG.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Palette 1:1 aus core/ui/theme.js (helle Fassung), kein neuer Farbton. */
+  --rz-serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --rz-sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
+  --rz-papier:#faf8f2;
+  --rz-hairline:#e3dfd0;
+  --rz-ink:#23291f;
+  --rz-sek:#6b7261;
+  --rz-marke:#5c6653;
+  --rz-akzent-ink:#41562c;
+  --rz-akzent-text:#14201a;
+  --rz-ink-auf-gruen:#eef0e7;
+  --rz-sek2-auf-gruen:#8a9e7c;
+  --rz-fuss:#14201a;
+
+  --rz-fs-caps:11px;    --rz-lh-caps:1.3;
+  --rz-fs-fein:13px;
+  --rz-fs-text:15px;    --rz-lh-text:1.65;
+  --rz-fs-zeile:17px;   --rz-lh-zeile:1.3;
+  --rz-fs-titel:30px;
+
+  --rz-rand:24px;
+  --rz-rand-weit:44px;
+  --rz-tapziel-finger:44px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--rz-papier);color:var(--rz-ink);
+     font-family:var(--rz-sans);font-size:var(--rz-fs-text);line-height:var(--rz-lh-text)}
+h1{font-family:var(--rz-serif);font-weight:300;font-size:var(--rz-fs-titel);
+   line-height:1.2;margin:0;text-wrap:pretty}
+p{margin:0;text-wrap:pretty}
+.rz-caps{font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.2em;
+         line-height:var(--rz-lh-caps);text-transform:uppercase;color:var(--rz-akzent-ink)}
+.rz-marke{font-size:var(--rz-fs-caps);font-weight:600;letter-spacing:.34em;
+          line-height:var(--rz-lh-caps);text-transform:uppercase;color:var(--rz-marke);
+          text-decoration:none}
+.rz-lead{color:var(--rz-sek);max-width:62ch}
+.rz-fein{font-size:var(--rz-fs-fein);line-height:var(--rz-lh-text);color:var(--rz-sek);max-width:62ch}
+a{color:var(--rz-akzent-ink)}
+
+/* Kopf: Wortmarke links, Rueckweg rechts. Keine Naht (§6a). */
+.rz-kopf{padding:40px var(--rz-rand) 0;display:flex;
+  justify-content:space-between;align-items:baseline;gap:16px}
+.rz-zurueck{font-size:var(--rz-fs-fein);color:var(--rz-sek);text-decoration:none}
+
+.rz-blatt{padding:34px var(--rz-rand) 72px;display:flex;flex-direction:column;gap:14px}
+.rz-felder{display:flex;flex-direction:column;margin-top:12px}
+/* §6b · Haarlinien-Zeile mit FESTER Feldspalte, damit alle Werte auf einer
+   Kante stehen. Kein Kasten, kein Rahmen. */
+.rz-feld{display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+  min-height:var(--rz-tapziel-finger);padding:15px 0;border-top:1px solid var(--rz-hairline)}
+.rz-felder .rz-feld:last-child{border-bottom:1px solid var(--rz-hairline)}
+.rz-feld-name{font-size:var(--rz-fs-fein);color:var(--rz-sek);flex:none;width:200px}
+.rz-feld-wert{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);
+  line-height:var(--rz-lh-zeile);flex:1}
+
+.rz-fuss{background:var(--rz-fuss);color:var(--rz-sek2-auf-gruen);
+  padding:26px var(--rz-rand);font-size:var(--rz-fs-fein);
+  display:flex;flex-direction:column;align-items:center;gap:14px}
+.rz-fuss a{color:var(--rz-sek2-auf-gruen);text-decoration:none}
+.rz-fuss a[aria-current=page]{color:var(--rz-ink-auf-gruen)}
+.rz-fuss-links{display:flex;gap:20px}
+
+@media (min-width:900px){
+  .rz-kopf{padding:40px var(--rz-rand-weit) 0}
+  .rz-blatt{padding:34px var(--rz-rand-weit) 72px}
+  .rz-fuss{padding:26px var(--rz-rand-weit);flex-direction:row;
+    justify-content:space-between;align-items:baseline}
+  .rz-fuss-links{gap:26px}
+}
+/* Der Text muss speicher- und druckbar sein. */
+@media print{.rz-fuss{background:none;color:var(--rz-sek)}}
+</style>
+</head>
+<body>
+
+<header class="rz-kopf">
+  <a class="rz-marke" href="/">raumzuzweit</a>
+  <a class="rz-zurueck" href="/">← Startseite</a>
+</header>
+
+<main class="rz-blatt">
+  <span class="rz-caps">Rechtliches</span>
+  <h1>Impressum</h1>
+  <p class="rz-lead">Angaben nach&nbsp;§&nbsp;5 DDG. Kontakt für alles Inhaltliche und Rechtliche steht hier — eine eigene Kontaktseite gibt es nicht.</p>
+
+  <div class="rz-felder">
+    <div class="rz-feld" id="anbieter"><span class="rz-feld-name">Anbieter</span><span class="rz-feld-wert">Platzhalter GmbH · Straße&nbsp;Nr. · PLZ&nbsp;Ort</span></div>
+    <div class="rz-feld" id="vertreten-durch"><span class="rz-feld-name">Vertreten durch</span><span class="rz-feld-wert">Platzhalter Name</span></div>
+    <div class="rz-feld" id="e-mail"><span class="rz-feld-name">E-Mail</span><span class="rz-feld-wert">platzhalter@raumzuzweit.de</span></div>
+    <div class="rz-feld" id="telefon"><span class="rz-feld-name">Telefon</span><span class="rz-feld-wert">+49 000 000000</span></div>
+    <div class="rz-feld" id="registergericht"><span class="rz-feld-name">Registergericht</span><span class="rz-feld-wert">Amtsgericht Platzhalter · HRB 00000</span></div>
+    <div class="rz-feld" id="umsatzsteuer-id"><span class="rz-feld-name">Umsatzsteuer-ID</span><span class="rz-feld-wert">DE000000000</span></div>
+    <div class="rz-feld" id="inhaltlich-verantwortlich"><span class="rz-feld-name">Inhaltlich verantwortlich</span><span class="rz-feld-wert">Platzhalter Name · Adresse wie oben</span></div>
+    <div class="rz-feld" id="streitschlichtung"><span class="rz-feld-name">Streitschlichtung</span><span class="rz-feld-wert">Keine Teilnahme an einem Streitbeilegungsverfahren</span></div>
+  </div>
+
+  <p class="rz-fein">Wir sind nicht verpflichtet und nicht bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen — <b>diesen Satz vor Live-Gang anwaltlich bestätigen lassen.</b></p>
+</main>
+
+<footer class="rz-fuss">
+  <span class="rz-fuss-links"><a href="/impressum" aria-current="page">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="/impressum">Kontakt</a></span>
+  <span class="rz-marke">raumzuzweit</span>
+</footer>
+
+</body>
+</html>
