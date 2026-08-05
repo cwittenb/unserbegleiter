@@ -373,15 +373,22 @@ export const en = {
   "einr.sprache": "Companion language ",
 
   // Production client (regain access screen)
-  "wieder.titel": "No Access on This Device",
-  "wieder.intro": "This companion is invite-only. If you already take part, you can have a new access link sent to the email address on file.",
-  "wieder.email": "Email address",
+  "wieder.titel": "No Access on This Device.",
+  "wieder.intro": "If you already take part, we will send a new access link to the address you have on file.",
   "wieder.anfordern": "Request a New Link",
+  "wieder.hinweis": "The link is valid for {minuten} minutes and can be used once. Whether an address is on file is something we do not say — the answer is always the same.",
   "wieder.bitte": "Please enter your address.",
-  "wieder.sendet": "Sending …",
   "wieder.gesendet": "Sent",
-  "wieder.unterwegs": "If this address is on file, a link is on its way. Check your spam folder too.",
+  "wieder.unterwegs": "If this address is on file, a link is on its way — valid for {minuten} minutes. Check your spam folder too.",
+  "wieder.quittungTitel": "Check your inbox.",
   "wieder.startFehler": "Start failed: {fehler}",
+  "wieder.einmalCaps": "Single-use link",
+  "wieder.einmalTitel": "This link has already been used.",
+  "wieder.einmalText": "Every access link works once. Request a new one below — to the same address.",
+  "wieder.badge": "By invitation only",
+  "wieder.bedingung": "Raumzuzweit opens by invitation only.",
+  "wieder.landingText": "Not with us yet? raumzuzweit.de explains what this is — and you can sign up for the start.",
+  "wieder.landingZeile": "About raumzuzweit",
 
   // Worker error codes (client-side wording)
   "fehler.code.names_required": "Both names are required.",
@@ -427,6 +434,13 @@ export const en = {
   "einst.zoneFolgen": "Device and access.",
   "einst.gruppeGemeinsam": "Change together",
   "einst.gruppeGeraet": "This device",
+  /* L3 · Legal paths. The texts live on the apex domain (44c/44d); only the
+     labels are here — the addresses are in core/ui/rechtliches.js.
+     F2a (L2): for now both locales point at the GERMAN pages; the English
+     versions follow with the English landing. */
+  "recht.gruppe": "Legal",
+  "recht.impressum": "Legal notice",
+  "recht.datenschutz": "Privacy",
   "einst.spracheHinweis": "The companion speaks {sprache}. Your choice here applies on this device only.",
   "einst.sprachvorschlagHinweis": "The suggestion lands in the agenda in the shared room — {partner} agrees to it there.",
   "verlauf.loeschAnzahl": "{n} kept conversations are in your room. This cannot be undone.",

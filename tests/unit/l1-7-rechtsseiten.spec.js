@@ -6,7 +6,11 @@
 // eine verlinkbare URL, und der Text muss speicher- und druckbar sein. Deshalb
 // eigene Adressen statt eines Aufklappers im Landing-Fuss.
 //
-// Kontakt ist KEINE eigene Seite: drei Links, zwei Ziele.
+// Kontakt ist KEINE eigene Seite — der Fuss traegt deshalb weniger Ziele als
+// Links. Seit Turn 46 (L3) unterscheiden sich die beiden Faelle:
+//   Landing      vier Links, DREI Ziele  (Impressum, Datenschutz, Anmelden)
+//   Rechtsseiten drei Links, ZWEI Ziele  (kein "Anmelden" — wer hier liest,
+//                sucht einen Rechtstext, nicht den Weg in die App)
 //
 // Fuer 44d gelten drei Bedingungen, die alle drei rechtlich tragen muessen:
 // eigene Adresse, EIN Anker je Kapitel, und OHNE JavaScript ist alles offen.
@@ -26,7 +30,7 @@ const IMPRESSUM = lies("impressum/index.html");
 const DATENSCHUTZ = lies("datenschutz/index.html");
 
 describe("L1.7 · Fuss", () => {
-  it.each([["Landing", LANDING], ["Impressum", IMPRESSUM], ["Datenschutz", DATENSCHUTZ]])(
+  it.each([["Impressum", IMPRESSUM], ["Datenschutz", DATENSCHUTZ]])(
     "%s: drei Links, zwei Ziele — Kontakt springt ins Impressum", (name, html) => {
       const links = [...parse(html).querySelectorAll(".rz-fuss-links a")];
       expect(links.map(a => a.textContent)).toEqual(["Impressum", "Datenschutz", "Kontakt"]);
@@ -36,6 +40,20 @@ describe("L1.7 · Fuss", () => {
       // Keine mailto-Adresse im Fuss: die Angabe steht im Impressum.
       expect(html).not.toContain("mailto:");
     });
+
+  it("Landing: vier Links, drei Ziele — 'Anmelden' kommt hinzu (46e)", () => {
+    const links = [...parse(LANDING).querySelectorAll(".rz-fuss-links a")];
+    expect(links.map(a => a.textContent))
+      .toEqual(["Impressum", "Datenschutz", "Kontakt", "Anmelden"]);
+    expect(new Set(links.map(a => a.getAttribute("href"))))
+      .toEqual(new Set(["/impressum", "/datenschutz", "https://de.roomfortwo.app"]));
+    expect(links[2].getAttribute("href")).toBe("/impressum");
+    // Der Uebergang auf die andere Domain traegt rel, aber KEIN target:
+    // es ist ein Uebergang, kein Beiwerk.
+    expect(links[3].getAttribute("rel")).toContain("noopener");
+    expect(links[3].hasAttribute("target")).toBe(false);
+    expect(LANDING).not.toContain("mailto:");
+  });
 
   it("§5c · Fuss-Links sind echte Links, ohne Unterstreichung", () => {
     expect(LANDING).toContain(".rz-fuss a{color:var(--rz-sek2-auf-gruen);text-decoration:none}");

@@ -388,16 +388,33 @@ export const de = {
   "einr.selbsttestLaeuft": "Selbsttest läuft…",
   "einr.sprache": "Sprache der Begleitung ",
 
-  // Produktiv-Client (Wiedereinstieg)
-  "wieder.titel": "Kein Zugang auf diesem Gerät",
-  "wieder.intro": "Diese Begleitung ist nur auf Einladung zugänglich. Wenn du bereits teilnimmst, kannst du dir hier einen neuen Zugangslink an deine hinterlegte E-Mail-Adresse schicken lassen.",
-  "wieder.email": "E-Mail-Adresse",
+  /* Produktiv-Client (Wiedereinstieg) — Turn 46.
+     Neu gegenueber der Vorfassung: die Gueltigkeit steht VORHER da, nicht
+     erst in der Quittung, und die Nicht-Auskunft wird als Absicht benannt.
+     Die Minuten kommen als Argument aus core/zugang-fristen.js — nie als
+     Zahl im Text (sonst laeuft der Wortlaut von der Frist weg).
+     Entfallen: "wieder.email" (steht im Platzhalter), "wieder.sendet" (die
+     Zeile schreibt in sich weiter, es gibt keinen Knopfzustand mehr). */
+  "wieder.titel": "Kein Zugang auf diesem Gerät.",
+  "wieder.intro": "Wenn du schon teilnimmst, schicken wir dir einen neuen Zugangslink an die Adresse, die du hinterlegt hast.",
   "wieder.anfordern": "Neuen Link anfordern",
+  "wieder.hinweis": "Der Link gilt {minuten} Minuten und nur einmal. Ob eine Adresse hinterlegt ist, sagen wir nicht — die Antwort ist immer dieselbe.",
   "wieder.bitte": "Bitte deine Adresse eingeben.",
-  "wieder.sendet": "Wird gesendet …",
   "wieder.gesendet": "Gesendet",
-  "wieder.unterwegs": "Falls diese Adresse hinterlegt ist, ist ein Link unterwegs. Schau auch im Spam-Ordner nach.",
+  "wieder.unterwegs": "Falls diese Adresse hinterlegt ist, ist ein Link unterwegs — {minuten} Minuten gültig. Schau auch im Spam-Ordner nach.",
+  "wieder.quittungTitel": "Sieh in deinem Postfach nach.",
   "wieder.startFehler": "Start fehlgeschlagen: {fehler}",
+  // Sonderlage: verbrauchter/abgelaufener Link. KEINE Fehlerbox — die Lage
+  // ist kein Fehler des Nutzers, sondern der normale Ablauf eines
+  // Einmal-Links. Sie wird deshalb zur Ueberschrift.
+  "wieder.einmalCaps": "Einmal-Link",
+  "wieder.einmalTitel": "Dieser Link wurde bereits verwendet.",
+  "wieder.einmalText": "Jeder Zugangslink gilt einmal. Fordere unten einen neuen an — an dieselbe Adresse.",
+  // Untere Zone: die Bedingung, die nicht beim Nutzer liegt.
+  "wieder.badge": "Nur mit Einladung",
+  "wieder.bedingung": "Raumzuzweit öffnet nur mit Einladung.",
+  "wieder.landingText": "Noch nicht dabei? Auf raumzuzweit.de steht, worum es geht — und du kannst dich für den Start eintragen.",
+  "wieder.landingZeile": "Über raumzuzweit",
 
   // Worker-Fehler-Codes (clientseitige Wortlaute = heutige Server-Meldungen)
   "fehler.code.names_required": "nameA und nameB sind Pflicht",
@@ -449,6 +466,11 @@ export const de = {
   "einst.zoneFolgen": "Gerät und Zugang.",
   "einst.gruppeGemeinsam": "Gemeinsam ändern",
   "einst.gruppeGeraet": "Dieses Gerät",
+  /* L3 · Rechtliche Wege. Die Texte liegen auf der Apex-Domain (44c/44d);
+     hier stehen nur die Beschriftungen — die Adressen in core/ui/rechtliches.js. */
+  "recht.gruppe": "Rechtliches",
+  "recht.impressum": "Impressum",
+  "recht.datenschutz": "Datenschutz",
   // 3.4 · Zwei Hinweise zu einem: was die Begleitung spricht UND wie weit
   // die eigene Wahl reicht.
   "einst.spracheHinweis": "Die Begleitung spricht {sprache}. Deine Wahl hier gilt nur auf diesem Gerät.",

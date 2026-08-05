@@ -16,6 +16,7 @@ import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, mess
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf } from "./prozess.js";
 import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser } from "./design.js";
 import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
+import { RECHT_WEGE } from "./rechtliches.js";   // L3
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 import { esc, mdRender, IKON, lesezeichenLabels } from "./html.js";   // R3/R4a
 import { schneideStreamText } from "./stream-anzeige.js";   // R4a
@@ -222,6 +223,19 @@ export function createApp({ doc, backend, root, diktat }) {
                  Bewegung wie beim Wiedereinstieg — kein System-confirm. -->
             <button class="rz-zeile rz-unten" id="btnVerlaeufeWeg" data-box="boxVerlaeufeWeg"><span>${t("verlauf.alleLoeschen")}</span><span class="rz-pfeil">↑</span></button>
             <div class="rz-regal-inhalt pb-hidden" id="boxVerlaeufeWeg"></div>
+          </div>
+          <!-- L3 · Rechtliches. Steht UNTEN, weil die Naht hier nach
+               Reichweite trennt: diese zwei Zeilen fuehren aus der App
+               heraus auf die Apex-Domain. Zeilen, keine Textlinks — in der
+               App gibt es keine. Der Pfeil ist "→" (fuehrt woandershin),
+               nicht "↑" (klappt auf). Die Adressen kommen aus
+               core/ui/rechtliches.js, dem einzigen Ort, der sie kennt. -->
+          <div class="rz-einst-gruppe" id="einstRecht">
+            <div class="rz-caps">${t("recht.gruppe")}</div>
+            ${RECHT_WEGE.map(w =>
+              `<a class="rz-zeile rz-unten" data-rz-recht="${w.id}" href="${w.url}"` +
+              ` target="_blank" rel="noopener noreferrer">` +
+              `<span>${esc(t(w.schluessel))}</span><span class="rz-pfeil">→</span></a>`).join("")}
           </div>
         </div>
         <div class="rz-fuss">
@@ -1419,8 +1433,8 @@ export function createApp({ doc, backend, root, diktat }) {
   const chrome = id => doc.getElementById(id);
   /* R4b · Einstellungsblatt und Paarsprache leben jetzt in
      einstellungen-screen.js — Abhaengigkeiten explizit statt ueber die Closure. */
-  const { aktualisierePunkt, zeigeEinstellungen, verdrahteEinstellungen, zeigePaarsprache,
-          zeigeLoeschFrage } =
+  const { aktualisierePunkt, zeigeEinstellungen, verdrahteEinstellungen, verdrahteRechtsWege,
+          zeigePaarsprache, zeigeLoeschFrage } =
     macheEinstellungenScreen({ doc, $, chrome, backend, state, err, relaunch, bestaetige });
   /* R4b · Die Wiedereinstiegs-Gruppe (Karte, Pflicht-Modal, Bauelement) lebt
      jetzt in recovery-screen.js. Ihre Abhaengigkeiten sind dort explizit statt
@@ -2272,6 +2286,7 @@ export function createApp({ doc, backend, root, diktat }) {
     // eine zusätzliche Runde durch die API, bevor die Sitzung stand.
     setzeAnsicht(doc, gemerkteAnsicht());
     verdrahteEinstellungen(betrete);
+    verdrahteRechtsWege(wurzel);        // L3
     aktualisierePunkt();
     backend.pstate.get("theme").then(w => {
       if (!w || w === gemerkteAnsicht()) return;

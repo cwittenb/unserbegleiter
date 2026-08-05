@@ -408,6 +408,121 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-einst-fuss{font-size:var(--rz-fs-fein);color:var(--rz-sek);
                      margin:var(--rz-r-2) 0 0;line-height:var(--rz-lh-fein)}
       .rz-tiefgruen .rz-einst-fuss{color:var(--rz-sek2-auf-gruen)}
+
+      /* ============ L3 (Turn 46) · Wiedereinstieg vor dem Zugang ============
+         Der Screen laeuft vor createApp(), aber applyDesign() ist da — er
+         benutzt deshalb dieselben Bausteine wie der Rest. Neu sind nur die
+         Teile, fuer die es noch keine Klasse gab; alles andere (.rz-split,
+         .rz-half, .rz-auf-naht, .rz-kulisse-naht, .rz-h1, .rz-caps) ist
+         Bestand. KEINE Werte, die nicht aus theme.js kommen. */
+      .rz-vor-papier{padding-bottom:var(--rz-kulissenfrei)}
+      .rz-vor-kopf{display:flex;justify-content:space-between;align-items:center;gap:var(--rz-r-3)}
+      /* Die Marke traegt hier die Marken-Spur .34em wie am Fuss jedes
+         App-Screens — nicht die Badge-Spur .16em. */
+      .rz-marke-vor{font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
+                    letter-spacing:.34em;line-height:var(--rz-lh-caps);
+                    text-transform:uppercase;color:var(--rz-marke)}
+      /* Der Inhalt sitzt an der UNTEREN Kante der Papier-Zone (mobil), damit
+         die Kulisse an der Naht Platz hat; auf dem Desktop mittig. */
+      .rz-vor-mitte{margin-top:auto;position:relative}
+      .rz-vor-intro{font-size:var(--rz-fs-text);line-height:var(--rz-lh-text);
+                    color:var(--rz-sek);margin:14px 0 0;max-width:34ch}
+      .rz-vor-hinweis{font-size:var(--rz-fs-fein);line-height:var(--rz-lh-text);
+                      color:var(--rz-sek);margin:8px 0 0;max-width:46ch}
+      .rz-vor-tief .rz-vor-mitte{display:flex;flex-direction:column}
+      /* Der Entwurf notiert 24px/1.3; die Skala kennt zu --rz-fs-sektion das
+         Zeilenmass --rz-lh-sektion (1.2). Der rohe Wert bleibt draussen — der
+         T1b-Waechter existiert genau fuer diese Sorte Streuner. */
+      .rz-vor-bedingung{font-family:var(--rz-serif);font-size:var(--rz-fs-sektion);
+                        font-weight:300;line-height:var(--rz-lh-sektion);margin:0}
+      .rz-vor-landingtext{font-size:var(--rz-fs-fein);line-height:var(--rz-lh-text);
+                          color:var(--rz-sek-auf-gruen);margin:10px 0 0;max-width:46ch}
+      /* §5a-Ausnahme wie auf der Landing: das Badge nennt eine BEDINGUNG,
+         keinen Ort — also ohne Wegweiser-Zeichen und ohne Knopfverhalten. */
+      .rz-badge-bedingung{cursor:default;justify-content:center}
+
+      /* Sprachwahl: Caps-Paar mit den SPRACHNAMEN (paarspr.name.*), wie die
+         Einstellungen sie benennen. 44px hoch — im Altstand fehlte das
+         Tapziel voellig (13px Text, kein Trefferbereich). */
+      .rz-sprachpaar{display:flex;align-items:center;gap:10px;
+                     min-height:var(--rz-tapziel-finger);
+                     font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
+                     letter-spacing:.2em;line-height:var(--rz-lh-caps);text-transform:uppercase}
+      .rz-sprachpaar button{background:none;border:0;padding:0;cursor:pointer;
+                            font:inherit;letter-spacing:inherit;text-transform:inherit;
+                            color:var(--rz-sek)}
+      .rz-sprachpaar button[aria-pressed=true]{color:var(--rz-akzent-ink)}
+      .rz-sprachpaar .rz-trenner{color:var(--rz-hairline)}
+      .rz-tiefgruen .rz-sprachpaar button{color:var(--rz-sek-auf-gruen)}
+      .rz-tiefgruen .rz-sprachpaar button[aria-pressed=true]{color:var(--rz-ink-auf-gruen)}
+      .rz-tiefgruen .rz-sprachpaar .rz-trenner{color:var(--rz-hairline-gruen)}
+
+      /* Die Anforderung ist eine ZEILE, kein Formular — dieselbe Signatur wie
+         .rz-zeile und wie das Signup der Landing. Damit fallen Karte,
+         Feldrahmen, Pille und Weichzeichner weg. */
+      .rz-eintrag{display:flex;align-items:baseline;justify-content:space-between;
+                  gap:var(--rz-r-3);width:100%;box-sizing:border-box;
+                  min-height:var(--rz-tapziel-finger);padding:15px 0;margin-top:22px;
+                  border-top:var(--rz-hairline-staerke) solid var(--rz-hairline);
+                  border-bottom:var(--rz-hairline-staerke) solid var(--rz-hairline);
+                  background:none}
+      .rz-eintrag input{flex:1;min-width:0;border:0;background:none;padding:0;outline:none;
+                        font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);
+                        font-style:italic;line-height:var(--rz-lh-zeile);color:var(--rz-ink)}
+      .rz-eintrag input::placeholder{color:var(--rz-sek);opacity:1}
+      .rz-eintrag>button{flex:none;border:0;background:none;padding:0;cursor:pointer;
+                         font-family:var(--rz-sans);font-size:var(--rz-fs-text);
+                         color:var(--rz-akzent-ink)}
+      /* Mobil traegt der Pfeil den Handgriff allein; ab 900px steht der
+         Wortlaut ausgeschrieben — dieselbe Ausnahme wie beim Landing-Signup. */
+      .rz-eintrag .rz-wort{display:none}
+      /* Quittung: die Zeile schreibt in sich weiter. Die Adresse ist jetzt
+         Inhalt, kein Platzhalter — also nicht mehr kursiv. */
+      .rz-eintrag .rz-adresse{flex:1;min-width:0;font-family:var(--rz-serif);
+                              font-size:var(--rz-fs-zeile);line-height:var(--rz-lh-zeile);
+                              overflow-wrap:anywhere}
+      .rz-eintrag .rz-quittung{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-caps);
+                               font-weight:600;letter-spacing:.2em;line-height:var(--rz-lh-caps);
+                               text-transform:uppercase;color:var(--rz-akzent-ink)}
+
+      /* Weg auf eine andere Domain. "↗" statt "→": es fuehrt aus der App
+         heraus, und das wird benannt statt versteckt. */
+      .rz-extern{display:flex;justify-content:space-between;align-items:baseline;
+                 gap:var(--rz-r-3);box-sizing:border-box;
+                 min-height:var(--rz-tapziel-finger);padding:15px 0;margin-top:16px;
+                 border-top:var(--rz-hairline-staerke) solid var(--rz-hairline);
+                 border-bottom:var(--rz-hairline-staerke) solid var(--rz-hairline);
+                 font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);
+                 line-height:var(--rz-lh-zeile);color:var(--rz-ink);text-decoration:none}
+      .rz-extern .rz-pfeil{font-family:var(--rz-sans);font-size:var(--rz-fs-text);
+                           color:var(--rz-pfeil)}
+      .rz-tiefgruen .rz-extern{border-top-color:var(--rz-hairline-gruen);
+                               border-bottom-color:var(--rz-hairline-gruen);
+                               color:var(--rz-ink-auf-gruen)}
+      .rz-tiefgruen .rz-extern .rz-pfeil{color:var(--rz-pfeil-auf-gruen)}
+
+      .rz-rechtsfuss{display:flex;gap:var(--rz-r-5);margin-top:var(--rz-r-5);
+                     position:relative;font-size:var(--rz-fs-fein)}
+      .rz-rechtsfuss a{color:var(--rz-sek);text-decoration:none;
+                       min-height:var(--rz-tapziel);display:inline-flex;align-items:center}
+      .rz-tiefgruen .rz-rechtsfuss a{color:var(--rz-sek2-auf-gruen)}
+
+      @media(min-width:900px){
+        /* Desktop erbt die Regel des Landing-Heros: Naht senkrecht mittig,
+           Badge auf der Naht, rechte Haelfte rechtsbuendig, und die Kulisse
+           liegt als BODEN der Tiefgruen-Haelfte — nie auf der senkrechten
+           Naht (Baumsilhouetten sind eine Grundlinie). Auf dunklem Grund
+           .85, sonst tragen ihre Eigen-Deckkraefte nicht. */
+        #rzVorZugang .rz-vor-papier{padding-bottom:40px}
+        #rzVorZugang .rz-vor-tief{align-items:flex-end;text-align:right}
+        #rzVorZugang .rz-vor-tief .rz-vor-mitte{align-items:flex-end}
+        #rzVorZugang .rz-vor-landingtext{margin-left:auto}
+        #rzVorZugang .rz-vor-tief .rz-extern{min-width:320px}
+        .rz-kulisse-vor{top:auto;bottom:0;transform:none;
+                        height:var(--rz-kulissenfrei);opacity:.85}
+        .rz-eintrag{gap:var(--rz-r-4);max-width:420px}
+        .rz-eintrag .rz-wort{display:inline}
+      }
       /* 3.5 · Das Baum-Band ist 84px hoch und liegt ueber der Naht. Endet die
          Papier-Zone direkt mit Text, laufen die Silhouetten durch die letzten
          Zeilen. --rz-nahtfrei (32px, T2b) reicht dafuer nicht — das war das

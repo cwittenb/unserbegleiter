@@ -157,6 +157,20 @@ p{margin:0;text-wrap:pretty}
   font-family:var(--rz-sans);font-size:var(--rz-fs-text);color:var(--rz-akzent-ink)}
 .rz-eintrag button .rz-wort{display:none}
 .rz-notiz[hidden]{display:none}
+/* 46e · Der Weg zurueck in die App. Steht UNTER dem Signup, getrennt durch
+   Trennlinie und 26px, damit beide nicht als EIN Formular gelesen werden:
+   die Landing wirbt fuer Menschen OHNE Zugang, der Wiedereinstieg ist die
+   Ausnahme fuer die, die schon drin sind. */
+.rz-schondabei{border-top:1px solid var(--rz-hairline);margin-top:26px;padding-top:22px}
+.rz-schondabei .rz-caps{display:block}
+.rz-wiederzeile{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  min-height:var(--rz-tapziel-finger);padding:15px 0;margin-top:4px;
+  border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
+  font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);line-height:var(--rz-lh-zeile);
+  color:var(--rz-ink);text-decoration:none}
+.rz-wiederzeile .rz-pfeil{flex:none;font-family:var(--rz-sans);font-size:var(--rz-fs-text);
+  color:var(--rz-akzent-ink)}
+.rz-schondabei .rz-fein{margin-top:8px}
 
 /* ============ 5 · Fuss ============ */
 .rz-fuss{background:var(--rz-fuss);color:var(--rz-sek2-auf-gruen);
@@ -326,11 +340,20 @@ p{margin:0;text-wrap:pretty}
     </form>
     <p class="rz-fein rz-notiz" id="rz-notiz" hidden>Die Eintragung öffnet in Kürze — schau bald wieder vorbei.</p>
     <p class="rz-fein">Nur eine Nachricht zum Start. Keine Neuigkeiten, kein Verteiler.</p>
+
+    <!-- 46e · Fuer die, die schon dabei sind. Externer Uebergang auf die
+         App-Domain: rel="noopener", aber KEIN target="_blank" — es ist ein
+         Uebergang, kein Beiwerk. -->
+    <div class="rz-schondabei">
+      <span class="rz-caps">Schon dabei?</span>
+      <a class="rz-wiederzeile" href="https://de.roomfortwo.app" rel="noopener">Neuen Zugangslink anfordern<span class="rz-pfeil">→</span></a>
+      <p class="rz-fein">Für Teilnehmende, deren Link abgelaufen ist oder die auf einem neuen Gerät sind.</p>
+    </div>
   </section>
 </main>
 
 <footer class="rz-fuss">
-  <span class="rz-fuss-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="/impressum">Kontakt</a></span>
+  <span class="rz-fuss-links"><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="/impressum">Kontakt</a><a href="https://de.roomfortwo.app" rel="noopener">Anmelden</a></span>
   <span class="rz-marke">raumzuzweit</span>
 </footer>
 

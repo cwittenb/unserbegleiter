@@ -14,10 +14,15 @@
 
 import { randomToken, sha256Hex } from "./util.js";
 import { verschluessele, emailAad } from "./krypto.js";
+/* L3 · Die Frist des Wiedereinstiegs-Links wird dem Menschen im Client
+   GENANNT ("Der Link gilt 15 Minuten"). Damit Worker und Oberflaeche nicht
+   auseinanderlaufen, lebt sie in core/ und wird hier nur re-exportiert —
+   bestehende Importe aus dieser Datei bleiben unveraendert gueltig. */
+import { RECOVER_MS } from "../../../core/zugang-fristen.js";
 
 export const SESSION_MS = 15 * 60 * 1000;
 export const MAGIC_MS = 14 * 24 * 60 * 60 * 1000;
-export const RECOVER_MS = 15 * 60 * 1000;   // Wiedereinstiegs-Link: kurzlebig, on demand
+export { RECOVER_MS };
 
 const J = (kv, k) => kv.get(k).then(v => (v === null ? null : JSON.parse(v)));
 const W = (kv, k, v) => kv.put(k, JSON.stringify(v));

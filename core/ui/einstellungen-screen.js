@@ -13,6 +13,7 @@ import { t, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 import { esc } from "./html.js";
 import { setzeAnsicht, merkeAnsicht } from "./design.js";
 import { verlaufEinstellung, EINST_VERLAUF, loescheAlleVerlaeufe, zaehleVerlaeufe } from "./verlauf-ablage.js";   // S95.7b
+import { oeffneExtern } from "./rechtliches.js";   // L3
 
 /**
  * @param {object} ctx
@@ -161,6 +162,21 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
      Damit entfallen auch die beiden Sonderwege des Panels: das
      stopPropagation und der Klick-ausserhalb-Waechter am document. Ein Ort
      schliesst sich nicht, wenn man danebentippt — man geht zurueck. */
+  /* L3 · Die zwei Rechts-Zeilen stehen fest im Markup (app.js). Verdrahtet
+     wird nur der Sonderfall: in der nativen Huelle darf der Link nicht IN der
+     App aufgehen, sonst gibt es keinen Weg zurueck. Im Web passiert hier
+     nichts — dann bleibt es ein gewoehnlicher Link mit target=_blank. */
+  function verdrahteRechtsWege(wurzel) {
+    for (const a of wurzel.querySelectorAll("[data-rz-recht]")) {
+      if (a.dataset.rzVerdrahtet) continue;
+      a.dataset.rzVerdrahtet = "1";
+      a.addEventListener("click", ereignis => {
+        if (oeffneExtern(a.getAttribute("href"), doc.defaultView || globalThis))
+          ereignis.preventDefault();
+      });
+    }
+  }
+
   function verdrahteEinstellungen(betrete) {
     const knopf = chrome("pbEinst");
     if (!knopf || knopf.dataset.rzVerdrahtet) return;
@@ -222,5 +238,5 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
     knopf("#psNein", () => backend.language.withdraw());
   }
   return { aktualisierePunkt, waehleAnsicht, zeigeEinstellungen, verdrahteEinstellungen,
-           sprachName, zeigePaarsprache, zeigeLoeschFrage };
+           verdrahteRechtsWege, sprachName, zeigePaarsprache, zeigeLoeschFrage };
 }

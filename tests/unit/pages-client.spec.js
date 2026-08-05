@@ -44,51 +44,69 @@ describe("Pages-Client · Wiedereinstieg (kein Zugang)", () => {
     expect(app.querySelector("#recGo")).toBeTruthy();
   });
 
+  /* L3 (Turn 46) · Die Meldungszeile #recMsg ist entfallen: die Quittung
+     ersetzt die Zeile nicht, sie schreibt IN IHR weiter. Die Rueckmeldung bei
+     leerer Adresse steht seither im Hinweis unter der Zeile (#recHinweis) —
+     dieselbe Aussage, ein Element weniger. Geprueft wird weiterhin dasselbe
+     Verhalten: leer → keine Anfrage, gefuellt → POST. */
   it("Recover-Knopf: leere Adresse → Hinweis, KEIN Request; mit Adresse → POST /api/recover", async () => {
     const { app, fetchFn } = await starteClient({ routen: { "POST /api/recover": { json: {} } } });
-    const go = app.querySelector("#recGo"), msg = app.querySelector("#recMsg");
+    const go = app.querySelector("#recGo"), hinweis = app.querySelector("#recHinweis");
+    const vorher = hinweis.textContent;
     go.click();
-    await new Promise(r => setTimeout(r, 0));
-    expect(msg.textContent.length).toBeGreaterThan(0);
+    await new Promise(r => setTimeout(r, 5));
+    expect(hinweis.textContent).not.toBe(vorher);
     expect(fetchFn.aufrufe.some(a => a.key === "POST /api/recover")).toBe(false);
     app.querySelector("#recMail").value = "anna@example.org";
     go.click();
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise(r => setTimeout(r, 5));
     const rec = fetchFn.aufrufe.find(a => a.key === "POST /api/recover");
     expect(rec.body).toEqual({ email: "anna@example.org" });
   });
 
-  it("keine Enumeration: Fehler des Recover-Endpoints zeigt dieselbe Unterwegs-Meldung", async () => {
+  it("keine Enumeration: Fehler des Recover-Endpoints zeigt dieselbe Quittung", async () => {
     const { app } = await starteClient({ routen: { "POST /api/recover": { status: 500, json: { error: "kaputt" } } } });
     app.querySelector("#recMail").value = "wer@auch.immer";
     app.querySelector("#recGo").click();
-    await new Promise(r => setTimeout(r, 0));
-    const msg = app.querySelector("#recMsg").textContent;
-    expect(msg).not.toMatch(/kaputt|500|Fehler/i);              // Status wird bewusst nicht offengelegt
-    expect(msg.length).toBeGreaterThan(0);
+    await new Promise(r => setTimeout(r, 5));
+    // Die Quittung steht jetzt IN der Zeile (L3): Adresse links, "Gesendet"
+    // rechts. Der Status bleibt so unsichtbar wie zuvor.
+    const zeile = app.querySelector(".rz-eintrag").textContent;
+    expect(zeile).not.toMatch(/kaputt|500|Fehler/i);
+    expect(app.querySelector(".rz-quittung")).toBeTruthy();
+    expect(app.querySelector("#recHinweis").textContent.length).toBeGreaterThan(0);
   });
 
   it("Sprachumschalter baut den Screen in der anderen Sprache neu und merkt sich die Wahl", async () => {
     const { app } = await starteClient({ routen: {} });
-    const vorher = app.querySelector("h2").textContent;
+    // L3 · Der Titel ist jetzt ein h1 (.rz-h1) — der Screen traegt eine
+    // eigene Ueberschrift, keine Unterueberschrift eines fehlenden Titels.
+    const vorher = app.querySelector(".rz-h1").textContent;
     // Boot wählt die Browser-Sprache (happy-dom: en) — umgeschaltet wird auf die jeweils ANDERE.
     const ziel = document.documentElement.lang === "de" ? "en" : "de";
     app.querySelector('[data-wspr="' + ziel + '"]').click();
     expect(document.documentElement.lang).toBe(ziel);
     expect(localStorage.getItem("pb.sprache")).toBe(ziel);
-    expect(app.querySelector("h2").textContent).not.toBe(vorher);
+    expect(app.querySelector(".rz-h1").textContent).not.toBe(vorher);
   });
 });
 
 describe("Pages-Client · Enrollment-Token", () => {
-  it("verbrauchter Link (link_used): Fehlerbox PLUS Wiedereinstieg — keine Sackgasse", async () => {
+  /* L3 (Turn 46) · Aus "Fehlerbox PLUS Wiedereinstieg" ist "die Lage WIRD die
+     Ueberschrift" geworden. Ein verbrauchter Einmal-Link ist kein Fehler des
+     Nutzers, sondern der normale Ablauf — und in einer Oberflaeche aus
+     Haarlinien ist ein roter Kasten der lauteste Ton, den es gibt. Die
+     Zusicherung bleibt dieselbe: keine Sackgasse, der Weg steht darunter. */
+  it("verbrauchter Link (link_used): Lage als Ueberschrift, Weg darunter — keine Sackgasse", async () => {
     const { app, fetchFn } = await starteClient({
       hash: "#t=abc",
       routen: { "POST /api/enroll": { status: 410, json: { error: "verbraucht", code: "link_used" } } },
     });
     expect(fetchFn.aufrufe[0]).toEqual({ key: "POST /api/enroll", body: { token: "abc" } });
     expect(app.querySelector("#recMail")).toBeTruthy();          // Wiedereinstieg steht darunter
-    expect(app.textContent.length).toBeGreaterThan(0);
+    expect(app.querySelector(".rz-caps")).toBeTruthy();          // "Einmal-Link"
+    expect(app.querySelector(".rz-h1").textContent.length).toBeGreaterThan(0);
+    expect(app.innerHTML, "keine rote Box mehr").not.toContain("188,74,74");
   });
 
   it("unbekannter Token: reine Fehlermeldung, KEIN Wiedereinstieg (kein Konto dahinter)", async () => {

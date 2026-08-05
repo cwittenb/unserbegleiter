@@ -11,6 +11,13 @@ import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../..
 import { apiBasis, istNativeShell } from "./api-basis.js";
 import { lauscheAppLinks } from "./deep-link.js";
 import { istPushMoeglich, aktivierePush, deaktivierePush, hatPushAbo } from "./push.js";
+/* L3 (Turn 46) · Der Wiedereinstieg benutzt jetzt die Bausteine aus design.js
+   statt eigener Inline-Styles. Er laeuft zwar VOR createApp(), aber
+   applyDesign(doc) laeuft in boot() davor — die Klassen stehen bereit. */
+import { baueKulisse } from "../../../core/ui/kulisse.js";
+import { RECHT_WEGE, oeffneExtern } from "../../../core/ui/rechtliches.js";
+import { RECHT_BASIS } from "../../../core/ui/rechtliches.js";
+import { RECOVER_MINUTEN } from "../../../core/zugang-fristen.js";
 
 const doc = document;
 const app = doc.getElementById("app");
@@ -134,7 +141,8 @@ export async function boot() {
       if (e.code === "link_used" || e.code === "link_expired") {
         zeigeWiedereinstieg(e);
       } else {
-        app.innerHTML = fehlerBox(fehlerText(e));
+        app.innerHTML = fehlerBox(fehlerText(e)) + rechtsFuss();
+        verdrahteRechtsFuss(app);
       }
       return;
     }
@@ -154,31 +162,96 @@ export async function boot() {
   ergaenzePushGlocke().catch(() => { /* Push ist Komfort, nie Voraussetzung */ });
 }
 
+/* L3 · Rechtslinks. Sie stehen in der unteren Zone des Wiedereinstiegs — und
+   zusaetzlich unter der Fehlerbox, die als einzige Lage keine untere Zone hat.
+   §5 DDG verlangt "staendig verfuegbar": die Bedien-Ecke steht zwar ab
+   applyDesign, ist ohne Sitzung aber tot (kein Einstellungs-Screen, in den sie
+   fuehren koennte). Adressen aus core/ui/rechtliches.js, kein zweites Literal. */
+function rechtsFuss() {
+  return '<span class="rz-rechtsfuss">' +
+    RECHT_WEGE.map(w =>
+      '<a data-rz-recht="' + w.id + '" href="' + w.url + '"' +
+      ' target="_blank" rel="noopener noreferrer">' + t(w.schluessel) + "</a>").join("") +
+    "</span>";
+}
+
+/** Nur der native Sonderfall: im Capacitor-WebView darf der Link nicht IN der
+ *  App aufgehen, sonst gibt es keinen Weg zurueck. Im Web bleibt es ein Link. */
+function verdrahteRechtsFuss(wurzel) {
+  for (const a of wurzel.querySelectorAll("[data-rz-recht]"))
+    a.addEventListener("click", ereignis => {
+      if (oeffneExtern(a.getAttribute("href"), globalThis)) ereignis.preventDefault();
+    });
+}
+
 function fehlerBox(text) {
   return `<div style="background:rgba(188,74,74,.14);border:1px solid rgba(188,74,74,.4);color:var(--rz-ink);border-radius:12px;padding:14px;font-size:15px;backdrop-filter:blur(8px);margin-bottom:14px">${text}</div>`;
 }
 
-/** Sackgassen-Ersatz: Wer keinen gültigen Zugang (Cookie) hat, kann sich einen
- *  frischen Link an seine hinterlegte Adresse schicken lassen. Keine Enumeration:
- *  die Antwort ist immer dieselbe. Optional mit vorangestellter Fehlermeldung
- *  (verbrauchter/abgelaufener Link). */
+/** L3 (Turn 46) · Wiedereinstieg — der Screen fuer alle, die (noch) keinen
+ *  Zugang auf diesem Geraet haben. Fuer viele ist er der ERSTE Eindruck der
+ *  App ueberhaupt: wer einen Link auf einem neuen Geraet oeffnet, landet hier,
+ *  nicht im Vorraum. Bis Turn 46 war er der einzige Screen, der die Bausteine
+ *  aus design.js nicht benutzte.
+ *
+ *  Aufbau wie ueberall — oben Papier: was DU auf diesem Geraet tun kannst;
+ *  unten Tiefgruen: die Bedingung, die nicht bei dir liegt. Die Aussage steht
+ *  damit zweimal, aber in zwei Rollen: die Zeile oben ist ein Handgriff, der
+ *  Satz unten ist die Lage.
+ *
+ *  Drei Invarianten, die beim Umbau NICHT verhandelbar waren:
+ *    · Keine Enumeration — die Quittung ist bei JEDEM Ausgang dieselbe.
+ *    · Das Rate-Limit (429) wird verschluckt; auch das waere eine Auskunft.
+ *    · Der Sprachwechsel baut den Screen neu UND nimmt den Fehler-Vorspann mit.
+ */
 export function zeigeWiedereinstieg(enrollFehler) {
+  /* Verbrauchter/abgelaufener Einmal-Link ist KEIN Fehler des Nutzers, sondern
+     der normale Ablauf. Er bekommt deshalb keine rote Box, sondern wird zur
+     Ueberschrift. Alle anderen Enroll-Fehler kommen hier gar nicht an
+     (siehe boot(): die gehen in fehlerBox). */
+  const einmal = !!enrollFehler &&
+    (enrollFehler.code === "link_used" || enrollFehler.code === "link_expired");
+
+  const sprachKnopf = l =>
+    '<button type="button" data-wspr="' + l + '" aria-pressed="' + (getLocale() === l) + '">' +
+    t("paarspr.name." + l) + "</button>";
+
   app.innerHTML =
-    '<div style="max-width:440px;margin:0 auto;font-family:inherit">' +
-    (enrollFehler ? fehlerBox(fehlerText(enrollFehler)) : "") +
-    '<div style="text-align:right;font-size:13px;letter-spacing:1px;user-select:none">' +
-    '<span data-wspr="de" style="cursor:pointer;font-weight:' + (getLocale() === "de" ? 700 : 400) + '">DE</span> · ' +
-    '<span data-wspr="en" style="cursor:pointer;font-weight:' + (getLocale() === "en" ? 700 : 400) + '">EN</span></div>' +
-    '<h2 style="font-family:inherit;font-weight:400;font-size:26px">' + t("wieder.titel") + '</h2>' +
-    '<p style="font-size:14px;color:var(--rz-sek)">' + t("wieder.intro") + '</p>' +
-    '<div style="background:var(--rz-karte);border:1px solid var(--rz-karte-rand);border-radius:14px;padding:18px;backdrop-filter:blur(8px)">' +
-    '<label style="display:block;font-size:13px;font-weight:550;margin-bottom:5px">' + t("wieder.email") + '</label>' +
-    '<input id="recMail" type="email" autocomplete="email" placeholder="' + t("rec.platzhalter") + '" ' +
-    'style="display:block;width:100%;padding:10px 12px;border:1px solid var(--rz-feld-rand);background:var(--rz-feld);color:var(--rz-ink);border-radius:9px;font:inherit;box-sizing:border-box">' +
-    '<button id="recGo" style="width:100%;margin-top:10px;padding:12px;font:inherit;cursor:pointer;' +
-    'background:var(--rz-akzent);color:var(--rz-auf-akzent,#fff);border:0;border-radius:999px">' + t("wieder.anfordern") + '</button>' +
-    '<div id="recMsg" style="font-size:13px;margin-top:10px"></div>' +
-    '</div></div>';
+    '<div class="rz-split" id="rzVorZugang">' +
+      '<div class="rz-half rz-papier rz-vor-papier">' +
+        '<div class="rz-vor-kopf">' +
+          '<span class="rz-marke-vor">' + APP_NAME + "</span>" +
+          '<span class="rz-sprachpaar">' + sprachKnopf("de") +
+            '<span class="rz-trenner" aria-hidden="true">/</span>' + sprachKnopf("en") + "</span>" +
+        "</div>" +
+        '<div class="rz-vor-mitte">' +
+          (einmal ? '<div class="rz-caps">' + t("wieder.einmalCaps") + "</div>" : "") +
+          '<h1 class="rz-h1">' + t(einmal ? "wieder.einmalTitel" : "wieder.titel") + "</h1>" +
+          '<p class="rz-vor-intro">' + t(einmal ? "wieder.einmalText" : "wieder.intro") + "</p>" +
+          '<div class="rz-eintrag" id="recZeile">' +
+            '<input id="recMail" type="email" autocomplete="email" ' +
+              'aria-label="' + t("rec.platzhalter") + '" placeholder="' + t("rec.platzhalter") + '">' +
+            '<button type="button" id="recGo">' +
+              '<span class="rz-wort">' + t("wieder.anfordern") + " </span>\u2192</button>" +
+          "</div>" +
+          '<p class="rz-vor-hinweis" id="recHinweis">' +
+            t("wieder.hinweis", { minuten: RECOVER_MINUTEN }) + "</p>" +
+        "</div>" +
+      "</div>" +
+      '<div class="rz-half rz-tiefgruen rz-naht-anker rz-vor-tief">' +
+        '<div class="rz-kulisse-naht rz-kulisse-vor" aria-hidden="true">' + baueKulisse(5, "vor") + "</div>" +
+        '<span class="rz-weg-badge rz-auf-naht rz-badge-bedingung">' + t("wieder.badge") + "</span>" +
+        '<div class="rz-vor-mitte">' +
+          '<p class="rz-vor-bedingung">' + t("wieder.bedingung") + "</p>" +
+          '<p class="rz-vor-landingtext">' + t("wieder.landingText") + "</p>" +
+          '<a class="rz-extern" href="' + RECHT_BASIS + '" rel="noopener">' +
+            t("wieder.landingZeile") + '<span class="rz-pfeil">\u2197</span></a>' +
+        "</div>" +
+        rechtsFuss() +
+      "</div>" +
+    "</div>";
+
+  verdrahteRechtsFuss(app);
   for (const el of app.querySelectorAll("[data-wspr]"))
     el.addEventListener("click", () => {
       const l = el.getAttribute("data-wspr");
@@ -186,19 +259,42 @@ export function zeigeWiedereinstieg(enrollFehler) {
       setLocale(l);
       try { localStorage.setItem("pb.sprache", l); } catch { /* privat-Modus */ }
       doc.documentElement.lang = l;
-      zeigeWiedereinstieg(enrollFehler);   // Screen in der neuen Sprache neu aufbauen
+      zeigeWiedereinstieg(enrollFehler);   // Screen neu — MIT dem Vorspann
     });
-  const go = doc.getElementById("recGo"), msg = doc.getElementById("recMsg");
-  go.addEventListener("click", async () => {
-    const email = doc.getElementById("recMail").value.trim();
-    if (!email) { msg.textContent = t("wieder.bitte"); return; }
-    go.disabled = true; go.textContent = t("wieder.sendet");
-    try { await api("POST", "/api/recover", { email }); }
-    catch { /* Status wird bewusst nicht offengelegt */ }
-    msg.innerHTML = '<span style="color:var(--rz-akzent-ink)">' + t("wieder.unterwegs") + '</span>';
-    go.textContent = t("wieder.gesendet");
-  });
+
+  const zeile = doc.getElementById("recZeile");
+  const feld = doc.getElementById("recMail");
+  const hinweis = doc.getElementById("recHinweis");
+
+  /* Die Quittung ersetzt die Zeile nicht, sie schreibt IN IHR weiter: Adresse
+     links (nicht mehr kursiv — sie ist jetzt Inhalt, kein Platzhalter),
+     rechts "Gesendet" als Caps statt des Pfeils. Kein deaktivierter Knopf,
+     keine zweite Meldungszeile. */
+  function quittiere(adresse) {
+    zeile.classList.add("rz-quittiert");
+    zeile.innerHTML =
+      '<span class="rz-adresse"></span>' +
+      '<span class="rz-quittung">' + t("wieder.gesendet") + "</span>";
+    zeile.querySelector(".rz-adresse").textContent = adresse;
+    const h1 = app.querySelector(".rz-h1");
+    if (h1) h1.textContent = t("wieder.quittungTitel");
+    hinweis.textContent = t("wieder.unterwegs", { minuten: RECOVER_MINUTEN });
+  }
+
+  async function anfordern() {
+    const email = feld.value.trim();
+    if (!email) { hinweis.textContent = t("wieder.bitte"); return; }
+    /* Der Ausgang ist bewusst OHNE Verzweigung: Erfolg, 429 und Netzfehler
+       fuehren zur selben Quittung. Jede Unterscheidung waere eine Auskunft
+       darueber, ob die Adresse hinterlegt ist. */
+    try { await api("POST", "/api/recover", { email }); } catch { /* still, mit Absicht */ }
+    quittiere(email);
+  }
+
+  doc.getElementById("recGo").addEventListener("click", anfordern);
+  feld.addEventListener("keydown", e => { if (e.key === "Enter") anfordern(); });
 }
+
 
 /** Push-Glocke (M7a): kleiner Umschalter im Theme-Chrome — nur wenn Web Push
  *  hier möglich ist und der Worker konfiguriert ist (sonst bleibt er weg;
