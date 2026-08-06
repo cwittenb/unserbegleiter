@@ -65,10 +65,16 @@ describe("L1.8 · Der Altbestand 11a/12a ist weg", () => {
 
 describe("L1.9 · KI-Transparenz (44e, Tonlage B)", () => {
   it("Ort 1 · die erste Erwaehnung steht im Hero", () => {
+    // L4 · Der Wortlaut ist gewachsen: die Begleitung wird an ihren Handgriffen
+    // benannt (spiegelt, fragt nach, gibt Impulse) statt an ihrer Verfuegbarkeit,
+    // und aus "Du entscheidest, was den Raum verlaesst" ist die aktive Form
+    // geworden. Die KI-Nennung (44e, Tonlage B) steht unveraendert in der Mitte.
     const hero = doc.querySelector(".rz-hero-papier .rz-lead").textContent;
-    expect(hero).toBe("Nachdenken, sortieren, in Ruhe hinschauen — mit einer Begleitung, "
-      + "die zuhört und immer Zeit hat. Sie ist kein Mensch, sondern eine KI. "
-      + "Du entscheidest, was den Raum verlässt.");
+    expect(hero).toBe("Nachdenken, sortieren, in Ruhe hinfühlen — mit einer Begleitung, "
+      + "die zuhört, spiegelt, nachfragt, Impulse gibt und immer da ist. "
+      + "Sie ist kein Mensch, sondern eine KI. Du kannst aus deinem Raum genau das "
+      + "mit deinem Partner teilen, was du möchtest.");
+    expect(hero).toContain("Sie ist kein Mensch, sondern eine KI.");
   });
 
   it("Ort 2 · der vierte Satz in \"Eine tragende Struktur\"", () => {

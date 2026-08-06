@@ -90,7 +90,12 @@ p{margin:0;text-wrap:pretty}
 .rz-nur-desktop{display:none}
 
 /* ============ 1 · Hero ============ */
-.rz-hero{display:flex;flex-direction:column}
+/* Drei Bildschirme, jeder eine Aussage: die Zweiteilung, der Kreis, die
+   Zusage mit der Einladung. 100dvh statt 100vh — auf dem Handy zaehlt die
+   Leiste des Browsers mit, sonst steht die Naht unter dem Falz.
+   min-height, nicht height: laenger Text darf wachsen. */
+.rz-hero{display:flex;flex-direction:column;min-height:100dvh}
+.rz-hero>section{flex:1}
 .rz-hero-papier{background:var(--rz-papier);color:var(--rz-ink);
   padding:30px var(--rz-rand) var(--rz-kulissenfrei);
   display:flex;flex-direction:column;gap:14px;min-height:400px}
@@ -120,7 +125,8 @@ p{margin:0;text-wrap:pretty}
 
 /* ============ 2 · Ein geschlossener Kreis ============ */
 .rz-kreis{background:var(--rz-papier);color:var(--rz-ink);padding:44px 0;
-  display:flex;flex-direction:column;gap:14px}
+  display:flex;flex-direction:column;justify-content:center;gap:14px;
+  min-height:100dvh}
 /* Das Emblem laeuft randlos, jedes Textkind steht auf der Screenkante. */
 .rz-kreis>:not(.rz-emblem){padding:0 var(--rz-rand)}
 .rz-emblem{width:100%;display:block}
@@ -140,8 +146,12 @@ p{margin:0;text-wrap:pretty}
 .rz-satz:last-child{border-bottom:1px solid var(--rz-hairline-gruen)}
 
 /* ============ 4 · Einladung ============ */
+.rz-abschluss{display:flex;flex-direction:column;min-height:100dvh}
+/* Die Einladung nimmt den Rest des Bildschirms — die Saetze darueber
+   brauchen nur ihre Zeilenhoehe. */
 .rz-einladung{background:var(--rz-papier);color:var(--rz-ink);
-  padding:44px var(--rz-rand);display:flex;flex-direction:column;gap:14px}
+  padding:44px var(--rz-rand);display:flex;flex-direction:column;
+  justify-content:center;gap:14px;flex:1}
 .rz-einladung h2{font-size:var(--rz-fs-sektion);line-height:1.2}
 /* §2.5 · Eine ZEILE, kein Kasten: dieselbe Signatur wie .rz-zeile in der App.
    Damit hat die Landing keinen gerahmten Container mehr. */
@@ -185,14 +195,25 @@ p{margin:0;text-wrap:pretty}
   .rz-nur-desktop{display:block}
   .rz-nur-mobil{display:none}
 
-  .rz-hero{display:grid;grid-template-columns:1fr 1fr;min-height:560px}
+  .rz-hero{display:grid;grid-template-columns:1fr 1fr;min-height:100dvh}
   .rz-hero-papier,.rz-hero-tief{padding:40px var(--rz-rand-weit);min-height:0;gap:0}
-  .rz-hero-mitte{margin:auto 0}
+  /* An der Naht gespiegelt: links steht der Text OBEN unter der Wortmarke,
+     rechts UNTEN ueber dem Wegweiser. Das Badge auf der Naht ist die Achse —
+     zwei Seiten derselben Sache, nicht zwei Spalten mit gleichem Aufbau. */
+  .rz-hero-papier .rz-hero-mitte{margin:34px 0 auto}
+  .rz-hero-tief .rz-hero-mitte{margin:auto 0 0}
   .rz-hero .rz-lead{max-width:34ch}
   .rz-hero-tief{text-align:right;align-items:flex-end}
   .rz-hero-tief .rz-hero-mitte{align-items:flex-end}
   .rz-hero-marke-rechts{align-self:flex-end}
-  .rz-runter{align-self:flex-end;margin-bottom:56px}
+  /* Die Wortmarke haelt mobil den Text unten (margin-bottom:auto). Auf dem
+     Desktop sitzt der Text OBEN — sonst teilten sich zwei auto-Raender den
+     Platz und der Block landete wieder in der Mitte. */
+  .rz-hero-papier>.rz-marke{margin-bottom:0}
+  /* Der Wegweiser haengt jetzt am Text darueber, nicht mehr am Rest des
+     Platzes; das Schieben macht die Mitte. 56px halten ihn aus den 96px
+     der Kulisse heraus. */
+  .rz-runter{align-self:flex-end;margin-top:16px;margin-bottom:56px}
   /* Naht senkrecht in der Mitte: das Badge sitzt auf der linken Kante der
      Tiefgruen-Haelfte, also genau auf der Naht. */
   .rz-badge{left:0;top:50%}
@@ -202,7 +223,7 @@ p{margin:0;text-wrap:pretty}
   /* §4.2 · Auf dunklem Grund .85, sonst tragen die Eigen-Deckkraefte nicht. */
   .rz-kulisse-figuren{opacity:.85}
 
-  .rz-kreis{padding:72px 0}
+  .rz-kreis{padding:72px 0;min-height:100dvh}
   .rz-kreis>:not(.rz-emblem){padding:0 var(--rz-rand-weit)}
   .rz-kreis h2{font-size:var(--rz-fs-titel);line-height:1.2}
   .rz-kreis p{max-width:62ch}
@@ -230,7 +251,7 @@ p{margin:0;text-wrap:pretty}
     <div class="rz-hero-mitte">
       <div class="rz-caps">Raum für mich</div>
       <h1>Ein Raum,<br>der dir gehört.</h1>
-      <p class="rz-lead">Nachdenken, sortieren, in Ruhe hinschauen — mit einer Begleitung, die zuhört und immer Zeit hat. Sie ist kein Mensch, sondern eine KI. Du entscheidest, was den Raum verlässt.</p>
+      <p class="rz-lead">Nachdenken, sortieren, in Ruhe hinfühlen — mit einer Begleitung, die zuhört, spiegelt, nachfragt, Impulse gibt und immer da ist. Sie ist kein Mensch, sondern eine KI. Du kannst aus deinem Raum genau das mit deinem Partner teilen, was du möchtest.</p>
     </div>
     <span class="rz-hero-marke-links rz-nur-desktop">Für beide von euch.</span>
   </section>
@@ -241,7 +262,7 @@ p{margin:0;text-wrap:pretty}
     <div class="rz-hero-mitte">
       <div class="rz-caps">Raum für uns</div>
       <h2>Ein Raum,<br>der euch gehört.</h2>
-      <p class="rz-lead">Qualitätszeit, Begegnung — und alles, was ihr einander bewusst zeigen wollt.</p>
+      <p class="rz-lead">Begleitete Qualitätszeit, begleitete Begegnung — für alles, was ihr miteinander erleben und teilen wollt.</p>
     </div>
     <a class="rz-runter" href="#einladung">Informiert werden ↓</a>
   </section>
@@ -323,6 +344,10 @@ p{margin:0;text-wrap:pretty}
     <p class="rz-kreis-nachsatz">Und Zeit zum Genießen? Begleitete Qualitätszeit ist die Basis und das verbindende Element. Sie gehört euch jederzeit.</p>
   </section>
 
+  <!-- Bildschirm 3 · Struktursaetze und Einladung teilen sich EINE
+       Bildschirmhoehe: die Saetze tragen die Zusage, die Eingabe zieht die
+       Folgerung. Getrennt gelesen verlieren beide. -->
+  <div class="rz-abschluss">
   <section class="rz-struktur rz-tief">
     <span class="rz-caps">Eine tragende Struktur</span>
     <div class="rz-satz">Was in deinem Raum ist, bleibt bei dir.</div>
@@ -350,6 +375,7 @@ p{margin:0;text-wrap:pretty}
       <p class="rz-fein">Für Teilnehmende, deren Link abgelaufen ist oder die auf einem neuen Gerät sind.</p>
     </div>
   </section>
+  </div>
 </main>
 
 <footer class="rz-fuss">

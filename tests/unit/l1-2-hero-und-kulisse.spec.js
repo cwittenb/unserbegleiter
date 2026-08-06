@@ -50,11 +50,38 @@ describe("L1.2 · Hero", () => {
     expect(regel(".rz-marke")).not.toContain(".16em");
   });
 
-  it("Desktop 1fr 1fr / 560px, mobil gestapelt 400px / 360px", () => {
+  /* L4 · Aus 560px ist eine volle Bildschirmhoehe geworden: der Hero ist der
+     erste von drei Bildschirmen. Die mobilen Mindesthoehen bleiben als
+     Untergrenze stehen — auf einem sehr flachen Fenster soll keine Haelfte
+     zusammenfallen. */
+  it("Desktop 1fr 1fr ueber die volle Bildschirmhoehe, mobil gestapelt 400/360 als Untergrenze", () => {
     expect(regel(".rz-hero", DESKTOP)).toContain("grid-template-columns:1fr 1fr");
-    expect(regel(".rz-hero", DESKTOP)).toContain("min-height:560px");
+    expect(regel(".rz-hero", DESKTOP)).toContain("min-height:100dvh");
+    expect(regel(".rz-hero")).toContain("min-height:100dvh");
     expect(regel(".rz-hero-papier")).toContain("min-height:400px");
     expect(regel(".rz-hero-tief")).toContain("min-height:360px");
+    // 100dvh, nicht 100vh: sonst steht die Naht auf dem Handy unter dem Falz.
+    expect(CODE).not.toContain("100vh");
+  });
+
+  it("L4 · drei Bildschirme, jeder eine Aussage", () => {
+    for (const abschnitt of [".rz-hero", ".rz-kreis", ".rz-abschluss"])
+      expect(regel(abschnitt), `${abschnitt} ist nicht bildschirmhoch`)
+        .toContain("min-height:100dvh");
+    // Struktur und Einladung teilen sich den dritten — sie haben KEINE eigene.
+    expect(HTML).toContain('<div class="rz-abschluss">');
+    expect(regel(".rz-struktur")).not.toContain("min-height");
+    expect(regel(".rz-einladung")).toContain("flex:1");
+  });
+
+  it("L4 · an der Naht gespiegelt: links oben, rechts unten", () => {
+    expect(regel(".rz-hero-papier .rz-hero-mitte", DESKTOP)).toContain("margin:34px 0 auto");
+    expect(regel(".rz-hero-tief .rz-hero-mitte", DESKTOP)).toContain("margin:auto 0 0");
+    // Zwei auto-Raender in derselben Spalte teilten sich den Platz und
+    // schoeben den Block zurueck in die Mitte — deshalb faellt der
+    // auto-Rand der Wortmarke auf dem Desktop weg.
+    expect(regel(".rz-hero-papier>.rz-marke", DESKTOP)).toContain("margin-bottom:0");
+    expect(regel(".rz-runter", DESKTOP)).toContain("margin-top:16px");
   });
 
   it("Raender: mobil 24px, Desktop 44px", () => {

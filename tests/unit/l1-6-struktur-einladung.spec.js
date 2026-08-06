@@ -94,6 +94,13 @@ describe("L1.6 · Einladung", () => {
     expect(notiz).not.toMatch(/gespeichert|eingetragen|erhalten/);
   });
 
+  it("L4 · der zweite Hero-Satz benennt die Begleitung, nicht nur den Anlass", () => {
+    expect(doc.querySelector(".rz-hero-tief .rz-lead").textContent)
+      .toBe("Begleitete Qualitätszeit, begleitete Begegnung — für alles, "
+        + "was ihr miteinander erleben und teilen wollt.");
+    expect(HTML).not.toContain("was ihr einander bewusst zeigen wollt");
+  });
+
   it("Desktop zentriert die Einladung auf 520px", () => {
     expect(regel(".rz-einladung>*", DESKTOP)).toContain("max-width:520px");
   });
