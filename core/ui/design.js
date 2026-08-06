@@ -438,8 +438,22 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-vor-landingtext{font-size:var(--rz-fs-fein);line-height:var(--rz-lh-text);
                           color:var(--rz-sek-auf-gruen);margin:10px 0 0;max-width:46ch}
       /* §5a-Ausnahme wie auf der Landing: das Badge nennt eine BEDINGUNG,
-         keinen Ort — also ohne Wegweiser-Zeichen und ohne Knopfverhalten. */
-      .rz-badge-bedingung{cursor:default;justify-content:center}
+         keinen Ort — also ohne Wegweiser-Zeichen und ohne Knopfverhalten.
+         Der Verbundselektor ist noetig, weil .rz-weg-badge cursor:pointer
+         setzt und SPAETER in dieser Datei steht: bei gleicher Spezifitaet
+         gewinnt die spaetere Regel. Es ist ein <span>, kein Knopf — der
+         Zeiger hatte eine Handlung versprochen, die es nicht gibt. */
+      .rz-weg-badge.rz-badge-bedingung{cursor:default;justify-content:center;
+                                       pointer-events:none;user-select:none}
+
+      /* Vor dem Zugang fuehrt die Bedien-Ecke ins Leere: es gibt keinen
+         Einstellungs-Screen, in den sie fuehren koennte. Ein Zeichen, das
+         nichts tut, ist schlimmer als keins. */
+      html[data-vorzugang] .rz-ecke{display:none}
+
+      /* Breitenfassungen: genau EINE ist sichtbar. display:none nimmt die
+         verdeckte auch aus dem Bedienbaum — anders als visibility. */
+      .rz-nur-breit{display:none}
 
       /* Sprachwahl: Caps-Paar mit den SPRACHNAMEN (paarspr.name.*), wie die
          Einstellungen sie benennen. 44px hoch — im Altstand fehlte das
@@ -456,6 +470,8 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-tiefgruen .rz-sprachpaar button{color:var(--rz-sek-auf-gruen)}
       .rz-tiefgruen .rz-sprachpaar button[aria-pressed=true]{color:var(--rz-ink-auf-gruen)}
       .rz-tiefgruen .rz-sprachpaar .rz-trenner{color:var(--rz-hairline-gruen)}
+      /* In der dunklen Spalte steht sie ganz oben rechts, ueber allem. */
+      #rzVorZugang .rz-vor-tief .rz-sprachpaar{align-self:flex-end;position:relative;z-index:4}
 
       /* Die Anforderung ist eine ZEILE, kein Formular — dieselbe Signatur wie
          .rz-zeile und wie das Signup der Landing. Damit fallen Karte,
@@ -513,14 +529,32 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            liegt als BODEN der Tiefgruen-Haelfte — nie auf der senkrechten
            Naht (Baumsilhouetten sind eine Grundlinie). Auf dunklem Grund
            .85, sonst tragen ihre Eigen-Deckkraefte nicht. */
+        .rz-nur-breit{display:flex}
+        .rz-nur-schmal{display:none}
+        /* Die Papier-Haelfte braucht den Kulissen-Boden nicht — er liegt
+           drueben. Die Tiefgruen-Haelfte schon: dort steht sonst Text in den
+           unteren 96px. */
         #rzVorZugang .rz-vor-papier{padding-bottom:40px}
-        #rzVorZugang .rz-vor-tief{align-items:flex-end;text-align:right}
+        #rzVorZugang .rz-vor-tief{align-items:flex-end;text-align:right;
+                                  padding-bottom:var(--rz-kulissenfrei)}
         #rzVorZugang .rz-vor-tief .rz-vor-mitte{align-items:flex-end}
         #rzVorZugang .rz-vor-landingtext{margin-left:auto}
-        #rzVorZugang .rz-vor-tief .rz-extern{min-width:320px}
+        /* Gespiegelt: links sitzt der Inhalt OBEN unter der Wortmarke, rechts
+           UNTEN ueber dem Rechtsfuss. Die Diagonale ist die Aussage — zwei
+           Seiten derselben Lage, nicht zwei Spalten mit demselben Aufbau. */
+        #rzVorZugang .rz-vor-papier .rz-vor-mitte{margin-top:34px;margin-bottom:auto}
+        #rzVorZugang .rz-vor-tief .rz-vor-mitte{margin-top:auto;margin-bottom:0}
+        /* Die Handgriffe laufen ueber die ganze Spaltenbreite — samt
+           Haarlinie. Eine halbbreite Linie mitten in der Spalte laese sich
+           als Rahmen eines Kastens, und Kaesten gibt es hier nicht. */
+        #rzVorZugang .rz-eintrag,
+        #rzVorZugang .rz-extern{width:100%;max-width:none;min-width:0}
+        #rzVorZugang .rz-vor-intro,
+        #rzVorZugang .rz-vor-hinweis,
+        #rzVorZugang .rz-vor-landingtext{max-width:46ch}
         .rz-kulisse-vor{top:auto;bottom:0;transform:none;
                         height:var(--rz-kulissenfrei);opacity:.85}
-        .rz-eintrag{gap:var(--rz-r-4);max-width:420px}
+        .rz-eintrag{gap:var(--rz-r-4)}
         .rz-eintrag .rz-wort{display:inline}
       }
       /* 3.5 · Das Baum-Band ist 84px hoch und liegt ueber der Naht. Endet die

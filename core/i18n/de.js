@@ -395,11 +395,12 @@ export const de = {
      Zahl im Text (sonst laeuft der Wortlaut von der Frist weg).
      Entfallen: "wieder.email" (steht im Platzhalter), "wieder.sendet" (die
      Zeile schreibt in sich weiter, es gibt keinen Knopfzustand mehr). */
-  "wieder.titel": "Kein Zugang auf diesem Gerät.",
+  "wieder.titel": "Zugangslink für deinen Account.",
   "wieder.intro": "Wenn du schon teilnimmst, schicken wir dir einen neuen Zugangslink an die Adresse, die du hinterlegt hast.",
   "wieder.anfordern": "Neuen Link anfordern",
   "wieder.hinweis": "Der Link gilt {minuten} Minuten und nur einmal. Ob eine Adresse hinterlegt ist, sagen wir nicht — die Antwort ist immer dieselbe.",
   "wieder.bitte": "Bitte deine Adresse eingeben.",
+  "wieder.format": "Das sieht nicht nach einer E-Mail-Adresse aus.",
   "wieder.gesendet": "Gesendet",
   "wieder.unterwegs": "Falls diese Adresse hinterlegt ist, ist ein Link unterwegs — {minuten} Minuten gültig. Schau auch im Spam-Ordner nach.",
   "wieder.quittungTitel": "Sieh in deinem Postfach nach.",

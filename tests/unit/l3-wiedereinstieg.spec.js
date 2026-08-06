@@ -141,6 +141,20 @@ describe("L3.3 · Der Screen", () => {
     expect(app.textContent).not.toContain(de["wieder.titel"] + de["wieder.anfordern"]);
   });
 
+  it("die Sprachwahl steht je Breite an einem anderen Ort — genau eine sichtbar", async () => {
+    const app = await rendere();
+    const schmal = app.querySelector(".rz-sprachpaar.rz-nur-schmal");
+    const breit = app.querySelector(".rz-sprachpaar.rz-nur-breit");
+    // schmal: neben der Wortmarke in der Papier-Haelfte
+    expect(app.querySelector(".rz-vor-kopf").contains(schmal)).toBe(true);
+    // breit: ganz oben rechts, also in der Tiefgruen-Spalte
+    expect(app.querySelector(".rz-tiefgruen").contains(breit)).toBe(true);
+    // display:none nimmt die verdeckte Fassung auch aus dem Bedienbaum.
+    expect(DESIGN).toContain(".rz-nur-breit{display:none}");
+    expect(DESIGN).toContain(".rz-nur-breit{display:flex}");
+    expect(DESIGN).toContain(".rz-nur-schmal{display:none}");
+  });
+
   it("Sprachwahl: Sprachnamen statt DE/EN, mit Tapziel", async () => {
     const app = await rendere();
     const paar = app.querySelector(".rz-sprachpaar");
@@ -255,6 +269,74 @@ describe("L3.7 · Was nicht kaputtgehen darf (§5)", () => {
   it("harte Fehler gehen weiterhin in fehlerBox — die Lage hat keinen Weg", () => {
     expect(CLIENT).toContain("fehlerBox(fehlerText(e)) + rechtsFuss()");
     expect(CLIENT).toContain("function fehlerBox(");
+  });
+});
+
+/* ---------- Nachbesserungen nach dem ersten Blick auf den Screen ---------- */
+
+describe("L3a · Was am gebauten Screen auffiel", () => {
+  it("der Titel benennt den Handgriff, nicht den Mangel", async () => {
+    const app = await rendere();
+    expect(app.querySelector(".rz-h1").textContent).toBe("Zugangslink für deinen Account.");
+    expect(app.textContent).not.toContain("Kein Zugang auf diesem Gerät");
+    expect(en["wieder.titel"]).toBe("Access Link for Your Account.");
+  });
+
+  it("das Badge ist kein Knopf — und sieht auch nicht so aus", async () => {
+    const app = await rendere();
+    const badge = app.querySelector(".rz-badge-bedingung");
+    expect(badge.tagName).toBe("SPAN");
+    expect(badge.getAttribute("href")).toBeNull();
+    // .rz-weg-badge setzt cursor:pointer und steht SPAETER in design.js —
+    // ohne Verbundselektor gewinnt die spaetere Regel.
+    expect(DESIGN).toContain(".rz-weg-badge.rz-badge-bedingung{cursor:default");
+    const i = DESIGN.indexOf(".rz-weg-badge.rz-badge-bedingung");
+    expect(DESIGN.slice(i, DESIGN.indexOf("}", i))).toContain("pointer-events:none");
+  });
+
+  it("die Bedien-Ecke ist vor dem Zugang weg und kommt mit der Sitzung zurueck", async () => {
+    await rendere();
+    expect(document.documentElement.getAttribute("data-vorzugang")).toBe("1");
+    expect(DESIGN).toContain("html[data-vorzugang] .rz-ecke{display:none}");
+    expect(CLIENT).toContain('doc.documentElement.removeAttribute("data-vorzugang")');
+    const i = CLIENT.indexOf('removeAttribute("data-vorzugang")');
+    expect(CLIENT.slice(i, i + 220)).toContain("createApp(");
+  });
+
+  it("die Form der Adresse wird geprueft — ihre Existenz nicht", async () => {
+    const app = await rendere();
+    const hinweis = app.querySelector("#recHinweis");
+    for (const murks of ["abc", "a@b", "a b@c.de", "@example.org"]) {
+      globalThis.fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({}) }));
+      app.querySelector("#recMail").value = murks;
+      app.querySelector("#recGo").click();
+      await new Promise(r => setTimeout(r, 5));
+      expect(hinweis.textContent, murks).toBe(de["wieder.format"]);
+      expect(globalThis.fetch, murks + ": Anfrage trotz Formfehler").not.toHaveBeenCalled();
+      expect(app.querySelector(".rz-quittung"), murks).toBeNull();
+    }
+  });
+
+  it("gueltige Adressen kommen durch — auch ungewoehnliche", async () => {
+    for (const gut of ["a@b.de", "vor.nach+tag@sub.example.org", "x_y@firma-name.co.uk"]) {
+      const app = await rendere();
+      app.querySelector("#recMail").value = gut;
+      app.querySelector("#recGo").click();
+      await new Promise(r => setTimeout(r, 5));
+      expect(app.querySelector(".rz-quittung"), gut).toBeTruthy();
+    }
+  });
+
+  it("Desktop: Handgriffe ueber die ganze Spaltenbreite, Inhalt gespiegelt", () => {
+    const breit = DESIGN.slice(DESIGN.indexOf(".rz-nur-breit{display:flex}"));
+    expect(breit).toContain("#rzVorZugang .rz-eintrag,\n        #rzVorZugang .rz-extern{width:100%");
+    expect(breit).not.toContain("max-width:420px");
+    expect(breit).not.toContain("min-width:320px");
+    // Gespiegelt: links oben, rechts unten.
+    expect(breit).toContain("#rzVorZugang .rz-vor-papier .rz-vor-mitte{margin-top:34px;margin-bottom:auto}");
+    expect(breit).toContain("#rzVorZugang .rz-vor-tief .rz-vor-mitte{margin-top:auto;margin-bottom:0}");
+    // §4.3 · kein Text in den unteren 96px der Tiefgruen-Haelfte.
+    expect(breit).toContain("padding-bottom:var(--rz-kulissenfrei)");
   });
 });
 

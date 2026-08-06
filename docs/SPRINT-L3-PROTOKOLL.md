@@ -94,7 +94,7 @@ Ein Testaufbau-Detail, das eine Stunde gekostet hat: `vi.resetModules()` brachte
 
 ## Build
 
-**Kern-Hash `3079590f1d4673f6` → `70b4b066a594eb71`.**
+**Kern-Hash `3079590f1d4673f6` → `70b4b066a594eb71`** (nach dem Nachtrag L3a: `10eb4c363a2c4a78`).
 
 ## Offen
 
@@ -103,3 +103,25 @@ Ein Testaufbau-Detail, das eine Stunde gekostet hat: `vi.resetModules()` brachte
 - **Voraussetzung fürs Deploy:** die drei Landing-Dateien müssen unter `raumzuzweit.de` liegen; die Rechtstexte selbst sind weiterhin Platzhalter (§7.3 aus L1).
 - **`API_BASIS`** steht auf `https://app.raumzuzweit.de`, die Testphase läuft auf `de.roomfortwo.app` — vor dem ersten Capacitor-Build zu korrigieren.
 - Die eingegebene Adresse geht beim Sprachwechsel verloren (§5) — ausdrücklich eine eigene Verbesserung.
+
+---
+
+# Nachtrag L3a — Nachbesserungen am gebauten Screen
+
+Sechs Punkte nach dem ersten Blick auf den laufenden Wiedereinstieg. Enthalten in `patch-l3`, kein eigener Patch.
+
+| | Änderung |
+|---|---|
+| Titel | „Kein Zugang auf diesem Gerät." → **„Zugangslink für deinen Account."** (en: „Access Link for Your Account.") — der Screen benennt jetzt den Handgriff statt des Mangels |
+| Badge | ist ein `<span>`, sah aber wie ein Knopf aus: `.rz-weg-badge` setzt `cursor:pointer` und steht **später** in `design.js`, gewann also bei gleicher Spezifität. Behoben mit dem Verbundselektor `.rz-weg-badge.rz-badge-bedingung` plus `pointer-events:none` |
+| Bedien-Ecke | vor dem Zugang ausgeblendet (`html[data-vorzugang] .rz-ecke{display:none}`); der Startpfad nimmt die Sperre weg, sobald `createApp()` übernimmt. Sie führte ins Leere — es gibt ohne Sitzung keinen Einstellungs-Screen |
+| Adressprüfung | **Form** ja, **Existenz** nein. `abc`, `a@b`, `@example.org` bekommen einen Hinweis und lösen keine Anfrage aus. Der Unterschied ist die Nicht-Auskunft: ob eine Adresse hinterlegt ist, bleibt ungesagt; ob „abc" eine E-Mail-Adresse sein *kann*, ist keine Auskunft. Der Ausdruck ist bewusst großzügig — ein zu strenger sperrt gültige Adressen aus, und die echte Prüfung ist ohnehin, ob die Mail ankommt |
+| Desktop, Handgriffe | Eingabezeile und Landing-Zeile laufen über die **ganze Spaltenbreite**, samt Haarlinie (`max-width:420px` und `min-width:320px` sind weg). Eine halbbreite Linie mitten in der Spalte las sich als Rahmen eines Kastens |
+| Desktop, Sprachwahl | steht jetzt **ganz oben rechts**, also in der Tiefgrün-Spalte |
+| Desktop, Spiegelung | links sitzt der Inhalt **oben** unter der Wortmarke, rechts **unten** über dem Rechtsfuß. Die Tiefgrün-Hälfte hält dafür `--rz-kulissenfrei` frei (§4.3: kein Text in den unteren 96 px) |
+
+**Zur Sprachwahl:** sie steht zweimal im Markup, je Breite ist genau eine sichtbar. Ein Element kann nicht zwischen zwei Flex-Containern wandern, und `display:none` nimmt die verdeckte Fassung auch aus dem Bedienbaum. Dieselbe Lösung tragen die zwei Embleme der Landing.
+
+**Tests:** sieben neue in `l3-wiedereinstieg.spec.js` (30 statt 23). Die Adressprüfung wird mit vier ungültigen und drei ungewöhnlichen gültigen Formen geprüft — `vor.nach+tag@sub.example.org` muss durchkommen.
+
+**Volle Suite: 2481 / 257 grün.** Kern-Hash `70b4b066a594eb71` → `10eb4c363a2c4a78`.

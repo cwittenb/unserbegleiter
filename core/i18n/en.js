@@ -373,11 +373,12 @@ export const en = {
   "einr.sprache": "Companion language ",
 
   // Production client (regain access screen)
-  "wieder.titel": "No Access on This Device.",
+  "wieder.titel": "Access Link for Your Account.",
   "wieder.intro": "If you already take part, we will send a new access link to the address you have on file.",
   "wieder.anfordern": "Request a New Link",
   "wieder.hinweis": "The link is valid for {minuten} minutes and can be used once. Whether an address is on file is something we do not say — the answer is always the same.",
   "wieder.bitte": "Please enter your address.",
+  "wieder.format": "That does not look like an email address.",
   "wieder.gesendet": "Sent",
   "wieder.unterwegs": "If this address is on file, a link is on its way — valid for {minuten} minutes. Check your spam folder too.",
   "wieder.quittungTitel": "Check your inbox.",

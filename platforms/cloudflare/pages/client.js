@@ -157,6 +157,8 @@ export async function boot() {
       }
     }
   }
+  /* Ab hier gibt es eine Sitzung — die Bedien-Ecke fuehrt wieder irgendwohin. */
+  doc.documentElement.removeAttribute("data-vorzugang");
   const ui = createApp({ doc, backend: remoteBackend(), root: app });
   await ui.boot();
   ergaenzePushGlocke().catch(() => { /* Push ist Komfort, nie Voraussetzung */ });
@@ -215,14 +217,26 @@ export function zeigeWiedereinstieg(enrollFehler) {
   const sprachKnopf = l =>
     '<button type="button" data-wspr="' + l + '" aria-pressed="' + (getLocale() === l) + '">' +
     t("paarspr.name." + l) + "</button>";
+  /* Zweimal im Markup, je Breite genau EINE sichtbar (display:none nimmt die
+     verdeckte auch aus dem Bedienbaum). Mobil steht die Sprachwahl neben der
+     Wortmarke, auf dem Desktop ganz oben rechts — also in der anderen Spalte.
+     Ein Element kann nicht zwischen zwei Flex-Containern wandern; dieselbe
+     Loesung tragen die zwei Embleme der Landing. */
+  const sprachPaar = nur =>
+    '<span class="rz-sprachpaar ' + nur + '">' + sprachKnopf("de") +
+    '<span class="rz-trenner" aria-hidden="true">/</span>' + sprachKnopf("en") + "</span>";
+
+  /* Die Bedien-Ecke steht ab applyDesign im Body, fuehrt hier aber ins Leere:
+     ohne Sitzung gibt es keinen Einstellungs-Screen, in den sie fuehren
+     koennte. Ein Zeichen, das nichts tut, ist schlimmer als keins. */
+  doc.documentElement.setAttribute("data-vorzugang", "1");
 
   app.innerHTML =
     '<div class="rz-split" id="rzVorZugang">' +
       '<div class="rz-half rz-papier rz-vor-papier">' +
         '<div class="rz-vor-kopf">' +
           '<span class="rz-marke-vor">' + APP_NAME + "</span>" +
-          '<span class="rz-sprachpaar">' + sprachKnopf("de") +
-            '<span class="rz-trenner" aria-hidden="true">/</span>' + sprachKnopf("en") + "</span>" +
+          sprachPaar("rz-nur-schmal") +
         "</div>" +
         '<div class="rz-vor-mitte">' +
           (einmal ? '<div class="rz-caps">' + t("wieder.einmalCaps") + "</div>" : "") +
@@ -241,6 +255,7 @@ export function zeigeWiedereinstieg(enrollFehler) {
       '<div class="rz-half rz-tiefgruen rz-naht-anker rz-vor-tief">' +
         '<div class="rz-kulisse-naht rz-kulisse-vor" aria-hidden="true">' + baueKulisse(5, "vor") + "</div>" +
         '<span class="rz-weg-badge rz-auf-naht rz-badge-bedingung">' + t("wieder.badge") + "</span>" +
+        sprachPaar("rz-nur-breit") +
         '<div class="rz-vor-mitte">' +
           '<p class="rz-vor-bedingung">' + t("wieder.bedingung") + "</p>" +
           '<p class="rz-vor-landingtext">' + t("wieder.landingText") + "</p>" +
@@ -281,9 +296,18 @@ export function zeigeWiedereinstieg(enrollFehler) {
     hinweis.textContent = t("wieder.unterwegs", { minuten: RECOVER_MINUTEN });
   }
 
+  /* Nur die FORM der Adresse, nicht ihre Existenz. Der Unterschied ist
+     wichtig: eine Aussage darueber, ob eine Adresse hinterlegt ist, waere
+     Enumeration — eine Aussage darueber, ob "abc" eine E-Mail-Adresse sein
+     kann, ist keine. Bewusst grosszuegig: ein zu strenger Ausdruck sperrt
+     gueltige Adressen aus, und die echte Pruefung ist ohnehin, ob die Mail
+     ankommt. */
+  const SIEHT_AUS_WIE_MAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
   async function anfordern() {
     const email = feld.value.trim();
     if (!email) { hinweis.textContent = t("wieder.bitte"); return; }
+    if (!SIEHT_AUS_WIE_MAIL.test(email)) { hinweis.textContent = t("wieder.format"); return; }
     /* Der Ausgang ist bewusst OHNE Verzweigung: Erfolg, 429 und Netzfehler
        fuehren zur selben Quittung. Jede Unterscheidung waere eine Auskunft
        darueber, ob die Adresse hinterlegt ist. */
