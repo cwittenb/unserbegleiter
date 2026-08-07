@@ -268,7 +268,7 @@ describe("Q3 · Desktop-Feinschliff", () => {
        das links seit T2b als .rz-fuss{padding-bottom:var(--rz-nahtfrei)}
        steht — vorher stand die erste Zeile rechts sichtbar dichter am Badge
        als links die letzte. Dieselbe Zahl, derselbe Token, gespiegelte Seite. */
-    expect(d).toContain("margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))");
+    expect(d).toContain("margin-top:calc(50dvh + var(--rz-nahtfrei))");
     // Im offenen Regal ordnet die Zone neu — dort darf die Regel nicht greifen.
     expect(d).toContain(".rz-split:not(.rz-regal-offen)");
   });

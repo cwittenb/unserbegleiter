@@ -223,7 +223,45 @@ describe("S114.9/10 · Der Wegweiser im Gespräch", () => {
 describe("S114.11 · Der Nahtabstand ist beidseitig", () => {
   it("beide Flanken lesen denselben Token", () => {
     expect(DESIGN_CSS).toContain(".rz-fuss{padding-bottom:var(--rz-nahtfrei)}");
-    expect(DESIGN_CSS).toContain("margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))");
+    expect(DESIGN_CSS).toContain("margin-top:calc(50dvh + var(--rz-nahtfrei))");
+  });
+
+  /* S114d · Nachgerechnet: links endet die letzte Zeile bei
+     50dvh - 30px - nahtfrei, der Abstand zur Naht ist also 30px + nahtfrei
+     (Zonenpolster PLUS Token). Rechts beginnt die Gruppe bei 30px + margin-top;
+     fuer denselben Abstand muss margin-top 50dvh + nahtfrei sein. Die "- 30px"
+     aus Q3a rechneten das Polster weg, statt es mitzuzaehlen. */
+  it("die Flanke rechnet das Zonenpolster nicht mehr weg", () => {
+    expect(DESIGN_CSS).not.toContain("calc(50dvh - 30px + var(--rz-nahtfrei))");
+    expect(DESIGN_CSS).not.toContain("margin-top:calc(50dvh - 30px)");
+  });
+});
+
+/* S114d · Die Spaltenueberschrift der zweiten Haelfte gehoert an den unteren
+   Rand — spiegelbildlich zur Ueberschrift oben in der ersten. Sie lebt dafuer
+   von .rz-fuss{margin-top:auto}; die Nullstellung nach den Regalreihen traf
+   aber JEDES Geschwister und damit auch den Zonenfuss. */
+describe("S114d · Die Spaltenüberschrift fällt an den Fuß", () => {
+  it("die Nullstellung nimmt den Zonenfuß aus", () => {
+    expect(DESIGN_CSS).toContain(">.rz-regal-reihen~*:not(.rz-fuss){margin-top:0}");
+    expect(DESIGN_CSS).toContain(".rz-fuss{margin-top:auto}");
+  });
+
+  it("die Überschrift steht als letztes Kind ihrer Hälfte", async () => {
+    await bootApp();
+    await klick(root.querySelector("#btnSharedRoom"));
+    const zone = root.querySelector("#scrShared > .rz-half:last-child");
+    const fuss = zone.querySelector(".rz-fuss");
+    expect(fuss.querySelector(".rz-h2")).toBeTruthy();
+    // Nach dem Zonenfuss folgt nur noch Kulisse (die Fussmarke ist absolut
+    // positioniert und nimmt keinen Platz im Fluss).
+    const imFluss = [...zone.children].filter(e =>
+      !e.classList.contains("pb-hidden") &&
+      !e.classList.contains("rz-fussmarke") &&
+      !e.classList.contains("rz-kulisse-fuss") &&
+      !e.classList.contains("rz-weg-panel") &&
+      !e.classList.contains("rz-weg-badge"));
+    expect(imFluss[imFluss.length - 1]).toBe(fuss);
   });
 });
 

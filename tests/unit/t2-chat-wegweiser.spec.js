@@ -180,7 +180,10 @@ describe("T2h · die Schreibkante ist auf breiten Schirmen eine Zone", () => {
     expect(regel).toContain("calc(50% - 50vw)");
     expect(regel).toContain("max(var(--rz-rand), calc(50vw - var(--rz-chat-spalte) / 2))");
     // Und zwar ohne Breitenschranke: keine Query mehr um dieses Rezept.
-    expect(block).not.toContain("@media(min-width:900px){");
+    // S114d.3 · Gezielt statt pauschal — "block" reicht bis zum Dateiende und
+    // fing jeden spaeteren 900px-Block mit ein, auch fremde.
+    for (const q of KOMPONENTEN.split("@media(min-width:900px){").slice(1))
+      expect(q.slice(0, q.indexOf("\n      }"))).not.toContain(".rz-chat-unten");
   });
 
   it("kein nacktes 100vw in der Schreibkante — das brächte einen Bildlauf mit", () => {

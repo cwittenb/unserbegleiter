@@ -88,7 +88,7 @@ describe("T2d · die Flanken rechnen weiter mit 50dvh — jetzt zu Recht", () =>
        das links seit T2b als .rz-fuss{padding-bottom:var(--rz-nahtfrei)}
        steht — vorher stand die erste Zeile rechts sichtbar dichter am Badge
        als links die letzte. Dieselbe Zahl, derselbe Token, gespiegelte Seite. */
-    expect(D1).toContain("margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))");
+    expect(D1).toContain("margin-top:calc(50dvh + var(--rz-nahtfrei))");
   });
 
   it("der Kommentar trägt den offenen Rest (T2d-2), statt ihn zu verschweigen", () => {

@@ -240,12 +240,13 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         .rz-split:not(.rz-regal-offen)>.rz-half{min-height:0;overflow:auto}
         .rz-split:not(.rz-regal-offen)>.rz-naht-anker{position:static}
         .rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}
-        /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Grundregel
-           spannt die offene Zone ueber die volle Breite — am Handy richtig
-           (die Naht liegt waagerecht), auf dem Desktop faelscht sie das
-           Layout: das Regal legte sich ueber beide Spalten. Die Bewegung
-           selbst ist dieselbe wie mobil, nur eben rechts. */
-        .rz-regal-offen>.rz-half:last-child{left:50%}
+        /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Regel stand
+           bis S114d.3 HIER und blieb wirkungslos: Sie hat dieselbe
+           Spezifitaet wie die Grundregel weiter unten in der Datei, und eine
+           @media-Klammer erhoeht die Spezifitaet nicht — bei Gleichstand
+           entscheidet die Reihenfolge, und die Grundregel steht spaeter.
+           Sie ist jetzt dorthin gewandert, wo sie gewinnt: direkt hinter die
+           Grundregel (Suche: "S114d.3"). */
         /* Q3 · Die Zone faehrt hoch, der Wegweiser nicht: auf dem Desktop
            markiert er die Naht, und die bleibt in der Mitte stehen. Mobil
            faehrt er weiterhin mit der Kante (D12-2b) — dort IST die Kante
@@ -283,11 +284,28 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Die Flanke misst, was ZUERST in der Haelfte steht — das ist die
            Betreten-Zeile, nie das Etikett darunter. Es braucht deshalb weder
            die eine Regel noch die andere. */
+        /* S114d · Die Rechnung war noch immer um das Zonenpolster daneben.
+           Nachgemessen, links (Haelfte 100dvh, padding 30px, .rz-fuss mit
+           margin-top:auto und margin-bottom:50dvh):
+             letzte Zeile endet bei  50dvh - 30px - nahtfrei
+             Abstand zur Naht     =  30px + nahtfrei
+           Rechts steht die erste Gruppe bei 30px (padding) + margin-top. Fuer
+           denselben Abstand muss sie bei 50dvh + 30px + nahtfrei beginnen,
+           also margin-top = 50dvh + nahtfrei. Die "- 30px" stammen aus Q3a,
+           wo die Gruppe EXAKT an der Naht beginnen sollte (Abstand 0) — mit
+           dem Nahtfrei-Token daneben rechnet man das Polster damit weg, statt
+           es mitzuzaehlen. Jetzt ist die Flanke wirklich gespiegelt. */
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile,
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen{
-          margin-top:calc(50dvh - 30px + var(--rz-nahtfrei))}
+          margin-top:calc(50dvh + var(--rz-nahtfrei))}
+        /* S114d · :not(.rz-fuss) — die Nullstellung galt fuer JEDES Geschwister
+           nach den Regalreihen und traf damit auch den Zonenfuss. Der lebt aber
+           von margin-top:auto: nur so faellt die Spaltenueberschrift an den
+           unteren Rand, spiegelbildlich zur Ueberschrift oben in der ersten
+           Haelfte. Mit margin-top:0 klebte sie stattdessen direkt unter der
+           letzten Regalzeile. */
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile~.rz-zeile,
-        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen~*{margin-top:0}
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen~*:not(.rz-fuss){margin-top:0}
       }
 
       /* ============ D1 · Grundbaustein B — Hairline-Zeile ============
@@ -640,17 +658,32 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Der Chat behaelt damit die Grundregel: an der Kante seiner Zone,
          volle Breite dieser Zone. */
       @media(min-width:900px){
-        .rz-split .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}
-        /* T2d · im zugeklappten Zustand ankert das Panel am .rz-split und ist
-           damit ohnehin schon volle Breite — die 200%/-100%-Kruecke von oben
-           wuerde es auf die doppelte Fensterbreite ziehen.
-           S114.10 · Diese Regel ist der Normalfall, nicht die Ausnahme: Sie
-           gilt fuer JEDEN Zustand ausser dem aufgeklappten Regal, also auch
-           waehrend des Aufklappens. Vorher entschied die Reihenfolge zweier
-           gleich spezifischer Regeln, und die Breite wechselte mitten in der
-           Bewegung — das Panel ging erst in der Spalte auf und sprang danach
-           auf volle Breite. */
-        .rz-split:not(.rz-regal-offen) .rz-weg-panel{right:0;width:auto;margin-left:0}
+        /* S114e · Das Panel haengt im DOM in der ZWEITEN Haelfte — die auf dem
+           Desktop ein Rollbereich ist (overflow:auto). Sein Containing Block
+           liegt seit T2d beim .rz-split (die Haelfte wird position:static),
+           weshalb es im Ruhezustand ueber beide Spalten reicht.
+           Waehrend der Auf-Bewegung galt das nicht: Ein Element mit laufender
+           transform-Transition wird auf eine eigene Compositing-Ebene gehoben,
+           und eine solche Ebene erbt das Klipprechteck des Rollbereichs, in
+           dem sie im Baum liegt — auch wenn ihr Containing Block darueber
+           liegt. Also war das Band fuer die Dauer der Bewegung auf die rechte
+           Spalte beschnitten und sprang am Ende auf volle Breite.
+           Das ist unabhaengig vom Zustand und tritt bei JEDEM Oeffnen auf
+           (bestaetigt: sofort, konsistent).
+
+           position:fixed loest das an der Wurzel statt am Symptom: Der
+           Viewport ist der Bezug, kein Rollbereich liegt mehr dazwischen, und
+           es gibt kein Klipprechteck zu erben. Die Naht liegt bei 50dvh —
+           dieselbe Zahl, mit der auch das Badge im aufgeklappten Regal misst
+           (.rz-split.rz-regal-offen .rz-auf-naht{top:50dvh}), denn die
+           Zweiteilung ist auf dem Desktop hoehenfest 100dvh.
+           Auf das aufgeklappte Regal beschraenkt gilt das NICHT: dort ordnet
+           die Zone neu, und das Panel wird ohnehin geschlossen (S114.8). */
+        .rz-split:not(.rz-regal-offen) .rz-weg-panel{
+          position:fixed;left:0;right:0;top:50dvh;width:auto;margin-left:0}
+        /* Im aufgeklappten Regal bleibt es bei der alten Rechnung: absolut in
+           seiner Haelfte, ueber die Breite gespannt. */
+        .rz-split.rz-regal-offen .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}
       }
       @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
 
@@ -1179,6 +1212,21 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-regal-offen>.rz-half:first-child{position:absolute;top:0;left:0;right:0;height:var(--rz-oben-h,50%)}
       .rz-regal-offen>.rz-half:last-child{position:absolute;left:0;right:0;bottom:0;
         top:var(--rz-regal-top,0px);z-index:2}
+      /* S114d.3 · Auf dem Desktop faehrt das Regal in SEINER Spalte hoch, nicht
+         ueber den ganzen Schirm. Die beiden left:0/right:0 oben sind fuer die
+         waagerechte Naht des Handys gedacht — dort ist "volle Breite" richtig.
+         Auf dem Desktop liegt die Naht senkrecht: die Flaeche legte sich ueber
+         beide Spalten und schob sich dabei ueber den Wegweiser, der auf der
+         Naht sitzt und nur noch zur Haelfte herausschaute.
+         Beide Haelften werden deshalb auf ihre Spalte begrenzt — die obere
+         endet an der Naht, die Regal-Zone beginnt dort. Die Bewegung selbst
+         bleibt dieselbe wie mobil, nur eben in einer Spalte.
+         Der Block steht bewusst NACH der Grundregel: gleiche Spezifitaet,
+         also entscheidet die Reihenfolge (siehe Q2 weiter oben). */
+      @media(min-width:900px){
+        .rz-regal-offen>.rz-half:first-child{right:50%}
+        .rz-regal-offen>.rz-half:last-child{left:50%}
+      }
       .rz-half{transition:transform .36s var(--rz-kurve)}
       /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht
          an der Oberkante der Regal-Zone und faehrt mit ihr nach oben, bis er
