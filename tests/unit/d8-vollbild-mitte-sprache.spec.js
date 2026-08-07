@@ -184,13 +184,22 @@ describe("Quick-Lane · Wegweiser auf dem Desktop", () => {
     const iGrund = DESIGN_CSS.indexOf(".rz-weg-panel{position:absolute");
     const iDesktop = DESIGN_CSS.indexOf("@media(min-width:900px){", iGrund);
     expect(iDesktop).toBeGreaterThan(iGrund);
+    /* S114e · Im Ruhezustand hängt das Band am Viewport statt in der Spalte:
+       Der Rollbereich der Hälfte hielt ein Klipprechteck in Spaltenbreite und
+       rechnete es beim Aufklappen nicht neu, weshalb das Band für die Dauer
+       der Bewegung beschnitten war. Mit position:fixed liegt kein Rollbereich
+       mehr dazwischen. 50dvh trifft dieselbe Linie wie vorher top:50% — die
+       Zweiteilung ist auf dem Desktop höhenfest 100dvh.
+       Die 200%/-100%-Rechnung bleibt nur für das aufgeklappte Regal, wo die
+       Zone neu ordnet (dort ist das Band ohnehin geschlossen, S114.8). */
     const desktop = DESIGN_CSS.slice(iDesktop);
-    const regel = desktop.slice(desktop.indexOf(".rz-weg-panel{"),
-                                desktop.indexOf("}", desktop.indexOf(".rz-weg-panel{")) + 1);
-    expect(regel).toContain("top:50%");        // Mitte statt Oberkante
-    expect(regel).toContain("width:200%");     // beide Hälften
-    expect(regel).toContain("margin-left:-100%");
-    expect(regel).toContain("right:auto");     // sonst gewinnt right:0 aus der Grundregel
+    const ruhe = desktop.slice(desktop.indexOf(".rz-split:not(.rz-regal-offen) .rz-weg-panel{"));
+    const regel = ruhe.slice(0, ruhe.indexOf("}") + 1);
+    expect(regel).toContain("position:fixed");
+    expect(regel).toContain("top:50dvh");      // Mitte statt Oberkante
+    expect(regel).toContain("left:0");
+    expect(regel).toContain("right:0");        // volle Fensterbreite, ohne Krücke
+    expect(desktop).toContain(".rz-split.rz-regal-offen .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}");
   });
 
   it("am Handy bleibt es das Band an der waagerechten Naht", async () => {
@@ -225,11 +234,16 @@ describe("Q2 · Desktop: Zeilenschrift und Regal", () => {
 
   it("das offene Regal bleibt auf dem Desktop in seiner Hälfte", async () => {
     const { DESIGN_CSS } = await import("../../core/ui/design.js");
-    const desktop = DESIGN_CSS.slice(DESIGN_CSS.indexOf("@media(min-width:900px){"));
-    expect(desktop.slice(0, desktop.indexOf("\n      }"))).toContain(
-      ".rz-regal-offen>.rz-half:last-child{left:50%}");
-    // Die Bewegung selbst ist dieselbe wie mobil.
-    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:last-child{position:absolute");
+    /* S114d.3 · Die Regel stand im ersten 900px-Block und blieb wirkungslos:
+       gleiche Spezifität wie die Grundregel weiter unten, aber davor — eine
+       @media-Klammer erhöht die Spezifität nicht, also gewann deren left:0.
+       Sie steht jetzt dahinter, wo sie greift. */
+    const grund = DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{position:absolute");
+    expect(grund).toBeGreaterThan(0);
+    expect(DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{left:50%}"))
+      .toBeGreaterThan(grund);
+    // Die obere Hälfte endet ebenfalls an der Naht, statt beide zu überdecken.
+    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:first-child{right:50%}");
   });
 });
 

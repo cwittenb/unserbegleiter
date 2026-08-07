@@ -48,8 +48,12 @@ describe("T2d · die Naht-Aufbauten ankern am Split, nicht an der Hälfte", () =
     expect(D1).toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}");
   });
 
+  /* S114e · Die Krücke ist im Ruhezustand ganz fort: Das Band hängt am
+     Viewport (position:fixed) und braucht keinen Spaltenbezug mehr. */
   it("das Panel gibt die 200%/-100%-Krücke auf, die den halben Anker voraussetzte", () => {
-    expect(D2).toContain(".rz-split:not(.rz-regal-offen) .rz-weg-panel{right:0;width:auto;margin-left:0}");
+    expect(D2).toContain(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
+    const ab = D2.indexOf(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
+    expect(D2.slice(ab, D2.indexOf("}", ab))).toContain("position:fixed");
   });
 
   it("jede neue Regel ist auf den zugeklappten Zustand beschränkt", () => {
@@ -64,8 +68,13 @@ describe("T2d · die Naht-Aufbauten ankern am Split, nicht an der Hälfte", () =
 });
 
 describe("T2d · der aufgeklappte Zustand bleibt unberührt", () => {
+  /* S114d.3 · Die Regel steht nicht mehr im ersten 900px-Block, sondern hinter
+     der Grundregel — davor war sie wirkungslos (gleiche Spezifität, und eine
+     @media-Klammer erhöht sie nicht). */
   it("Q2 · das offene Regal bleibt in seiner Hälfte", () => {
-    expect(D1).toContain(".rz-regal-offen>.rz-half:last-child{left:50%}");
+    const grund = DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{position:absolute");
+    expect(DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{left:50%}"))
+      .toBeGreaterThan(grund);
   });
 
   it("Q3 · das Badge bleibt dort an der Kante der Hälfte stehen", () => {

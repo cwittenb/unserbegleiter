@@ -200,23 +200,38 @@ describe("S114.8 · Bei aufgeklapptem Regal ist der Wegweiser still", () => {
 
 /* ============ Layout ============ */
 
-describe("S114.9/10 · Der Wegweiser im Gespräch", () => {
+describe("S114.9/10/e · Der Wegweiser im Gespräch und auf dem Desktop", () => {
   it("die Desktop-Regeln gelten nur der Zweiteilung", () => {
     // Ohne .rz-split davor trafen sie auch #scrChat: dort gibt es keine
     // senkrechte Naht, das Panel rutschte auf halbe Höhe der Schreibkante.
-    expect(DESIGN_CSS).toContain(".rz-split .rz-weg-panel{top:50%");
-    expect(DESIGN_CSS).not.toMatch(/\n\s*\.rz-weg-panel\{top:50%/);
+    expect(DESIGN_CSS).toContain(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
+    expect(DESIGN_CSS).not.toMatch(/\n\s*\.rz-weg-panel\{position:fixed/);
   });
 
-  it("die Breite wechselt nicht mitten in der Bewegung", () => {
-    // Genau eine Breitenregel je Zustand — vorher entschied die Reihenfolge
-    // zweier gleich spezifischer Regeln, und das Panel sprang nach.
-    const desktop = DESIGN_CSS.slice(DESIGN_CSS.indexOf(".rz-split .rz-weg-panel{top:50%"));
-    const zugeklappt = desktop.indexOf(".rz-split:not(.rz-regal-offen) .rz-weg-panel{right:0;width:auto;margin-left:0}");
-    // Die Normalfall-Regel steht HINTER der 200%-Kruecke des offenen Regals —
-    // bei gleicher Spezifitaet entscheidet die Reihenfolge, und der Normalfall
-    // muss gewinnen.
-    expect(zugeklappt).toBeGreaterThan(0);
+  /* S114e · Der Rest des Befunds, den S114.9/10 nicht erklärt haben: Das Band
+     erschien beim Aufklappen nur über der rechten Spalte und sprang am Ende
+     der Bewegung auf volle Breite — sofort und bei jedem Öffnen.
+     Am Gerät eingegrenzt: Der Fehler verschwindet, sobald im Inspektor ein
+     Element INNERHALB der zweiten Hälfte ausgewählt wird, und kehrt sonst
+     zurück; an opacity und z-index liegt es nicht. Ein Zustand, den eine
+     Auswahl im Inspektor repariert, ist kein CSS-Zustand — die Auswahl
+     erzwingt ein Neuzeichnen. Es war das Klipprechteck des Rollbereichs, in
+     dem das Band im Baum liegt: in Spaltenbreite gehalten und beim Aufklappen
+     nicht neu gerechnet. position:fixed nimmt es aus diesem Rollbereich. */
+  it("im Ruhezustand hängt das Band am Viewport, nicht im Rollbereich", () => {
+    const ab = DESIGN_CSS.indexOf(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
+    const regel = DESIGN_CSS.slice(ab, DESIGN_CSS.indexOf("}", ab) + 1);
+    expect(regel).toContain("position:fixed");
+    expect(regel).toContain("top:50dvh");
+    // Dieselbe Linie wie zuvor top:50%: die Zweiteilung ist höhenfest 100dvh.
+    expect(DESIGN_CSS).toContain(".rz-split:not(.rz-regal-offen){height:100dvh}");
+  });
+
+  it("die 200%-Rechnung bleibt allein dem aufgeklappten Regal", () => {
+    // Dort ordnet die Zone neu — und das Band ist ohnehin geschlossen (S114.8).
+    expect(DESIGN_CSS).toContain(".rz-split.rz-regal-offen .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}");
+    // Keine zustandslose Breitenregel mehr, deren Reihenfolge entscheiden müsste.
+    expect(DESIGN_CSS).not.toContain(".rz-split .rz-weg-panel{top:50%");
   });
 });
 
