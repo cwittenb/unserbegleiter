@@ -595,7 +595,8 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
 
       /* ============ D1 · Grundbaustein C — Wegweiser-Badge / -Panel ============
          Badge sitzt exakt auf der Naht (rz-auf-naht), Punkt = etwas wartet.
-         Panel faltet sich aus der Naht (scaleY + opacity, ~300ms,
+         Panel faltet sich aus der Naht (clip-path + opacity, ~300ms; bis
+         S114g war es scaleY — siehe dort, warum nicht mehr,
          var(--rz-kurve)), ueberdeckt als Overlay, Klick irgendwohin
          schliesst. Inhalt: nur Text, 2–3 Optionen, Serif, Raumnamen kursiv. */
       /* Der Knopf liegt UNTER dem Textpanel: klappt das Panel aus der Mitte
@@ -617,13 +618,31 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Papierton der Zone darueber — als Flaeche ist sie damit unsichtbar,
          getrennt nur durch die zwei Haarlinien. Jetzt hebt sie sich einen Ton
          ab und liest sich als eigene Zone, wie §3 es verlangt. */
+      /* S114g · Die Auf-Bewegung laeuft ueber clip-path, nicht mehr ueber
+         scaleY. Der Grund ist gemessen, nicht hergeleitet: Nimmt man transform
+         aus der transition-property heraus (transition-property:opacity), ist
+         der Fehler weg — das Band steht sofort ueber beiden Spalten. Es lag
+         also weder an der Breite noch am Stapel noch am Containing Block,
+         sondern an der ANIMATION von transform: Fuer ihre Dauer hebt der
+         Browser das Band auf eine eigene Ebene, und diese Ebene wird an dem
+         Rollbereich beschnitten, in dem das Band im Baum liegt (die zweite
+         Haelfte, overflow:auto). Am Ende faellt die Ebene weg — daher "erst
+         halb, dann ganz", und daher auch die Reparatur durch eine Auswahl im
+         Inspektor: Sie erzwingt ein Neuzeichnen.
+         transform bleibt stehen, aber nur noch STATISCH: translateY(-50%)
+         haelt das Band mittig auf der Naht und wird nie animiert, also
+         entsteht keine Ebene. Bewegt wird der sichtbare Ausschnitt:
+         inset(50% 0 50% 0) ist die Naht als Linie, inset(0) das volle Band.
+         Optisch dasselbe Aufklappen aus der Naht heraus — und sauberer, weil
+         scaleY den Text mitgestaucht hat und clip-path ihn nur freigibt. */
       .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px var(--rz-rand);
                     background:var(--rz-flaeche-hoch);color:var(--rz-ink);
                     border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
-                    transform:translateY(-50%) scaleY(0);transform-origin:center center;
+                    transform:translateY(-50%);
+                    clip-path:inset(50% 0 50% 0);
                     opacity:0;pointer-events:none;
-                    transition:transform .3s var(--rz-kurve),opacity .3s var(--rz-kurve)}
-      .rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}
+                    transition:clip-path .3s var(--rz-kurve),opacity .3s var(--rz-kurve)}
+      .rz-weg-panel.rz-offen{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}
       .rz-weg-panel .rz-option{font-family:var(--rz-serif);font-size:var(--rz-fs-zeile);font-weight:300;
                                line-height:var(--rz-lh-fein);margin:0 0 var(--rz-r-5)}
       .rz-weg-panel .rz-option em{font-style:italic}

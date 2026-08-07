@@ -54,8 +54,10 @@ describe("D8 · Vollbild ohne Rand", () => {
 
 describe("D8 · Wegweiser aus der Mitte", () => {
   it("Ursprung Mitte + translateY(-50%): waechst symmetrisch in beide Haelften", () => {
-    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*transform:translateY\(-50%\) scaleY\(0\);transform-origin:center center/);
-    expect(DESIGN_CSS).toContain(".rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1)");
+    // S114g · Ausschnitt statt Skalierung (siehe d1-design-tokens).
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*transform:translateY\(-50%\);/);
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*clip-path:inset\(50% 0 50% 0\)/);
+    expect(DESIGN_CSS).toContain(".rz-weg-panel.rz-offen{clip-path:inset(0 0 0 0)");
     // NICHT mehr an der Oberkante verankert (altes Ausfahren nach unten):
     expect(DESIGN_CSS).not.toContain("transform-origin:top center");
   });

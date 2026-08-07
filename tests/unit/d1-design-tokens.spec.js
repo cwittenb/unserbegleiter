@@ -96,12 +96,20 @@ describe("D1 · Grundbaustein C — Wegweiser-Badge/Panel", () => {
 
   // T1b · Die Uebergangskurve ist ein Theme-Baustein (--rz-kurve) statt eines
   // wiederholten Literals.
+  /* S114g · Dieselbe Bewegung, anderes Mittel: Der sichtbare Ausschnitt
+     wächst aus der Nahtlinie heraus, statt die Fläche zu skalieren.
+     transform bleibt — aber nur statisch zur Zentrierung, nie animiert.
+     Gemessen: Sobald transform animiert wurde, hob der Browser das Band auf
+     eine eigene Ebene, und die wurde am Rollbereich beschnitten. */
   it("Panel klappt aus der MITTE der Naht auf — nach oben und unten gleichermassen (D8)", () => {
-    // Verankert auf der Nahtlinie (top:0 + translateY(-50%)), Ursprung Mitte:
-    // die Flaeche waechst symmetrisch in beide Haelften.
-    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*transform:translateY\(-50%\) scaleY\(0\);transform-origin:center center/);
-    expect(DESIGN_CSS).toContain("transition:transform .3s var(--rz-kurve),opacity .3s var(--rz-kurve)");
-    expect(DESIGN_CSS).toContain(".rz-weg-panel.rz-offen{transform:translateY(-50%) scaleY(1);opacity:1;pointer-events:auto}");
+    // Verankert auf der Nahtlinie (top:0 + translateY(-50%)), Ausschnitt
+    // wächst symmetrisch in beide Hälften.
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*transform:translateY\(-50%\);/);
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*clip-path:inset\(50% 0 50% 0\)/);
+    expect(DESIGN_CSS).toContain("transition:clip-path .3s var(--rz-kurve),opacity .3s var(--rz-kurve)");
+    expect(DESIGN_CSS).toContain(".rz-weg-panel.rz-offen{clip-path:inset(0 0 0 0);opacity:1;pointer-events:auto}");
+    // transform darf NICHT mehr animiert werden — daran lag der Fehler.
+    expect(DESIGN_CSS).not.toMatch(/\.rz-weg-panel\{[^}]*transition:transform/);
   });
 
   it("Verdrahtung: Badge-Tap öffnet, Tap irgendwohin (auch aufs Panel) schließt", () => {
