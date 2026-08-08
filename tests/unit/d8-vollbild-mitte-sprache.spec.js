@@ -195,13 +195,16 @@ describe("Quick-Lane · Wegweiser auf dem Desktop", () => {
        Die 200%/-100%-Rechnung bleibt nur für das aufgeklappte Regal, wo die
        Zone neu ordnet (dort ist das Band ohnehin geschlossen, S114.8). */
     const desktop = DESIGN_CSS.slice(iDesktop);
-    const ruhe = desktop.slice(desktop.indexOf(".rz-split:not(.rz-regal-offen) .rz-weg-panel{"));
-    const regel = ruhe.slice(0, ruhe.indexOf("}") + 1);
+    /* S114j · Eine Regel für beide Zustände: Das Badge steht auch bei offenem
+       Regal auf 50dvh (Q3), das Panel trifft dieselbe Linie. Die 200%-Rechnung
+       für den offenen Zustand ist damit fort. */
+    const ab = desktop.indexOf(".rz-split .rz-weg-panel{");
+    const regel = desktop.slice(ab, desktop.indexOf("}", ab) + 1);
     expect(regel).toContain("position:fixed");
     expect(regel).toContain("top:50dvh");      // Mitte statt Oberkante
     expect(regel).toContain("left:0");
     expect(regel).toContain("right:0");        // volle Fensterbreite, ohne Krücke
-    expect(desktop).toContain(".rz-split.rz-regal-offen .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}");
+    expect(DESIGN_CSS).not.toContain("width:200%;margin-left:-100%");
   });
 
   it("am Handy bleibt es das Band an der waagerechten Naht", async () => {

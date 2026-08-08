@@ -50,10 +50,12 @@ describe("T2d · die Naht-Aufbauten ankern am Split, nicht an der Hälfte", () =
 
   /* S114e · Die Krücke ist im Ruhezustand ganz fort: Das Band hängt am
      Viewport (position:fixed) und braucht keinen Spaltenbezug mehr. */
+  /* S114j · Eine Regel für beide Zustände — die Krücke ist ganz fort. */
   it("das Panel gibt die 200%/-100%-Krücke auf, die den halben Anker voraussetzte", () => {
-    expect(D2).toContain(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
-    const ab = D2.indexOf(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
+    expect(D2).toContain(".rz-split .rz-weg-panel{");
+    const ab = D2.indexOf(".rz-split .rz-weg-panel{");
     expect(D2.slice(ab, D2.indexOf("}", ab))).toContain("position:fixed");
+    expect(DESIGN_CSS).not.toContain("width:200%;margin-left:-100%");
   });
 
   it("jede neue Regel ist auf den zugeklappten Zustand beschränkt", () => {

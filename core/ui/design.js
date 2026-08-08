@@ -696,13 +696,21 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            dieselbe Zahl, mit der auch das Badge im aufgeklappten Regal misst
            (.rz-split.rz-regal-offen .rz-auf-naht{top:50dvh}), denn die
            Zweiteilung ist auf dem Desktop hoehenfest 100dvh.
-           Auf das aufgeklappte Regal beschraenkt gilt das NICHT: dort ordnet
-           die Zone neu, und das Panel wird ohnehin geschlossen (S114.8). */
-        .rz-split:not(.rz-regal-offen) .rz-weg-panel{
+           S114j · Das gilt jetzt in BEIDEN Zustaenden. Frueher war die Regel auf
+           :not(.rz-regal-offen) beschraenkt, weil das Panel im aufgeklappten
+           Regal ohnehin gesperrt war (S114.8) — auf dem Desktop ist es das
+           nicht mehr. Und es passt: Das Badge steht auch bei offenem Regal auf
+           50dvh (Q3, es markiert die Naht und faehrt nicht mit), das Panel
+           trifft also dieselbe Linie. Die 200%/-100%-Rechnung fuer den
+           offenen Zustand ist damit fort — sie setzte voraus, dass die Spalte
+           der Bezugsrahmen ist. */
+        .rz-split .rz-weg-panel{
           position:fixed;left:0;right:0;top:50dvh;width:auto;margin-left:0}
-        /* Im aufgeklappten Regal bleibt es bei der alten Rechnung: absolut in
-           seiner Haelfte, ueber die Breite gespannt. */
-        .rz-split.rz-regal-offen .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}
+        /* S114j · Gegenstueck zur mobilen Sperre weiter unten in der Datei.
+           Sie steht dort als Grundregel; hier wird sie fuer die Zweiteilung
+           zurueckgenommen. Die Reihenfolge spielt keine Rolle, die
+           Spezifitaet entscheidet (0-3-0 gegen 0-2-0). */
+        .rz-split.rz-regal-offen .rz-weg-badge{pointer-events:auto}
       }
       @media(prefers-reduced-motion:reduce){.rz-weg-panel{transition:none}}
 
@@ -1256,13 +1264,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            weg — sie gilt nur :not(.rz-regal-offen) — und der Zonenfuss sackte
            an den unteren Rand. Beim Oeffnen sprang also die halbe Seite, die
            gar nicht gemeint war.
-           Drei Zeilen halten sie still: volle Spaltenhoehe statt Zonenmass,
-           der Nahtabstand gilt weiter, und die Regal-Zone fuellt ihre Spalte
-           von oben (--rz-regal-top ist die Kopfhoehe der waagerechten Naht;
-           senkrecht gibt es darueber nichts zu verschonen). */
+           Zwei Zeilen halten sie still: volle Spaltenhoehe statt Zonenmass,
+           und der Nahtabstand gilt weiter.
+           S114i · Die dritte Zeile aus S114h (top:0 fuer die Regal-Zone) ist
+           wieder fort. Sie war als Sprung-Korrektur gedacht — zugeklappt
+           reicht die gruene Spalte bis zum oberen Rand, aufgeklappt beginnt
+           die Zone erst bei --rz-regal-top. Das ist aber kein Fehler, sondern
+           der Zweck: --rz-regal-top ist die Hoehe der Kopfzeile, und die
+           bleibt frei, damit Ruckweg und Einstellungen erreichbar bleiben.
+           Mit top:0 legte sich die Zone (z-index:2) darueber. Das gilt
+           senkrecht wie waagerecht — die Kopfzeile ist in beiden Lagen
+           dieselbe Zeile. */
         .rz-regal-offen>.rz-half:first-child{height:100dvh}
         .rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
-        .rz-regal-offen>.rz-half:last-child{top:0}
       }
       .rz-half{transition:transform .36s var(--rz-kurve)}
       /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht
@@ -1275,6 +1289,14 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Badge bleibt sichtbar (es markiert weiter die Naht), nimmt aber keine
          Klicks mehr an. pointer-events allein reicht nicht — die Tastatur
          kaeme weiter durch; deshalb setzt regalModus() zusaetzlich disabled. */
+      /* S114.8/S114j · Bei aufgeklapptem Regal ist das Badge MOBIL still: dort
+         faehrt es mit der Kante der Zone nach oben (D12-2b), und ein Panel,
+         das sich aus einer wandernden Kante faltet, legt sich quer.
+         Auf dem Desktop faehrt es nicht mit — es markiert die Naht und bleibt
+         auf 50dvh stehen (Q3). Dort gibt es nichts zu sperren, und die Sperre
+         war sogar schaedlich: Der Klick fiel durch das Badge hindurch, traf
+         rechts die Regal-Zone (nichts) und links die andere Haelfte, was das
+         Regal schloss. Der Wegweiser oeffnet dort jetzt wie immer. */
       .rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}
       .rz-regal-offen>.rz-half:last-child .rz-fuss{display:none}
       .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){animation:rzEinblenden .28s .08s both}
@@ -1389,6 +1411,18 @@ export function istStandalone(win) {
  * Listener wird nur EINMAL gesetzt (Marker am document), egal wie viele
  * Badges es gibt; er schliesst alle offenen Panels. Ab D2 von den Screens
  * benutzt. */
+/* S114j · Die Zweiteilung beginnt bei 900px — dieselbe Zahl wie in den
+   @media-Bloecken oben. Sie steht hier, damit CSS und JS sie an einer Stelle
+   lesen; wer sie aendert, aendert beide. Fehlt matchMedia (aeltere WebViews,
+   Testumgebungen), gilt der schmale Fall: lieber sperren als eine Kante
+   bedienbar lassen, die gerade wandert. */
+export function istZweispaltig(doc) {
+  const win = doc && doc.defaultView;
+  if (!win || typeof win.matchMedia !== "function") return false;
+  try { return win.matchMedia("(min-width:900px)").matches; }
+  catch { return false; }
+}
+
 export function verdrahteWegweiser(doc, badge, panel) {
   if (!badge || !panel) return;
   badge.addEventListener("click", e => {

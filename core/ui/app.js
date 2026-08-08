@@ -14,7 +14,7 @@ import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, ranking
 import { K, setKorpusSprache, stelleKorpusBereit } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf } from "./prozess.js";
-import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser } from "./design.js";
+import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser, istZweispaltig } from "./design.js";
 import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
 import { RECHT_WEGE } from "./rechtliches.js";   // L3
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
@@ -548,14 +548,21 @@ export function createApp({ doc, backend, root, diktat }) {
       if (pfeil) pfeil.textContent = auf ? "\u2193" : "\u2191";
     }
 
-    // S114.8 · Der Wegweiser ist bei aufgeklapptem Regal still: Ein Panel,
-    // das sich jetzt aus der Naht faltet, legt sich quer ueber die neu
-    // geordnete Zone. Ein offenes Panel wird dabei geschlossen — sonst bliebe
-    // es stehen und liesse sich nicht mehr wegtippen.
+    // S114.8 · Bei aufgeklapptem Regal ist der Wegweiser MOBIL still: Dort
+    // faehrt das Badge mit der Kante der Zone nach oben (D12-2b), und ein
+    // Panel, das sich aus einer wandernden Kante faltet, legt sich quer.
+    // S114j · Auf dem Desktop faehrt es nicht mit — es markiert die Naht und
+    // bleibt auf 50dvh stehen (Q3). Dort ist die Sperre nicht nur unnoetig,
+    // sondern schaedlich: Der Klick fiel durch das Badge hindurch, traf rechts
+    // die Regal-Zone (nichts passierte) und links die andere Haelfte, was das
+    // Regal schloss. Zweispaltig oeffnet der Wegweiser deshalb wie immer.
+    // Ein offenes Panel wird beim Zustandswechsel geschlossen, damit es nicht
+    // ueber einer Zone stehen bleibt, die sich gerade neu ordnet.
     const badge = screen.querySelector(".rz-weg-badge");
     if (badge) {
-      badge.disabled = offen;
-      badge.setAttribute("aria-disabled", offen ? "true" : "false");
+      const sperren = offen && !istZweispaltig(screen.ownerDocument || doc);
+      badge.disabled = sperren;
+      badge.setAttribute("aria-disabled", sperren ? "true" : "false");
       if (offen) for (const pnl of screen.querySelectorAll(".rz-weg-panel.rz-offen")) pnl.classList.remove("rz-offen");
     }
 

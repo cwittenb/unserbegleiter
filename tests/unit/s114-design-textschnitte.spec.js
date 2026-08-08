@@ -171,7 +171,19 @@ describe("S114.7 · Der Pfeil zeigt die Bewegung", () => {
 });
 
 describe("S114.8 · Bei aufgeklapptem Regal ist der Wegweiser still", () => {
-  it("das Badge nimmt keine Klicks mehr an", async () => {
+  /* S114j · Die Sperre gilt nur noch schmal. Zweispaltig fährt das Badge
+     nicht mit der Kante, sondern bleibt auf der Naht stehen (Q3) — dort war
+     die Sperre sogar schädlich: Der Klick fiel durch das Badge hindurch und
+     schloss links das Regal.
+     happy-dom meldet standardmäßig ein breites Fenster, der schmale Fall wird
+     deshalb über matchMedia vorgetäuscht. */
+  const mitBreite = (breit, fn) => async () => {
+    const echt = document.defaultView.matchMedia;
+    document.defaultView.matchMedia = () => ({ matches: breit });
+    try { await fn(); } finally { document.defaultView.matchMedia = echt; }
+  };
+
+  it("das Badge nimmt schmal keine Klicks mehr an", mitBreite(false, async () => {
     await bootApp();
     await klick(root.querySelector("#btnSharedRoom"));
     const badge = root.querySelector("#wegBadgeTeil");
@@ -181,6 +193,20 @@ describe("S114.8 · Bei aufgeklapptem Regal ist der Wegweiser still", () => {
     expect(badge.getAttribute("aria-disabled")).toBe("true");
     await klick(root.querySelector("#btnRegal"));
     expect(badge.disabled).toBe(false);
+  }));
+
+  it("zweispaltig bleibt es bedienbar", mitBreite(true, async () => {
+    await bootApp();
+    await klick(root.querySelector("#btnSharedRoom"));
+    const badge = root.querySelector("#wegBadgeTeil");
+    await klick(root.querySelector("#btnRegal"));
+    expect(badge.disabled).toBe(false);
+    expect(badge.getAttribute("aria-disabled")).toBe("false");
+  }));
+
+  it("die Sperre steht als Grundregel und wird zweispaltig zurückgenommen", () => {
+    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}");
+    expect(DESIGN_CSS).toContain(".rz-split.rz-regal-offen .rz-weg-badge{pointer-events:auto}");
   });
 
   it("ein offenes Panel wird beim Aufklappen geschlossen, nicht überdeckt", async () => {
@@ -204,7 +230,7 @@ describe("S114.9/10/e · Der Wegweiser im Gespräch und auf dem Desktop", () => 
   it("die Desktop-Regeln gelten nur der Zweiteilung", () => {
     // Ohne .rz-split davor trafen sie auch #scrChat: dort gibt es keine
     // senkrechte Naht, das Panel rutschte auf halbe Höhe der Schreibkante.
-    expect(DESIGN_CSS).toContain(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
+    expect(DESIGN_CSS).toContain(".rz-split .rz-weg-panel{");
     expect(DESIGN_CSS).not.toMatch(/\n\s*\.rz-weg-panel\{position:fixed/);
   });
 
@@ -218,8 +244,8 @@ describe("S114.9/10/e · Der Wegweiser im Gespräch und auf dem Desktop", () => 
      erzwingt ein Neuzeichnen. Es war das Klipprechteck des Rollbereichs, in
      dem das Band im Baum liegt: in Spaltenbreite gehalten und beim Aufklappen
      nicht neu gerechnet. position:fixed nimmt es aus diesem Rollbereich. */
-  it("im Ruhezustand hängt das Band am Viewport, nicht im Rollbereich", () => {
-    const ab = DESIGN_CSS.indexOf(".rz-split:not(.rz-regal-offen) .rz-weg-panel{");
+  it("das Band hängt am Viewport, nicht im Rollbereich", () => {
+    const ab = DESIGN_CSS.indexOf(".rz-split .rz-weg-panel{");
     const regel = DESIGN_CSS.slice(ab, DESIGN_CSS.indexOf("}", ab) + 1);
     expect(regel).toContain("position:fixed");
     expect(regel).toContain("top:50dvh");
@@ -227,11 +253,12 @@ describe("S114.9/10/e · Der Wegweiser im Gespräch und auf dem Desktop", () => 
     expect(DESIGN_CSS).toContain(".rz-split:not(.rz-regal-offen){height:100dvh}");
   });
 
-  it("die 200%-Rechnung bleibt allein dem aufgeklappten Regal", () => {
-    // Dort ordnet die Zone neu — und das Band ist ohnehin geschlossen (S114.8).
-    expect(DESIGN_CSS).toContain(".rz-split.rz-regal-offen .rz-weg-panel{top:50%;right:auto;width:200%;margin-left:-100%}");
-    // Keine zustandslose Breitenregel mehr, deren Reihenfolge entscheiden müsste.
-    expect(DESIGN_CSS).not.toContain(".rz-split .rz-weg-panel{top:50%");
+  /* S114j · Die 200%-Rechnung ist ganz fort. Sie galt zuletzt nur noch dem
+     aufgeklappten Regal und setzte voraus, dass die Spalte der Bezugsrahmen
+     ist — mit position:fixed ist es der Viewport, in beiden Zuständen. */
+  it("die 200%-Rechnung ist fort", () => {
+    expect(DESIGN_CSS).not.toContain("width:200%;margin-left:-100%");
+    expect(DESIGN_CSS).not.toContain(".rz-split:not(.rz-regal-offen) .rz-weg-panel");
   });
 });
 
@@ -332,12 +359,16 @@ describe("S114h · Beim Aufklappen steht die linke Spalte still", () => {
     expect(treffer.length).toBe(1);
   });
 
-  it("die Regal-Zone füllt ihre Spalte von oben", () => {
-    // --rz-regal-top ist die Kopfhöhe der waagerechten Naht; senkrecht gibt es
-    // darüber nichts zu verschonen, sonst springt die Zone beim Öffnen.
+  /* S114i · Umgekehrt zu S114h: --rz-regal-top ist die Höhe der Kopfzeile,
+     und die bleibt frei — sonst legt sich die Regal-Zone (z-index:2) über
+     Rückweg und Einstellungen. Der scheinbare Sprung beim Öffnen ist genau
+     dieser Zweck, kein Fehler. Gilt senkrecht wie waagerecht. */
+  it("die Regal-Zone lässt die Kopfzeile frei", () => {
     const treffer = desktopBloecke().filter(q =>
       q.includes(".rz-regal-offen>.rz-half:last-child{top:0}"));
-    expect(treffer.length).toBe(1);
+    expect(treffer.length).toBe(0);
+    // Es bleibt bei der Grundregel, die unterhalb des Kopfes ansetzt.
+    expect(DESIGN_CSS).toContain("top:var(--rz-regal-top,0px);z-index:2");
   });
 
   it("mobil bleibt die Zonen-Mechanik unberührt", () => {
