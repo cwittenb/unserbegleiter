@@ -308,6 +308,44 @@ describe("S114.11a · Das Ortsetikett steht an seiner Zeile", () => {
   });
 });
 
+/* S114h · Auf dem Desktop ist die erste Haelfte die linke SPALTE, nicht die
+   obere Zone. Die Regal-Mechanik ist fuer die waagerechte Naht gebaut und
+   setzt sie beim Aufklappen auf ihr gemessenes Mass — mitsamt dem Wegfall des
+   Nahtabstands, weil der nur :not(.rz-regal-offen) gilt. Ergebnis: Beim
+   Oeffnen des Regals rechts sprangen die Zeilen links an den unteren Rand. */
+describe("S114h · Beim Aufklappen steht die linke Spalte still", () => {
+  const desktopBloecke = () =>
+    DESIGN_CSS.split("@media(min-width:900px){").slice(1)
+      .map(q => q.slice(0, q.indexOf("\n      }")));
+
+  it("die linke Spalte behält ihre Höhe statt auf das Zonenmaß zu fallen", () => {
+    const treffer = desktopBloecke().filter(q =>
+      q.includes(".rz-regal-offen>.rz-half:first-child{height:100dvh}"));
+    expect(treffer.length).toBe(1);
+  });
+
+  it("der Nahtabstand gilt auch im aufgeklappten Zustand", () => {
+    // Q3a hängt margin-bottom:50dvh an :not(.rz-regal-offen) — auf dem Desktop
+    // muss der Abstand bleiben, sonst sackt der Zonenfuß nach unten.
+    const treffer = desktopBloecke().filter(q =>
+      q.includes(".rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}"));
+    expect(treffer.length).toBe(1);
+  });
+
+  it("die Regal-Zone füllt ihre Spalte von oben", () => {
+    // --rz-regal-top ist die Kopfhöhe der waagerechten Naht; senkrecht gibt es
+    // darüber nichts zu verschonen, sonst springt die Zone beim Öffnen.
+    const treffer = desktopBloecke().filter(q =>
+      q.includes(".rz-regal-offen>.rz-half:last-child{top:0}"));
+    expect(treffer.length).toBe(1);
+  });
+
+  it("mobil bleibt die Zonen-Mechanik unberührt", () => {
+    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:first-child{position:absolute;top:0;left:0;right:0;height:var(--rz-oben-h,50%)}");
+    expect(DESIGN_CSS).toContain("top:var(--rz-regal-top,0px);z-index:2");
+  });
+});
+
 describe("S114.12 · Keine waagerechte Bildlaufleiste über der Naht", () => {
   it("die rollende Zone schneidet die andere Achse ab", () => {
     // overflow-y:auto macht die andere Achse implizit zu "auto" — jeder

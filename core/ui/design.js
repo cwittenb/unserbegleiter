@@ -1245,6 +1245,24 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       @media(min-width:900px){
         .rz-regal-offen>.rz-half:first-child{right:50%}
         .rz-regal-offen>.rz-half:last-child{left:50%}
+        /* S114h · Auf dem Desktop darf sich links NICHTS bewegen, wenn rechts
+           das Regal aufgeht. Die Regal-Mechanik ist fuer die waagerechte Naht
+           gebaut: Dort IST die erste Haelfte die obere Zone, sie schrumpft auf
+           ihr gemessenes Mass (--rz-oben-h) und ihre Zeilen ruecken an die
+           neue Unterkante. Auf dem Desktop ist die erste Haelfte aber die
+           linke SPALTE — sie hat mit dem Aufklappen nichts zu tun.
+           Sichtbar wurde das an den Zeilen: Zugeklappt stehen sie an der Naht
+           (.rz-fuss{margin-bottom:50dvh}, Q3a), aufgeklappt fiel diese Regel
+           weg — sie gilt nur :not(.rz-regal-offen) — und der Zonenfuss sackte
+           an den unteren Rand. Beim Oeffnen sprang also die halbe Seite, die
+           gar nicht gemeint war.
+           Drei Zeilen halten sie still: volle Spaltenhoehe statt Zonenmass,
+           der Nahtabstand gilt weiter, und die Regal-Zone fuellt ihre Spalte
+           von oben (--rz-regal-top ist die Kopfhoehe der waagerechten Naht;
+           senkrecht gibt es darueber nichts zu verschonen). */
+        .rz-regal-offen>.rz-half:first-child{height:100dvh}
+        .rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
+        .rz-regal-offen>.rz-half:last-child{top:0}
       }
       .rz-half{transition:transform .36s var(--rz-kurve)}
       /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht
