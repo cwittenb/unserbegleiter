@@ -616,7 +616,23 @@ export function createApp({ doc, backend, root, diktat }) {
     // dauerhaft offen stand. Jetzt gilt fuer ihn dieselbe Regel: immer nur
     // EINE Box offen, sonst springen die Hoehen.
     if (zone) for (const g of zone.querySelectorAll(".rz-regal-inhalt")) if (g !== box) g.classList.add("pb-hidden");
-    return Promise.resolve().then(oeffnen).then(r => { regalModus(box); return r; });
+    /* S119.2 · Der Öffner macht den Kasten sichtbar, BEVOR er fertig geladen
+       hat (zeigeAgenda, zeigeRegal und zeigeMomente tun das alle). Bricht er
+       danach ab, blieb bisher ein sichtbarer Kasten ohne Vollbild-Zustand
+       stehen: regalModus hing allein am Erfolgszweig. Genau so sah der
+       messIntervall-Fehler aus (S119.1) — wie ein Layout-Fehler, obwohl der
+       Programmfluss abgerissen war.
+       Jetzt gilt beides: Der Zustand wird in JEDEM Ausgang nachgeführt, und
+       ein gescheiterter Kasten verschwindet wieder. Der Fehler selbst wird
+       weitergereicht, nicht geschluckt — die Aufrufer zeigen ihn an, und ein
+       stiller Fehlschlag wäre die nächste Verwirrung. */
+    return Promise.resolve().then(oeffnen).then(
+      r => { regalModus(box); return r; },
+      fehler => {
+        box.classList.add("pb-hidden");
+        regalModus(box);
+        throw fehler;
+      });
   }
 
   /* S35 · Lagebild für Wegweiser und Gating — ein paralleler Rundflug über
