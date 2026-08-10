@@ -100,20 +100,31 @@ describe("T2b · Freiraum an der Naht", () => {
   });
 });
 
-describe("T2c · die obere Zone rollt, statt in die Naht zu laufen", () => {
-  const R = ".rz-split:not(.rz-regal-offen)>.rz-half:first-child{";
-  const block = KOMPONENTEN_CSS.slice(KOMPONENTEN_CSS.indexOf(R),
-    KOMPONENTEN_CSS.indexOf("}", KOMPONENTEN_CSS.indexOf(R)) + 1);
+describe("T2c ist mit S121.1 entfallen — es gibt keinen Innen-Rollbereich mehr", () => {
+  // Turn 40 §3.1 machte die obere Zone zum eigenen Rollbereich, damit ihr
+  // Inhalt auf niedrigen Geräten nicht in die Naht lief. Turn 48 §2.1 kehrt
+  // das um: EINE Bildlaufleiste, nie zwei — gerollt wird das Dokument.
+  //
+  // Der Anlass war kein Geschmack: In diesem Rollbereich ließ sich am Gerät
+  // nur die Bildlaufleiste ziehen, nicht wischen, während die zweite Zone
+  // (die über das Dokument rollt) normal reagierte.
+  it("die Zone ist kein Rollbereich mehr", () => {
+    expect(KOMPONENTEN_CSS).not.toContain(".rz-split:not(.rz-regal-offen)>.rz-half:first-child{");
+  });
 
-  it("die Regel existiert und ist auf den zugeklappten Zustand eingeschränkt", () => {
-    expect(KOMPONENTEN_CSS).toContain(R);
-    expect(block).toContain("overflow:auto");
-    expect(block).toContain("overscroll-behavior:contain");
+  it("und keine Hälfte trägt overflow:auto", () => {
+    // Kommentare zuerst weg: Ein Greifer über den CSS-Text liest sie mit, und
+    // eine Regel, die in einem Kommentar erwähnt wird, ist keine Regel.
+    // (Diese Datei hat mich das dreimal gelehrt — siehe S119.3 und S119.7.)
+    const ohneKommentar = KOMPONENTEN_CSS.replace(/\/\*[\s\S]*?\*\//g, "");
+    for (const r of ohneKommentar.match(/\.rz-half[^{}]*\{[^}]*\}/g) || [])
+      expect(r, r).not.toMatch(/overflow(-y)?:\s*auto/);
   });
 
   it("min-height:0 steht nie ohne overflow", () => {
-    // Der Fehler, den der Handover ausdrücklich benennt: min-height:0 allein
-    // lässt die Zone still unter ihren Inhalt schrumpfen.
+    // Der Fehler, den Turn 40 ausdrücklich benennt: min-height:0 allein
+    // lässt die Zone still unter ihren Inhalt schrumpfen. Die Regel gilt
+    // weiter — sie hat jetzt nur keinen Anwendungsfall mehr an den Hälften.
     for (const r of KOMPONENTEN_CSS.match(/\.rz-half[^{}]*\{[^}]*min-height:0[^}]*\}/g) || [])
       expect(r, r).toMatch(/overflow:/);
   });

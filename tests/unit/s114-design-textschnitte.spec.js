@@ -249,8 +249,11 @@ describe("S114.9/10/e · Der Wegweiser im Gespräch und auf dem Desktop", () => 
     const regel = DESIGN_CSS.slice(ab, DESIGN_CSS.indexOf("}", ab) + 1);
     expect(regel).toContain("position:fixed");
     expect(regel).toContain("top:50dvh");
-    // Dieselbe Linie wie zuvor top:50%: die Zweiteilung ist höhenfest 100dvh.
-    expect(DESIGN_CSS).toContain(".rz-split:not(.rz-regal-offen){height:100dvh}");
+    // S121.1 · Die Begründung hat gewechselt, die Zahl nicht: Bis dahin galt
+    // top:50dvh, WEIL die Zweiteilung höhenfest 100dvh war. Seit Turn 48 §2.1
+    // rollt das Dokument und die Höhe ist fort — 50dvh bleibt richtig, weil
+    // position:fixed ohnehin am Fenster misst, nicht an der Spalte.
+    expect(DESIGN_CSS).not.toContain(".rz-split:not(.rz-regal-offen){height:100dvh}");
   });
 
   /* S114j · Die 200%-Rechnung ist ganz fort. Sie galt zuletzt nur noch dem

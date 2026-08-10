@@ -213,6 +213,17 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-auf-naht{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:5}
       @media(min-width:900px){
         .rz-split{flex-direction:row;position:relative}
+        /* S121.1 (Turn 48 §2.2) · Die Naht haengt am Rahmen, nicht am Inhalt.
+           Traegt die zweite Haelfte ihren Grund selbst, endet sie als
+           abgerissener Farbblock, sobald die andere Spalte weiterlaeuft —
+           sichtbar, seit die Hoehen gefallen sind. Als Verlauf auf dem Rahmen
+           laeuft die Farbe immer bis zur letzten Zeile der LAENGEREN Spalte,
+           ohne dass irgendwo eine Hoehe gerechnet werden muss.
+           Die Haelften behalten ihren eigenen Grund: Er deckt den Verlauf
+           deckungsgleich ab, solange sie reichen, und traegt mobil (gestapelt)
+           die Faerbung allein — dort gibt es keinen senkrechten Verlauf. */
+        .rz-split{background:linear-gradient(90deg,
+          var(--rz-papier) 0 50%,var(--rz-tiefgruen) 50% 100%)}
         .rz-split .rz-auf-naht{left:0;top:50%;transform:translate(-50%,-50%)}
         /* ---- T2d (Handover Turn 40 §3.3) · EIN Anker statt zweier Rechnungen ----
            Vorher rechneten drei Dinge, die auf einer Linie liegen sollen, gegen
@@ -236,8 +247,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Alles hier ist auf :not(.rz-regal-offen) beschraenkt. Im
            aufgeklappten Regal gelten Q2/Q3 unveraendert: dort ist die Haelfte
            wieder position:absolute und das Badge ankert an ihr (left:0). */
-        .rz-split:not(.rz-regal-offen){height:100dvh}
-        .rz-split:not(.rz-regal-offen)>.rz-half{min-height:0;overflow:auto}
+        /* S121.1 (Turn 48 §2.1) · EINE Bildlaufleiste, nie zwei.
+           Bis hierher bekam jede Haelfte ihre eigene Hoehe und, sobald der
+           Inhalt laenger war als das Fenster, ihren eigenen Rollbereich. Das
+           ergab zwei Balken nebeneinander, die unterschiedlich weit liefen:
+           Die Haelften verschoben sich gegeneinander, die Naht war keine
+           Naht mehr, und das Rad rollte je nach Zeigerposition mal die eine,
+           mal die andere Spalte — auf Trackpads unbedienbar.
+           Jetzt gilt: kein overflow auf den Haelften, auf keiner, auch nicht
+           auto. Beide sind Zellen EINES Rahmens; gerollt wird das Dokument.
+           Die Grundregel traegt weiterhin min-height:100dvh — auch fuer kurze
+           Seiten, damit die Naht bis zum unteren Fensterrand geht. dvh, nicht
+           vh: sonst springt es auf iOS beim Ein- und Ausblenden der
+           Browserleiste. */
         .rz-split:not(.rz-regal-offen)>.rz-naht-anker{position:static}
         .rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}
         /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Regel stand
@@ -663,8 +685,8 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          also weder an der Breite noch am Stapel noch am Containing Block,
          sondern an der ANIMATION von transform: Fuer ihre Dauer hebt der
          Browser das Band auf eine eigene Ebene, und diese Ebene wird an dem
-         Rollbereich beschnitten, in dem das Band im Baum liegt (die zweite
-         Haelfte, overflow:auto). Am Ende faellt die Ebene weg — daher "erst
+         Rollbereich beschnitten, in dem das Band im Baum liegt (damals die
+         zweite Haelfte; deren Rollbereich ist mit S121.1 entfallen). Am Ende faellt die Ebene weg — daher "erst
          halb, dann ganz", und daher auch die Reparatur durch eine Auswahl im
          Inspektor: Sie erzwingt ein Neuzeichnen.
          transform bleibt stehen, aber nur noch STATISCH: translateY(-50%)
@@ -716,7 +738,8 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          volle Breite dieser Zone. */
       @media(min-width:900px){
         /* S114e · Das Panel haengt im DOM in der ZWEITEN Haelfte — die auf dem
-           Desktop ein Rollbereich ist (overflow:auto). Sein Containing Block
+           Desktop bis S121.1 ein Rollbereich war (overflow:auto; seither rollt
+           das Dokument). Sein Containing Block
            liegt seit T2d beim .rz-split (die Haelfte wird position:static),
            weshalb es im Ruhezustand ueber beide Spalten reicht.
            Waehrend der Auf-Bewegung galt das nicht: Ein Element mit laufender
@@ -732,8 +755,11 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Viewport ist der Bezug, kein Rollbereich liegt mehr dazwischen, und
            es gibt kein Klipprechteck zu erben. Die Naht liegt bei 50dvh —
            dieselbe Zahl, mit der auch das Badge im aufgeklappten Regal misst
-           (.rz-split.rz-regal-offen .rz-auf-naht{top:50dvh}), denn die
-           Zweiteilung ist auf dem Desktop hoehenfest 100dvh.
+           (.rz-split.rz-regal-offen .rz-auf-naht{top:50dvh}).
+           S121.1 · Die Zweiteilung ist seither NICHT mehr hoehenfest; 50dvh
+           bleibt trotzdem richtig, weil beides am Fenster misst. Mit dem
+           klebenden Aufbau (S121.2) wandert der Bezug auf die klebende
+           Haelfte — dann ist 50dvh deren Mitte.
            S114j · Das gilt jetzt in BEIDEN Zustaenden. Frueher war die Regel auf
            :not(.rz-regal-offen) beschraenkt, weil das Panel im aufgeklappten
            Regal ohnehin gesperrt war (S114.8) — auf dem Desktop ist es das
@@ -1260,22 +1286,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          nach oben, und der Inhalt rollt INNERHALB der Zone, statt die Seite
          wachsen zu lassen. Beim Zuklappen laeuft alles rueckwaerts. */
       .rz-screen .rz-half:first-child{overflow:hidden}
-      /* T2c (Handover Turn 40 §3.1) · Hoehenbudget der oberen Zone.
-         Gemessen bei 390px Breite braucht der Inhalt der oberen Vorraum-Zone
-         397px; bei flex:1 auf beiden Haelften traegt das erst ab ~800px
-         Screenhoehe. Auf 667-740px hohen Geraeten laufen die Zeilen sonst in
-         die Naht und unter das Badge.
-         min-height:0 steht hier NIE allein: allein schrumpft die Zone still
-         unter ihren Inhalt, margin-top:auto verliert seinen Spielraum und die
-         letzte Zeile wandert erst recht ueber die Naht. Erst zusammen mit
-         overflow entsteht ein Rollbereich.
-         Die Einschraenkung auf :not(.rz-regal-offen) laesst die Regal-Mechanik
-         (D9/D12-2b) unberuehrt: dort bleibt overflow:hidden richtig, weil die
-         Zone auf ihr gemessenes Mass festgesetzt wird.
-         Der Zonenfuss liegt INNERHALB des Rollbereichs — sein T2b-Polster
-         haelt den Badge-Abstand deshalb auch am Rollende. */
-      .rz-split:not(.rz-regal-offen)>.rz-half:first-child{
-        min-height:0;overflow:auto;overscroll-behavior:contain}
+      /* T2c (Handover Turn 40 §3.1) ist mit S121.1 ENTFALLEN.
+         Die Regel machte die obere Zone zum eigenen Rollbereich, damit ihr
+         Inhalt auf niedrigen Geraeten nicht in die Naht lief
+         (min-height:0 + overflow:auto + overscroll-behavior:contain).
+         Sie war die Ursache des gemeldeten Befunds: In diesem Rollbereich
+         liess sich am Geraet nur die Bildlaufleiste ziehen, nicht wischen —
+         waehrend die zweite Zone, die ueber das Dokument rollt, normal
+         reagierte. Turn 48 §2.1 loest das an der Wurzel: Es gibt keine
+         Innen-Rollbereiche mehr, die Seite selbst rollt, und die obere Zone
+         darf so lang werden, wie ihr Inhalt ist.
+         Der Zonenfuss haelt seinen Badge-Abstand weiterhin ueber das
+         T2b-Polster; er liegt jetzt nur nicht mehr in einem Rollbereich. */
       .rz-regal-reihen{display:flex;flex-direction:column;min-height:0}
       .rz-fuss-kopf{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
       /* ---- D12-2b (Turn 27) · die geklickte Zeile IST die Sektion ----

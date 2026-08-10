@@ -29,13 +29,27 @@ function desktopBlock(ab = 0) {
 const D1 = desktopBlock();                                   // Zweiteilung / Naht
 const D2 = desktopBlock(KOMPONENTEN.indexOf(".rz-weg-panel{")); // Wegweiser-Panel
 
-describe("T2d · die Zweiteilung ist auf dem Desktop höhenfest", () => {
-  it("der Split bekommt eine feste Höhe, nicht nur eine Mindesthöhe", () => {
-    expect(D1).toContain(".rz-split:not(.rz-regal-offen){height:100dvh}");
+/* S121.1 · Diese beiden Zusicherungen sind UMGEKEHRT worden.
+   T2d hielt fest, dass die Zweiteilung auf dem Desktop höhenfest ist und jede
+   Spalte in sich rollt. Turn 48 §2.1 kehrt das um: eine Bildlaufleiste, nie
+   zwei — gerollt wird das Dokument. Der Anlass war kein Geschmack, sondern
+   drei zusammenhängende Befunde: zwei Balken, die unterschiedlich weit liefen;
+   ein Rad, das je nach Zeigerposition mal die eine, mal die andere Spalte
+   bewegte; und am Gerät ein Innen-Rollbereich, in dem sich nur die
+   Bildlaufleiste ziehen, aber nicht wischen ließ.
+   Die Tests bleiben stehen, mit umgekehrtem Vorzeichen — so ist die Umkehr
+   auffindbar, statt als Lücke dazustehen. */
+describe("T2d ist mit S121.1 umgekehrt: das Dokument rollt", () => {
+  it("der Split ist nicht mehr höhenfest", () => {
+    expect(D1).not.toContain(".rz-split:not(.rz-regal-offen){height:100dvh}");
   });
 
-  it("die Spalten rollen innerhalb ihrer Hälfte", () => {
-    expect(D1).toContain(".rz-split:not(.rz-regal-offen)>.rz-half{min-height:0;overflow:auto}");
+  it("die Spalten rollen nicht mehr in sich", () => {
+    expect(D1).not.toContain(".rz-split:not(.rz-regal-offen)>.rz-half{min-height:0;overflow:auto}");
+  });
+
+  it("die Naht reicht trotzdem bis zum Fensterrand — über min-height", () => {
+    expect(KOMPONENTEN).toMatch(/\.rz-split\{[^}]*min-height:100dvh/);
   });
 });
 
