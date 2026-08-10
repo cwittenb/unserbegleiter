@@ -21,7 +21,7 @@ import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 import { esc, mdRender, IKON, lesezeichenLabels } from "./html.js";   // R3/R4a
 import { schneideStreamText } from "./stream-anzeige.js";   // R4a
 import { zeitraumText, rhythmusText } from "./zeit-texte.js";   // R4a
-import { macheRecoveryScreen } from "./recovery-screen.js";   // R4b
+import { macheRecoveryScreen, notausAktiv } from "./recovery-screen.js";   // R4b, S115
 import { macheEinstellungenScreen } from "./einstellungen-screen.js";   // R4b
 import { macheAnsichtenScreen } from "./ansichten-screen.js";   // R4b
 import { macheAuswahlScreen } from "./auswahl-screen.js";   // R4b
@@ -2313,7 +2313,14 @@ export function createApp({ doc, backend, root, diktat }) {
     $("pbBusyTxt").textContent = t("allg.arbeitet");
     zeigeRecovery();
     betrete("scrStart");
-    if (backend.recovery && state.info.emailRequired && !state.info.recoveryEmail) zeigeEmailPflicht();
+    /* S115 · Seit die Adress-Pflicht der Normalfall ist (Worker: emailRequired
+       ist fail-closed), traegt diese Zeile das ganze Gewicht. notausAktiv()
+       ist die einzige Ausnahme: wer den Screen gezogen hat, WEIL der Versand
+       gestoert war, laeuft 24 Stunden lang nicht wieder hinein. Die
+       Regal-Zeile im eigenen Raum bleibt in dieser Zeit der Weg zur
+       Adresse — sie war nie weg. */
+    if (backend.recovery && state.info.emailRequired && !state.info.recoveryEmail && !notausAktiv())
+      zeigeEmailPflicht();
   }
 
   // S62: testHooks exponiert Render/Stream für die Scroll-Disziplin-Tests.

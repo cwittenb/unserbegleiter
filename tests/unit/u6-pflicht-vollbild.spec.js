@@ -1,11 +1,16 @@
 // @vitest-environment happy-dom
-// U6 · Wächter über das Pflicht-Vollbild (Turn 41 §1.2).
+// U6 · Wächter über den Pflicht-Screen (Turn 41 §1.2; S115 · Zwei-Zonen).
 //
-// Der Kasten ist für manche der erste Screen der App überhaupt — und der
-// einzige, den man nicht verlassen kann. Drei Dinge folgen daraus, und alle
-// drei sind Negativ-Aussagen: kein Schleier, keine Bedien-Ecke, kein
+// Der Screen ist für manche der erste der App überhaupt — und der einzige, den
+// man regulär nicht verlassen kann. Drei Dinge folgen daraus, und alle drei
+// sind Negativ-Aussagen: kein Schleier, keine Bedien-Ecke, kein
 // Wegweiser-Badge. Dazu die Fokusfalle, die das Nicht-Verlassen-Können auch
 // für die Tastatur gelten lässt.
+//
+// S115 hat die Vollfläche durch die Zweiteilung ersetzt. Die Aussagen der
+// beiden Aussehen-Tests bleiben — sie wechseln nur den Gegenstand: nicht mehr
+// „die ganze Fläche ist Tiefgrün", sondern „es sind zwei Zonen wie überall,
+// und der Screen bringt dafür keine eigenen Farben mit".
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { DESIGN_CSS } from "../../core/ui/design.js";
@@ -44,9 +49,8 @@ beforeEach(() => {
 });
 
 describe("U6 · Vollbild statt Karte auf Schleier", () => {
-  it("die ganze Fläche ist Tiefgrün — kein Schleier, kein Radius", () => {
+  it("deckt die Fläche ganz — kein Schleier, kein Radius", () => {
     const r = regel("#pbEmailPflicht");
-    expect(r).toContain("background:var(--rz-tiefgruen)");
     expect(r).toContain("inset:0");
     expect(r).not.toContain("border-radius");
     // Ein Schleier zeigt eine Umgebung, die man sieht, aber nicht erreichen
@@ -54,11 +58,17 @@ describe("U6 · Vollbild statt Karte auf Schleier", () => {
     expect(r).not.toMatch(/rgba|opacity/);
   });
 
-  it("mobil und Desktop identisch — nur die Lesespalte greift", () => {
-    expect(regel(".rz-pflicht-spalte")).toContain("max-width:520px");
-    // Keine eigene Desktop-Regel: es gibt hier keine ausblutende Zone wie im
-    // Chat, also auch nichts zu korrigieren.
-    expect(KOMPONENTEN).not.toContain("#pbEmailPflicht{position:fixed;inset:0;z-index:1000;overflow:auto;background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen);padding:40px var(--rz-rand) var(--rz-rand)}\n      @media");
+  /* S115 · Der Screen bringt KEINE eigenen Farben, Masse oder Lesespalten mit.
+     Alles Sichtbare erbt er von .rz-split/.rz-half — das ist der ganze Punkt
+     der Umstellung. Bekaeme er wieder eigene, waere er wieder ein Sonderfall,
+     und Sonderfaelle driften. */
+  it("bringt kein eigenes Aussehen mit — es erbt von der Zweiteilung", () => {
+    const r = regel("#pbEmailPflicht");
+    expect(r).not.toContain("background");
+    expect(r).not.toContain("max-width");
+    expect(r).not.toContain("padding");
+    // Die Lesespalte von Turn 41 ist ersatzlos entfallen.
+    expect(KOMPONENTEN).not.toContain(".rz-pflicht-spalte");
   });
 
   it("die Bedien-Ecke wird stillgelegt, nicht nur verdeckt", () => {
@@ -75,8 +85,38 @@ describe("U6 · im Betrieb", () => {
     expect(kasten, "der Kasten steht").toBeTruthy();
     // Der Wegweiser nennt einen Ort; hier ist noch keiner betreten.
     expect(kasten.querySelector(".rz-weg-badge")).toBeNull();
+    // S115 · Und gar kein Naht-Aufbau: die Naht bleibt hier unbesetzt.
+    expect(kasten.querySelector(".rz-auf-naht")).toBeNull();
     expect(kasten.querySelector(".rz-ecke")).toBeNull();
     expect(document.documentElement.getAttribute("data-pflicht")).toBe("1");
+  });
+
+  /* S115 · Die Zweiteilung im Betrieb, nicht nur im Stylesheet. */
+  it("steht als Zweiteilung: Papier oben, Tiefgrün unten", async () => {
+    const app = createApp({ doc: document, backend: backendMitPflicht(), root });
+    await app.boot();
+    await ruhe();
+    const kasten = document.querySelector("#pbEmailPflicht");
+    const haelften = kasten.querySelectorAll(".rz-split > .rz-half");
+    expect(haelften).toHaveLength(2);
+    expect(haelften[0].classList.contains("rz-papier")).toBe(true);
+    expect(haelften[1].classList.contains("rz-tiefgruen")).toBe(true);
+    // Titel und Text oben, das Formular unten — die untere Zone handelt.
+    expect(haelften[0].querySelector("#pflichtTitel")).toBeTruthy();
+    expect(haelften[1].querySelector("[data-rec=mail]")).toBeTruthy();
+  });
+
+  /* S115 · Der Kopf trägt zwei blinde Pfeile statt eines Rückwegs — sie
+     halten die Signatur mittig, ohne einen Ausgang zu zeichnen. */
+  it("der Kopf zeichnet keinen Rückweg", async () => {
+    const app = createApp({ doc: document, backend: backendMitPflicht(), root });
+    await app.boot();
+    await ruhe();
+    const kasten = document.querySelector("#pbEmailPflicht");
+    const pfeile = [...kasten.querySelectorAll(".rz-kopf .rz-zurueck")];
+    expect(pfeile).toHaveLength(2);
+    expect(pfeile.every(p => p.classList.contains("rz-blind"))).toBe(true);
+    expect(pfeile.every(p => p.tagName !== "BUTTON")).toBe(true);
   });
 
   it("Signatur oben, Wortmarke unten — Ton und Absender", async () => {

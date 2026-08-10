@@ -367,6 +367,8 @@ export const de = {
   "rec.neuAnfordern": "Neuen Code anfordern",
   "rec.pflicht.titel": "Sichere zuerst deinen Zugang",
   "rec.pflicht.text": "Damit du deinen Zugang nicht verlieren kannst, hinterlege jetzt eine E-Mail-Adresse und bestätige sie mit dem Code, den wir dir schicken. Über diese Adresse bekommst du bei Bedarf einen neuen Zugangslink und wichtige Betriebsmitteilungen (z. B. geplante Wartung oder Sicherheitshinweise) — keine Werbung. Nimm ein Postfach, auf das nur du Zugriff hast.",
+  "rec.pflicht.stoerung": "Der Versand klappt gerade nicht. Das liegt an uns, nicht an dir. Du kannst jetzt hineingehen und die Adresse später im eigenen Raum hinterlegen — bitte hole es nach, sonst hängt dein Zugang an diesem einen Gerät.",
+  "rec.pflicht.notausgang": "Ohne Adresse weiter",
 
   // Diktat
   "diktat.mobil": "Diktat: Tippe auf das Mikrofon deiner Bildschirmtastatur — der Text landet direkt im Eingabefeld.",

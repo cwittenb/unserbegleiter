@@ -372,10 +372,19 @@ async function route(request, env) {
       locale: couple.locale || "de",
       languageRequest: couple.languageRequest || null,
       recoveryEmail: await hasRecoveryEmail(kv, session.code, session.role),
-      // Feature-Flag EMAIL_PFLICHT (D2b): Modal-Pflicht erst scharf schalten,
-      // wenn der Mailversand produktiv verifiziert ist — sonst sperrt ein
-      // SMTP-Ausfall die gesamte App.
-      emailRequired: env.EMAIL_PFLICHT === "1" || env.EMAIL_PFLICHT === "true" || env.EMAIL_PFLICHT === true,
+      /* S115 · Die Adress-Pflicht ist der Normalfall, nicht mehr ein Schalter,
+         den jemand umlegen muss. Wer ohne bestaetigte Adresse in der App steht,
+         haelt seinen Zugang an einem einzigen Cookie — geht das Geraet verloren,
+         ist der Raum weg. Deshalb fuehrt der erste Bildschirm nach dem Eintritt
+         zur Adresse, und zwar so lange, bis eine steht (die Oberflaeche
+         verknuepft dieses Feld mit recoveryEmail; siehe app.js · boot).
+
+         EMAIL_PFLICHT ist damit vom Einschalter zum NOTAUS geworden: nur der
+         ausdrueckliche Wert "0" haengt die Pflicht aus. Er ist fuer genau einen
+         Fall gedacht — der Mailversand ist gestoert und die App wuerde sonst
+         niemanden mehr hereinlassen. Fail-open waere hier falsch herum: ein
+         vergessenes Deploy-Var darf nicht das Sicherheitsnetz abschalten. */
+      emailRequired: !(env.EMAIL_PFLICHT === "0" || env.EMAIL_PFLICHT === "false" || env.EMAIL_PFLICHT === false),
     });
   }
 

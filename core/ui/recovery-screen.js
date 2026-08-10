@@ -14,6 +14,46 @@
 
 import { t, fehlerText } from "../i18n/index.js";
 
+/* ---- S115 · Notausgang bei gestoertem Versand (F3b) ---------------------
+ *  Die Adress-Pflicht ist seit S115 der Normalfall: wer ohne bestaetigte
+ *  Adresse in die App kommt, steht vor diesem Screen. Das ist richtig, solange
+ *  der Weg dahinter funktioniert — und faellt in sich zusammen, wenn der
+ *  Mailversand steht. Dann waere die App fuer JEDEN ohne Adresse zu, und der
+ *  einzige Ausweg laege beim Betreiber ([vars] EMAIL_PFLICHT="0", ein Deploy).
+ *
+ *  Der Griff hier ist die Innenseite davon: Nach NOTAUS_AB gescheiterten
+ *  Sendeversuchen kommt eine Zeile in die untere Zone, die in die App fuehrt.
+ *  Drei Bedingungen halten ihn eng:
+ *   · Gezaehlt wird NUR mail_failed (502). Ein Tippfehler in der Adresse
+ *     (email_invalid), eine fremdbelegte Adresse (email_taken) und das
+ *     Ratenlimit (verify_rate) sind keine Stoerung — sie machen den Ausgang
+ *     nicht auf.
+ *   · Er oeffnet erst beim ZWEITEN Fehlschlag. Ein einzelner kann ein Zucken
+ *     sein; zwei sind eine Lage.
+ *   · Er gilt 24 Stunden. Ohne Frist waere er ein stiller Dauer-Ausstieg;
+ *     ohne Gedaechtnis muesste man ihn bei jedem Start neu erzwingen — zwei
+ *     Fehlversuche bei jedem Oeffnen der App.
+ *
+ *  Der Speicher ist bewusst localStorage und nicht der pstate: Er soll auch
+ *  dann tragen, wenn der Server gerade nicht alles kann, und er gehoert zum
+ *  GERAET, nicht zur Person. */
+const NOTAUS_SPEICHER = "pb.mailnotaus";
+const NOTAUS_FRIST_MS = 24 * 60 * 60 * 1000;
+export const NOTAUS_AB = 2;
+
+export function notausAktiv(jetzt = Date.now) {
+  try {
+    const v = globalThis.localStorage && globalThis.localStorage.getItem(NOTAUS_SPEICHER);
+    const at = Number(v);
+    return Number.isFinite(at) && at > 0 && jetzt() - at < NOTAUS_FRIST_MS;
+  } catch { return false; }        // z. B. Safari privat: dann gibt es keinen Notausgang
+}
+
+export function merkeNotaus(jetzt = Date.now) {
+  try { globalThis.localStorage && globalThis.localStorage.setItem(NOTAUS_SPEICHER, String(jetzt())); }
+  catch { /* z. B. Safari privat */ }
+}
+
 /**
  * @param {object} ctx
  * @param {Document} ctx.doc
@@ -29,7 +69,7 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
    *  Code anfordern → 6-stelligen Code eingeben → bestätigt. DOM per
    *  createElement, damit es keine ID-Kollisionen zwischen Karte und Modal
    *  gibt; Tests greifen über data-rec-Attribute zu. ---- */
-  function baueVerifikation(wirt, { onFertig }) {
+  function baueVerifikation(wirt, { onFertig, beiVersandStoerung }) {
     wirt.innerHTML = "";
     // U5 · Aussehen lebt in design.js. Kein style-Attribut, keine rohen Werte.
     const el = (tag, attrs) => {
@@ -94,7 +134,13 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
       if (!email) { sage(t("rec.bitte"), true); return; }
       senden.disabled = true;
       try { await backend.recovery.beginVerify(email); schritt2(email); }
-      catch (e) { sage(fehlerText(e), true); }
+      catch (e) {
+        sage(fehlerText(e), true);
+        /* S115 · Nur die Stoerung des Versands selbst zaehlt (mail_failed).
+           Alles andere sagt etwas ueber die EINGABE aus, nicht ueber den
+           Kanal — und darf den Notausgang nicht oeffnen. */
+        if (e && e.code === "mail_failed" && beiVersandStoerung) beiVersandStoerung();
+      }
       finally { senden.disabled = false; }
     });
     ok.addEventListener("click", async () => {
@@ -151,55 +197,81 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     }
   }
 
-  /* ---- Pflicht-Vollbild (S45, Flag EMAIL_PFLICHT; Turn 41 §1.2) ------------
-   *  Ohne bestätigte Adresse geht es nicht weiter — Zugangsverlust waere
+  /* ---- Pflicht-Screen (S45; Turn 41 §1.2; S115: Zwei-Zonen) ---------------
+   *  Ohne bestaetigte Adresse geht es nicht weiter — Zugangsverlust waere
    *  kritischer als die kleine Huerde. Bewusst nicht wegklickbar: kein
    *  Schliessen-Knopf, kein Klick-ausserhalb, kein Escape. Es verschwindet
-   *  ausschliesslich durch erfolgreiche Bestaetigung.
+   *  durch erfolgreiche Bestaetigung — oder, wenn der Versand nachweislich
+   *  gestoert ist, durch den Notausgang (S115, siehe oben).
    *
    *  §1.2 · Es war eine Karte auf abgedunkeltem Grund. Ein Schleier zeigt eine
    *  Umgebung, die man SIEHT, aber nicht erreichen kann — und fuer manche ist
-   *  das der erste Screen der App ueberhaupt. Jetzt Vollbild in Tiefgruen:
-   *  kein Drumherum, das ein Drumherum verspricht.
+   *  das der erste Screen der App ueberhaupt. Turn 41 machte daraus ein
+   *  Vollbild in Tiefgruen: kein Drumherum, das ein Drumherum verspricht.
    *
-   *  Drei Regeln folgen daraus:
-   *  · KEINE Bedien-Ecke. Sie ist ein Ausgang, und es gibt keinen. Ein
-   *    gezeichneter Ausgang, der nicht funktioniert, ist schlimmer als keiner.
-   *    Der Kasten deckt sie zu (z-index 1000 gegen 7) — hier steht sie
+   *  S115 · Dieses Vollbild stammte aus der Zeit VOR der Zweiteilung und war
+   *  der letzte Ort mit der alten Sprache — ausgerechnet der, den manche als
+   *  ersten Screen sehen. Jetzt traegt er dieselbe Zweiteilung wie jeder
+   *  andere Screen: oben Papier (wer spricht, worum es geht), unten Tiefgruen
+   *  (was zu tun ist). Das Formular steht unten, weil in dieser App die
+   *  untere Zone die handelnde ist — dort liegen ueberall die Zeilen, die
+   *  weiterfuehren, und .rz-feld/.rz-zeile haben ihre gruenen Fassungen
+   *  bereits.
+   *
+   *  Drei Regeln bleiben unveraendert:
+   *  · KEINE Bedien-Ecke. Sie ist ein Ausgang, und es gibt (regulaer) keinen.
+   *    Der Screen deckt sie zu (z-index 1000 gegen 7) — hier steht sie
    *    zusaetzlich ausdruecklich still, damit sie auch dann nicht durchkommt,
    *    wenn jemand spaeter an den Ebenen dreht.
-   *  · KEIN Wegweiser-Badge. Der Wegweiser nennt einen Ort; hier ist noch
-   *    keiner betreten. Signatur oben und Wortmarke unten setzen Ton und
-   *    Absender — mehr braucht es nicht.
-   *  · Fokusfalle statt Escape-Sperre. Im Vollbild gibt es kein Aussen mehr,
-   *    also darf der Fokus auch nicht hinaus. ---- */
+   *  · KEIN Wegweiser-Badge auf der Naht. Der Wegweiser nennt einen Ort; hier
+   *    ist noch keiner betreten. Die Naht bleibt an dieser einen Stelle
+   *    unbesetzt — sichtbar als Kante, ohne Aufbau.
+   *  · Fokusfalle statt Escape-Sperre. Gibt es kein Aussen, darf auch der
+   *    Fokus nicht hinaus.
+   *
+   *  Im Kopf stehen zwei BLINDE Pfeile (rz-zurueck rz-blind) wie auf der
+   *  Startseite: sie halten die Signatur mittig, ohne einen Rueckweg zu
+   *  zeichnen, den es nicht gibt. ---- */
   function zeigeEmailPflicht() {
     const overlay = doc.createElement("div");
     overlay.id = "pbEmailPflicht";
-    overlay.className = "rz-tiefgruen";
     overlay.setAttribute("role", "dialog");
     overlay.setAttribute("aria-modal", "true");
     overlay.setAttribute("aria-labelledby", "pflichtTitel");
 
-    const spalte = doc.createElement("div");
-    spalte.className = "rz-pflicht-spalte";
-    spalte.innerHTML =
-      `<span class="rz-signatur" data-rz-signatur></span>` +
-      `<div class="rz-h2" id="pflichtTitel">${t("rec.pflicht.titel")}</div>` +
+    const split = doc.createElement("div");
+    split.className = "rz-split";
+
+    const oben = doc.createElement("div");
+    oben.className = "rz-half rz-papier";
+    oben.innerHTML =
+      `<div class="rz-kopf rz-kopf-mitte">` +
+        `<span class="rz-zurueck rz-blind">\u2190</span>` +
+        `<span class="rz-signatur" data-rz-signatur></span>` +
+        `<span class="rz-zurueck rz-blind">\u2190</span>` +
+      `</div>` +
+      `<h1 class="rz-h1" id="pflichtTitel">${t("rec.pflicht.titel")}</h1>` +
       `<p class="rz-sub">${t("rec.pflicht.text")}</p>`;
+
+    const unten = doc.createElement("div");
+    unten.className = "rz-half rz-tiefgruen";
     const wirt = doc.createElement("div");
-    spalte.appendChild(wirt);
+    const fuss = doc.createElement("div");
+    fuss.className = "rz-fuss";
     const marke = doc.createElement("span");
     marke.className = "rz-fussmarke";
     marke.setAttribute("data-rz-marke", "");
     marke.textContent = t("allg.marke");
-    spalte.appendChild(marke);
-    overlay.appendChild(spalte);
+    for (const x of [wirt, fuss, marke]) unten.appendChild(x);
+
+    split.appendChild(oben);
+    split.appendChild(unten);
+    overlay.appendChild(split);
     (doc.body || wurzel).appendChild(overlay);
 
     // Die Signatur haengt sonst an setzeSignatur(), das nur den App-Baum
-    // kennt — der Kasten haengt am body.
-    const sig = spalte.querySelector("[data-rz-signatur]");
+    // kennt — der Screen haengt am body.
+    const sig = oben.querySelector("[data-rz-signatur]");
     if (sig && state.info)
       sig.textContent = t("allg.signatur", { ich: state.info.name, partner: state.info.partner });
 
@@ -208,7 +280,8 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     /* Fokusfalle: die bedienbaren Elemente werden bei JEDEM Tab neu gesammelt,
        nicht einmal eingesammelt. Schritt 2 ist anfangs stummgeschaltet (§5.4)
        und wird es bei abgelaufenem Code wieder — eine feste Liste haette den
-       Fokus dann auf ein totes Feld geschickt. */
+       Fokus dann auf ein totes Feld geschickt. Der Notausgang kommt spaeter
+       dazu und ist aus demselben Grund von selbst dabei. */
     const bedienbar = () => [...overlay.querySelectorAll("input,button")]
       .filter(e => !e.disabled);
     const falle = e => {
@@ -222,14 +295,38 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     };
     doc.addEventListener("keydown", falle, true);
 
+    const schliesse = () => {
+      doc.removeEventListener("keydown", falle, true);
+      doc.documentElement.removeAttribute("data-pflicht");
+      overlay.remove();
+      zeigeRecovery();
+    };
+
+    /* S115 · Der Notausgang wird nicht vorgehalten und ausgeblendet, sondern
+       existiert erst, wenn er gilt — ein ausgegrauter Ausgang waere ein
+       Versprechen auf halbem Weg. Er steht im Zonenfuss, dort, wo in dieser
+       App das Weitergehen steht. */
+    let stoerungen = 0;
+    const oeffneNotausgang = () => {
+      if (++stoerungen < NOTAUS_AB || fuss.childElementCount) return;
+      const hinweis = doc.createElement("p");
+      hinweis.className = "rz-fein-leise";
+      hinweis.textContent = t("rec.pflicht.stoerung");
+      const raus = doc.createElement("button");
+      raus.className = "rz-zeile rz-knopf-flach";
+      raus.setAttribute("type", "button");
+      raus.setAttribute("data-rec", "notausgang");
+      const s = doc.createElement("span"); s.textContent = t("rec.pflicht.notausgang");
+      const pf = doc.createElement("span"); pf.className = "rz-pfeil"; pf.textContent = "\u2192";
+      raus.appendChild(s); raus.appendChild(pf);
+      raus.addEventListener("click", () => { merkeNotaus(); schliesse(); });
+      fuss.appendChild(hinweis);
+      fuss.appendChild(raus);
+    };
+
     baueVerifikation(wirt, {
-      onFertig: () => {
-        state.info.recoveryEmail = true;
-        doc.removeEventListener("keydown", falle, true);
-        doc.documentElement.removeAttribute("data-pflicht");
-        overlay.remove();
-        zeigeRecovery();
-      },
+      onFertig: () => { state.info.recoveryEmail = true; schliesse(); },
+      beiVersandStoerung: oeffneNotausgang,
     });
     const erstes = overlay.querySelector("[data-rec=mail]");
     if (erstes && erstes.focus) erstes.focus();

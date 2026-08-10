@@ -351,6 +351,8 @@ export const en = {
   "rec.neuAnfordern": "Request a new code",
   "rec.pflicht.titel": "Secure Your Access First",
   "rec.pflicht.text": "So you can never lose your access, add an email address now and confirm it with the code we send you. This address is how you get a new access link when needed and where important service notices arrive (e.g. planned maintenance or security alerts) — never advertising. Use a mailbox only you can access.",
+  "rec.pflicht.stoerung": "Sending is failing right now. That is on us, not on you. You can go in and add the address later in your own room — please do, otherwise your access hangs on this one device.",
+  "rec.pflicht.notausgang": "Continue without an address",
 
   // Dictation
   "diktat.mobil": "Dictation: tap the microphone on your on-screen keyboard — the text lands right in the input field.",

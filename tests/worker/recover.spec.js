@@ -276,20 +276,51 @@ describe("Wiedereinstieg · Versandfehler", () => {
   });
 });
 
-describe("E-Mail-Pflicht · Feature-Flag (D2b)", () => {
-  it("EMAIL_PFLICHT gesetzt ⇒ /api/me meldet emailRequired: true; ohne Flag false", async () => {
+/* S115 · Aus dem Einschalter ist ein Notaus geworden. Die drei Faelle unten
+   sind genau die drei Zustaende, die es noch gibt: Normalbetrieb (Pflicht),
+   ausdruecklich ausgehaengt (Notaus), und der Fall, der frueher der
+   Normalbetrieb war — kein Wert gesetzt. Dass der jetzt zur Pflicht fuehrt und
+   nicht mehr an ihr vorbei, IST die Aenderung. */
+describe("E-Mail-Pflicht · Notaus statt Einschalter (S115)", () => {
+  /** Baut eine zweite Miniflare-Instanz mit abweichenden Bindings und gibt sie
+   *  fuer die Dauer des Rumpfs als aktive Instanz aus. */
+  async function mitBindings(extra, rumpf) {
     const mf2 = new Miniflare({
-      modules: true, script, kvNamespaces: ["PAARE"],
-      compatibilityDate: "2026-06-01",
-      bindings: { ADMIN_TOKEN: ADMIN, EMAIL_PFLICHT: "1", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
+      modules: true, script, kvNamespaces: ["PAARE"], compatibilityDate: "2026-06-01",
+      bindings: { ADMIN_TOKEN: ADMIN, EMAIL_KEY: "abababababababababababababababababababababababababababababababab", ...extra },
       serviceBindings: { async MAIL_UPSTREAM() { return new Response("ok"); } },
     });
     const alt = mf; mf = mf2;
-    try {
+    try { return await rumpf(); } finally { mf = alt; await mf2.dispose(); }
+  }
+
+  it("ohne gesetzte Variable ⇒ emailRequired: true (Pflicht ist der Normalfall)", async () => {
+    const { anna } = await frischesPaar();
+    expect((await anna.call("GET", "/api/me")).data.emailRequired).toBe(true);
+  });
+
+  it('EMAIL_PFLICHT="0" haengt die Pflicht aus (Notaus bei Mail-Stoerung)', async () => {
+    await mitBindings({ EMAIL_PFLICHT: "0" }, async () => {
+      const { anna } = await frischesPaar();
+      expect((await anna.call("GET", "/api/me")).data.emailRequired).toBe(false);
+    });
+  });
+
+  it('EMAIL_PFLICHT="1" bleibt gueltig — ausdrueckliches Ja aendert nichts', async () => {
+    await mitBindings({ EMAIL_PFLICHT: "1" }, async () => {
       const { anna } = await frischesPaar();
       expect((await anna.call("GET", "/api/me")).data.emailRequired).toBe(true);
-    } finally { mf = alt; await mf2.dispose(); }
+    });
+  });
+
+  /* Der Screen verschwindet nicht durch das Feld, sondern durch die Adresse:
+     emailRequired bleibt wahr, recoveryEmail wird wahr. Die Oberflaeche
+     verknuepft beides (app.js · boot) — hier steht die Server-Haelfte. */
+  it("bleibt nach bestaetigter Adresse wahr — es entscheidet dann recoveryEmail", async () => {
     const { anna } = await frischesPaar();
-    expect((await anna.call("GET", "/api/me")).data.emailRequired).toBe(false);
+    await registriere(anna, "s115-anna@example.com");
+    const me = (await anna.call("GET", "/api/me")).data;
+    expect(me.emailRequired).toBe(true);
+    expect(me.recoveryEmail).toBe(true);
   });
 });

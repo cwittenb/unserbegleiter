@@ -49,6 +49,19 @@ describe("Build · Cloudflare", () => {
     expect(toml).toContain('name = "paarbegleitung"');
   });
 
+  /* S115 · Die Datei ist das einzige, was der Betreiber beim Deploy liest. Als
+     EMAIL_PFLICHT vom Einschalter zum Notaus wurde, haette der alte Hinweis
+     ("erst setzen, wenn …") ins Gegenteil gefuehrt: jemand setzt "1" in dem
+     Glauben, damit etwas einzuschalten, und merkt nie, dass "0" das einzige
+     ist, was noch wirkt. Der Test haelt die Richtung fest, nicht den Wortlaut. */
+  it("nennt EMAIL_PFLICHT als Notaus, nicht als Einschalter", async () => {
+    await buildPages({ outDir });
+    const toml = await readFile(path.join(outDir, "wrangler.toml"), "utf8");
+    expect(toml).toContain('EMAIL_PFLICHT = "0"');
+    expect(toml).toContain("NOTAUS");
+    expect(toml).not.toContain('EMAIL_PFLICHT = "1" erst setzen');
+  });
+
   it("PAARE_KV_ID → schreibt den KV-Block ENT-kommentiert mit der ID (übersteht Rebuilds)", async () => {
     const alt = process.env.PAARE_KV_ID;
     process.env.PAARE_KV_ID = "test-kv-id-123";
