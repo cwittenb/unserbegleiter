@@ -804,8 +804,24 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          min-height:0 ist nicht Kosmetik: Flex-Kinder haben per Vorgabe
          min-height:auto und weigern sich zu schrumpfen; ohne die Null waechst
          die Zone am overflow vorbei. */
+      /* S119.3 · box-sizing:border-box. Ohne sie rechnet die Regel im
+         Standard content-box: die 100dvh sind die INHALTShoehe, das Polster
+         kommt oben und unten obendrauf. Der Kasten war damit gemessene 54px
+         (30px Kopfpolster + 24px --rz-rand) hoeher als das Fenster — das
+         Dokument lief ueber, und neben der gewollten Leiste in
+         .rz-chat-oben stand eine zweite am Body. Wer im dunklen Bereich
+         wischte, rollte deshalb das Dokument statt gar nichts.
+         Ein globales box-sizing gibt es in diesem Stylesheet nicht; es ist
+         punktuell gesetzt — bei den Zonen, der App-Wurzel und einigen
+         Bedienelementen. Das nachzuziehen ist ein eigener Schritt mit
+         Sichtpruefung aller Screens; hier steht nur die Zeile fuer den Chat.
+         (Kein Selektorname in diesem Kommentar: Waechter dieses Bestands
+         greifen per Regex ueber den CSS-Text, Kommentare eingeschlossen.)
+         Nicht gewaehlt: das Polster nach .rz-chat-innen verlegen. Das haette
+         die Ausblut-Rechnung der Schreibkante (S114c) verschoben, die gegen
+         --rz-rand rechnet. */
       .rz-app #scrChat{max-width:none;margin:0;background:var(--rz-papier);color:var(--rz-ink);
-        height:100dvh;min-height:0;overflow-y:hidden;
+        height:100dvh;min-height:0;overflow-y:hidden;box-sizing:border-box;
         padding:calc(30px + env(safe-area-inset-top,0px)) var(--rz-rand)
         calc(var(--rz-rand) + env(safe-area-inset-bottom,0px))}
       .rz-chat-innen{max-width:var(--rz-chat-spalte);margin:0 auto;display:flex;flex-direction:column;
