@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { coreHash } from "./core-hash.js";
 import { PAARE_KV_ID as KV_ID_KONFIG } from "../platforms/cloudflare/deploy.config.js";
-import { manifestJson, erzeugeManifest, THEME_COLOR } from "../platforms/cloudflare/pages/manifest.js";
+import { manifestJson, erzeugeManifest, THEME_COLOR, BACKGROUND_COLOR } from "../platforms/cloudflare/pages/manifest.js";
+import { ton } from "../core/ui/theme.js";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
@@ -29,6 +30,47 @@ async function kopiereBaum(von, nach) {
     const q = path.join(von, eintrag.name), z = path.join(nach, eintrag.name);
     if (eintrag.isDirectory()) await kopiereBaum(q, z);
     else await copyFile(q, z);
+  }
+}
+
+/** S121 · Der Zeichensatz (Favicon, Kacheln) liegt eingecheckt unter
+ *  platforms/cloudflare/pages/icons/ und wird ins WEB-ROOT des jeweiligen
+ *  Ziels gelegt — nicht in einen Unterordner (Entscheidung F1a). Grund:
+ *  Browser fragen Wurzelpfade selbst ab, und beide Deploy-Ziele (App-Worker
+ *  und Landing auf eigenem Host) sollen denselben Satz unter denselben
+ *  Adressen tragen. Ein Ort, eine Liste — das Manifest, sw-routing.js und die
+ *  Head-Schnipsel unten verweisen alle hierher.
+ *
+ *  Nicht mitgeliefert werden die Vektor-QUELLEN (favicon-16.svg,
+ *  icon-maskable.svg): sie stehen in design_handoff_raumzuzweit/favicon/ und
+ *  sind Zeichenvorlage, kein Auslieferungsgegenstand. */
+export const ICON_DATEIEN = [
+  "favicon.svg",
+  "favicon-16.png",
+  "favicon-32.png",
+  "apple-touch-icon.png",
+  "icon-192.png",
+  "icon-512.png",
+];
+
+/** Head-Zeilen fuer den Zeichensatz. EIN Schnipsel fuer App-Shell und Landing —
+ *  die 16x16-Zeile gehoert zwingend dazu: fehlt sie, skaliert der Browser die
+ *  SVG herunter und die eigens gezeichnete 16er-Fassung wird nie geladen. */
+export const ICON_HEAD = [
+  '<link rel="icon" href="/favicon.svg" type="image/svg+xml">',
+  '<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">',
+  '<link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png">',
+  '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
+].join("\n");
+
+/** Legt den Zeichensatz ins Wurzelverzeichnis eines Deploy-Ziels. */
+async function verteileIcons(zielDir) {
+  const quelle = path.join(ROOT, "platforms/cloudflare/pages/icons");
+  const vorhanden = new Set(await readdir(quelle));
+  await mkdir(zielDir, { recursive: true });
+  for (const f of ICON_DATEIEN) {
+    if (!vorhanden.has(f)) throw new Error(`Zeichensatz unvollstaendig: ${f} fehlt in ${quelle}`);
+    await copyFile(path.join(quelle, f), path.join(zielDir, f));
   }
 }
 
@@ -75,10 +117,7 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
   // (platforms/cloudflare/pages/icons/), das Manifest wird generiert.
   const manifest = erzeugeManifest();
   await writeFile(path.join(outDir, "public/manifest.webmanifest"), manifestJson());
-  const iconsQuelle = path.join(ROOT, "platforms/cloudflare/pages/icons");
-  await mkdir(path.join(outDir, "public/icons"), { recursive: true });
-  for (const f of await readdir(iconsQuelle))
-    if (f.endsWith(".png")) await copyFile(path.join(iconsQuelle, f), path.join(outDir, "public/icons", f));
+  await verteileIcons(path.join(outDir, "public"));
 
   await writeFile(path.join(outDir, "public/index.html"), `<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
@@ -89,9 +128,8 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="${manifest.short_name}">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<style>:root{--bg:#f5f7f9;--ink:#1b2430;--ink-soft:#5a6675;--accent:#0f766e}
+${ICON_HEAD}
+<style>:root{--bg:${BACKGROUND_COLOR};--ink:${ton("--rz-ink")};--ink-soft:${ton("--rz-sek")};--accent:${ton("--rz-akzent")}}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 html,body{height:100%}
 #app{margin:0;padding:0;max-width:none;width:100%}</style></head>
@@ -189,6 +227,10 @@ html,body{height:100%}
     path.join(ROOT, "platforms/cloudflare/landing"),
     path.join(outDir, "landing")
   );
+  // S121 · Die Landing liegt auf einem EIGENEN Host (Hetzner, raumzuzweit.de)
+  // und kann sich nichts von der App borgen — sie muss den Zeichensatz selbst
+  // mitbringen. Deshalb hier ein zweites Mal, in ihre eigene Wurzel.
+  await verteileIcons(path.join(outDir, "landing"));
 
   return { outDir, hash };
 }

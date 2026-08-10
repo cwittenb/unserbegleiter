@@ -71,7 +71,7 @@ describe("M1 · Icons", () => {
   });
 
   it("Apple-Touch-Icon liegt als 180×180-PNG im Output", async () => {
-    const buf = await readFile(path.join(outDir, "public/icons/apple-touch-icon.png"));
+    const buf = await readFile(path.join(outDir, "public/apple-touch-icon.png"));
     expect(pngMasse(buf)).toEqual({ breite: 180, hoehe: 180 });
   });
 });
@@ -80,8 +80,10 @@ describe("M1 · Shell-Metas", () => {
   it("die Shell verweist auf Manifest, Theme-Farbe und Icons", () => {
     expect(index).toContain('<link rel="manifest" href="/manifest.webmanifest">');
     expect(index).toContain(`<meta name="theme-color" content="${THEME_COLOR}">`);
-    expect(index).toContain('<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">');
-    expect(index).toContain('<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">');
+    // S121 · Der Zeichensatz liegt in der Wurzel; die vollstaendigen Head-Zeilen
+    // prueft s121-favicons.spec.js (dort auch: jeder href loest wirklich auf).
+    expect(index).toContain('<link rel="apple-touch-icon" href="/apple-touch-icon.png">');
+    expect(index).toContain('<link rel="icon" href="/favicon.svg" type="image/svg+xml">');
   });
 
   it("Standalone-Metas für iOS/Android sind gesetzt, Titel aus i18n", () => {

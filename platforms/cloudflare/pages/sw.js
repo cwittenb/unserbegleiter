@@ -58,8 +58,8 @@ self.addEventListener("push", (e) => {
   if (!d.titel || !d.text) return;                     // nur unser eigenes Format anzeigen
   e.waitUntil(self.registration.showNotification(d.titel, {
     body: d.text,
-    icon: "/icons/icon-192.png",
-    badge: "/icons/icon-192.png",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
     data: { url: d.url || "/" },
   }));
 });

@@ -17,8 +17,9 @@ randlos quadratisch für die Homescreen-Kacheln (iOS und Android maskieren selbs
 | `icon-512.png` | 512 | randlos quadratisch | Manifest, Splash |
 | `icon-maskable.svg` | vektor | randlos quadratisch | Quelle der Kacheln |
 
-`favicon-16.png` ist keine Verkleinerung: der Wegweiser ist dort auf 5 × 2 px
-hochgesetzt, sonst fiele er unter ein Pixel.
+`favicon-16.png` ist keine Verkleinerung: der Wegweiser ist dort auf 6 × 2 px
+hochgesetzt, sonst fiele er unter ein Pixel. Die `16x16`-Zeile im Head muss mit —
+sonst skaliert der Browser die SVG herunter und die eigene Zeichnung wird nie geladen.
 
 ## Wohin deployen
 

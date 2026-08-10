@@ -39,7 +39,7 @@ describe("M2 · Routing-Entscheidung (rein, deterministisch)", () => {
   });
 
   it("statische Shell ist cache-zuerst, Unbekanntes bleibt unangetastet", () => {
-    for (const p of ["/app.js", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"])
+    for (const p of ["/app.js", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png"])
       expect(cacheEntscheidung(p), p).toBe("cache-zuerst");
     expect(cacheEntscheidung("/irgendwas.txt")).toBe("netz");
     expect(cacheEntscheidung("/apix")).toBe("netz");   // kein Präfix-Übergriff

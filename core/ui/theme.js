@@ -125,3 +125,20 @@ export const THEME_CSS = String.raw`
         --rz-link:#b7d69a;--rz-link-auf-gruen:#b7d69a;
       }
 `;
+
+/* S121 · Zugriff auf EINEN Ton der hellen Fassung, fuer Stellen ausserhalb des
+   CSS: das PWA-Manifest, die theme-color-Metas und die Vor-Boot-Flaeche der
+   Shell (die Sekunde, bevor app.js malt). Bis hierher standen dort eigene
+   Literale — sichtbar als tuerkiser Blitz beim Start, wo laengst Papier und
+   Tiefgruen gelten. Sie sollen den Wert BENUTZEN, nicht abschreiben.
+
+   Bewusst nur der :root-Block: der Dark-Block belegt dieselben Namen erneut,
+   ein naiver letzter Treffer haette die dunkle Fassung geliefert. */
+export function ton(name) {
+  const anfang = THEME_CSS.indexOf(":root{");
+  const ende = THEME_CSS.indexOf("html[data-theme=dark]");
+  const block = THEME_CSS.slice(anfang, ende > anfang ? ende : undefined);
+  const treffer = block.match(new RegExp(`${name}\\s*:\\s*([^;]+);`));
+  if (!treffer) throw new Error(`Ton ${name} steht nicht in theme.js`);
+  return treffer[1].trim();
+}

@@ -9,9 +9,16 @@
 // Wire-Anglisierung (S31), hier gibt es nichts umzubenennen.
 
 import { de } from "../../../core/i18n/de.js";
+import { ton } from "../../../core/ui/theme.js";
 
-export const THEME_COLOR = "#0f766e";      // --accent
-export const BACKGROUND_COLOR = "#f5f7f9"; // --bg
+/* S121 · Beide Farben kommen jetzt aus theme.js statt aus abgeschriebenen
+   Literalen. Sie trugen bis hierher #0f766e / #f5f7f9 — einen Tuerkis-Grau-
+   Klang aus M1, den die Oberflaeche seit D1 nicht mehr kennt. Sichtbar wurde
+   das dort, wo das Manifest hinreicht und die App nicht: Android-Taskleiste,
+   PWA-Splash, Icon-Hintergrund. Tiefgruen/Papier ist derselbe Zweiklang, den
+   auch der Zeichensatz traegt. */
+export const THEME_COLOR = ton("--rz-tiefgruen");
+export const BACKGROUND_COLOR = ton("--rz-papier");
 
 /** Manifest-Objekt erzeugen. Reine Funktion, Node- wie Testkontext. */
 export function erzeugeManifest() {
@@ -27,8 +34,9 @@ export function erzeugeManifest() {
     theme_color: THEME_COLOR,
     background_color: BACKGROUND_COLOR,
     icons: [
-      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      // S121/F1a · Web-Root statt /icons/: EIN Ablageort fuer beide Deploy-Ziele.
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
     ],
   };
 }

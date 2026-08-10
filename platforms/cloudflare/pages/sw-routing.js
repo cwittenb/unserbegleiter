@@ -12,9 +12,12 @@ export const SHELL_PFADE = [
   "/",
   "/app.js",
   "/manifest.webmanifest",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/apple-touch-icon.png",
+  // S121/F1a · Wurzelpfade statt /icons/. Die beiden kleinen Tab-Zeichen
+  // (favicon-16/32) stehen bewusst NICHT hier: ein Tab-Icon braucht niemand
+  // offline, und jeder Eintrag kostet jeden Installierenden einen Abruf.
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
 ];
 
 /** Entscheidung je Pfad (nur GET, nur same-origin — das prüft sw.js davor):

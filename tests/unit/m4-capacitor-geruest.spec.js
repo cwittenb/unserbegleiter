@@ -50,7 +50,7 @@ describe("M4 · Capacitor-Build", () => {
   afterAll(async () => { await rm(outDir, { recursive: true, force: true }); });
 
   it("www/ trägt die komplette Shell samt PWA-Artefakten", async () => {
-    for (const f of ["www/app.js", "www/manifest.webmanifest", "www/icons/icon-192.png", "www/icons/icon-512.png", "www/icons/apple-touch-icon.png"])
+    for (const f of ["www/app.js", "www/manifest.webmanifest", "www/icon-192.png", "www/icon-512.png", "www/apple-touch-icon.png", "www/favicon.svg", "www/favicon-16.png", "www/favicon-32.png"])
       await access(path.join(outDir, f));   // wirft, wenn etwas fehlt
   });
 

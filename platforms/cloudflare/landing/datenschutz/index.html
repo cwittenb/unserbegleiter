@@ -20,6 +20,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Datenschutz — raumzuzweit</title>
 <meta name="description" content="Datenschutzerklärung für raumzuzweit — welche Daten verarbeitet werden, wie lange, und wie die Begleitung arbeitet.">
+<!-- S121 · Zeichensatz. Die Landing liegt auf eigenem Host und traegt die
+     Dateien selbst in ihrer Wurzel (build-pages.js verteilt sie dorthin).
+     Die 16x16-Zeile gehoert zwingend dazu: ohne sie skaliert der Browser
+     die SVG herunter und die eigens gezeichnete 16er wird nie geladen.
+     theme-color ist das einzige Farbliteral ausserhalb :root — der
+     Waechter in l1-1 fuehrt es als benannte Ausnahme und prueft, dass es
+     --rz-tiefgruen aus theme.js entspricht. -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#1e2a22">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">

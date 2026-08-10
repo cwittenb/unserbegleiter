@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildPages } from "../../scripts/build-pages.js";
-import { THEME_CSS } from "../../core/ui/theme.js";
+import { THEME_CSS, ton } from "../../core/ui/theme.js";
 
 const quelle = rel =>
   readFileSync(fileURLToPath(new URL("../../platforms/cloudflare/landing/" + rel, import.meta.url)), "utf-8");
@@ -70,10 +70,26 @@ describe("L1.1 · Farbe lebt nur im :root-Block", () => {
       // Kommentare duerfen Toene NENNEN (Herleitung), aber nichts setzen.
       const ohneKommentare = ohneRoot
         .replace(/\/\*[\s\S]*?\*\//g, "")
-        .replace(/<!--[\s\S]*?-->/g, "");
+        .replace(/<!--[\s\S]*?-->/g, "")
+        // S121/F3a · EINE benannte Ausnahme: <meta name="theme-color"> kann
+        // keine Variable tragen, der Wert MUSS dort als Literal stehen. Damit
+        // die Ausnahme kein Loch ist, prueft der Test darunter, dass es genau
+        // --rz-tiefgruen aus theme.js ist — die Bindung wandert also vom
+        // Wortlaut in eine Zusicherung, sie verschwindet nicht.
+        .replace(/<meta name="theme-color" content="#[0-9a-fA-F]{3,8}">/g, "");
       const treffer = ohneKommentare.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
       expect(treffer, `${seite}: Farbliteral ausserhalb :root — ${treffer.join(", ")}`).toEqual([]);
       expect(ohneKommentare, seite).not.toMatch(/\brgba?\(/);
+    }
+  });
+
+  it("S121/F3a · theme-color ist die einzige Ausnahme und traegt --rz-tiefgruen", () => {
+    const tiefgruen = ton("--rz-tiefgruen");
+    for (const seite of SEITEN) {
+      const html = quelle(seite);
+      const treffer = html.match(/<meta name="theme-color" content="([^"]+)">/g) || [];
+      expect(treffer.length, `${seite}: genau ein theme-color-Meta erwartet`).toBe(1);
+      expect(treffer[0], seite).toBe(`<meta name="theme-color" content="${tiefgruen}">`);
     }
   });
 
