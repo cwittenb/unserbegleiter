@@ -159,12 +159,28 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     });
   }
 
+  /** Baut das Formular in die Regal-Box und meldet die bestaetigte Adresse
+   *  zurueck. Eine Stelle fuer beide Wege dorthin (Aufklappen bei fehlender
+   *  Adresse, "Adresse aendern" bei vorhandener). */
+  function baueRegalFormular(box) {
+    const wirt = doc.createElement("div");
+    box.appendChild(wirt);
+    baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
+  }
+
   function zeigeRecovery() {
     const box = $("boxRecovery"), zeile = $("btnRecovery");
     /* §1.3 · Der Wiedereinstieg war eine Karte, die von selbst im Regal stand.
        Jetzt ist er eine Zeile, die aufklappt — dieselbe Bewegung wie die
-       uebrigen Regal-Zeilen, ein Baustein weniger im System. Der Inhalt wird
-       vorbereitet, sichtbar wird er erst beim Oeffnen. */
+       uebrigen Regal-Zeilen, ein Baustein weniger im System.
+       S116 · Bis hierher stimmte das nur halb: Der Inhalt wurde beim Start
+       gebaut und nur versteckt. Damit lebte das Verifikations-Bauelement
+       ZWEIMAL im Dokument, sobald der Pflicht-Screen stand — zwei Formulare
+       mit je eigenem Schritt-2-Zustand und eigenem gesendetAn, und jeder
+       Sendeversuch verbrauchte einen der fuenf Slots im Stunden-Ratenlimit.
+       Jetzt wartet der Inhalt wirklich: hier steht nur der Text, das Formular
+       entsteht beim Oeffnen (oeffneRecovery) — dieselbe Bewegung, die der
+       "aendern"-Zweig unten schon immer gemacht hat. */
     if (!backend.recovery) {
       box.classList.add("pb-hidden");
       if (zeile) zeile.classList.add("pb-hidden");
@@ -176,25 +192,31 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
       `<p class="rz-fein-leise">` +
       (hinterlegt ? t("rec.hinterlegt") : t("rec.neu")) +
       `</p>`;
-    if (hinterlegt) {
-      const aendern = doc.createElement("button");
-      aendern.className = "rz-zeile rz-knopf-flach";
-      aendern.setAttribute("type", "button");
-      aendern.setAttribute("data-rec", "aendern");
-      aendern.innerHTML = "<span></span><span class=\"rz-pfeil\">\u2192</span>";
-      aendern.firstChild.textContent = t("rec.aendern");
-      box.appendChild(aendern);
-      aendern.addEventListener("click", () => {
-        aendern.remove();
-        const wirt = doc.createElement("div");
-        box.appendChild(wirt);
-        baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
-      });
-    } else {
-      const wirt = doc.createElement("div");
-      box.appendChild(wirt);
-      baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
-    }
+    if (!hinterlegt) return;                    // Formular folgt beim Oeffnen
+    const aendern = doc.createElement("button");
+    aendern.className = "rz-zeile rz-knopf-flach";
+    aendern.setAttribute("type", "button");
+    aendern.setAttribute("data-rec", "aendern");
+    aendern.innerHTML = "<span></span><span class=\"rz-pfeil\">\u2192</span>";
+    aendern.firstChild.textContent = t("rec.aendern");
+    box.appendChild(aendern);
+    aendern.addEventListener("click", () => {
+      aendern.remove();
+      baueRegalFormular(box);
+    });
+  }
+
+  /** S116 · Der Oeffner der Regal-Zeile. Er ersetzt das blosse Sichtbarmachen
+   *  im Toggle: sichtbar UND, falls noch keines dasteht, mit Formular.
+   *  Idempotent — ein zweites Oeffnen baut kein zweites Formular, und im
+   *  "hinterlegt"-Zustand baut er gar keines (dort fuehrt der aendern-Knopf
+   *  hin, und der traegt selbst eine data-rec-Marke). */
+  function oeffneRecovery() {
+    const box = $("boxRecovery");
+    if (!box || !backend.recovery) return;
+    box.classList.remove("pb-hidden");
+    if (box.querySelector("[data-rec]")) return;
+    baueRegalFormular(box);
   }
 
   /* ---- Pflicht-Screen (S45; Turn 41 §1.2; S115: Zwei-Zonen) ---------------
@@ -331,5 +353,5 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     const erstes = overlay.querySelector("[data-rec=mail]");
     if (erstes && erstes.focus) erstes.focus();
   }
-  return { baueVerifikation, zeigeRecovery, zeigeEmailPflicht };
+  return { baueVerifikation, zeigeRecovery, oeffneRecovery, zeigeEmailPflicht };
 }

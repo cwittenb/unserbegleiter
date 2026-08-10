@@ -1446,7 +1446,7 @@ export function createApp({ doc, backend, root, diktat }) {
   /* R4b · Die Wiedereinstiegs-Gruppe (Karte, Pflicht-Modal, Bauelement) lebt
      jetzt in recovery-screen.js. Ihre Abhaengigkeiten sind dort explizit statt
      ueber die Closure eingesammelt. */
-  const { zeigeRecovery, zeigeEmailPflicht } =
+  const { zeigeRecovery, oeffneRecovery, zeigeEmailPflicht } =
     macheRecoveryScreen({ doc, $, backend, state, wurzel });
 
   /* S95.7e · Leseansicht. Eine eigene Flaeche ueber dem Vorraum, kein
@@ -1642,9 +1642,11 @@ export function createApp({ doc, backend, root, diktat }) {
     if (oben) oben.addEventListener("click", () => regalZu(screen));
   }
   $("btnZeitleiste").addEventListener("click", () => infoToggle("boxZeitleiste", () => zeigeZeitleiste()).catch(e => err(e.message)));
-  // U5/§1.3 · Der Wiedereinstieg klappt wie jede andere Regal-Zeile auf. Der
-  // Inhalt steht schon (zeigeRecovery baut ihn beim Start), die Zeile schaltet
-  // ihn nur sichtbar — deshalb kein Nachladen im Toggle.
+  // U5/§1.3 · Der Wiedereinstieg klappt wie jede andere Regal-Zeile auf.
+  // S116 · Der Inhalt steht NICHT schon: das Formular entsteht beim Oeffnen,
+  // damit es nicht zusaetzlich zum Pflicht-Screen im Dokument lebt. Der
+  // Oeffner macht beides in einem Schritt (sichtbar + bauen, idempotent) —
+  // deshalb ruft der Toggle hier oeffneRecovery statt classList.remove.
   $("btnEinstZurueck").addEventListener("click", zurueckAus("scrEinstellungen"));
   /* 3.7 · Die Zahl wird beim Oeffnen geholt, nicht vorgehalten: sie steht in
      einer Frage, die man nicht zuruecknehmen kann, und darf nicht veralten. */
@@ -1654,7 +1656,7 @@ export function createApp({ doc, backend, root, diktat }) {
       zeigeLoeschFrage();
     }).catch(e => err(e.message)));
   $("btnRecovery").addEventListener("click", () =>
-    infoToggle("boxRecovery", () => $("boxRecovery").classList.remove("pb-hidden")).catch(e => err(e.message)));
+    infoToggle("boxRecovery", () => oeffneRecovery()).catch(e => err(e.message)));
   // S88 · Prozessreflexion ist eine HANDLUNG und bekommt wie jede Handlung
   // einen eigenen Raum (S44 hatte sie bereits an die Stelle der Auftrags-
   // klärung gesetzt — nur ihr Panel steckte noch als Klappe im Regal-Block).

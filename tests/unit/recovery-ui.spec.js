@@ -9,6 +9,13 @@ import { createApp } from "../../core/ui/app.js";
 const tick = () => new Promise(r => setTimeout(r, 0));
 async function klick(el) { el.click(); await tick(); await tick(); }
 const q = (wirt, name) => wirt.querySelector('[data-rec="' + name + '"]');
+/* S116 · Das Formular entsteht erst beim Aufklappen der Zeile — vorher steht
+   in der Box nur der erklaerende Text. Tests, die am Formular arbeiten,
+   oeffnen deshalb zuerst, so wie ein Mensch es auch tun muesste. */
+async function oeffneZeile(root) {
+  await klick(root.querySelector("#btnRecovery"));
+  return root.querySelector("#boxRecovery");
+}
 
 function baseBackend(extra) {
   return {
@@ -80,6 +87,9 @@ describe("Recovery-Karte (zweistufig)", () => {
     const box = root.querySelector("#boxRecovery");
     expect(box.classList.contains("pb-hidden"), "der Inhalt wartet").toBe(true);
     expect(box.textContent).toContain("Hinterlege eine E-Mail-Adresse");
+    // S116 · Und zwar wartet er wirklich: kein Formular vor dem Aufklappen.
+    expect(q(box, "mail"), "das Formular entsteht erst beim Oeffnen").toBe(null);
+    await klick(zeile);
     // U5/§5.4 · Schritt 2 verschwindet nicht mehr, er ist stumm — sonst
     // springt der Screen in der Höhe, und im Vollbild ist das eine große
     // Bewegung. Sichtbar bleibt, was noch kommt.
@@ -110,7 +120,7 @@ describe("Recovery-Karte (zweistufig)", () => {
     backend.recovery = st.impl;
     const app = createApp({ doc: document, backend, root });
     await app.boot();
-    const box = root.querySelector("#boxRecovery");
+    const box = await oeffneZeile(root);
     await klick(q(box, "senden"));
     expect(st.begonnen).toBe(null);
     expect(q(box, "note").textContent).toContain("Adresse eingeben");
@@ -123,7 +133,7 @@ describe("Recovery-Karte (zweistufig)", () => {
     backend.recovery = st.impl;
     const app = createApp({ doc: document, backend, root });
     await app.boot();
-    const box = root.querySelector("#boxRecovery");
+    const box = await oeffneZeile(root);
     q(box, "mail").value = "anna@example.com";
     await klick(q(box, "senden"));
     q(box, "pin").value = "000000";
