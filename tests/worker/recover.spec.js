@@ -254,6 +254,62 @@ describe("Wiedereinstieg · Raten-Limits", () => {
       const r = await anna.call("POST", "/api/email", { email: "a@example.com" });
       expect(r.status).toBe(429);
       expect(r.data.code).toBe("verify_rate");
+      /* S117 · Die Antwort nennt jetzt eine Frist. Ohne sie hiess es "bitte
+         etwas spaeter erneut" — vor einem Screen, den man nicht verlassen
+         kann, ist das die falsche Auskunft. */
+      expect(r.data.retryAfter, "Sekunden bis zur Freigabe").toBeGreaterThan(0);
+      expect(r.data.retryAfter).toBeLessThanOrEqual(3600);
+    } finally { mf = alt; await mf2.dispose(); }
+  });
+
+  /* S117 · Der Betriebsfund. Der Zaehler stand VOR dem Versuch: als der
+     HELO-Name den Versand reihenweise scheitern liess, war ein Konto nach
+     fuenf Fehlschlaegen eine Stunde gesperrt, ohne dass je eine Mail
+     verschickt worden waere. Der Schutzzweck richtet sich gegen VERSANDTE
+     Mails — also zaehlt nur, was auch rausging. */
+  it("gescheiterte Versuche kosten keinen Slot (S117)", async () => {
+    let kaputt = true;
+    const mf2 = new Miniflare({
+      modules: true, script, kvNamespaces: ["PAARE"],
+      compatibilityDate: "2026-06-01",
+      bindings: { ADMIN_TOKEN: ADMIN, VERIFY_RATE: "2", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
+      serviceBindings: { async MAIL_UPSTREAM() { return new Response("x", { status: kaputt ? 500 : 200 }); } },
+    });
+    const alt = mf; mf = mf2;
+    try {
+      const { anna } = await frischesPaar();
+      // Fuenf Fehlschlaege am gestoerten Versand — mehr als VERIFY_RATE.
+      for (let i = 0; i < 5; i++)
+        expect((await anna.call("POST", "/api/email", { email: "a@example.com" })).status).toBe(502);
+      // Ungueltige Adresse und fremdbelegte zaehlen ebenso wenig.
+      expect((await anna.call("POST", "/api/email", { email: "kein-at" })).status).toBe(400);
+      // Versand wieder da: die zwei Slots sind unangetastet.
+      kaputt = false;
+      expect((await anna.call("POST", "/api/email", { email: "a@example.com" })).status).toBe(200);
+      expect((await anna.call("POST", "/api/email", { email: "a@example.com" })).status).toBe(200);
+      expect((await anna.call("POST", "/api/email", { email: "a@example.com" })).status,
+        "erst die zugestellten zaehlen").toBe(429);
+    } finally { mf = alt; await mf2.dispose(); }
+  });
+
+  /* Das Fenster ist FEST ab dem ersten gezaehlten Versand, nicht gleitend —
+     sonst haelt sich eine Sperre selbst am Leben. Sichtbar daran, dass die
+     genannte Restzeit faellt statt zu springen. */
+  it("die genannte Restzeit laeuft ab, statt sich zu erneuern (S117)", async () => {
+    const mf2 = new Miniflare({
+      modules: true, script, kvNamespaces: ["PAARE"],
+      compatibilityDate: "2026-06-01",
+      bindings: { ADMIN_TOKEN: ADMIN, VERIFY_RATE: "1", EMAIL_KEY: "abababababababababababababababababababababababababababababababab" },
+      serviceBindings: { async MAIL_UPSTREAM() { return new Response("ok"); } },
+    });
+    const alt = mf; mf = mf2;
+    try {
+      const { anna } = await frischesPaar();
+      await anna.call("POST", "/api/email", { email: "a@example.com" });
+      const erst = (await anna.call("POST", "/api/email", { email: "a@example.com" })).data.retryAfter;
+      await new Promise(r => setTimeout(r, 1100));
+      const spaeter = (await anna.call("POST", "/api/email", { email: "a@example.com" })).data.retryAfter;
+      expect(spaeter).toBeLessThan(erst);
     } finally { mf = alt; await mf2.dispose(); }
   });
 });

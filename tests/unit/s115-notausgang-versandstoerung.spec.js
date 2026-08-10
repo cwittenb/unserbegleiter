@@ -12,7 +12,6 @@
 // eigentliche Aussage:
 //   · Ein Tippfehler (email_invalid) öffnet ihn nicht.
 //   · Eine fremdbelegte Adresse (email_taken) öffnet ihn nicht.
-//   · Das Ratenlimit (verify_rate) öffnet ihn nicht.
 //   · Ein EINZELNER Versandfehler öffnet ihn nicht.
 // Erst der zweite mail_failed macht ihn sichtbar.
 
@@ -35,8 +34,9 @@ const q = name => {
   return k ? k.querySelector('[data-rec="' + name + '"]') : null;
 };
 
-/** Backend, dessen beginVerify immer mit einem bestimmten Fehler scheitert. */
-function backendMitFehler(code, status) {
+/** Backend, dessen beginVerify immer mit einem bestimmten Fehler scheitert.
+ *  `extra` haengt Felder ans Fehlerobjekt (S117: retryAfter). */
+function backendMitFehler(code, status, extra) {
   return {
     async info() {
       return { role: "A", name: "Anna", partner: "Bernd", nameA: "Anna", nameB: "Bernd",
@@ -48,7 +48,7 @@ function backendMitFehler(code, status) {
     llm: async () => ({ text: "ok", stop: "end_turn" }),
     recovery: {
       beginVerify: async () => {
-        throw Object.assign(new Error("Fehlschlag"), { code, status: status || 400 });
+        throw Object.assign(new Error("Fehlschlag"), { code, status: status || 400, ...(extra || {}) });
       },
       confirm: async () => {},
     },
@@ -113,7 +113,6 @@ describe("S115 · der Griff öffnet nur bei echter Störung", () => {
   for (const [code, was] of [
     ["email_invalid", "ein Tippfehler in der Adresse"],
     ["email_taken", "eine fremdbelegte Adresse"],
-    ["verify_rate", "das Ratenlimit"],
   ]) {
     it(`${was} (${code}) öffnet ihn nie`, async () => {
       const app = createApp({ doc: document, backend: backendMitFehler(code), root });
@@ -160,5 +159,64 @@ describe("S115 · was der Griff bewirkt", () => {
     await app.boot();
     await ruhe();
     expect(kasten()).toBeNull();
+  });
+});
+
+/* S117 · Das Ratenlimit hat die Seite gewechselt.
+ *
+ * In S115 zählte `verify_rate` bewusst NICHT mit: es sagt etwas über das
+ * Verhalten der Person aus, nicht über den Kanal. Das war zu ordentlich
+ * gedacht. Ein Ratenlimit ist für die nächste Stunde eine Wand, durch die
+ * niemand kommt — und der Screen ist nicht verlassbar. Die Person sass bis zu
+ * eine Stunde in einem Raum ohne Tür und las einen Satz, der ihr nicht sagte,
+ * wie lange. Genau der Zustand, den der Notausgang verhindern sollte, nur
+ * durch eine Tür, die in S115 niemand mitgezählt hat.
+ *
+ * Anders als bei mail_failed braucht es hier keine Bestätigungsrunde: ein
+ * einzelner Versandfehler kann ein Zucken sein, ein Ratenlimit ist beim ersten
+ * Auftreten schon die volle Aussage. */
+describe("S117 · das Ratenlimit öffnet sofort", () => {
+  it("ein einziges verify_rate genügt — keine zweite Runde", async () => {
+    const app = createApp({ doc: document, backend: backendMitFehler("verify_rate", 429, { retryAfter: 1800 }), root });
+    await app.boot();
+    await ruhe();
+    await versuch();
+    expect(q("notausgang"), "beim ersten Mal schon").toBeTruthy();
+  });
+
+  it("und er sagt, warum er da ist — nicht dieselbe Begründung wie bei Versandstörung", async () => {
+    const app = createApp({ doc: document, backend: backendMitFehler("verify_rate", 429, { retryAfter: 1800 }), root });
+    await app.boot();
+    await ruhe();
+    await versuch();
+    const text = q("notausgang").closest(".rz-fuss").textContent;
+    expect(text).toContain("zu viele Anfragen");
+    expect(text, "nicht der Versandstörungs-Text").not.toContain("liegt an uns");
+  });
+
+  /* Die Frist ist der eigentliche Gewinn: "etwas später" ist vor einer
+     verschlossenen Tür keine Auskunft. Der Worker nennt Sekunden, die
+     Oberfläche rundet auf Minuten auf — niemand wartet auf die Sekunde. */
+  it("nennt die Wartezeit in Minuten, aufgerundet", async () => {
+    const app = createApp({ doc: document, backend: backendMitFehler("verify_rate", 429, { retryAfter: 1801 }), root });
+    await app.boot();
+    await ruhe();
+    await versuch();
+    expect(q("note").textContent).toContain("31");        // 1801 s → 31 Minuten
+    expect(q("note").getAttribute("role")).toBe("alert");
+  });
+
+  /* Fehlt die Frist (alter Worker, Antwort ohne retryAfter), faellt die
+     Meldung auf den fristlosen i18n-Text zurueck — der Ausgang kommt
+     trotzdem. Die Oberflaeche darf nicht davon abhaengen, dass der Server
+     schon auf S117 steht. */
+  it("ohne mitgereiste Frist bleibt es bei der fristlosen Meldung", async () => {
+    const app = createApp({ doc: document, backend: backendMitFehler("verify_rate", 429), root });
+    await app.boot();
+    await ruhe();
+    await versuch();
+    expect(q("note").textContent).toContain("Zu viele Anfragen");
+    expect(q("note").textContent, "keine erfundene Minutenzahl").not.toMatch(/\d+ Minuten/);
+    expect(q("notausgang"), "der Ausgang kommt trotzdem").toBeTruthy();
   });
 });

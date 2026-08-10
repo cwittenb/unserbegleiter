@@ -427,12 +427,50 @@ async function route(request, env) {
    *  hier gibt es kein Enumerations-Risiko, sie nennt ihre eigene Adresse.
    *  Schritt 2 (/api/email/confirm): Code prüfen; erst dann zählt die Adresse. ---- */
   if (p === "/api/email" && request.method === "POST") {
-    // Raten-Limit je Konto: verhindert, dass eine Session als Mail-Kanone
-    // gegen fremde Postfächer dient.
+    /* Raten-Limit je Konto: verhindert, dass eine Session als Mail-Kanone
+     * gegen fremde Postfaecher dient.
+     *
+     * S117 · Zwei Fehler steckten hier, und beide zeigten sich erst im
+     * Betrieb:
+     *
+     * 1. Gezaehlt wurde VOR dem Versuch. Ein Tippfehler in der Adresse, eine
+     *    belegte Adresse, ein gestoerter Versand — alles kostete einen Slot,
+     *    obwohl keine einzige Mail das System verlassen hat. Als der
+     *    HELO-Name den Versand reihenweise scheitern liess (siehe mailer.js),
+     *    war ein Konto nach fuenf Fehlschlaegen eine Stunde gesperrt, ohne
+     *    dass je etwas verschickt worden waere. Der Schutzzweck richtet sich
+     *    gegen VERSANDTE Mails — also wird jetzt erst nach erfolgreichem
+     *    sendMail gezaehlt.
+     *
+     * 2. Die Antwort nannte keine Frist ("Bitte etwas spaeter erneut"). KV
+     *    gibt die Rest-TTL beim Lesen nicht heraus, also haelt der Eintrag
+     *    jetzt { n, bis } statt einer nackten Zahl und die 429 nennt die
+     *    Sekunden — im Feld retryAfter und im Retry-After-Kopf.
+     *    Altbestaende aus der Zeit davor (nackte Zahl) werden gelesen, als
+     *    begaenne ihr Fenster jetzt: eine Stunde einmalig, dann ist das
+     *    Format ueberall neu.
+     *
+     * Das Fenster ist FEST ab dem ersten gezaehlten Versand, nicht gleitend:
+     * die TTL schrumpft mit, statt bei jedem Versand neu zu starten. Sonst
+     * haelt sich eine Sperre selbst am Leben. */
     const vlKey = "sys/veriflimit/" + session.code + "/" + session.role;
-    const cnt = Number((await kv.get(vlKey)) || 0);
-    if (cnt >= (Number(env.VERIFY_RATE) || 5)) return fehler("Zu viele Anfragen. Bitte etwas später erneut.", 429, "verify_rate");
-    await kv.put(vlKey, String(cnt + 1), { expirationTtl: 3600 });
+    const grenze = Number(env.VERIFY_RATE) || 5;
+    const FENSTER_MS = 60 * 60 * 1000;
+    const jetzt = now();
+    const roh = await kv.get(vlKey);
+    let stand = null;
+    if (roh) {
+      try { stand = JSON.parse(roh); } catch { stand = null; }
+      if (!stand || typeof stand.n !== "number" || typeof stand.bis !== "number")
+        stand = { n: Number(roh) || 0, bis: jetzt + FENSTER_MS };   // Altbestand
+    }
+    if (stand && stand.bis <= jetzt) stand = null;                   // Fenster vorbei
+    if (stand && stand.n >= grenze) {
+      const restSek = Math.max(1, Math.ceil((stand.bis - jetzt) / 1000));
+      return json(
+        { error: "Zu viele Anfragen. Bitte etwas später erneut.", code: "verify_rate", retryAfter: restSek },
+        429, { "retry-after": String(restSek) });
+    }
 
     const { email } = await request.json().catch(() => ({}));
     try {
@@ -443,6 +481,10 @@ async function route(request, env) {
         subject: mt("mail.pin.betreff"),
         text: mt("mail.pin.text", { pin }),
       });
+      // Ab hier ist eine Mail unterwegs — erst jetzt zaehlt sie.
+      const bis = stand ? stand.bis : jetzt + FENSTER_MS;
+      await kv.put(vlKey, JSON.stringify({ n: (stand ? stand.n : 0) + 1, bis }),
+        { expirationTtl: Math.max(60, Math.ceil((bis - jetzt) / 1000)) });
       return json({ ok: true });
     } catch (e) {
       if (e.code) return fehler(e.message, e.status || 400, e.code);

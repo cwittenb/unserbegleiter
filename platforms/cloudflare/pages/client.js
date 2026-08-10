@@ -30,7 +30,10 @@ export async function api(method, pfad, body) {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw Object.assign(new Error(data.error || "Fehler " + r.status), { status: r.status, code: data.code });
+  // S117 · retryAfter reist mit: das Ratenlimit nennt seine Frist, und die
+  // Oberflaeche kann "noch X Minuten" sagen statt "etwas spaeter".
+  if (!r.ok) throw Object.assign(new Error(data.error || "Fehler " + r.status),
+    { status: r.status, code: data.code, retryAfter: data.retryAfter });
   return data;
 }
 

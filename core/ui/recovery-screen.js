@@ -135,11 +135,24 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
       senden.disabled = true;
       try { await backend.recovery.beginVerify(email); schritt2(email); }
       catch (e) {
-        sage(fehlerText(e), true);
-        /* S115 · Nur die Stoerung des Versands selbst zaehlt (mail_failed).
-           Alles andere sagt etwas ueber die EINGABE aus, nicht ueber den
-           Kanal — und darf den Notausgang nicht oeffnen. */
-        if (e && e.code === "mail_failed" && beiVersandStoerung) beiVersandStoerung();
+        /* S117 · Das Ratenlimit bekommt eine eigene Stimme. "Zu viele
+           Anfragen. Bitte etwas später erneut." laesst offen, ob "später"
+           eine Minute oder eine Stunde heisst — vor einem Screen, den man
+           nicht verlassen kann, ist das die falsche Auskunft. Der Worker
+           nennt seit S117 die Sekunden (retryAfter); hier werden daraus
+           aufgerundete Minuten, denn niemand wartet auf die Sekunde. */
+        const rate = e && e.code === "verify_rate";
+        if (rate && e.retryAfter)
+          sage(t("rec.rateWarten", { minuten: Math.max(1, Math.ceil(e.retryAfter / 60)) }), true);
+        else sage(fehlerText(e), true);
+        /* Zwei Wege in den Notausgang, und sie zaehlen verschieden:
+           mail_failed ist ein Befund ueber den Kanal und braucht eine
+           Bestaetigung (einer kann ein Zucken sein) — verify_rate ist beim
+           ERSTEN Auftreten schon die volle Aussage: fuer die naechste Stunde
+           kommt hier niemand durch. Alles andere (email_invalid, email_taken)
+           sagt etwas ueber die Eingabe und oeffnet gar nichts. */
+        if (beiVersandStoerung && (rate || (e && e.code === "mail_failed")))
+          beiVersandStoerung(rate ? "verify_rate" : "mail_failed");
       }
       finally { senden.disabled = false; }
     });
@@ -329,11 +342,14 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
        Versprechen auf halbem Weg. Er steht im Zonenfuss, dort, wo in dieser
        App das Weitergehen steht. */
     let stoerungen = 0;
-    const oeffneNotausgang = () => {
-      if (++stoerungen < NOTAUS_AB || fuss.childElementCount) return;
+    const oeffneNotausgang = (art) => {
+      // S117 · Ein Ratenlimit braucht keine Bestaetigungsrunde: es ist eine
+      // Wand mit bekannter Dauer. mail_failed bleibt bei zwei.
+      stoerungen = art === "verify_rate" ? NOTAUS_AB : stoerungen + 1;
+      if (stoerungen < NOTAUS_AB || fuss.childElementCount) return;
       const hinweis = doc.createElement("p");
       hinweis.className = "rz-fein-leise";
-      hinweis.textContent = t("rec.pflicht.stoerung");
+      hinweis.textContent = t(art === "verify_rate" ? "rec.pflicht.stoerungRate" : "rec.pflicht.stoerung");
       const raus = doc.createElement("button");
       raus.className = "rz-zeile rz-knopf-flach";
       raus.setAttribute("type", "button");

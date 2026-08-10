@@ -352,6 +352,8 @@ export const en = {
   "rec.pflicht.titel": "Secure Your Access First",
   "rec.pflicht.text": "So you can never lose your access, add an email address now and confirm it with the code we send you. This address is how you get a new access link when needed and where important service notices arrive (e.g. planned maintenance or security alerts) — never advertising. Use a mailbox only you can access.",
   "rec.pflicht.stoerung": "Sending is failing right now. That is on us, not on you. You can go in and add the address later in your own room — please do, otherwise your access hangs on this one device.",
+  "rec.pflicht.stoerungRate": "Too many requests have come from this account — sending is paused for a while. You can go in and add the address later in your own room. Please do, otherwise your access hangs on this one device.",
+  "rec.rateWarten": "Too many requests in a short time. It will work again in about {minuten} minutes.",
   "rec.pflicht.notausgang": "Continue without an address",
 
   // Dictation

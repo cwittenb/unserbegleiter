@@ -52,6 +52,35 @@ export function baueNachricht({ to, from, subject, text }) {   // exportiert (S6
   ].join("\r\n");
 }
 
+/* S117 · Der HELO-Name muss ein qualifizierter Hostname sein.
+ *
+ * Bis hierher stand woertlich "EHLO paarbegleitung" im Dialog. Postfix weist
+ * das mit reject_non_fqdn_helo_hostname ab — und zwar, weil die Regel an der
+ * Empfaenger-Stufe ausgewertet wird, erst bei RCPT:
+ *   504 5.5.2 <paarbegleitung>: Helo command rejected: need fully-qualified
+ *   hostname (nach RCPT)
+ * Das EHLO selbst kam noch mit 250 durch, der Dialog lief bis kurz vor die
+ * Nachricht, und JEDER Adress-Versand ist dort gestorben. Sichtbar war davon
+ * nichts ausser "Der Versand ist gerade nicht moeglich" — die Ursache stand
+ * allein im wrangler-tail.
+ *
+ * Die Reihenfolge der Kandidaten hat einen Grund:
+ *   1. SMTP_HELO — falls der Provider einen bestimmten Namen erwartet.
+ *   2. Die Domain aus SMTP_FROM — die konventionell richtige Wahl: HELO-Name
+ *      und Absenderdomain sollten zusammenpassen.
+ *   3. SMTP_HOST — per Definition ein FQDN, taugt als letzte Rueckfalllinie.
+ * Traegt keiner davon einen Punkt, wird fail-closed geworfen statt in
+ * denselben 504 zu laufen — dieselbe Linie wie bei Port 25 und fehlender
+ * Konfiguration. */
+export function heloName(env, from) {
+  for (const roh of [env.SMTP_HELO, String(from || "").split("@")[1], env.SMTP_HOST]) {
+    const v = String(roh || "").trim();
+    if (v.includes(".") && !/\s/.test(v)) return v;
+  }
+  throw new Error("SMTP_HELO fehlt \u2014 kein qualifizierter Hostname ableitbar. "
+    + "SMTP_HELO setzen oder SMTP_FROM/SMTP_HOST mit einer Domain versehen.");
+}
+
 async function sendSmtp(env, { to, subject, text }) {
   const host = env.SMTP_HOST;
   const port = Number(env.SMTP_PORT || 587);
@@ -61,8 +90,11 @@ async function sendSmtp(env, { to, subject, text }) {
   if (!host || !user || !pass) throw new Error("SMTP nicht konfiguriert (SMTP_HOST/SMTP_USER/SMTP_PASS).");
   if (port === 25) throw new Error("Port 25 ist in Workers gesperrt — bitte 587 (STARTTLS) oder 465 (TLS).");
 
-  const implicit = port === 465;
-  let socket = connect(
+  // VOR dem Verbindungsaufbau: ein Konfigurationsfehler soll keinen Socket
+  // kosten und keine halbe SMTP-Sitzung hinterlassen.
+  const helo = heloName(env, from);
+
+  const implicit = port === 465;  let socket = connect(
     { hostname: host, port },
     { secureTransport: implicit ? "on" : "starttls", allowHalfOpen: false }
   );
@@ -100,7 +132,7 @@ async function sendSmtp(env, { to, subject, text }) {
 
   try {
     await sag(null, 2);                                   // Begrüßung
-    await sag("EHLO paarbegleitung", 2);
+    await sag("EHLO " + helo, 2);
 
     if (!implicit) {
       await sag("STARTTLS", 2);
@@ -109,7 +141,7 @@ async function sendSmtp(env, { to, subject, text }) {
       writer = socket.writable.getWriter();
       reader = socket.readable.getReader();
       puffer = "";
-      await sag("EHLO paarbegleitung", 2);
+      await sag("EHLO " + helo, 2);
     }
 
     await sag("AUTH LOGIN", 3);

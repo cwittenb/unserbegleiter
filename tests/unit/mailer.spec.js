@@ -4,7 +4,7 @@
 // braucht ihn nicht (Service-Binding-Mock wie in den Miniflare-Tests).
 
 import { describe, it, expect } from "vitest";
-import { makeMailer, baueNachricht } from "../../platforms/cloudflare/worker/mailer.js";
+import { makeMailer, baueNachricht, heloName } from "../../platforms/cloudflare/worker/mailer.js";
 import { setzeSmtpSkript, gesendet } from "../fixtures/cloudflare-sockets-stub.js";
 
 const MSG = { to: "anna@example.org", subject: "Zugang", text: "Hallo Anna,\nhier dein Link." };
@@ -70,7 +70,11 @@ describe("Mailer · SMTP-Dialog gegen gescripteten Fake-Server", () => {
     ]);
     await makeMailer(env465).sendMail(MSG);
     const dialog = gesendet().join("");
-    expect(dialog).toContain("EHLO paarbegleitung");
+    // S117 · Der HELO-Name ist ein FQDN. Hier greift die dritte Stufe der
+    // Ableitung: SMTP_FROM ist "noreply@example" — die Domain traegt keinen
+    // Punkt, also uebernimmt SMTP_HOST.
+    expect(dialog).toContain("EHLO smtp.example");
+    expect(dialog, "der alte, nicht qualifizierte Name ist weg").not.toContain("EHLO paarbegleitung");
     expect(dialog).toContain("AUTH LOGIN");
     expect(dialog).toContain(btoa("user"));
     expect(dialog).toContain("MAIL FROM:<noreply@example>");
@@ -87,5 +91,37 @@ describe("Mailer · SMTP-Dialog gegen gescripteten Fake-Server", () => {
   it("vorzeitig beendete Verbindung wird als Fehler gemeldet (kein Hängen)", async () => {
     setzeSmtpSkript(["220 bereit"]);                            // danach schließt der Fake-Server
     await expect(makeMailer(env465).sendMail(MSG)).rejects.toThrow(/vorzeitig beendet/);
+  });
+});
+
+/* S117 · Der HELO-Name. Der Betriebsfund, der diesen Test noetig gemacht hat:
+   der Dialog sagte woertlich "EHLO paarbegleitung", und Postfix weist das mit
+   reject_non_fqdn_helo_hostname ab — erst bei RCPT, weil die Regel dort
+   ausgewertet wird. Jeder Adress-Versand starb an dieser Stelle, sichtbar nur
+   im wrangler-tail. */
+describe("Mailer · HELO-Name (S117)", () => {
+  it("nimmt SMTP_HELO, wenn gesetzt — der Provider hat das letzte Wort", () => {
+    expect(heloName({ SMTP_HELO: "mail.raumzuzweit.de", SMTP_HOST: "smtp.anders.de" }, "no@raumzuzweit.de"))
+      .toBe("mail.raumzuzweit.de");
+  });
+
+  it("sonst die Domain der Absenderadresse — HELO und Absender sollen zusammenpassen", () => {
+    expect(heloName({ SMTP_HOST: "smtp.provider.de" }, "noreply@raumzuzweit.de")).toBe("raumzuzweit.de");
+  });
+
+  it("sonst SMTP_HOST — per Definition ein FQDN", () => {
+    expect(heloName({ SMTP_HOST: "smtp.provider.de" }, "noreply@localdomain")).toBe("smtp.provider.de");
+  });
+
+  it("ohne Punkt nirgends: fail-closed mit Ansage statt 504 im Betrieb", () => {
+    expect(() => heloName({ SMTP_HOST: "localhost" }, "user")).toThrow(/SMTP_HELO/);
+    // Und der Versand kommt gar nicht erst zum Socket.
+    return expect(makeMailer({ SMTP_HOST: "localhost", SMTP_USER: "u", SMTP_PASS: "p" }).sendMail(MSG))
+      .rejects.toThrow(/SMTP_HELO/);
+  });
+
+  it("Leerzeichen zaehlen nicht als Hostname", () => {
+    expect(heloName({ SMTP_HELO: "kein hostname.de", SMTP_HOST: "smtp.provider.de" }, "a@b"))
+      .toBe("smtp.provider.de");
   });
 });
