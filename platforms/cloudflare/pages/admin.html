@@ -160,6 +160,21 @@
       <div id="expMsg"></div>
     </div>
 
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label for="mtTo">Versandweg prüfen</label>
+        <p class="hint">Spielt den SMTP-Dialog bis zum Empfänger durch und bricht dort ab — es wird nichts verschickt. Prüft Verbindung, STARTTLS, HELO-Regel, Anmeldung, Absender und Empfänger. Nur mit Haken darunter geht wirklich eine Testmail raus.</p>
+        <input id="mtTo" type="text" autocomplete="off" placeholder="Zieladresse, z. B. du@example.de">
+      </div>
+      <label class="hint" style="display:block;margin-bottom:10px">
+        <input id="mtSend" type="checkbox" style="margin-right:6px">echte Testmail senden (prüft auch alles hinter DATA)
+      </label>
+      <button id="mtGo" class="primary">Weg prüfen</button>
+      <button id="msGo" class="primary" style="margin-left:8px;background:#fff;color:var(--accent)">Befunde der letzten Tage</button>
+      <div id="mtMsg"></div>
+      <div id="mtOut" style="margin-top:10px"></div>
+    </div>
+
     <p class="foot">
       Die Links sind <b>einmalig</b>: Beim ersten Öffnen wird die Person fest dem Paar zugeordnet, danach ist der Link verbraucht.
       Reicht jede:r Person genau ihren Link.
@@ -475,6 +490,82 @@
       expMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">Export geladen (' + Object.keys(data.shared).length + ' geteilte, ' + Object.keys(data.privat).length + ' private Einträge).</div>';
     }).catch(function(){ expFehler("Verbindung fehlgeschlagen."); })
       .finally(function(){ expGo.disabled = false; expGo.textContent = "Export herunterladen"; });
+  });
+
+  /* S118 · Versandweg pruefen und Befunde lesen.
+     Der Betriebsfund dahinter: Der HELO-Name war nicht qualifiziert, jeder
+     Adress-Versand starb bei RCPT, und niemand merkte es — weil eine Stoerung
+     nirgends auffiel. Diese zwei Knoepfe sind die Stelle, an der man ohne
+     Verdacht nachsehen kann. */
+  var mtGo = $("mtGo"), msGo = $("msGo"), mtMsg = $("mtMsg"), mtOut = $("mtOut");
+  function mtFehler(text){ mtMsg.innerHTML = '<div class="msg err">' + text + '</div>'; }
+  function mtGut(text){ mtMsg.innerHTML = '<div class="msg" style="background:var(--ok-bg);border:1px solid var(--ok-line)">' + text + '</div>'; }
+  function esc(t){ var d = document.createElement("div"); d.textContent = String(t == null ? "" : t); return d.innerHTML; }
+
+  function zeigeBefund(b){
+    mtOut.innerHTML = "";
+    var zeilen = [];
+    if(b.helo) zeilen.push(["HELO-Name", b.helo]);
+    zeilen.push(["Weg", b.weg]);
+    if(b.stufe) zeilen.push(["Gescheitert bei", b.stufe + (b.smtpCode ? " (" + b.smtpCode + ")" : "")]);
+    if(b.meldung) zeilen.push(["Meldung", b.meldung]);
+    if(b.hinweis) zeilen.push(["Hinweis", b.hinweis]);
+    if(b.spur && b.spur.length)
+      zeilen.push(["Verlauf", b.spur.map(function(x){ return x.stufe + " " + x.code; }).join("  ·  ")]);
+    mtOut.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:14px">' +
+      zeilen.map(function(z){
+        return '<tr><td style="padding:6px 8px;border-bottom:1px solid var(--line);color:var(--ink-soft);white-space:nowrap">' +
+          esc(z[0]) + '</td><td style="padding:6px 8px;border-bottom:1px solid var(--line)">' + esc(z[1]) + "</td></tr>";
+      }).join("") + "</table>";
+  }
+
+  mtGo.addEventListener("click", function(){
+    var tok = $("tok").value, to = $("mtTo").value.trim();
+    if(!tok){ mtFehler("Bitte das Admin-Token eingeben."); return; }
+    if(!to){ mtFehler("Bitte eine Zieladresse eingeben."); return; }
+    var senden = $("mtSend").checked;
+    mtGo.disabled = true; mtGo.textContent = "Prüfe …"; mtMsg.innerHTML = ""; mtOut.innerHTML = "";
+    fetch(basis() + "/api/mailtest", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-admin-token": tok },
+      body: JSON.stringify({ to: to, senden: senden }),
+    }).then(function(res){
+      if(res.status === 401){ mtFehler("Admin-Token fehlt oder ist falsch."); return null; }
+      return res.json();
+    }).then(function(b){
+      if(!b) return;
+      if(b.ok) mtGut(b.gesendet ? "Der Weg funktioniert — eine Testmail ist unterwegs." : "Der Weg funktioniert bis zum Empfänger. Es wurde nichts verschickt.");
+      else mtFehler("Der Versand scheitert.");
+      zeigeBefund(b);
+    }).catch(function(){ mtFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ mtGo.disabled = false; mtGo.textContent = "Weg prüfen"; });
+  });
+
+  msGo.addEventListener("click", function(){
+    var tok = $("tok").value;
+    if(!tok){ mtFehler("Bitte das Admin-Token eingeben."); return; }
+    msGo.disabled = true; msGo.textContent = "Lade …"; mtMsg.innerHTML = ""; mtOut.innerHTML = "";
+    fetch(basis() + "/api/mailstat", { headers: { "x-admin-token": tok } }).then(function(res){
+      if(res.status === 401){ mtFehler("Admin-Token fehlt oder ist falsch."); return null; }
+      return res.json();
+    }).then(function(d){
+      if(!d) return;
+      if(!d.tage.length){ mtGut("Noch keine Versandbefunde aufgezeichnet."); return; }
+      var kopf = '<tr><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)">Tag</th>' +
+        '<th style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)">zugestellt</th>' +
+        '<th style="text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)">gescheitert</th></tr>';
+      mtOut.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:14px">' + kopf +
+        d.tage.map(function(t){
+          return "<tr><td style=\"padding:6px 8px;border-bottom:1px solid var(--line)\">" + esc(t.tag) +
+            '</td><td style="padding:6px 8px;border-bottom:1px solid var(--line);text-align:right">' + t.ok +
+            '</td><td style="padding:6px 8px;border-bottom:1px solid var(--line);text-align:right' +
+            (t.fehler ? ";color:var(--accent);font-weight:600" : "") + '">' + t.fehler + "</td></tr>";
+        }).join("") + "</table>";
+      if(d.letzterFehler)
+        mtFehler("Zuletzt gescheitert (" + esc(d.letzterFehler.zweck) + "): " + esc(d.letzterFehler.meldung || ""));
+      else mtGut("Kein Fehlschlag im aufgezeichneten Zeitraum.");
+    }).catch(function(){ mtFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ msGo.disabled = false; msGo.textContent = "Befunde der letzten Tage"; });
   });
 
   go.addEventListener("click", function(){

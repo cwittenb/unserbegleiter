@@ -28,7 +28,8 @@ import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
 import { randomToken, sha256Hex, leseJson, holePaar, schreibeAudit } from "./util.js";
 import { mailText } from "./mail-texte.js";   // R7
 import { importEmailKey, entschluessele, emailAad } from "./krypto.js";
-import { makeMailer } from "./mailer.js";
+import { makeMailer, pruefeVersand } from "./mailer.js";
+import { leseMailStat } from "./mailstat.js";   // S118
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), {
@@ -146,6 +147,37 @@ async function route(request, env) {
     const ssSession = istAppOrigin(request.headers.get("Origin")) ? "None" : undefined;
     return json({ ok: true }, 200, { "Set-Cookie": cookieHeader("pb_sid", sid, { sameSite: ssSession }) });
   }
+  /* ---- S118 · Versandweg prüfen und Versandbefunde lesen (admin-gated).
+   *
+   *  Der Anlass: Der HELO-Name war seit jeher nicht qualifiziert, jeder
+   *  Adress-Versand starb bei RCPT — und blieb unentdeckt, weil eine Störung
+   *  nirgends auffällt. Nach außen stand nur „Der Versand ist gerade nicht
+   *  möglich", die Ursache allein im `wrangler tail`. Diese zwei Routen sind
+   *  die Antwort darauf: eine für den Verdacht (prüfen), eine für die Frage
+   *  ohne Verdacht (was war zuletzt).
+   *
+   *  /api/mailtest fährt standardmäßig den vollen Dialog bis RCPT und bricht
+   *  dann ab — Verbindung, STARTTLS, HELO-Regel, Anmeldung, Absender und
+   *  Empfänger sind damit geprüft, ohne dass jemand eine Mail bekommt. Erst
+   *  { senden: true } verschickt wirklich etwas.
+   *
+   *  Kein eigenes Raten-Limit: der Endpunkt ist admin-gated und fail-closed
+   *  (ohne ADMIN_TOKEN kommt niemand hinein), und ohne { senden: true }
+   *  verlässt gar keine Mail das System. Ein Deckel gegen den Betreiber selbst
+   *  wäre hier Theater. ---- */
+  if (p === "/api/mailtest" && request.method === "POST") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    const { to, senden } = await request.json().catch(() => ({}));
+    const befund = await pruefeVersand(env, { to, senden: senden === true });
+    // Auch der Fehlschlag ist eine erfolgreiche Auskunft — deshalb 200 und
+    // nicht 502: die Frage war „funktioniert der Weg", und sie ist beantwortet.
+    return json(befund);
+  }
+  if (p === "/api/mailstat" && request.method === "GET") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    return json(await leseMailStat(kv));
+  }
+
   /* ---- Betreiber-Liste: alle Paare mit Adress-Status (admin-gated, S45).
    *  Zweck: Der Paar-Code ist der Unique Key (Namen sind reine Anzeige-Labels);
    *  ohne diese Liste wäre ein verlorener Code unauffindbar — und damit auch
@@ -198,7 +230,7 @@ async function route(request, env) {
       const adresse = await entschluessele(await importEmailKey(env),
         (await leseEmailFor(kv, code, role))?.enc, emailAad(code, role));
       const mt = mailText(await holePaar(kv, code));   // R7: Sprache des Paars
-      await makeMailer(env).sendMail({
+      await makeMailer(env, "relink").sendMail({
         to: adresse,
         subject: mt("mail.relink.betreff"),
         text: mt("mail.relink.text"),
@@ -235,7 +267,7 @@ async function route(request, env) {
     const token = await mintMagic(kv, code, role, now, RECOVER_MS);
     const url = new URL(request.url);
     const mt = mailText(await holePaar(kv, code));   // R7
-    await makeMailer(env).sendMail({
+    await makeMailer(env, "resend").sendMail({
       to: adresse,
       subject: mt("mail.resend.betreff"),
       text: mt("mail.resend.text", { link: url.origin + "/#t=" + token }),
@@ -277,7 +309,7 @@ async function route(request, env) {
     if (nEintrag.inhaltHash !== inhaltHash) return fehler("Der Inhalt wurde seit der Vorschau geändert — bitte erneut prüfen.", 409, "nonce_mismatch");
     await kv.delete(nKey);                                   // VOR dem Versand verbrauchen: kein Doppel-Versand bei Retry
     const emailKey = await importEmailKey(env);
-    const mailer = makeMailer(env);
+    const mailer = makeMailer(env, "broadcast");
     let gesendet = 0, fehlgeschlagen = 0;
     for (const e of empfaenger) {
       try {
@@ -339,7 +371,7 @@ async function route(request, env) {
       const link = new URL(request.url).origin + "/#t=" + token;
       try {
         const mt = mailText(await holePaar(kv, treffer.code));   // R7
-        await makeMailer(env).sendMail({
+        await makeMailer(env, "recover").sendMail({
           to: String(email).trim(),
           subject: mt("mail.recover.betreff"),
           text: mt("mail.recover.text", { link }),
@@ -476,7 +508,7 @@ async function route(request, env) {
     try {
       const { pin, email: clean } = await beginRecoveryEmail(kv, session, email, now);
       const mt = mailText(await holePaar(kv, session.code));   // R7
-      await makeMailer(env).sendMail({
+      await makeMailer(env, "pin").sendMail({
         to: clean,
         subject: mt("mail.pin.betreff"),
         text: mt("mail.pin.text", { pin }),

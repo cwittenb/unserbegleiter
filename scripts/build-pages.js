@@ -162,7 +162,11 @@ html,body{height:100%}
     "#          wrangler secret put VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT",
     "#          (Schlüsselpaar erzeugen: node scripts/vapid-schluessel.mjs).",
     "# Verwaltung: <deine-domain>/admin.html  (Einladungslinks, Paar-Liste,",
-    "#          Export, Zugang wiederherstellen)",
+    "#          Export, Zugang wiederherstellen, Versandweg pruefen)",
+    "# Versand-Selbstpruefung (S118): dort \"Weg pruefen\" spielt den SMTP-Dialog",
+    "#          bis zum Empfaenger durch, ohne etwas zu verschicken, und nennt",
+    "#          die Stufe des Fehlschlags. \"Befunde der letzten Tage\" zeigt,",
+    "#          wie oft zuletzt zugestellt und wie oft gescheitert wurde.",
     "",
   ].join("\n"));
   // D7 · Landing fuer die Apex-Domain (raumzuzweit.de): eigenstaendiges,

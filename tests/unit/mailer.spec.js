@@ -4,7 +4,7 @@
 // braucht ihn nicht (Service-Binding-Mock wie in den Miniflare-Tests).
 
 import { describe, it, expect } from "vitest";
-import { makeMailer, baueNachricht, heloName } from "../../platforms/cloudflare/worker/mailer.js";
+import { makeMailer, baueNachricht, heloName, pruefeVersand } from "../../platforms/cloudflare/worker/mailer.js";
 import { setzeSmtpSkript, gesendet } from "../fixtures/cloudflare-sockets-stub.js";
 
 const MSG = { to: "anna@example.org", subject: "Zugang", text: "Hallo Anna,\nhier dein Link." };
@@ -123,5 +123,77 @@ describe("Mailer · HELO-Name (S117)", () => {
   it("Leerzeichen zaehlen nicht als Hostname", () => {
     expect(heloName({ SMTP_HELO: "kein hostname.de", SMTP_HOST: "smtp.provider.de" }, "a@b"))
       .toBe("smtp.provider.de");
+  });
+});
+
+/* S118 · Die Selbstpruefung des Versandwegs — gegen den gescripteten
+   Fake-Server, also derselbe Dialog wie im Betrieb.
+
+   Warum das ueberhaupt existiert: Der HELO-Fehler aus S117 blieb monatelang
+   unentdeckt, weil eine Stoerung nirgends auffiel. Die Pruefung ist die
+   Stelle, an der man ohne Verdacht nachsehen kann. */
+describe("Mailer · pruefeVersand (S118)", () => {
+  const env465 = { SMTP_HOST: "smtp.example", SMTP_PORT: "465", SMTP_USER: "user", SMTP_PASS: "pass", SMTP_FROM: "noreply@raumzuzweit.de" };
+
+  it("ohne gueltige Zieladresse gar kein Dialog", async () => {
+    const b = await pruefeVersand(env465, { to: "kein-at" });
+    expect(b.ok).toBe(false);
+    expect(b.stufe).toBe("EINGABE");
+  });
+
+  /* Der Normalfall: voller Dialog bis RCPT, dann RSET/QUIT. Geprueft sind
+     damit Verbindung, HELO-Regel, Anmeldung, Absender und Empfaenger — ohne
+     dass jemand eine Mail bekommt. */
+  it("prueft bis zum Empfaenger und verschickt dabei nichts", async () => {
+    setzeSmtpSkript([
+      "220 bereit", "250 hallo", "334 u", "334 p", "235 ok",
+      "250 absender", "250 empfaenger", "250 rset", "221 tschuess",
+    ]);
+    const b = await pruefeVersand(env465, { to: "du@example.org" });
+    expect(b.ok).toBe(true);
+    expect(b.helo).toBe("raumzuzweit.de");
+    expect(b.gesendet).toBe(false);
+    const dialog = gesendet().join("");
+    expect(dialog).toContain("RCPT TO:<du@example.org>");
+    expect(dialog, "vor DATA ist Schluss").not.toContain("DATA");
+    expect(dialog, "die begonnene Transaktion wird abgeraeumt").toContain("RSET");
+  });
+
+  /* Der Befund nennt die Stufe. Genau daran haette man den HELO-Fehler in
+     zwei Sekunden gesehen, statt ihn im Tail zu suchen. */
+  it("nennt bei Fehlschlag die Stufe und den SMTP-Code", async () => {
+    setzeSmtpSkript([
+      "220 bereit", "250 hallo", "334 u", "334 p", "235 ok",
+      "250 absender",
+      "504 5.5.2 <paarbegleitung>: Helo command rejected: need fully-qualified hostname",
+    ]);
+    const b = await pruefeVersand(env465, { to: "du@example.org" });
+    expect(b.ok).toBe(false);
+    expect(b.stufe).toBe("RCPT");
+    expect(b.smtpCode).toBe(504);
+    expect(b.meldung).toContain("fully-qualified");
+  });
+
+  /* Die Spur ist fuer Menschen gedacht, die einen Fehlschlag lesen muessen —
+     und sie landet in einer Admin-Antwort. Was dort steht, muss gefahrlos
+     sein: Stufen und Antwortcodes, kein Kennwort, keine Benutzerkennung. */
+  it("die Spur traegt keine Geheimnisse", async () => {
+    setzeSmtpSkript([
+      "220 bereit", "250 hallo", "334 u", "334 p", "235 ok",
+      "250 absender", "550 kein Empfaenger",
+    ]);
+    const b = await pruefeVersand(env465, { to: "du@example.org" });
+    const roh = JSON.stringify(b.spur);
+    expect(roh).not.toContain(btoa("pass"));
+    expect(roh).not.toContain(btoa("user"));
+    expect(roh).not.toContain("du@example.org");
+    expect(b.spur.map(x => x.stufe)).toContain("AUTH");
+  });
+
+  it("ein Konfigurationsfehler kostet keinen Socket", async () => {
+    const b = await pruefeVersand({ SMTP_HOST: "localhost", SMTP_USER: "u", SMTP_PASS: "p" }, { to: "du@example.org" });
+    expect(b.ok).toBe(false);
+    expect(b.stufe).toBe("HELO");
+    expect(b.meldung).toMatch(/SMTP_HELO/);
   });
 });
