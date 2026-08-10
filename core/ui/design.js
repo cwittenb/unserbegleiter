@@ -306,7 +306,45 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            letzten Regalzeile. */
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile~.rz-zeile,
         .rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen~*:not(.rz-fuss){margin-top:0}
+
+        /* ---- S119.4 · Die Einstellungen sind der eine Screen, dessen BEIDE
+           Spalten lang sind ----
+           Die gespiegelte Flanke oben (T2d/Q3a/S114d) ist fuer KURZE Spalten
+           gebaut: Links haelt der Zonenfuss 50dvh Abstand nach unten, rechts
+           beginnt der Inhalt 50dvh weiter unten — so ruecken beide Seiten an
+           die Naht heran und lassen den Rest frei. In den Vorraeumen stimmt
+           das (Titel plus zwei, drei Zeilen).
+
+           Hier nicht: Oben stehen Ansicht, Sprache und Verlaeufe, unten drei
+           Gruppen samt Rechtlichem. Mit der Flankenrechnung ueberlief beides,
+           die Kinder schrumpften (Flex-Items schrumpfen per Vorgabe) und der
+           Text legte sich uebereinander — die Zonenueberschrift auf die erste
+           Rechts-Zeile, die Fussmarke auf die letzte.
+
+           Entscheidung: In DIESEM Screen richtet sich die helle Spalte unten
+           aus und die gruene oben. Die Naht bleibt, was sie hier ohnehin ist —
+           eine Grenze nach Reichweite, keine Symmetrieachse.
+
+           Nur hier: Die Regeln haengen an der Screen-Kennung, die uebrigen
+           zweispaltigen Screens bleiben unberuehrt. Eine Kennung sticht jede
+           Klassenregel, die Reihenfolge im Stylesheet entscheidet also nicht
+           mit — anders als beim S114d.3-Fund, wo Gleichstand herrschte. */
+        #scrEinstellungen.rz-split:not(.rz-regal-offen)>.rz-half:first-child .rz-fuss{margin-bottom:0}
+        #scrEinstellungen.rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile,
+        #scrEinstellungen.rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen{margin-top:0}
       }
+
+      /* S119.4 · Und die zweite Haelfte des Befunds, unabhaengig von der
+         Breite: Ein Flex-Item schrumpft per Vorgabe unter seine Inhaltshoehe
+         (flex-shrink:1). Steht die Spalte auf einem festen Mass, weicht der
+         Text deshalb nicht nach unten aus, sondern laeuft aus seiner Box
+         heraus und legt sich auf den Nachbarn. Genau das war auf dem Desktop
+         zu sehen.
+         flex:none stellt das ab: Die Bloecke behalten ihre Hoehe, und was
+         nicht hineinpasst, wird gerollt statt uebereinandergelegt. Bewusst auf
+         diesen Screen begrenzt — ein globales flex:none waere eine Aussage
+         ueber jede Flaeche der App und gehoert dann auch dort geprueft. */
+      #scrEinstellungen>.rz-half>*{flex:none}
 
       /* ============ D1 · Grundbaustein B — Hairline-Zeile ============
          Serif-Zeile mit Pfeil-Suffix, 1px-Linien statt Karten. Als <button>
