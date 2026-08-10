@@ -171,6 +171,7 @@
       </label>
       <button id="mtGo" class="primary">Weg prüfen</button>
       <button id="msGo" class="primary" style="margin-left:8px;background:#fff;color:var(--accent)">Befunde der letzten Tage</button>
+      <button id="mgGo" class="primary" style="margin-left:8px;background:#fff;color:var(--accent)">Meldeweg prüfen</button>
       <div id="mtMsg"></div>
       <div id="mtOut" style="margin-top:10px"></div>
     </div>
@@ -566,6 +567,26 @@
       else mtGut("Kein Fehlschlag im aufgezeichneten Zeitraum.");
     }).catch(function(){ mtFehler("Verbindung fehlgeschlagen."); })
       .finally(function(){ msGo.disabled = false; msGo.textContent = "Befunde der letzten Tage"; });
+  });
+
+  /* S120 · Der Meldeweg. Ein Kanal, den niemand je geprueft hat, ist genauso
+     viel wert wie ein Mailversand, den niemand je geprueft hat — das ist die
+     Lehre, aus der dieser ganze Strang entstanden ist. */
+  var mgGo = $("mgGo");
+  mgGo.addEventListener("click", function(){
+    var tok = $("tok").value;
+    if(!tok){ mtFehler("Bitte das Admin-Token eingeben."); return; }
+    mgGo.disabled = true; mgGo.textContent = "Prüfe …"; mtMsg.innerHTML = ""; mtOut.innerHTML = "";
+    fetch(basis() + "/api/meldetest", { method: "POST", headers: { "x-admin-token": tok } })
+      .then(function(res){
+        if(res.status === 401){ mtFehler("Admin-Token fehlt oder ist falsch."); return null; }
+        return res.json();
+      }).then(function(b){
+        if(!b) return;
+        if(b.ok) mtGut("Der Meldeweg funktioniert — die Nachricht müsste angekommen sein.");
+        else mtFehler("Meldeweg nicht erreichbar: " + esc(b.meldung || ""));
+      }).catch(function(){ mtFehler("Verbindung fehlgeschlagen."); })
+      .finally(function(){ mgGo.disabled = false; mgGo.textContent = "Meldeweg prüfen"; });
   });
 
   go.addEventListener("click", function(){

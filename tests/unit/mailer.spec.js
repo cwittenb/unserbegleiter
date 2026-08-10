@@ -17,7 +17,11 @@ describe("Mailer · MAIL_UPSTREAM-Pfad (Test-/Bridge-Binding)", () => {
     expect(anfragen).toHaveLength(1);
     expect(anfragen[0].url).toBe("http://mail/send");
     expect(anfragen[0].init.method).toBe("POST");
-    expect(JSON.parse(anfragen[0].init.body)).toEqual(MSG);
+    // S120 · Die Gestalt entsteht im Mailer und reist ueber jeden Weg mit —
+    // der Klartext bleibt unveraendert daneben stehen.
+    const gesendetMsg = JSON.parse(anfragen[0].init.body);
+    expect(gesendetMsg).toMatchObject(MSG);
+    expect(gesendetMsg.html).toContain("<!doctype html>");
   });
 
   it("Nicht-ok-Antwort des Upstreams wird zum Fehler (Status in der Meldung)", async () => {
@@ -39,7 +43,7 @@ describe("Mailer · SMTP-Konfigurationsfehler (fail-closed, kein stiller Fallbac
 });
 
 describe("Mailer · baueNachricht (RFC-Ränder)", () => {
-  it("CRLF-Normalisierung, Dot-Stuffing, UTF-8-kodierter Betreff, Pflicht-Header", () => {
+  it("UTF-8-kodierter Betreff, Pflicht-Header, base64-Rumpf", () => {
     const roh = baueNachricht({ to: "a@x", from: "b@y", subject: "Grüße ✓", text: "Zeile1\n.Punktzeile\nEnde" });
     const [kopf, koerper] = [roh.slice(0, roh.indexOf("\r\n\r\n")), roh.slice(roh.indexOf("\r\n\r\n") + 4)];
     expect(kopf).toContain("From: b@y");
@@ -47,8 +51,35 @@ describe("Mailer · baueNachricht (RFC-Ränder)", () => {
     expect(kopf).toContain("Subject: =?UTF-8?B?");            // Nicht-ASCII → kodiert
     expect(kopf).toContain("MIME-Version: 1.0");
     expect(kopf).toMatch(/Date: .+\+0000/);
-    expect(koerper).toContain("\r\n");                          // LF → CRLF
-    expect(koerper).toContain("\n..Punktzeile");                // Dot-Stuffing gegen vorzeitiges Ende
+    /* S120 · Die zwei Anmerkungen aus einer echten empfangenen Mail:
+       MISSING_MID und CTE_8BIT_MISMATCH, zusammen 1,5 Spam-Punkte. */
+    expect(kopf).toMatch(/Message-ID: <.+@y>/);
+    expect(kopf).toContain("Content-Transfer-Encoding: base64");
+    /* Der Rumpf ist base64 — und damit ist das Dot-Stuffing ERSATZLOS
+       entfallen: das base64-Alphabet kennt keinen Punkt, eine Zeile, die den
+       Versand vorzeitig beendet, kann es nicht mehr geben. Die CRLF-Normali-
+       sierung passiert weiterhin, nur eben vor der Kodierung. */
+    expect(atob(koerper.replace(/\r\n/g, ""))).toContain("\r\n.Punktzeile");
+    expect(koerper).not.toContain("..Punktzeile");
+  });
+
+  /* S120 · Anzeigename: Bis hierher stand im Posteingang die nackte
+     Absenderadresse. Wer den Zugangslink bekommt, hat die App noch nie
+     gesehen — der Name ist das Erste, was von ihr ankommt. */
+  it("setzt den Anzeigenamen und kodiert ihn nur, wenn nötig", () => {
+    const a = baueNachricht({ to: "a@x", from: "b@y", subject: "s", text: "t", absenderName: "raumzuzweit" });
+    expect(a).toContain('From: "raumzuzweit" <b@y>');
+    const b = baueNachricht({ to: "a@x", from: "b@y", subject: "s", text: "t", absenderName: "Raum zu zweit ✓" });
+    expect(b).toMatch(/From: =\?UTF-8\?B\?.+\?= <b@y>/);
+  });
+
+  it("mit Gestalt wird es multipart/alternative — der Klartext bleibt die erste Fassung", () => {
+    const roh = baueNachricht({ to: "a@x", from: "b@y", subject: "s", text: "Hallo", html: "<p>Hallo</p>" });
+    expect(roh).toMatch(/Content-Type: multipart\/alternative; boundary="rz-/);
+    const teile = roh.split(/--rz-[a-z0-9]+/);
+    expect(teile[1]).toContain("text/plain");
+    expect(teile[2]).toContain("text/html");
+    expect(atob(teile[1].split("\r\n\r\n")[1].replace(/\r\n/g, ""))).toBe("Hallo");
   });
 });
 

@@ -14,6 +14,8 @@
 // der Bundler es nicht aufzulösen versucht. workerd stellt es zur Laufzeit bereit.
 import { connect } from "cloudflare:sockets";
 import { notiereMail } from "./mailstat.js";
+import { baueHtml } from "./mail-gestalt.js";   // S120
+import { melde } from "./betriebsmeldung.js";   // S120
 
 /* S118 · Der Befund wird HIER notiert, nicht an den fuenf Aufrufstellen.
  *
@@ -32,6 +34,12 @@ export function makeMailer(env, zweck) {
   };
   return {
     async sendMail(msg) {
+      /* S120 · Die Gestalt entsteht HIER, nicht an den Aufrufstellen: dann
+         bekommt sie jede Mail, auch die naechste, an die heute niemand denkt.
+         `marke` und `fuss` reichen die Aufrufer in der Sprache des Paars
+         durch (R7); fehlen sie, faellt es auf Deutsch zurueck. */
+      msg = { ...msg, absenderName: msg.absenderName || msg.marke,
+        html: msg.html || baueHtml({ betreff: msg.subject, text: msg.text, marke: msg.marke, fuss: msg.fuss }) };
       try {
         if (env && env.MAIL_UPSTREAM) {
           const r = await env.MAIL_UPSTREAM.fetch("http://mail/send", {
@@ -45,6 +53,18 @@ export function makeMailer(env, zweck) {
         }
       } catch (e) {
         await notiere(false, e);
+        /* S120 · Und einmal je Stoerungsart und Stunde geht sie auch heraus.
+           Der Schluessel benennt die ART (Stufe), nicht das Auftreten —
+           sonst waere der Deckel wirkungslos, denn jeder Versuch scheitert
+           bei kaputtem Versand aufs Neue. Absichtlich keine Empfaengeradresse
+           in der Meldung; betriebsmeldung.js fischt sie zusaetzlich heraus. */
+        await melde(env, {
+          schluessel: "mail/" + ((e && e.stufe) || "?"),
+          betreff: "Mailversand gestört",
+          text: "Zweck: " + (zweck || "?") + "\nStufe: " + ((e && e.stufe) || "?")
+            + "\nMeldung: " + ((e && e.message) || String(e))
+            + "\n\nNichts kommt an, solange das steht. Verwaltung → „Weg prüfen“.",
+        });
         throw e;                                   // der Befund aendert am Ablauf nichts
       }
       await notiere(true, null);
@@ -58,19 +78,78 @@ function rfcDate(d = new Date()) {
   return d.toUTCString().replace("GMT", "+0000");
 }
 
-export function baueNachricht({ to, from, subject, text }) {   // exportiert (S66): reine Funktion, unit-testbar
+/* S120 · Der Rumpf, wie ihn empfangende Server sehen wollen.
+ *
+ * Drei Anmerkungen stammen aus einer echten empfangenen Mail — der Spamfilter
+ * der Gegenstelle hat sie ins Protokoll geschrieben, und sie kosteten
+ * zusammen 1,5 Punkte, geschenkt:
+ *
+ *   MISSING_MID          Wir setzten keine Message-ID. Der empfangende Server
+ *                        erfand daraufhin eine. Eine Nachricht ohne eigene
+ *                        Kennung ist nicht zuordenbar und riecht nach Skript.
+ *   CTE_8BIT_MISMATCH    Wir kuendigten charset=utf-8 an, schickten die Bytes
+ *                        roh und nannten keine Content-Transfer-Encoding.
+ *   (ungenannt)          Kein Anzeigename: "praxis@..." statt "raumzuzweit".
+ *
+ * Die Antwort auf die zweite ist base64 fuer beide Teile. Das ist nicht der
+ * sparsamste Weg, aber der einzige, der drei Fallen auf einmal schliesst:
+ * keine 8-Bit-Frage mehr, keine Zeilenlaengengrenze — und kein Dot-Stuffing.
+ * Die frueher noetige Ersetzung von "\n." durch "\n.." ist ersatzlos entfallen,
+ * weil das base64-Alphabet keinen Punkt kennt: eine Zeile, die mit einem Punkt
+ * beginnt und den Versand vorzeitig beendet, kann es nicht mehr geben.
+ *
+ * multipart/alternative: der Klartext bleibt unveraendert die erste Fassung
+ * (und die einzige, auf die man sich verlassen kann), die Gestalt kommt
+ * daneben. Wessen Programm kein HTML zeigt, verliert nichts.
+ */
+export function baueNachricht({ to, from, subject, text, html, absenderName }) {
   const enc = s => "=?UTF-8?B?" + btoa(unescape(encodeURIComponent(s))) + "?=";
-  const koerper = String(text).replace(/\r?\n/g, "\r\n").replace(/\n\./g, "\n..");
-  return [
-    "From: " + from,
+  const b64 = s => btoa(unescape(encodeURIComponent(String(s).replace(/\r?\n/g, "\r\n"))))
+    .replace(/(.{76})/g, "$1\r\n");
+  const domaene = String(from).split("@")[1] || "localhost";
+  const kennung = "<" + Date.now().toString(36) + "." + Math.random().toString(36).slice(2, 12)
+    + "@" + domaene + ">";
+  // Ein Anzeigename mit Nicht-ASCII muss kodiert werden; reines ASCII bleibt
+  // in Anfuehrungszeichen lesbar.
+  const absender = absenderName
+    ? (/^[\x20-\x7e]*$/.test(absenderName) ? '"' + absenderName.replace(/"/g, "") + '"' : enc(absenderName))
+      + " <" + from + ">"
+    : from;
+
+  const kopf = [
+    "From: " + absender,
     "To: " + to,
     "Subject: " + enc(subject),
-    "MIME-Version: 1.0",
-    'Content-Type: text/plain; charset=utf-8',
+    "Message-ID: " + kennung,
     "Date: " + rfcDate(),
+    "MIME-Version: 1.0",
+  ];
+
+  if (!html) {
+    return kopf.concat([
+      "Content-Type: text/plain; charset=utf-8",
+      "Content-Transfer-Encoding: base64",
+      "",
+      b64(text),
+    ]).join("\r\n");
+  }
+
+  const grenze = "rz-" + Math.random().toString(36).slice(2, 14);
+  return kopf.concat([
+    'Content-Type: multipart/alternative; boundary="' + grenze + '"',
     "",
-    koerper,
-  ].join("\r\n");
+    "--" + grenze,
+    "Content-Type: text/plain; charset=utf-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    b64(text),
+    "--" + grenze,
+    "Content-Type: text/html; charset=utf-8",
+    "Content-Transfer-Encoding: base64",
+    "",
+    b64(html),
+    "--" + grenze + "--",
+  ]).join("\r\n");
 }
 
 /* S117 · Der HELO-Name muss ein qualifizierter Hostname sein.
@@ -102,7 +181,7 @@ export function heloName(env, from) {
     + "SMTP_HELO setzen oder SMTP_FROM/SMTP_HOST mit einer Domain versehen.");
 }
 
-async function sendSmtp(env, { to, subject, text }, opt = {}) {
+async function sendSmtp(env, { to, subject, text, html, absenderName }, opt = {}) {
   const host = env.SMTP_HOST;
   const port = Number(env.SMTP_PORT || 587);
   const user = env.SMTP_USER;
@@ -201,7 +280,8 @@ async function sendSmtp(env, { to, subject, text }, opt = {}) {
       return spur;
     }
     await sag("DATA", 3);
-    await writer.write(enc.encode(baueNachricht({ to, from, subject, text }) + "\r\n.\r\n"));
+    await writer.write(enc.encode(
+      baueNachricht({ to, from, subject, text, html, absenderName }) + "\r\n.\r\n"));
     await sag(null, 2, "NACHRICHT");
     await sag("QUIT", 2).catch(() => {});
     return spur;

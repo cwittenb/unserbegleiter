@@ -40,7 +40,15 @@ describe("T1b · Farbe lebt nur im Theme", () => {
      Update-Hinweis in client.js war sichtbare Oberfläche, die niemand las —
      dass eine Datei nicht in core/ui liegt, heißt nicht, dass sie keine
      Gestaltung trägt. */
-  const AUSSERHALB = ["platforms/cloudflare/pages/client.js"];
+  const AUSSERHALB = [
+    "platforms/cloudflare/pages/client.js",
+    /* S120 · Die Mail-Gestaltung traegt Farbe und Schrift wie jede andere
+       Oberflaeche — sie liegt nur nicht in core/ui. Genau der Fall, den der
+       Kommentar oben beschreibt: nicht der Ort entscheidet, sondern ob
+       gestaltet wird. Sie liest ihre Werte aus THEME_CSS statt sie
+       abzuschreiben; dieser Eintrag haelt das fest. */
+    "platforms/cloudflare/worker/mail-gestalt.js",
+  ];
 
   const pruefliste = () => [
     ...readdirSync(resolve(WURZEL, "core/ui")).filter(n => n.endsWith(".js"))

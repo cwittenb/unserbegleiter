@@ -422,6 +422,7 @@ export const en = {
   "mail.resend.text": "Here is your new access link to roomfortwo:\n\n{link}\n\nThe link is valid for about 15 minutes and can be used once.",
   "mail.recover.betreff": "Your access to roomfortwo",
   "mail.recover.text": "Here is your new personal access link:\n\n{link}\n\nIt is valid for about 15 minutes and can be used once. If you did not request it, you can ignore this message.",
+  "mail.fuss": "This message belongs to your access at roomfortwo. It is only sent when someone asks for it — advertising never arrives here.",
   "mail.pin.betreff": "Your confirmation code",
   "mail.pin.text": "Your confirmation code for roomfortwo is:\n\n{pin}\n\nIt is valid for about 15 minutes. If you did not request it, you can ignore this message.",
   "fehler.code.llm_overloaded": "The service is under heavy load right now. Your message is not lost \u2014 please send it again in a moment.",

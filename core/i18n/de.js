@@ -448,6 +448,7 @@ export const de = {
   "mail.resend.text": "Hier ist dein neuer Zugangslink zu raumzuzweit:\n\n{link}\n\nDer Link ist etwa 15 Minuten gültig und nur einmal verwendbar.",
   "mail.recover.betreff": "Dein Zugang zu raumzuzweit",
   "mail.recover.text": "Hier ist dein neuer persönlicher Zugangslink:\n\n{link}\n\nEr ist etwa 15 Minuten gültig und nur einmal verwendbar. Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
+  "mail.fuss": "Diese Nachricht gehört zu deinem Zugang bei raumzuzweit. Sie wird nur verschickt, wenn jemand sie anfordert — Werbung kommt hier nie an.",
   "mail.pin.betreff": "Dein Bestätigungscode",
   "mail.pin.text": "Dein Bestätigungscode für raumzuzweit lautet:\n\n{pin}\n\nEr ist etwa 15 Minuten gültig. Falls du das nicht angefordert hast, kannst du diese Nachricht ignorieren.",
   "fehler.code.llm_overloaded": "Der Dienst ist gerade stark ausgelastet. Deine Nachricht ist nicht verloren \u2014 bitte sende sie gleich noch einmal.",

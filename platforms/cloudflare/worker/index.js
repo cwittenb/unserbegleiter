@@ -30,6 +30,7 @@ import { mailText } from "./mail-texte.js";   // R7
 import { importEmailKey, entschluessele, emailAad } from "./krypto.js";
 import { makeMailer, pruefeVersand } from "./mailer.js";
 import { leseMailStat } from "./mailstat.js";   // S118
+import { pruefeMeldeweg } from "./betriebsmeldung.js";   // S120
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), {
@@ -180,6 +181,13 @@ async function route(request, env) {
     // nicht 502: die Frage war „funktioniert der Weg", und sie ist beantwortet.
     return json(befund);
   }
+  /* S120 · Der Meldeweg selbst. Ein Kanal, den niemand je geprueft hat, ist
+   *  genauso viel wert wie ein Mailversand, den niemand je geprueft hat — das
+   *  ist die Lehre, die diesen ganzen Strang ausgeloest hat. */
+  if (p === "/api/meldetest" && request.method === "POST") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    return json(await pruefeMeldeweg(env));
+  }
   if (p === "/api/mailstat" && request.method === "GET") {
     if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
     return json(await leseMailStat(kv));
@@ -241,6 +249,7 @@ async function route(request, env) {
         to: adresse,
         subject: mt("mail.relink.betreff"),
         text: mt("mail.relink.text"),
+        marke: mt("allg.marke"), fuss: mt("mail.fuss"),
       });
       benachrichtigt = true;
     } catch (e) { console.error("relink-mail:", code, role, e && e.message); }
@@ -278,6 +287,7 @@ async function route(request, env) {
       to: adresse,
       subject: mt("mail.resend.betreff"),
       text: mt("mail.resend.text", { link: url.origin + "/#t=" + token }),
+      marke: mt("allg.marke"), fuss: mt("mail.fuss"),
     });
     await schreibeAudit(kv, now, "resend", { code, role });
     return json({ ok: true, name: role === "A" ? couple.nameA : couple.nameB });
@@ -382,6 +392,7 @@ async function route(request, env) {
           to: String(email).trim(),
           subject: mt("mail.recover.betreff"),
           text: mt("mail.recover.text", { link }),
+          marke: mt("allg.marke"), fuss: mt("mail.fuss"),
         });
       } catch (e) {
         // Versandfehler nie nach außen offenlegen — aber fürs Betreiber-Log
@@ -519,6 +530,7 @@ async function route(request, env) {
         to: clean,
         subject: mt("mail.pin.betreff"),
         text: mt("mail.pin.text", { pin }),
+        marke: mt("allg.marke"), fuss: mt("mail.fuss"),
       });
       // Ab hier ist eine Mail unterwegs — erst jetzt zaehlt sie.
       const bis = stand ? stand.bis : jetzt + FENSTER_MS;
