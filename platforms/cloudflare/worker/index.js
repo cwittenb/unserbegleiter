@@ -51,7 +51,14 @@ const BSTATE_FELDER = new Set(Bstate.FIELDS);
 // D12-2d · "theme" ist die persoenliche Ansicht (hell/dunkel/auto). Sie liegt
 // im pstate, damit sie der Person aufs naechste Geraet folgt; localStorage ist
 // nur der Spiegel fuer das sofortige Zeichnen beim Start.
-const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "language", "leseMarker", "theme"]);
+// S119.1 · "kulisse" (persoenlicher Zaehler, D12-2c) und "verlaufInfoGezeigt"
+// (Einmal-Hinweis am Ausgang, K3) fehlten. Beide Aufrufer liegen in einem
+// try/catch, das den 404 schluckte — die Kulisse startete deshalb bei jedem
+// Aufruf neu und der Erst-Hinweis erschien nie. Still falsch ist teurer als
+// laut falsch: gegen die Wiederholung steht jetzt eine Kanarie.
+// "leseMarker" ist seit S109 ohne Aufrufer und bleibt vorerst stehen — ein
+// Feld aus der Whitelist zu nehmen ist eine eigene Entscheidung (Alt-Daten).
+const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "language", "leseMarker", "theme", "kulisse", "verlaufInfoGezeigt"]);
 
 /* ---- Web Push (M7a): Abo-Ablage & inhaltsfreier Freigabe-Hinweis ----
  *  KV: push/<code>/<Rolle> → Array von Browser-Subscriptions (max. 5, dedupliziert

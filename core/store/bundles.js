@@ -12,7 +12,14 @@
 // Pstate — persönliches Bündel je Rolle, Single-Writer, gleiche Prinzipien.
 
 export class Bstate {
-  static FIELDS = ["goals", "shelf", "agenda", "measurements", "momentLog", "qualitytime", "findings", "reveal", "revealLog"];
+  /* S119.1 · "messIntervall" (S39, Prozessreflexions-Rhythmus) und "kulisse"
+     (D11/D12-2c, gewachsener Zaehler) wurden von der App gelesen UND
+     geschrieben, standen aber nie in dieser Liste. Auf Cloudflare pruefte der
+     Worker gegen sie (BSTATE_FELDER) und wies beide mit 404 ab — der Rhythmus
+     lief sichtbar in die Fehlerbox, die Kulisse still in ihren catch-Zweig.
+     Derselbe Fehlertyp wie S92 (merkposten/language); gegen die Wiederholung
+     steht jetzt eine Kanarie (tests/unit/s119-1-bstate-whitelist.spec.js). */
+  static FIELDS = ["goals", "shelf", "agenda", "measurements", "momentLog", "qualitytime", "findings", "reveal", "revealLog", "messIntervall", "kulisse"];
   static DEFAULTS = {
     goals: null,
     shelf: { items: [] },
@@ -23,6 +30,11 @@ export class Bstate {
     findings: null,
     reveal: { A: null, B: null },
     revealLog: null,
+    /* Beide null: Ein leeres Objekt waere eine Behauptung ("es gibt schon
+       einen Rhythmus / eine Kulisse"). Die Aufrufer lesen null und setzen
+       ihre eigenen Vorgaben (MESS_INTERVALL_TAGE bzw. der Startstempel). */
+    messIntervall: null,
+    kulisse: null,
   };
 
   constructor(repo) {
