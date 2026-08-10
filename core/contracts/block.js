@@ -13,7 +13,7 @@
 // gelegentlich ein. Alles darüber hinaus (Reparatur kaputten JSONs o. ä.)
 // ist bewusst NICHT toleriert — dafür gibt es die Korrektur-Runde.
 
-import { entferneSteuerToken } from "./steuertoken.js";
+import { entferneSteuerToken, entferneFremdeMarken } from "./steuertoken.js";
 
 /**
  * Erzeugt eine Block-Definition mit Parse- und Strip-Regex.
@@ -101,5 +101,8 @@ export function cleanDisplay(text, alleMarker, alleBloecke) {
   // Platzhalter ersetzt, sodass der Klammerzeilen-Filter kein JSON-Innenleben
   // mehr sehen kann.
   t = entferneSteuerToken(t);
+  // S119.6: Danach noch die Marken, die diese Session gar nicht kennt — sie
+  // koennen nur Erfindungen des Modells sein (siehe steuertoken.js).
+  t = entferneFremdeMarken(t);
   return t.replace(/\n{3,}/g, "\n\n").trim();
 }

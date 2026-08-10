@@ -42,6 +42,39 @@ export function entferneSteuerToken(text) {
   return t.split("\n").filter(z => !KLAMMERZEILE.test(z)).join("\n");
 }
 
+/* S119.6 · FREMDE MARKEN — die fünfte Schicht.
+   Befund: Das Modell (Mistral) hängte an eine Eröffnung im Reflexionsgespräch
+   ein "[[weiter]]" — eine Marke, die es nicht gibt. cleanDisplay entfernt
+   Marken durch AUFLISTEN: nur was in der markerOrder der Session steht, wird
+   geschluckt. Das Reflexionsgespräch hat eine LEERE Liste; es kennt planmäßig
+   keine Marken. Die Erfindung fiel deshalb durch jedes Sieb.
+
+   Die Klammerzeile (oben) hätte sie gefangen, wenn sie allein auf einer Zeile
+   gestanden hätte — sie stand aber am Satzende, im Fließtext. Genau diese
+   Lücke schließt dieser Filter.
+
+   Warum das sicher ist: Eine echte Marke ist per Registry-Wächter
+   GROSSGESCHRIEBEN und ohne Leerzeichen (marker.js); sie ist zu diesem
+   Zeitpunkt bereits entfernt, wenn die Session sie kennt. Was hier noch
+   übrig ist, kennt die Session nicht — anzeigen wäre in jedem Fall falsch.
+   Und die Prompts verbieten eckige Klammern im Fließtext ausdrücklich.
+
+   Bewusst eng: kein Leerzeichen, keine weitere Klammer im Inneren, höchstens
+   40 Zeichen. Ein Satz in doppelten Klammern über mehrere Wörter ist damit
+   KEINE Marke und bleibt stehen — dort wäre Löschen der größere Eingriff.
+   Reihenfolge wie beim Steuer-Token: NACH der Blockersetzung, sonst könnte
+   verschachteltes JSON ([["a"]]) getroffen werden. */
+const FREMDE_MARKE = /[ \t]*\[\[[^\s[\]]{1,40}\]\][ \t]*/g;
+
+/** Entfernt übrig gebliebene, der Session unbekannte Marken aus der Anzeige. */
+export function entferneFremdeMarken(text) {
+  const t = String(text ?? "");
+  if (t.indexOf("[[") < 0) return t;
+  // Ersatz ist EIN Leerzeichen, damit "Wort[[X]]Wort" nicht verklebt; die
+  // Ränder räumt cleanDisplay mit seinem trim() ab.
+  return t.replace(FREMDE_MARKE, " ").replace(/[ \t]+\n/g, "\n").replace(/\n[ \t]+/g, "\n");
+}
+
 /* S41/S95.1 · Wire-Köpfe: Ergebnis-Nachrichten der Panels sind Protokoll, kein
    Gesprächszug. Seit S35/S37 gehen sie hidden über den Draht, Sessions aus der
    Zeit davor tragen das Flag nicht — diese Köpfe werden deshalb IMMER
