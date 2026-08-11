@@ -11,7 +11,7 @@
 
 // @vitest-environment happy-dom
 
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { Miniflare } from "miniflare";
 import { build } from "esbuild";
 import path from "node:path";
@@ -36,6 +36,7 @@ const E2E_FENSTER_MS = 10000;
 
 const ADMIN = "test-admin-geheim";
 let mf, clientCode, hash;
+const urFetch = globalThis.fetch;   // I15 · zum Abklemmen der Bruecke im Abbau
 
 /** ST3 · Upstream-SSE für STRUKTUR-Anfragen (output_config): das schema-
  *  erzwungene JSON strömt als NORMALE text_delta-Häppchen — die gescripteten
@@ -105,7 +106,36 @@ beforeAll(async () => {
   });
 }, 30000);
 
-afterAll(async () => { if (mf) await mf.dispose(); });
+/* I15 · Abbau in der richtigen Reihenfolge — gegen Nachzuegler nach dispose().
+   Beobachtet: Dieser Test fiel gelegentlich mit "Cannot read properties of
+   null (reading 'submitToolResult')". Diese Meldung kommt aus dem Innenleben
+   des Testlaeufers und heisst: Der Arbeitsprozess endet unerwartet — sie
+   stammt NICHT aus einer gefallenen Zusicherung.
+   Der wahrscheinlichste Mechanismus hier: Die App laeuft nach dem letzten
+   expect weiter (Streams, Speicher-Schreibvorgaenge, zeitversetztes
+   Nachzeichnen). Wird Miniflare abgebaut, waehrend so ein Aufruf noch
+   unterwegs ist, greift die fetch-Bruecke auf eine abgebaute Instanz — die
+   entstehende Ablehnung hat keinen Zuhoerer mehr und reisst den Prozess mit.
+   Gegenmittel, in dieser Reihenfolge:
+     1. die Bruecke abklemmen, damit nichts Neues mehr hineingeht,
+     2. die Wurzel leeren, damit die App keine Arbeit mehr nachlegt,
+     3. einen Zug warten, damit angefangene Aufrufe zurueckkommen,
+     4. erst dann abbauen.
+   Das ist eine begruendete Vermutung, kein Beweis: Ein Fehler, der einmal in
+   zehn Laeufen auftritt, laesst sich hier nicht als behoben nachweisen. Bleibt
+   er aus, war es das; kehrt er wieder, ist die naechste Spur der Speicher
+   (Miniflare neben happy-dom in einem Prozess). */
+afterEach(async () => {
+  globalThis.fetch = urFetch;
+  window.fetch = urFetch;
+  document.body.innerHTML = "";
+  await new Promise(r => setTimeout(r, 0));
+});
+
+afterAll(async () => {
+  await new Promise(r => setTimeout(r, 50));   // angefangene Aufrufe auslaufen lassen
+  if (mf) await mf.dispose();
+});
 
 /** fetch-Brücke happy-dom → Miniflare mit Cookie-Jar (httpOnly lebt sonst nur im Browser). */
 function baueFetchBruecke() {
