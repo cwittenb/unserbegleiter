@@ -24,7 +24,7 @@ describe("baueMatrix · Katalog-Realität", () => {
   it("rote Linien tragen ⚑ und werden aufgezählt", () => {
     const md = baueMatrix(SZENARIEN);
     expect(md).toContain("KRIS-01 ⚑");
-    expect(md).toContain("Rote Linien (12):");
+    expect(md).toContain("Rote Linien (18):");   // S124: +6 (ERO-01/02, je drei)
     expect(md).toContain("TRAU-01/C1");
   });
 
