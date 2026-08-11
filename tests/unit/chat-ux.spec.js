@@ -134,9 +134,12 @@ describe("Nutzerführung · Begrüßung, Raum-Erklärungen, System eröffnet (Sp
     // beforeEach hat bereits gestartet und die Begleitung geantwortet:
     expect(root.querySelectorAll(".pb-msg.me")).toHaveLength(0);                    // nichts, was Anna nie sagte
     expect(sichtbar().join(" ")).toContain("Willkommen");                          // Eröffnung der Begleitung
-    // Der Steuerungs-Text existiert im Verlauf, aber versteckt:
+    /* Der Steuerungs-Text existiert im Verlauf, aber versteckt.
+       S129 · Er steht nicht mehr zwingend an erster Stelle: Liegt kein Kontext
+       vor, geht ihm jetzt das Erstkontakt-Signal voraus. Gesucht wird deshalb
+       der Auftakt, nicht die Position — die Zusicherung ist dieselbe. */
     const msgs = app._state.engine.chat.messages;
-    expect(msgs[0].hidden).toBe(true);
-    expect(msgs[0].content).toContain("Eröffne");
+    for (const m of msgs.filter(x => x.role === "user")) expect(m.hidden).toBe(true);
+    expect(msgs.some(m => m.hidden && String(m.content).includes("Eröffne"))).toBe(true);
   });
 });

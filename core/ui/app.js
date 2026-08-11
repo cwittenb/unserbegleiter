@@ -1406,7 +1406,18 @@ export function createApp({ doc, backend, root, diktat }) {
            Korpus-Kopftext. Ein Nachfolge-Muster ueber das Beziehungswesen liegt
            im Backlog (docs/designnotiz-beziehungswesen.md §5). */
         const kontext = baueSoloKontext({ goals, sharings: [freiA, freiB].filter(Boolean), timeline, momentLog, merkposten });
-        if (kontext) chat.messages.push({ role: "user", hidden: true, content: kontext });
+        /* S129 · Liegt KEIN Kontext vor, wird das ausdruecklich gesagt statt
+           stillschweigend weggelassen. Die Weiche im Prompt (EINSTIEG) hing
+           bis hierher an einer Abwesenheit — das Modell musste aus einem
+           Fehlen schliessen. mistral-large schloss falsch: 30 von 30
+           Kaltstarts nahmen die Wiederkehr-Fassung, mit erfundenen
+           Erinnerungen. Mit dem Signal: 0 von 30 (ERO-03).
+           Der Satz ist bewusst schmucklos gehalten — siehe die Begruendung am
+           Text selbst (prompts.de.js). */
+        chat.messages.push({
+          role: "user", hidden: true,
+          content: kontext || K().steuerTexte.erstkontakt,
+        });
         /* U8.6 · Der Anlass kommt NACH dem Kontext: Er verweist auf einen
            Eintrag, den der Kontext gerade eingefuehrt hat (samt {vid:…}), und
            steht ohne ihn in der Luft. Kein Automatismus — der Begleiter

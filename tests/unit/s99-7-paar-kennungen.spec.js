@@ -171,7 +171,13 @@ describe("S99.7 · Damit wird die Ausschnitt-Tür überhaupt erreichbar", () => 
       root.querySelector("#btnSend").click();
       await ruhe();
     }
-    app.testAusschnitt([{ id: "P4-5", ownerOk: true, companionOk: true, reason: null }]);
+    /* S129 · Die Kennung ist die POSITION im Verlauf ("P"+i+"-"+j). Seit dem
+       Erstkontakt-Signal steht ein versteckter Zug mehr davor, also verschiebt
+       sich jede Nummer um eins. Die Zusicherung ist unverändert — sie darf nur
+       nicht an einer fest getippten Zahl hängen, sonst prüft sie beim nächsten
+       Zug wieder etwas anderes als gemeint.
+       Gemeint ist: eine Kennung, die es NICHT gibt, lässt die Tür zu. */
+    app.testAusschnitt([{ id: "P999-1000", ownerOk: true, companionOk: true, reason: null }]);
     await ruhe();
     expect(root.querySelector("#ausschnittPanel").classList.contains("pb-hidden")).toBe(true);
   });

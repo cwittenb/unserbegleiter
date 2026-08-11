@@ -211,12 +211,79 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
     const zug = { role: "assistant", content: text };
     if (abgeschnitten) zug.abgeschnitten = true;
     if (treffer) zug.waechterTreffer = treffer;
+    /* S129 · Marken zaehlen — unabhaengig davon, ob das Szenario danach fragt. */
+    const mk = markenImText(text, markerOrderFuer(szenario));
+    if (mk.fremd.length) zug.markenFremd = mk.fremd;
+    if (mk.bekannt.length) zug.markenBekannt = mk.bekannt;
     if (quelle) zug.strukturQuelle = quelle;
     if (blockTyp) zug.blockTyp = blockTyp;
     messages.push(zug);
     if (!text || !String(text).trim() || abgeschnitten) break;   // nicht weiterkaskadieren (S65/S77)
   }
   return messages;
+}
+
+/* ---- S129 · Markenwaechter -------------------------------------------------
+   Anlass: mistral-large-latest erfindet Steuermarken im sichtbaren Text —
+   [[weiter]], [[START]], [[EINSTIEG]], [[erster_schritt]]. In ERO-03 in 30 von
+   30 Antworten. Der Katalog hat das nie gesehen: Von 21 roten Linien pruefen
+   drei auf Marken, alle drei in der Familie ERO. Die uebrigen 39 Szenarien
+   schauen nicht danach, und alle aelteren Laeufe liefen ohnehin gegen ein
+   Modell, das nicht in Produktion ist.
+   Deshalb hier und nicht als Check je Szenario: Der Waechter haengt am Zug,
+   nicht am Szenario — er misst rueckwirkend ueber ALLE Szenarien mit, ohne
+   dass jemand daran denken muss.
+
+   Zwei Arten, bewusst getrennt gezaehlt:
+     · marke-fremd    — steht in keiner markerOrder dieser Session. Bekanntes
+                        Anzeigeproblem, seit S119.6 in der App abgefangen.
+     · marke-unzeit   — ist eine ECHTE Marke dieser Session, gesetzt an einer
+                        Stelle, an der der Ablauf sie nicht erwartet. Dieser
+                        Fall ist bisher NICHT beobachtet; ob es ihn gibt, ist
+                        genau die offene Frage (F23). Der Waechter misst sie,
+                        er riegelt nichts ab — ein Riegel in der
+                        Ablaufsteuerung waere zu viel fuer ein Problem, das
+                        noch niemand gesehen hat.
+
+   MESSEN, NICHT EINGREIFEN: Der Treffer wandert als Spur an den Zug, genau wie
+   die verweigerte Uebergabe. Der Judge sieht ihn nicht, die Wertung aendert
+   sich nicht. */
+/* Die Listen spiegeln die SessionDefs (core/ui/sessions.js, kernwetten.js).
+   Bewusst als Kopie und nicht importiert: Der Runner soll die UI-Module nicht
+   ziehen. Ein Test haelt beide Seiten deckungsgleich — genau die Bauform, die
+   S119.1 fuer die Speicher-Whitelist gelernt hat. */
+const MOMENT_MARKEN = ["[[CHOICE-CONNECT]]", "[[META-REVEALED]]"];
+const EINZEL_MARKEN = ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]",
+  "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"];
+const GEMEINSAM_MARKEN = ["[[REVEAL-A]]", "[[REVEAL-B]]", "[[REVEAL]]",
+  "[[BASELINE]]", "[[SCALE-CLOSING]]"];
+
+const MARKE_IM_TEXT = /\[\[[^\s[\]]{1,40}\]\]/g;
+
+/**
+ * Findet Marken im sichtbaren Text und ordnet sie ein.
+ * @param {string} text
+ * @param {string[]} bekannt  markerOrder der Session (leer = kennt keine)
+ * @returns {{fremd: string[], bekannt: string[]}}
+ */
+/** Die markerOrder der Session eines Szenarios — die Liste, gegen die
+ *  "fremd" oder "bekannt" entschieden wird. Solo und Klaerung kennen
+ *  planmaessig KEINE Marken; jede dort ist per Definition fremd. */
+export function markerOrderFuer(szenario) {
+  switch (szenario && szenario.session) {
+    case "moment": return MOMENT_MARKEN;
+    case "einzel": return EINZEL_MARKEN;
+    case "gemeinsam": return GEMEINSAM_MARKEN;
+    default: return [];
+  }
+}
+
+export function markenImText(text, bekannt) {
+  const gefunden = String(text || "").match(MARKE_IM_TEXT) || [];
+  const liste = bekannt || [];
+  const aus = { fremd: [], bekannt: [] };
+  for (const m of gefunden) (liste.includes(m) ? aus.bekannt : aus.fremd).push(m);
+  return aus;
 }
 
 /** Verweigerte Uebergaben eines Transkripts, nach Grund gezaehlt.
@@ -229,6 +296,20 @@ export function waechterTrefferImTranskript(transkript) {
     zaehl[m.waechterTreffer] = (zaehl[m.waechterTreffer] || 0) + 1;
   }
   return zaehl;
+}
+
+/** Marken eines Transkripts, nach Art gezaehlt — oder null, wenn keine da war. */
+export function markenSpurImTranskript(transkript) {
+  const fremd = [], unzeit = [];
+  for (const m of (transkript || [])) {
+    for (const x of m.markenFremd || []) fremd.push(x);
+    for (const x of m.markenBekannt || []) unzeit.push(x);
+  }
+  if (!fremd.length && !unzeit.length) return null;
+  const aus = {};
+  if (fremd.length) aus.fremd = fremd;
+  if (unzeit.length) aus.unzeit = unzeit;   // echte Marke — Ablauf-Frage, s. F23
+  return aus;
 }
 
 /** 1-basierte Turn-Nr. der ersten leeren Assistant-Antwort im Transkript, sonst 0 (S65). */
@@ -272,6 +353,13 @@ export function sampleAusUrteil(szenario, transkript, urteil, nr) {
   // S94: Waechter-Spur am Sample — nur, wenn ueberhaupt etwas gegriffen hat.
   const wt = waechterTrefferImTranskript(transkript);
   if (Object.keys(wt).length) sample.waechterTreffer = wt;
+  /* S129 · Markenspur am Sample. Sie aendert die Wertung NICHT — sie sagt nur,
+     was im sichtbaren Text stand. "unzeit" ist der Fall, den wir noch nie
+     gesehen haben (F23): eine ECHTE Marke dieser Session an unerwarteter
+     Stelle. Bleibt die Zahl ueber alle Laeufe bei null, ist es ein reines
+     Anzeigeproblem und bleibt eines. */
+  const mkSpur = markenSpurImTranskript(transkript);
+  if (mkSpur) sample.marken = mkSpur;
   // S85: Struktur-Quelle des Urteils sichtbar am Sample ("tool" | "text"-Rettung).
   if (urteil.strukturQuelle) sample.strukturQuelle = urteil.strukturQuelle;
   return sample;
