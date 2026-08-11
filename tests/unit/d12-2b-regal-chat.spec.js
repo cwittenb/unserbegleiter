@@ -56,7 +56,11 @@ async function bootApp(backend = memoryBackend()) {
 /* ---- Schritt 5 · die geklickte Zeile ist die Sektion ---- */
 
 describe("D12-2b · Regal-Sektion", () => {
-  it("offen: Zonentitel und Geschwisterzeilen sind verdeckt, genau eine Zeile ist Sektion", async () => {
+  /* S121.6 · Die Geschwisterzeilen treten NICHT mehr ab. Das offene Regal ist
+     ein Akkordeon: Die übrigen Fächer bleiben sichtbar und ein Tap wechselt
+     direkt. Was bleibt: Es ist immer nur EINES offen, und die offene Zeile
+     trägt die Marke. */
+  it("offen: genau eine Zeile ist Sektion — die Geschwister bleiben stehen", async () => {
     await bootApp();
     await klick(root.querySelector("#btnSharedRoom"));
     await klick(root.querySelector("#btnRegal"));
@@ -65,9 +69,12 @@ describe("D12-2b · Regal-Sektion", () => {
     const sektionen = [...screen.querySelectorAll("[data-box]")].filter(z => z.classList.contains("rz-auf"));
     expect(sektionen).toHaveLength(1);
     expect(sektionen[0].id).toBe("btnRegal");
-    // Zonentitel und Geschwister verschwinden per CSS — geprueft wird der Vertrag:
+    // Der Zonenfuss tritt weiterhin ab (er ist die Schlusszeile der Zone),
+    // die Geschwisterzeilen aber nicht mehr:
     expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:last-child .rz-fuss{display:none}");
-    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}");
+    expect(DESIGN_CSS).not.toContain(".rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}");
+    const zeilen = [...screen.querySelectorAll(".rz-tiefgruen [data-box]")];
+    expect(zeilen.length).toBeGreaterThan(1);
   });
 
   /* S114.7 · Umgekehrt gegen D12-2b: Der Pfeil zeigt die BEWEGUNG, nicht die

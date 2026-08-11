@@ -12,6 +12,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
 `
   + THEME_CSS
   + String.raw`      html{height:100%}
+      /* S121.6 · Platz fuer die Bildlaufleiste dauerhaft reservieren. Seit
+         S121.1 rollt das Dokument, und mit dem Akkordeon aendert sich die
+         Seitenlaenge bei jedem Oeffnen: Die Leiste kaeme und ginge, und der
+         ganze Inhalt spraenge um ihre Breite hin und her. Auf Systemen mit
+         ueberlagerten Leisten (macOS, iOS) aendert sich nichts. */
+      html{scrollbar-gutter:stable}
       body{margin:0;min-height:100%;background:var(--rz-papier);transition:background .5s}
       #app{max-width:660px;position:relative;z-index:1;font-family:var(--rz-sans);
            color:var(--rz-ink);font-size:var(--rz-fs-text);line-height:var(--rz-lh-text);
@@ -210,7 +216,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-half.rz-tiefgruen{background:var(--rz-tiefgruen);color:var(--rz-ink-auf-gruen)}
 
       .rz-naht-anker{position:relative}
-      .rz-auf-naht{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:5}
+      .rz-auf-naht{position:absolute;left:50%;top:0;transform:translate(-50%,-50%);z-index:9}
       @media(min-width:900px){
         .rz-split{flex-direction:row;position:relative}
         /* S121.1 (Turn 48 §2.2) · Die Naht haengt am Rahmen, nicht am Inhalt.
@@ -289,7 +295,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Stelle, und rollt danach mit.
            Nicht fixed: Das legte es ueber Fuss, Dialoge und Tastatur wie eine
            Chat-Blase und braeuchte eine eigene z-index-Verabredung. */
-        .rz-split:not(.rz-regal-offen) .rz-auf-naht{left:0;top:50dvh}
+        /* S121.6 · Der Wegweiser bleibt stehen, egal wie weit gerollt wird:
+           fixed statt absolute, gemessen am Fenster. Turn 48 §2.4 verlangt
+           ausdruecklich absolute, mit zwei Gruenden. Der erste (das Badge soll
+           zur Naht gehoeren und mit ihr enden) faellt hier weg — die Naht
+           reicht ueber die ganze Dokumenthoehe. Der zweite bleibt und wird
+           bezahlt: fixed braucht eine ausdrueckliche Einsortierung, sonst
+           legte es sich ueber Fuss, Dialoge und Tastatur.
+           z-index 9 liegt ueber der klebenden oberen Zone (8) — sonst
+           verschwaende seine obere Haelfte hinter dem Papier, sobald das Regal
+           mobil unter die Ueberschrift gefahren ist. Der Pflicht-Screen (1000)
+           bleibt darueber; er ist ein Notausgang und darf alles verdecken. */
+        .rz-split .rz-auf-naht{position:fixed;left:50%;top:50dvh;
+          transform:translate(-50%,-50%);z-index:9}
         /* S121.3 (Turn 48 §2.5) · Die rollende Spalte braucht Luft an der Naht.
            Das Badge steht seit S121.2 auf JEDER Rollhoehe an der Naht. Ohne
            diesen Freiraum laeuft es ueber die rechtsbuendigen Werte der
@@ -303,6 +321,8 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Zonenfuss den Abstand ueber --rz-nahtfrei. */
         .rz-split:not(.rz-regal-offen)>.rz-half:first-child{
           padding-right:var(--rz-nahtfrei-x)}
+        .rz-split:not(.rz-regal-offen)>.rz-half:last-child{
+          padding-left:var(--rz-nahtfrei-x)}
         /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Regel stand
            bis S114d.3 HIER und blieb wirkungslos: Sie hat dieselbe
            Spezifitaet wie die Grundregel weiter unten in der Datei, und eine
@@ -1376,56 +1396,51 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          offenen Zeile den Pfeil genommen. Turn 27 dreht das um: aufgeklappt
          verschwinden Zonentitel und Geschwisterzeilen, und die geklickte Zeile
          steht als Ueberschrift oben — mit ihrem Pfeil, jetzt nach oben. */
-      .rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}
-      .rz-regal-offen .rz-zeile.rz-auf{border:0;padding:0;font-family:var(--rz-serif);
-        font-size:var(--rz-fs-sektion);font-weight:300;line-height:var(--rz-lh-sektion);align-items:baseline}
-      .rz-regal-offen .rz-zeile.rz-auf .rz-pfeil{font-size:var(--rz-fs-fein)}
-      .rz-regal-offen{position:relative;height:100dvh;overflow:hidden}
-      /* Der obere Teil bleibt EXAKT stehen: statt ihn vom Flex-Layout neu
-         verteilen zu lassen, wird er auf sein gemessenes Mass festgesetzt.
-         Die Regal-Zone legt sich als Flaeche darueber — von unterhalb des
-         Kopfes ("Raum fuer uns") bis zur Unterkante. */
-      .rz-regal-offen>.rz-half:first-child{position:absolute;top:0;left:0;right:0;height:var(--rz-oben-h,50%)}
-      .rz-regal-offen>.rz-half:last-child{position:absolute;left:0;right:0;bottom:0;
-        top:var(--rz-regal-top,0px);z-index:2}
-      /* S114d.3 · Auf dem Desktop faehrt das Regal in SEINER Spalte hoch, nicht
-         ueber den ganzen Schirm. Die beiden left:0/right:0 oben sind fuer die
-         waagerechte Naht des Handys gedacht — dort ist "volle Breite" richtig.
-         Auf dem Desktop liegt die Naht senkrecht: die Flaeche legte sich ueber
-         beide Spalten und schob sich dabei ueber den Wegweiser, der auf der
-         Naht sitzt und nur noch zur Haelfte herausschaute.
-         Beide Haelften werden deshalb auf ihre Spalte begrenzt — die obere
-         endet an der Naht, die Regal-Zone beginnt dort. Die Bewegung selbst
-         bleibt dieselbe wie mobil, nur eben in einer Spalte.
-         Der Block steht bewusst NACH der Grundregel: gleiche Spezifitaet,
-         also entscheidet die Reihenfolge (siehe Q2 weiter oben). */
+      /* ============ S121.6 · Das Regal ist ein Akkordeon ============
+         Bis hierher war das offene Regal eine VOLLBILD-Flaeche: Screen auf
+         100dvh genagelt, beide Haelften absolut positioniert, ihre Masse zur
+         Laufzeit gemessen (zwei Masse fuer Zonenhoehe und Kopfzeile), und der
+         Inhalt mit eigenem Rollbereich — denn absolute Elemente lassen den
+         Rahmen nicht wachsen. (Die Namen der beiden Masse stehen hier
+         bewusst nicht: Waechter greifen ueber den CSS-Text, Kommentare
+         eingeschlossen.) Das war ein eigenes kleines Layout-System (Q2, Q3/Q3a,
+         U11.2, D12-2b, S114d.3, S114h/i).
+         Nichts davon wird noch gebraucht. Die Zone waechst mit ihrem Inhalt,
+         das Dokument rollt (Turn 48 §2.1), und das Oeffnen ist ein Akkordeon:
+         Die uebrigen Zeilen bleiben STEHEN, statt zu verschwinden.
+         Animiert wird grid-template-rows von 0fr auf 1fr — der einzige Weg,
+         eine unbekannte Inhaltshoehe weich zu oeffnen, ohne sie vorher zu
+         messen. scaleY scheidet aus (verzerrt Text, clippt an Rollbereichen,
+         S114g), max-height braeuchte eine geratene Obergrenze. */
+      .rz-regal-inhalt{display:grid;grid-template-rows:0fr;min-height:0;
+        transition:grid-template-rows .34s var(--rz-kurve)}
+      .rz-regal-inhalt:not(.pb-hidden){grid-template-rows:1fr}
+      .rz-regal-inhalt>*{overflow:hidden;min-height:0}
+      /* Der Kasten selbst traegt keinen Rand mehr: Im geschlossenen Zustand
+         ist er null hoch, ein Rand waere eine Linie ohne Inhalt. */
+      .rz-regal-inhalt{padding:0;border-bottom:0}
+      .rz-regal-offen .rz-zeile.rz-auf{border-bottom-color:var(--rz-hairline-gruen)}
+
+      /* S121.6 · Mobil: Beim Oeffnen tritt die obere Zone zurueck und KLEBT als
+         Ganzes — sie besteht dann nur noch aus Kopfzeile und Ueberschrift.
+         Die ganze Haelfte kleben zu lassen statt einzelner Zeilen spart jede
+         Versatzrechnung: Ein Stapel klebender Geschwister braeuchte die Hoehe
+         des jeweils darueberliegenden als Offset, und genau solche
+         Differenzrechnungen laufen beim naechsten Rastermass auseinander.
+         Das Polster bleibt stehen: Wird es beim Oeffnen entfernt, springt die
+         Ueberschrift um genau dieses Mass nach oben. */
+      @media(max-width:899px){
+        .rz-regal-offen>.rz-half:first-child{position:sticky;top:0;z-index:8;flex:none;
+          padding-bottom:0;cursor:pointer}
+        .rz-regal-offen>.rz-half:first-child>:not(.rz-kopf):not(.rz-caps){display:none}
+      }
+      /* Desktop: die Papier-Spalte klebt, solange ein Fach offen ist — sonst
+         liefe sie als leere Flaeche weg, waehrend rechts die Liste durchzieht.
+         Unabhaengig von der Messung aus S121.2: Bei offenem Fach ist die
+         zweite Haelfte per Definition die laengere. */
       @media(min-width:900px){
-        .rz-regal-offen>.rz-half:first-child{right:50%}
-        .rz-regal-offen>.rz-half:last-child{left:50%}
-        /* S114h · Auf dem Desktop darf sich links NICHTS bewegen, wenn rechts
-           das Regal aufgeht. Die Regal-Mechanik ist fuer die waagerechte Naht
-           gebaut: Dort IST die erste Haelfte die obere Zone, sie schrumpft auf
-           ihr gemessenes Mass (--rz-oben-h) und ihre Zeilen ruecken an die
-           neue Unterkante. Auf dem Desktop ist die erste Haelfte aber die
-           linke SPALTE — sie hat mit dem Aufklappen nichts zu tun.
-           Sichtbar wurde das an den Zeilen: Zugeklappt stehen sie an der Naht
-           (.rz-fuss{margin-bottom:50dvh}, Q3a), aufgeklappt fiel diese Regel
-           weg — sie gilt nur :not(.rz-regal-offen) — und der Zonenfuss sackte
-           an den unteren Rand. Beim Oeffnen sprang also die halbe Seite, die
-           gar nicht gemeint war.
-           Zwei Zeilen halten sie still: volle Spaltenhoehe statt Zonenmass,
-           und der Nahtabstand gilt weiter.
-           S114i · Die dritte Zeile aus S114h (top:0 fuer die Regal-Zone) ist
-           wieder fort. Sie war als Sprung-Korrektur gedacht — zugeklappt
-           reicht die gruene Spalte bis zum oberen Rand, aufgeklappt beginnt
-           die Zone erst bei --rz-regal-top. Das ist aber kein Fehler, sondern
-           der Zweck: --rz-regal-top ist die Hoehe der Kopfzeile, und die
-           bleibt frei, damit Ruckweg und Einstellungen erreichbar bleiben.
-           Mit top:0 legte sich die Zone (z-index:2) darueber. Das gilt
-           senkrecht wie waagerecht — die Kopfzeile ist in beiden Lagen
-           dieselbe Zeile. */
-        .rz-regal-offen>.rz-half:first-child{height:100dvh}
-        .rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
+        .rz-regal-offen>.rz-half:first-child{position:sticky;top:0;height:100dvh;
+          align-self:flex-start}
       }
       .rz-half{transition:transform .36s var(--rz-kurve)}
       /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht

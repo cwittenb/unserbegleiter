@@ -237,18 +237,17 @@ describe("Q2 · Desktop: Zeilenschrift und Regal", () => {
     expect(DESIGN_CSS).not.toContain(".rz-tiefgruen .rz-zeile{font-size:");
   });
 
-  it("das offene Regal bleibt auf dem Desktop in seiner Hälfte", async () => {
+  /* S121.6 · S114d.3 ist entfallen. Die Regel sorgte dafür, dass die absolut
+     positionierte Regal-Fläche in ihrer Spalte bleibt und sich nicht über den
+     Wegweiser schiebt. Es gibt keine absolut positionierte Fläche mehr: Das
+     Regal ist ein Akkordeon im Fluss und liegt damit ohnehin in seiner Spalte.
+     Der Fund selbst bleibt gültig und ist anderswo dokumentiert — eine
+     @media-Klammer erhöht die Spezifität nicht, bei Gleichstand entscheidet
+     die Reihenfolge. */
+  it("S121.6 · das offene Regal liegt ohne Positionierung in seiner Hälfte", async () => {
     const { DESIGN_CSS } = await import("../../core/ui/design.js");
-    /* S114d.3 · Die Regel stand im ersten 900px-Block und blieb wirkungslos:
-       gleiche Spezifität wie die Grundregel weiter unten, aber davor — eine
-       @media-Klammer erhöht die Spezifität nicht, also gewann deren left:0.
-       Sie steht jetzt dahinter, wo sie greift. */
-    const grund = DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{position:absolute");
-    expect(grund).toBeGreaterThan(0);
-    expect(DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{left:50%}"))
-      .toBeGreaterThan(grund);
-    // Die obere Hälfte endet ebenfalls an der Naht, statt beide zu überdecken.
-    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:first-child{right:50%}");
+    expect(DESIGN_CSS).not.toContain(".rz-regal-offen>.rz-half:last-child{position:absolute");
+    expect(DESIGN_CSS).not.toContain(".rz-regal-offen>.rz-half:first-child{right:50%}");
   });
 });
 

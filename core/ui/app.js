@@ -536,6 +536,9 @@ export function createApp({ doc, backend, root, diktat }) {
    *  messen, die Differenz als Transform vorgeben, im übernächsten Bild
    *  loslassen. Reine Transform-Bewegung. Ohne Layout (Testumgebung) ist die
    *  Differenz 0 → nur der Zustand wechselt. */
+  /* S121.6 · Rolllage vor dem ersten Oeffnen — der Rueckweg beim Schliessen. */
+  let regalLage = null;
+
   function regalModus(box) {
     const screen = box.closest && box.closest(".rz-screen");
     if (!screen) return;
@@ -577,27 +580,40 @@ export function createApp({ doc, backend, root, diktat }) {
     const misst = zone && typeof zone.getBoundingClientRect === "function";
     if (!misst) { screen.classList.toggle("rz-regal-offen", offen); return; }
 
-    // Maße einfrieren: Kopfhöhe = Obergrenze der Zone, Höhe der oberen
-    // Zone = ihr Ist-Maß. So verschiebt sich oben kein Pixel.
-    if (offen) {
-      const oben = screen.querySelector(".rz-half");
-      const kopf = oben && oben.querySelector(".rz-kopf");
-      const rahmen = screen.getBoundingClientRect();
-      if (kopf) screen.style.setProperty("--rz-regal-top", Math.round(kopf.getBoundingClientRect().bottom - rahmen.top) + "px");
-      if (oben) screen.style.setProperty("--rz-oben-h", Math.round(oben.getBoundingClientRect().height) + "px");
-    }
-
-    const vorher = zone.getBoundingClientRect().top;
+    /* S121.6 · Die Messung ist ersatzlos entfallen.
+       Bis hierher wurden hier Masse eingefroren (--rz-oben-h, --rz-regal-top)
+       und ein Sprung per transform ausgeglichen — noetig, weil das offene
+       Regal eine absolut positionierte Vollbild-Flaeche war. Es ist jetzt ein
+       Akkordeon im Fluss: Die Zone waechst mit ihrem Inhalt, das Dokument
+       rollt, und die Oeffnungsbewegung macht das Stylesheet (grid-template-
+       rows). Bleibt: die Klasse setzen — und mobil die Seite dorthin rollen,
+       wo das Regal gebraucht wird. */
     screen.classList.toggle("rz-regal-offen", offen);
-    const delta = vorher - zone.getBoundingClientRect().top;
-    const fenster = screen.ownerDocument && screen.ownerDocument.defaultView;
-    const aufraeumen = () => { if (!offen) { screen.style.removeProperty("--rz-regal-top"); screen.style.removeProperty("--rz-oben-h"); } };
-    if (!delta) { aufraeumen(); return; }
-    zone.style.transition = "none";
-    zone.style.transform = "translateY(" + delta + "px)";
-    const los = () => { zone.style.transition = ""; zone.style.transform = ""; aufraeumen(); };
-    if (fenster && fenster.requestAnimationFrame) fenster.requestAnimationFrame(() => fenster.requestAnimationFrame(los));
-    else los();
+
+    const fenster = (screen.ownerDocument && screen.ownerDocument.defaultView) || null;
+    if (!fenster || typeof fenster.scrollTo !== "function") return;
+    if (istZweispaltig(screen.ownerDocument || doc)) return;   // zweispaltig klebt die Spalte, es rollt nichts
+
+    if (offen) {
+      /* Nur beim ERSTEN Oeffnen merken: Ein Wechsel von Fach zu Fach darf die
+         Lage nicht ueberschreiben, sonst landet das Schliessen mittendrin. */
+      if (regalLage === null) regalLage = fenster.scrollY || 0;
+      /* Bis unter die obere Zone — die klebt dort und ist der Rueckweg.
+         Gemessen wird nach dem Umschalten, weil die Zone dann ihr neues Mass
+         hat (Kopfzeile und Ueberschrift statt voller Hoehe). */
+      const rollen = () => {
+        const oben = screen.querySelector(".rz-half");
+        const hoehe = oben ? oben.getBoundingClientRect().height : 0;
+        const ziel = zone.getBoundingClientRect().top + (fenster.scrollY || 0) - hoehe;
+        fenster.scrollTo({ top: Math.max(0, Math.round(ziel)), behavior: "smooth" });
+      };
+      if (fenster.requestAnimationFrame) fenster.requestAnimationFrame(rollen);
+      else rollen();
+    } else if (regalLage !== null) {
+      const ziel = regalLage;
+      regalLage = null;
+      fenster.scrollTo({ top: ziel, behavior: "smooth" });
+    }
   }
 
   /** Schließt den offenen Regal-Kasten eines Raums (Zu-Pfeil, Klick oben). */

@@ -61,10 +61,18 @@ describe("S121.3 · Luft an der Naht", () => {
     expect(vorDesktop).not.toContain("--rz-nahtfrei-x)");
   });
 
-  it("die zweite Hälfte bleibt unangetastet", () => {
-    // Ob sie denselben Freiraum braucht, ist eine Gestaltungsfrage und keine
-    // Reparatur — dieser Schritt entscheidet sie nicht still mit.
-    expect(DESKTOP).not.toMatch(/>\.rz-half:last-child\{[^}]*padding-left:var\(--rz-nahtfrei-x\)/);
+  it("S121.5 · die zweite Hälfte hält denselben Freiraum", () => {
+    // Zuerst bewusst offen gelassen (Turn 48 gibt ihn nur der Papier-Spalte),
+    // dann entschieden: Das Badge ist auf der Naht ZENTRIERT und ragt genauso
+    // weit nach rechts, wo es den Zeilenanfang der Regalzeilen deckte.
+    expect(DESKTOP).toMatch(
+      /\.rz-split:not\(\.rz-regal-offen\)>\.rz-half:last-child\{\s*padding-left:var\(--rz-nahtfrei-x\)\}/);
+  });
+
+  it("und zwar mit demselben Maß — eine Naht, ein Freiraum", () => {
+    const links = DESKTOP.match(/>\.rz-half:first-child\{\s*padding-right:var\(--([\w-]+)\)\}/);
+    const rechts = DESKTOP.match(/>\.rz-half:last-child\{\s*padding-left:var\(--([\w-]+)\)\}/);
+    expect(links[1]).toBe(rechts[1]);
   });
 
   it("im aufgeklappten Regal gilt der Freiraum nicht", () => {

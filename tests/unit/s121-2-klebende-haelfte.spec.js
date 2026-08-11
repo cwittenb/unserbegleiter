@@ -152,8 +152,11 @@ describe("S121.2 · das Stylesheet", () => {
     expect(regel[0]).toContain("align-self:flex-start");
   });
 
-  it("das Badge ist absolute in seiner Hälfte und misst 50dvh — nicht 50%", () => {
-    expect(CSS).toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:0;top:50dvh}");
+  it("S121.6 · das Badge misst weiter 50dvh — inzwischen am Fenster", () => {
+    // S121.2 hatte es absolut in seine Hälfte gehängt; seit S121.6 steht es
+    // fest (position:fixed) und rollt nicht mehr mit. Die Zahl bleibt, weil
+    // beide Bezugsrahmen am Fenster messen.
+    expect(CSS).toMatch(/\.rz-split \.rz-auf-naht\{position:fixed;left:50%;top:50dvh/);
     expect(CSS).not.toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}");
   });
 

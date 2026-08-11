@@ -349,17 +349,18 @@ describe("S114h · Beim Aufklappen steht die linke Spalte still", () => {
       .map(q => q.slice(0, q.indexOf("\n      }")));
 
   it("die linke Spalte behält ihre Höhe statt auf das Zonenmaß zu fallen", () => {
-    const treffer = desktopBloecke().filter(q =>
-      q.includes(".rz-regal-offen>.rz-half:first-child{height:100dvh}"));
-    expect(treffer.length).toBe(1);
+    // S121.6 · Die Sonderregel ist fort: Die Spalte klebt jetzt ohnehin, und
+    // zwar mit voller Fensterhoehe (position:sticky;height:100dvh).
+    expect(desktopBloecke().filter(q =>
+      q.includes(".rz-regal-offen>.rz-half:first-child{height:100dvh}")).length).toBe(0);
+    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen>\.rz-half:first-child\{position:sticky[^}]*height:100dvh/);
   });
 
   it("der Nahtabstand gilt auch im aufgeklappten Zustand", () => {
-    // Q3a hängt margin-bottom:50dvh an :not(.rz-regal-offen) — auf dem Desktop
-    // muss der Abstand bleiben, sonst sackt der Zonenfuß nach unten.
-    const treffer = desktopBloecke().filter(q =>
-      q.includes(".rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}"));
-    expect(treffer.length).toBe(1);
+    // S121.6 · Entfallen: Die Spalte klebt und behaelt ihre Hoehe ohnehin;
+    // ein 50dvh-Abstand darin waere jetzt eine Leerflaeche mitten im Bild.
+    expect(desktopBloecke().filter(q =>
+      q.includes(".rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}")).length).toBe(0);
   });
 
   /* S114i · Umgekehrt zu S114h: --rz-regal-top ist die Höhe der Kopfzeile,
@@ -367,16 +368,14 @@ describe("S114h · Beim Aufklappen steht die linke Spalte still", () => {
      Rückweg und Einstellungen. Der scheinbare Sprung beim Öffnen ist genau
      dieser Zweck, kein Fehler. Gilt senkrecht wie waagerecht. */
   it("die Regal-Zone lässt die Kopfzeile frei", () => {
-    const treffer = desktopBloecke().filter(q =>
-      q.includes(".rz-regal-offen>.rz-half:last-child{top:0}"));
-    expect(treffer.length).toBe(0);
-    // Es bleibt bei der Grundregel, die unterhalb des Kopfes ansetzt.
-    expect(DESIGN_CSS).toContain("top:var(--rz-regal-top,0px);z-index:2");
+    // S121.6 · Die Zone wird nicht mehr positioniert; die Kopfzeile bleibt
+    // frei, weil die obere Zone als Ganzes klebt und sie enthaelt.
+    expect(DESIGN_CSS).not.toContain("--rz-regal-top");
   });
 
-  it("mobil bleibt die Zonen-Mechanik unberührt", () => {
-    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:first-child{position:absolute;top:0;left:0;right:0;height:var(--rz-oben-h,50%)}");
-    expect(DESIGN_CSS).toContain("top:var(--rz-regal-top,0px);z-index:2");
+  it("S121.6 · mobil klebt die obere Zone, statt gemessen zu werden", () => {
+    expect(DESIGN_CSS).not.toContain("--rz-oben-h");
+    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen>\.rz-half:first-child\{position:sticky;top:0;z-index:8/);
   });
 });
 

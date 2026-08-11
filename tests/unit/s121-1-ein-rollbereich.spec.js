@@ -86,11 +86,11 @@ describe("S121.1 · die Naht hängt am Rahmen", () => {
 });
 
 describe("S121.1 · was bewusst stehen bleibt", () => {
-  it("die Regal-Mechanik bleibt vorerst höhenfest — sie kommt in einem eigenen Schritt", () => {
-    // F17 (umstellen) ist entschieden, aber das aufgeklappte Regal hat eine
-    // eigene Mechanik samt Animation (S114h). Es in denselben Schritt zu
-    // ziehen hieße, zwei Dinge gleichzeitig zu bewegen.
-    expect(CSS).toContain(".rz-regal-offen{position:relative;height:100dvh;overflow:hidden}");
+  it("S121.6 · auch die Regal-Mechanik ist inzwischen umgestellt", () => {
+    // In S121.1 stand hier bewusst der Ist-Zustand: Das Regal war noch
+    // höhenfest, damit die Verschiebung sichtbar blieb. S121.6 hat sie
+    // eingelöst — das Regal ist ein Akkordeon im Fluss.
+    expect(CSS).not.toContain(".rz-regal-offen{position:relative;height:100dvh;overflow:hidden}");
   });
 
   it("der Chat behält vorerst seinen Aufbau — S121.4 stellt ihn um", () => {

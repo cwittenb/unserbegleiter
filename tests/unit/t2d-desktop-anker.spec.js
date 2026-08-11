@@ -69,7 +69,9 @@ describe("T2d ist mit S121.2 umgekehrt: die Aufbauten ankern wieder an der Hälf
 
   it("das Badge misst 50dvh vom Spaltenanfang, nicht 50% des Splits", () => {
     expect(D1).not.toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}");
-    expect(D1).toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:0;top:50dvh}");
+    // S121.6 · Weiter 50dvh, aber am FENSTER: Das Badge steht fest und rollt
+    // nicht mehr mit (Entscheidung am Prototyp, Abweichung von Turn 48 §2.4).
+    expect(D1).toMatch(/\.rz-split \.rz-auf-naht\{position:fixed;left:50%;top:50dvh/);
   });
 
   /* S114e · Die Krücke ist im Ruhezustand ganz fort: Das Band hängt am
@@ -97,10 +99,9 @@ describe("T2d · der aufgeklappte Zustand bleibt unberührt", () => {
   /* S114d.3 · Die Regel steht nicht mehr im ersten 900px-Block, sondern hinter
      der Grundregel — davor war sie wirkungslos (gleiche Spezifität, und eine
      @media-Klammer erhöht sie nicht). */
-  it("Q2 · das offene Regal bleibt in seiner Hälfte", () => {
-    const grund = DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{position:absolute");
-    expect(DESIGN_CSS.indexOf(".rz-regal-offen>.rz-half:last-child{left:50%}"))
-      .toBeGreaterThan(grund);
+  it("S121.6 · Q2 ist entfallen: das Regal ist keine positionierte Flaeche mehr", () => {
+    expect(DESIGN_CSS).not.toContain(".rz-regal-offen>.rz-half:last-child{position:absolute");
+    expect(DESIGN_CSS).not.toContain(".rz-regal-offen>.rz-half:last-child{left:50%}");
   });
 
   it("Q3 · das Badge bleibt dort an der Kante der Hälfte stehen", () => {
@@ -110,9 +111,9 @@ describe("T2d · der aufgeklappte Zustand bleibt unberührt", () => {
     expect(D1).toMatch(/\.rz-split\.rz-regal-offen \.rz-auf-naht\{top:50dvh\}/);
   });
 
-  it("die Bestandsregel für die absolute Positionierung im Regal steht weiter", () => {
-    expect(KOMPONENTEN).toContain(".rz-regal-offen>.rz-half:first-child{position:absolute;");
-    expect(KOMPONENTEN).toContain(".rz-regal-offen{position:relative;height:100dvh;overflow:hidden}");
+  it("S121.6 · die absolute Positionierung im Regal ist fort", () => {
+    expect(KOMPONENTEN).not.toContain(".rz-regal-offen>.rz-half:first-child{position:absolute;");
+    expect(KOMPONENTEN).not.toContain(".rz-regal-offen{position:relative;height:100dvh;overflow:hidden}");
   });
 });
 

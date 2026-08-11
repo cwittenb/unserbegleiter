@@ -13,34 +13,43 @@ import { freigebeUebergabe } from "../../core/engine/freigabe.js";
 import { uebergabeTeilKey } from "../../core/contracts/uebergabe.js";
 
 describe("D9 · Ruhe-Vertraege im CSS", () => {
-  it("Vollbild-Zustand pinnt die Hoehe — das Dokument waechst nicht mehr", () => {
-    expect(DESIGN_CSS).toContain(".rz-regal-offen{position:relative;height:100dvh;overflow:hidden}");
+/* S121.6 · UMGEKEHRT. Das offene Regal war eine Vollbild-Fläche mit absolut
+   positionierten Hälften, gemessenen Maßen und eigenem Rollbereich. Es ist
+   jetzt ein Akkordeon im Fluss: Die Zone wächst mit ihrem Inhalt, das Dokument
+   rollt (Turn 48 §2.1), die übrigen Zeilen bleiben stehen.
+   Die Fälle bleiben mit gedrehtem Vorzeichen stehen — eine Umkehr, die als
+   gelöschter Test dasteht, ist später nicht mehr auffindbar. */
+  it("S121.6 · der Vollbild-Zustand ist fort — das Dokument waechst wieder", () => {
+    expect(DESIGN_CSS).not.toContain(".rz-regal-offen{position:relative;height:100dvh;overflow:hidden}");
   });
 
-  it("der obere Teil bleibt EXAKT stehen: festgesetzt auf sein gemessenes Mass", () => {
-    expect(DESIGN_CSS).toContain(".rz-regal-offen>.rz-half:first-child{position:absolute;top:0;left:0;right:0;height:var(--rz-oben-h,50%)}");
-    // ... und wird NICHT mehr zusammengefaltet oder ausgeblendet:
-    expect(DESIGN_CSS).not.toMatch(/\.rz-regal-offen \.rz-half:first-child\{flex-grow:0/);
+  it("S121.6 · der obere Teil wird nicht mehr gemessen, sondern klebt", () => {
+    expect(DESIGN_CSS).not.toContain("--rz-oben-h");
+    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen>\.rz-half:first-child\{position:sticky/);
   });
 
-  it("die Regal-Zone faehrt hoch bis unter den Kopf", () => {
-    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen>\.rz-half:last-child\{[^}]*top:var\(--rz-regal-top,0px\)/);
-    expect(DESIGN_CSS).toMatch(/\.rz-half\{transition:transform \.36s/);
+  it("S121.6 · die Zone wird nicht mehr verschoben — die Seite rollt dorthin", () => {
+    expect(DESIGN_CSS).not.toContain("--rz-regal-top");
   });
 
-  it("Akkordeon: der Inhalt waechst aus dem Trennstrich hervor (clip-path, ohne Verzerrung)", () => {
-    expect(DESIGN_CSS).toContain(".rz-regal-inhalt:not(.pb-hidden){animation:rzAufklappen");
+  it("Akkordeon: der Inhalt waechst per Rasterhoehe, ohne Messung", () => {
+    // clip-path war die alte Fassung; grid-template-rows oeffnet eine
+    // UNBEKANNTE Hoehe weich, ohne sie vorher zu messen.
+    expect(DESIGN_CSS).toContain(".rz-regal-inhalt{display:grid;grid-template-rows:0fr");
     expect(DESIGN_CSS).toMatch(/@keyframes rzAufklappen\{\s*from\{clip-path:inset\(0 0 100% 0\)/);
   });
 
   // D12-2b (Turn 27) kehrt diesen D9-Nachtrag um: die geklickte Zeile IST die
   // Sektionsueberschrift und traegt den Weg nach oben; der eigene Zu-Pfeil an
   // der Zonen-Ueberschrift entfaellt, die Geschwisterzeilen treten ab.
-  it("die offene Zeile wird zur Sektionsueberschrift, die Geschwister treten ab", () => {
+  it("S121.6 · die Geschwisterzeilen bleiben stehen — das macht es zum Akkordeon", () => {
     expect(DESIGN_CSS).not.toContain(".rz-zeile.rz-auf .rz-pfeil{display:none}");
     expect(DESIGN_CSS).not.toContain(".rz-zone-zu");
-    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}");
-    expect(DESIGN_CSS).toMatch(/\.rz-regal-offen \.rz-zeile\.rz-auf\{[^}]*font-family:var\(--rz-serif\)/);
+    expect(DESIGN_CSS).not.toContain(".rz-regal-offen .rz-zeile[data-box]:not(.rz-auf){display:none}");
+    // Die Sonderform der offenen Zeile ist mit der Vollbild-Mechanik gefallen:
+    // Sie bleibt eine Zeile unter Zeilen und braucht keine eigene Typografie.
+    // Was sie auszeichnet, ist der gedrehte Pfeil (S114.7, in app.js gesetzt).
+    expect(DESIGN_CSS).not.toMatch(/\.rz-regal-offen \.rz-zeile\.rz-auf\{[^}]*font-family:var\(--rz-serif\)/);
   });
 
   it("Inhalt rollt INNERHALB der Zone statt die Seite zu verlaengern", () => {
