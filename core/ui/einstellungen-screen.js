@@ -14,6 +14,7 @@ import { esc } from "./html.js";
 import { setzeAnsicht, merkeAnsicht } from "./design.js";
 import { verlaufEinstellung, EINST_VERLAUF, loescheAlleVerlaeufe, zaehleVerlaeufe } from "./verlauf-ablage.js";   // S95.7b
 import { oeffneExtern } from "./rechtliches.js";   // L3
+import { geraeteSchalter } from "./geraeteschalter.js";   // S119.7
 
 /**
  * @param {object} ctx
@@ -102,6 +103,8 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
         hinweis(t("einst.sprachvorschlagHinweis", { partner }))
       : "";
 
+    await zeichneGeraeteSchalter();
+
     for (const b of oben.querySelectorAll("[data-verlauf]"))
       b.addEventListener("click", async () => {
         const v = b.getAttribute("data-verlauf");
@@ -130,6 +133,45 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
         zeigeEinstellungen();
       } catch (e) { err(fehlerText(e)); }
     });
+  }
+
+  /* S119.7 · Geraeteschalter. Plattformgebundene Ein/Aus-Zeilen (heute nur
+     Benachrichtigungen) melden sich ueber core/ui/geraeteschalter.js an; hier
+     werden sie gezeichnet. Der Kern erfaehrt nicht, WAS geschaltet wird.
+     Kein Schalter angemeldet -> keine Zeile. Das ist der Regelfall in allen
+     Umgebungen ohne Push (Artefakt, Tests, native Huelle ohne Erlaubnis) und
+     der Grund, warum hier nichts vorgehalten wird: eine tote Zeile waere
+     schlimmer als keine.
+     Der Zustand wird bei jedem Zeichnen GEFRAGT, nie gemerkt — die Wahrheit
+     liegt beim Browser und kann sich ausserhalb der App aendern. */
+  async function zeichneGeraeteSchalter() {
+    const wirt = $("einstGeraetSchalter");
+    if (!wirt) return;
+    const liste = geraeteSchalter();
+    wirt.innerHTML = "";
+    for (const s of liste) {
+      let an = false;
+      try { an = !!(await s.an()); } catch { continue; }   // fragt der Schalter nicht, zeigen wir ihn nicht
+      const knopf = doc.createElement("button");
+      knopf.type = "button";
+      knopf.className = "rz-zeile rz-einst-wahl" + (an ? " an" : "");
+      knopf.id = "einstSchalter-" + s.id;
+      knopf.setAttribute("aria-pressed", String(an));
+      const text = doc.createElement("span");
+      text.textContent = s.label();
+      const haken = doc.createElement("span");
+      haken.className = "rz-haken";
+      haken.setAttribute("aria-hidden", "true");
+      haken.textContent = "\u2713";
+      knopf.append(text, haken);
+      knopf.addEventListener("click", async () => {
+        knopf.disabled = true;
+        try { await s.umschalten(); } catch { /* z. B. Erlaubnis verweigert */ }
+        knopf.disabled = false;
+        zeigeEinstellungen();          // Zustand neu erfragen statt annehmen
+      });
+      wirt.appendChild(knopf);
+    }
   }
 
   /* 3.7 · Loeschen ist endgueltig und stand als normale Zeile neben dem

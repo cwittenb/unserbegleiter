@@ -216,6 +216,13 @@ export function createApp({ doc, backend, root, diktat }) {
                Aufklapp-Mechanik dieselbe ist wie im Regal (data-box). -->
           <div class="rz-einst-gruppe">
             <div class="rz-caps">${t("einst.gruppeGeraet")}</div>
+            <!-- S119.7 · Platz fuer plattformgebundene Geraeteschalter (heute:
+                 Benachrichtigungen). Sie werden bei jedem Betreten neu
+                 gezeichnet; angemeldet werden sie von der Plattform ueber
+                 core/ui/geraeteschalter.js. Steht ZUERST in der Gruppe, weil
+                 die beiden festen Zeilen darunter aufklappen und ein
+                 aufgeklappter Kasten sonst zwischen den Zeilen saesse. -->
+            <div id="einstGeraetSchalter"></div>
             <button class="rz-zeile rz-unten pb-hidden" id="btnRecovery" data-box="boxRecovery"><span>${t("rec.titel")}</span><span class="rz-pfeil">↑</span></button>
             <div class="rz-regal-inhalt pb-hidden" id="boxRecovery"></div>
             <!-- 3.7 · Endgueltige Handlung, deshalb keine normale Zeile: sie

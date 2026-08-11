@@ -11,6 +11,7 @@ import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../..
 import { apiBasis, istNativeShell } from "./api-basis.js";
 import { lauscheAppLinks } from "./deep-link.js";
 import { istPushMoeglich, aktivierePush, deaktivierePush, hatPushAbo } from "./push.js";
+import { meldeGeraeteSchalter } from "../../../core/ui/geraeteschalter.js";   // S119.7
 /* L3 (Turn 46) · Der Wiedereinstieg benutzt jetzt die Bausteine aus design.js
    statt eigener Inline-Styles. Er laeuft zwar VOR createApp(), aber
    applyDesign(doc) laeuft in boot() davor — die Klassen stehen bereit. */
@@ -164,7 +165,7 @@ export async function boot() {
   doc.documentElement.removeAttribute("data-vorzugang");
   const ui = createApp({ doc, backend: remoteBackend(), root: app });
   await ui.boot();
-  ergaenzePushGlocke().catch(() => { /* Push ist Komfort, nie Voraussetzung */ });
+  meldePushSchalter().catch(() => { /* Push ist Komfort, nie Voraussetzung */ });
 }
 
 /* L3 · Rechtslinks. Sie stehen in der unteren Zone des Wiedereinstiegs — und
@@ -326,28 +327,30 @@ export function zeigeWiedereinstieg(enrollFehler) {
 /** Push-Glocke (M7a): kleiner Umschalter im Theme-Chrome — nur wenn Web Push
  *  hier möglich ist und der Worker konfiguriert ist (sonst bleibt er weg;
  *  /api/push/key antwortet dann 503). Aktiv = gefüllte Glocke. */
-async function ergaenzePushGlocke() {
+/* S119.7 · Push als GERAETE-EINSTELLUNG, nicht als Glocke in der Ecke.
+   Vorher hing hier ein Emoji-Knopf in .pb-theme — das einzige Emoji der
+   Oberflaeche, ohne Token, an einem Ort, der sonst nur einen Weg traegt.
+   (Die beiden Zeichen stehen hier bewusst nicht im Kommentar: ein Waechter
+   sucht sie im Quelltext, und der liest Kommentare mit.)
+   Jetzt meldet die Plattform einen Schalter an; gezeichnet wird er vom
+   Einstellungs-Screen in der Gruppe "Dieses Geraet".
+   Die Bedingungen bleiben unveraendert: nur wenn Push im Browser moeglich ist
+   UND der Worker VAPID kennt. Ist eine davon nicht erfuellt, wird nichts
+   angemeldet — und dann erscheint auch keine Zeile. Ein toter Schalter waere
+   schlimmer als keiner. */
+async function meldePushSchalter() {
   if (!istPushMoeglich()) return;
-  const gruppe = doc.querySelector(".pb-theme");
-  if (!gruppe || doc.getElementById("pbPush")) return;
   try { await api("GET", "/api/push/key"); } catch { return; }   // Feature serverseitig aus
   const reg = await navigator.serviceWorker.ready;
-  const knopf = doc.createElement("button");
-  knopf.id = "pbPush";
-  knopf.type = "button";
-  knopf.title = t("pwa.push");
-  knopf.setAttribute("aria-label", t("pwa.push"));
-  const zeichne = (an) => { knopf.textContent = an ? "\u{1F514}" : "\u{1F515}"; knopf.classList.toggle("an", an); };
-  zeichne(await hatPushAbo(reg));
-  knopf.addEventListener("click", async () => {
-    knopf.disabled = true;
-    try {
-      if (await hatPushAbo(reg)) { await deaktivierePush(api, reg); zeichne(false); }
-      else zeichne(await aktivierePush(api, reg));
-    } catch { /* z. B. Erlaubnis verweigert — Zustand unverändert */ }
-    knopf.disabled = false;
+  meldeGeraeteSchalter({
+    id: "push",
+    label: () => t("pwa.push"),
+    an: () => hatPushAbo(reg),
+    umschalten: async () => {
+      if (await hatPushAbo(reg)) { await deaktivierePush(api, reg); return false; }
+      return await aktivierePush(api, reg);
+    },
   });
-  gruppe.appendChild(knopf);
 }
 
 /** Service Worker (M2): registrieren + Update-Fluss. Meldet sich ein neuer
