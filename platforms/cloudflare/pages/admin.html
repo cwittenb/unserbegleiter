@@ -584,7 +584,7 @@
       z += bbZeile("Adress-Schlüssel gesetzt", d.mail.adressSchluesselGesetzt, !d.mail.adressSchluesselGesetzt);
       z += bbZeile("Adresspflicht", d.mail.adressPflicht);
       z += bbZeile("Meldeweg: Token / Ziel", (d.meldeweg.tokenGesetzt ? "ja" : "nein") + " / " + (d.meldeweg.zielGesetzt ? "ja" : "nein"));
-      z += bbZeile("Push-Schlüssel gesetzt", d.push.schluesselGesetzt);
+      z += bbZeile("Push: Schlüsselpaar / Absender", (d.push.schluesselGesetzt ? "ja" : "nein") + " / " + (d.push.absenderGesetzt ? "ja" : "nein"));
       z += bbZeile("Speicher gebunden", d.speicher.kvGebunden, !d.speicher.kvGebunden);
       bbOut.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:14px">' + z + "</table>";
       if(!d.llm.vollstaendig)

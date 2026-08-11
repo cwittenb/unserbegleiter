@@ -44,6 +44,8 @@ function bau(extra = {}) {
       SMTP_HOST: "mail.example.net", SMTP_FROM: "begleitung@example.de",
       SMTP_USER: "u", SMTP_PASS: "geheimes-passwort",
       TELEGRAM_TOKEN: "tg-geheim", TELEGRAM_CHAT: "12345",
+      VAPID_PUBLIC_KEY: "vapid-oeffentlich", VAPID_PRIVATE_KEY: "vapid-geheim",
+      VAPID_SUBJECT: "mailto:betrieb@example.de",
       ...extra,
     },
   });
@@ -84,7 +86,7 @@ describe("S126 · Betriebsbild", () => {
   it("gibt KEINEN Schlüssel, kein Passwort, kein Token aus — auch nicht gekürzt", async () => {
     // Ein halber Schlüssel im Log ist ein ganzes Problem.
     const { roh } = await hole(mf, adminKopf);
-    for (const geheim of [SCHLUESSEL, "geheimes-passwort", "tg-geheim", EMAIL_KEY, ADMIN])
+    for (const geheim of [SCHLUESSEL, "geheimes-passwort", "tg-geheim", "vapid-geheim", EMAIL_KEY, ADMIN])
       expect(roh).not.toContain(geheim);
     // auch keine Bruchstücke
     expect(roh).not.toContain(SCHLUESSEL.slice(0, 12));
@@ -140,6 +142,50 @@ describe("S126 · Betriebsbild", () => {
     const { data } = await hole(mf, adminKopf);
     expect(data.kern).toHaveProperty("hash");
     expect(data.kern.version).toBeTruthy();
+  });
+
+  /* ---- S127 · Der Wächter gegen den Fehler, den diese Datei nicht gefangen
+     hat ----
+     Die Route fragte zuerst VAPID_PUBLIC und VAPID_PRIVATE ab — Namen, die es
+     im ganzen Bestand nicht gibt (richtig: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY,
+     VAPID_SUBJECT). Die Anzeige meldete deshalb dauerhaft "nicht
+     eingerichtet", und das sah plausibel aus.
+     Die elf Tests darüber haben es nicht gemerkt: Sie setzen ihre eigenen
+     Namen und finden sie dann wieder — sie prüfen gegen sich selbst statt
+     gegen den Bestand. Genau dieselbe Lücke wie bei der Whitelist-Drift
+     (S119.1): ein Name, den nur eine Seite kennt. */
+  it("S127 · jeder abgefragte Variablenname kommt auch anderswo im Worker vor", async () => {
+    const { readFileSync, readdirSync } = await import("node:fs");
+    const wDir = path.join(ROOT, "platforms/cloudflare/worker");
+    const quelle = readFileSync(path.join(wDir, "index.js"), "utf8");
+    // Nur der Rumpf der Route, sonst prüfte sie sich selbst.
+    const von = quelle.indexOf('if (p === "/api/betriebsbild"');
+    const bis = quelle.indexOf('if (p === "/api/mailstat"', von);
+    const rumpf = quelle.slice(von, bis);
+    // Der Vergleichstext ist der GANZE Worker ohne diesen Rumpf: Die
+    // Mail-Variablen etwa leben in mailer.js, nicht in index.js.
+    const rest = readdirSync(wDir).filter(f => f.endsWith(".js"))
+      .map(f => readFileSync(path.join(wDir, f), "utf8")).join("\n")
+      .replace(rumpf, "");
+    const namen = [...rumpf.matchAll(/da\("([A-Z0-9_]+)"\)/g)].map(t => t[1]);
+    expect(namen.length).toBeGreaterThan(5);
+    const unbekannt = namen.filter(n => !rest.includes(n));
+    expect(unbekannt, "Namen, die nur die Auskunftsroute kennt").toEqual([]);
+  });
+
+  it("meldet die drei Push-Bedingungen — Paar UND Absender", async () => {
+    const { data } = await hole(mf, adminKopf);
+    expect(data.push.schluesselGesetzt).toBe(true);
+    expect(data.push.absenderGesetzt).toBe(true);
+    expect(data.push.vollstaendig).toBe(true);
+  });
+
+  it("ohne VAPID_SUBJECT ist Push unvollständig — der Worker weist es dann ab", async () => {
+    const m = bau({ VAPID_SUBJECT: "" });
+    const { data } = await hole(m, adminKopf);
+    expect(data.push.schluesselGesetzt).toBe(true);
+    expect(data.push.vollstaendig).toBe(false);
+    await m.dispose();
   });
 
   it("sagt, ob der Speicher gebunden ist", async () => {

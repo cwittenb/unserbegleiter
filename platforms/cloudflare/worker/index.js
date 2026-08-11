@@ -237,7 +237,21 @@ async function route(request, env) {
         adressPflicht: !(env.EMAIL_PFLICHT === "0" || env.EMAIL_PFLICHT === "false" || env.EMAIL_PFLICHT === false),
       },
       meldeweg: { tokenGesetzt: da("TELEGRAM_TOKEN"), zielGesetzt: da("TELEGRAM_CHAT") },
-      push: { schluesselGesetzt: da("VAPID_PUBLIC") && da("VAPID_PRIVATE") },
+      /* S127 · Die Namen hier hiessen zuerst VAPID_PUBLIC/VAPID_PRIVATE — die
+         gibt es nirgends. Richtig sind VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY und
+         VAPID_SUBJECT; alle drei sind Bedingung, sonst weist der Worker Push
+         mit config_missing ab (s. /api/push/key).
+         Der Fehler ist der lehrreiche Teil: Eine Auskunftsroute mit falschen
+         Namen meldet zuverlaessig "nicht eingerichtet" — und niemand merkt es,
+         weil das Ergebnis plausibel aussieht. Dagegen steht jetzt ein
+         Waechter: Jeder Name, den das Betriebsbild abfragt, muss auch
+         anderswo im Worker vorkommen. Ein Name, den nur die Auskunft kennt,
+         ist eine Auskunft ueber nichts. */
+      push: {
+        schluesselGesetzt: da("VAPID_PUBLIC_KEY") && da("VAPID_PRIVATE_KEY"),
+        absenderGesetzt: da("VAPID_SUBJECT"),
+        vollstaendig: da("VAPID_PUBLIC_KEY") && da("VAPID_PRIVATE_KEY") && da("VAPID_SUBJECT"),
+      },
       speicher: { kvGebunden: !!kv },
     });
   }
