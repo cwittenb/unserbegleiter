@@ -258,7 +258,12 @@ const EINZEL_MARKEN = ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]",
 const GEMEINSAM_MARKEN = ["[[REVEAL-A]]", "[[REVEAL-B]]", "[[REVEAL]]",
   "[[BASELINE]]", "[[SCALE-CLOSING]]"];
 
-const MARKE_IM_TEXT = /\[\[[^\s[\]]{1,40}\]\]/g;
+/* S131 · Dasselbe Muster wie im Anzeigefilter (core/contracts/steuertoken.js).
+   Die erste Fassung verbot Leerzeichen im Inneren — und zaehlte deshalb
+   "[[NEUE SESSION]]" nicht, das im Lauf vom 11.08. zweimal auftrat. Der Judge
+   fand es, der Waechter nicht: Ein Waechter, der enger misst als der Fehler
+   ist, meldet Ruhe. Jetzt gilt hier wie dort die einfache Regel. */
+const MARKE_IM_TEXT = /\[\[[^\]]*\]\]/g;
 
 /**
  * Findet Marken im sichtbaren Text und ordnet sie ein.

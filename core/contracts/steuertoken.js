@@ -43,28 +43,37 @@ export function entferneSteuerToken(text) {
 }
 
 /* S119.6 · FREMDE MARKEN — die fünfte Schicht.
-   Befund: Das Modell (Mistral) hängte an eine Eröffnung im Reflexionsgespräch
-   ein "[[weiter]]" — eine Marke, die es nicht gibt. cleanDisplay entfernt
-   Marken durch AUFLISTEN: nur was in der markerOrder der Session steht, wird
+   Befund: Das Modell hängte an eine Eröffnung im Reflexionsgespräch ein
+   "[[weiter]]" — eine Marke, die es nicht gibt. cleanDisplay entfernt Marken
+   durch AUFLISTEN: nur was in der markerOrder der Session steht, wird
    geschluckt. Das Reflexionsgespräch hat eine LEERE Liste; es kennt planmäßig
    keine Marken. Die Erfindung fiel deshalb durch jedes Sieb.
 
-   Die Klammerzeile (oben) hätte sie gefangen, wenn sie allein auf einer Zeile
-   gestanden hätte — sie stand aber am Satzende, im Fließtext. Genau diese
-   Lücke schließt dieser Filter.
+   S131 · DIE AUSNAHME IST GEFALLEN.
+   S119.6 hat den Filter eng gefasst: kein Leerzeichen im Inneren, höchstens 40
+   Zeichen — um "Fließtext in doppelten Klammern" zu schützen. Das Beispiel
+   dafür ("Sie sagte [[das war der Moment]] und schwieg") war KONSTRUIERT. Es
+   ist nie vorgekommen, und es hält der Prüfung nicht stand: Doppelte eckige
+   Klammern sind in der Typografie nichts. Wer einen Einschub braucht, nimmt
+   Gedankenstriche, Klammern oder Anführungszeichen. In diesem System sind
+   [[…]] ausschließlich Maschinensyntax — der Prompt sagt das seit S129 auch
+   ausdrücklich.
+   Die Ausnahme hatte Kosten: Ein Lauf gegen mistral-large lieferte
+   "[[NEUE SESSION]]" (mit Leerzeichen) — der Filter liess es durch, und der
+   Eval-Wächter zählte es nicht. Zwei Stellen, ein Denkfehler. Dass der Judge
+   es fand, war Glück.
+   Jetzt gilt die einfache Regel: Was in doppelten eckigen Klammern steht,
+   gehört nicht in den sichtbaren Text. Keine Längengrenze, keine
+   Leerzeichenbedingung, keine Sonderbehandlung für Versalien.
 
-   Warum das sicher ist: Eine echte Marke ist per Registry-Wächter
-   GROSSGESCHRIEBEN und ohne Leerzeichen (marker.js); sie ist zu diesem
-   Zeitpunkt bereits entfernt, wenn die Session sie kennt. Was hier noch
-   übrig ist, kennt die Session nicht — anzeigen wäre in jedem Fall falsch.
-   Und die Prompts verbieten eckige Klammern im Fließtext ausdrücklich.
-
-   Bewusst eng: kein Leerzeichen, keine weitere Klammer im Inneren, höchstens
-   40 Zeichen. Ein Satz in doppelten Klammern über mehrere Wörter ist damit
-   KEINE Marke und bleibt stehen — dort wäre Löschen der größere Eingriff.
-   Reihenfolge wie beim Steuer-Token: NACH der Blockersetzung, sonst könnte
-   verschachteltes JSON ([["a"]]) getroffen werden. */
-const FREMDE_MARKE = /[ \t]*\[\[[^\s[\]]{1,40}\]\][ \t]*/g;
+   Was BLEIBT, und zwar aus echten Gründen:
+     · Die Reihenfolge — der Filter läuft NACH der Blockersetzung, sonst
+       träfe er verschachteltes JSON ([["a","b"]]). Dafür gibt es einen Test.
+     · Die Marken bleiben Marken — registrierte werden vorher über die
+       markerOrder entfernt; hier greift nur, was übrig bleibt.
+   Was verloren geht, falls doch jemand [[…]] als Prosa meint: nichts, was
+   wehtut. Der Verlauf speichert weiter den Rohtext; nur die Anzeige säubert. */
+const FREMDE_MARKE = /[ \t]*\[\[[^\]]*\]\][ \t]*/g;
 
 /** Entfernt übrig gebliebene, der Session unbekannte Marken aus der Anzeige. */
 export function entferneFremdeMarken(text) {

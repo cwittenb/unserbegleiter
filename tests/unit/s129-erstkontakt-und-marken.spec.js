@@ -141,6 +141,23 @@ describe("S130 · das Szenario misst, was die App wirklich schickt", () => {
 });
 
 describe("S129 · der Markenwächter im Runner", () => {
+  /* S131 · Das Muster ist so weit wie im Anzeigefilter. Die erste Fassung
+     verbot Leerzeichen und zaehlte deshalb "[[NEUE SESSION]]" nicht — zwei
+     Vorkommen im Lauf vom 11.08., die nur der Judge fand.
+     Ein Waechter, der enger misst als der Fehler ist, meldet Ruhe. */
+  it("zählt auch mehrwortige Marken — der Fall, den die erste Fassung verpasste", () => {
+    const r = markenImText("Satz. [[NEUE SESSION]] und [[NEUE_SESSION]]", []);
+    expect(r.fremd).toEqual(["[[NEUE SESSION]]", "[[NEUE_SESSION]]"]);
+  });
+
+  it("misst dasselbe wie der Anzeigefilter — sonst zeigt die App etwas, das kein Lauf sieht", async () => {
+    const { entferneFremdeMarken } = await import("../../core/contracts/steuertoken.js");
+    for (const probe of ["[[NEUE SESSION]]", "[[weiter]]", "[[" + "x".repeat(60) + "]]"]) {
+      expect(markenImText("Text " + probe, []).fremd, probe).toEqual([probe]);
+      expect(entferneFremdeMarken("Text " + probe).trim(), probe).toBe("Text");
+    }
+  });
+
   it("trennt fremde von echten Marken", () => {
     const r = markenImText("Text [[weiter]] und [[REVEAL]] hier", ["[[REVEAL]]"]);
     expect(r.fremd).toEqual(["[[weiter]]"]);

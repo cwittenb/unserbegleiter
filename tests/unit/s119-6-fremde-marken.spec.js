@@ -44,16 +44,32 @@ describe("S119.6 · fremde Marken", () => {
       expect(cleanDisplay("Satz. " + erfunden, [], [])).toBe("Satz.");
   });
 
-  it("Fließtext in doppelten Klammern bleibt stehen — das ist keine Marke", () => {
-    // Mehrere Wörter, Leerzeichen im Inneren: Löschen wäre hier der größere
-    // Eingriff. Der Filter ist bewusst eng.
-    const roh = "Sie sagte [[das war der Moment]] und schwieg.";
-    expect(cleanDisplay(roh, [], [])).toBe(roh);
+  /* S131 · DIESE BEIDEN ZUSICHERUNGEN SIND UMGEKEHRT.
+     S119.6 schützte "Fließtext in doppelten Klammern" — mit einem Beispiel,
+     das ich KONSTRUIERT hatte. Es ist nie vorgekommen, und doppelte eckige
+     Klammern sind in der Typografie nichts: Wer einen Einschub braucht, nimmt
+     Gedankenstriche oder Anführungszeichen. In diesem System sind [[…]]
+     ausschließlich Maschinensyntax.
+     Die Ausnahme hatte Kosten: "[[NEUE SESSION]]" (mit Leerzeichen) ging durch
+     den Filter und wurde vom Eval-Wächter nicht gezählt. Zwei Stellen, ein
+     Denkfehler. Die Fälle bleiben stehen, mit gedrehtem Vorzeichen. */
+  it("auch ein mehrwortiger Klammerausdruck verschwindet — er ist keine Prosa", () => {
+    expect(cleanDisplay("Sie sagte [[das war der Moment]] und schwieg.", [], []))
+      .toBe("Sie sagte und schwieg.");
   });
 
-  it("überlange Klammerausdrücke bleiben ebenfalls stehen", () => {
+  it("und die Längengrenze ist fort", () => {
     const lang = "[[" + "x".repeat(60) + "]]";
-    expect(entferneFremdeMarken("Satz " + lang)).toContain(lang);
+    expect(entferneFremdeMarken("Satz " + lang).trim()).toBe("Satz");
+  });
+
+  /* Die beiden Belege aus dem Lauf vom 11.08. gegen mistral-large-latest:
+     15 Treffer als [[NEUE_SESSION]]/[[neue_session]] — die zählte schon der
+     alte Filter — und zwei als [[NEUE SESSION]], die er durchließ. */
+  it("die gemessenen Fälle: mit Unterstrich UND mit Leerzeichen", () => {
+    for (const marke of ["[[NEUE_SESSION]]", "[[neue_session]]", "[[NEUE SESSION]]"])
+      expect(cleanDisplay("Dieser Raum gehört ganz dir. " + marke, [], []))
+        .toBe("Dieser Raum gehört ganz dir.");
   });
 
   it("Text ohne doppelte Klammer wird unverändert durchgereicht", () => {
