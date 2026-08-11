@@ -176,6 +176,16 @@
       <div id="mtOut" style="margin-top:10px"></div>
     </div>
 
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label>Betriebsbild</label>
+        <p class="hint">Womit läuft diese Instanz gerade: welcher Kern-Stand, welcher Anbieter, welches Modell — und was ist eingerichtet. Es werden nur Namen und Ja/Nein angezeigt, niemals Schlüssel oder Adressen.</p>
+      </div>
+      <button id="bbGo" class="primary">Betriebsbild laden</button>
+      <div id="bbMsg"></div>
+      <div id="bbOut" style="margin-top:10px"></div>
+    </div>
+
     <p class="foot">
       Die Links sind <b>einmalig</b>: Beim ersten Öffnen wird die Person fest dem Paar zugeordnet, danach ist der Link verbraucht.
       Reicht jede:r Person genau ihren Link.
@@ -540,6 +550,47 @@
       zeigeBefund(b);
     }).catch(function(){ mtFehler("Verbindung fehlgeschlagen."); })
       .finally(function(){ mtGo.disabled = false; mtGo.textContent = "Weg prüfen"; });
+  });
+
+  /* S126 · Betriebsbild. Zeigt Konfiguration als Namen und Ja/Nein — die
+     Antwort auf "womit hat die App eigentlich gesprochen?", die vorher nur
+     ueber das Dashboard und auch dort nur halb zu bekommen war. */
+  function bbZeile(k, v, warnung) {
+    var wert = (v === true) ? "ja" : (v === false) ? "nein" : (v === null || v === undefined ? "—" : esc(String(v)));
+    var farbe = warnung ? "color:var(--warn,#8c3a2b);font-weight:600" : "";
+    return '<tr><td style="padding:6px 8px;border-bottom:1px solid var(--line)">' + esc(k) +
+      '</td><td style="padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;' + farbe + '">' + wert + "</td></tr>";
+  }
+
+  bbGo.addEventListener("click", function(){
+    var tok = $("tok").value;
+    if(!tok){ bbMsg.innerHTML = '<p class="msg err">Bitte das Admin-Token eingeben.</p>'; return; }
+    bbGo.disabled = true; bbGo.textContent = "Lade …"; bbMsg.innerHTML = ""; bbOut.innerHTML = "";
+    fetch(basis() + "/api/betriebsbild", { headers: { "x-admin-token": tok } }).then(function(res){
+      if(res.status === 401){ bbMsg.innerHTML = '<p class="msg err">Admin-Token fehlt oder ist falsch.</p>'; return null; }
+      return res.json();
+    }).then(function(d){
+      if(!d) return;
+      var z = "";
+      z += bbZeile("Kern-Hash", d.kern.hash);
+      z += bbZeile("Version", d.kern.version);
+      z += bbZeile("Anbieter", d.llm.provider, !d.llm.provider);
+      z += bbZeile("Modell", d.llm.modell, !d.llm.modell);
+      z += bbZeile("Schlüssel gesetzt", d.llm.schluesselGesetzt, !d.llm.schluesselGesetzt);
+      z += bbZeile("Denkmodus", d.llm.denkmodus);
+      z += bbZeile("Mail: Host / Absender", (d.mail.hostGesetzt ? "ja" : "nein") + " / " + (d.mail.absenderGesetzt ? "ja" : "nein"),
+                   !(d.mail.hostGesetzt && d.mail.absenderGesetzt));
+      z += bbZeile("Mail: Anmeldung / HELO", (d.mail.anmeldungGesetzt ? "ja" : "nein") + " / " + (d.mail.heloGesetzt ? "ja" : "nein"));
+      z += bbZeile("Adress-Schlüssel gesetzt", d.mail.adressSchluesselGesetzt, !d.mail.adressSchluesselGesetzt);
+      z += bbZeile("Adresspflicht", d.mail.adressPflicht);
+      z += bbZeile("Meldeweg: Token / Ziel", (d.meldeweg.tokenGesetzt ? "ja" : "nein") + " / " + (d.meldeweg.zielGesetzt ? "ja" : "nein"));
+      z += bbZeile("Push-Schlüssel gesetzt", d.push.schluesselGesetzt);
+      z += bbZeile("Speicher gebunden", d.speicher.kvGebunden, !d.speicher.kvGebunden);
+      bbOut.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:14px">' + z + "</table>";
+      if(!d.llm.vollstaendig)
+        bbMsg.innerHTML = '<p class="msg err">Die LLM-Konfiguration ist unvollständig — die Begleitung kann nicht antworten.</p>';
+    }).catch(function(){ bbMsg.innerHTML = '<p class="msg err">Verbindung fehlgeschlagen.</p>'; })
+      .finally(function(){ bbGo.disabled = false; bbGo.textContent = "Betriebsbild laden"; });
   });
 
   msGo.addEventListener("click", function(){

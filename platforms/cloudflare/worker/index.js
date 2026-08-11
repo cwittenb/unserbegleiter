@@ -188,6 +188,60 @@ async function route(request, env) {
     if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
     return json(await pruefeMeldeweg(env));
   }
+  /* ---- S126 · Betriebsbild: womit läuft diese Instanz gerade? (admin-gated)
+   *
+   *  Der Anlass ist ein Befund, den wir nicht einfangen konnten: Eine Sitzung
+   *  verhielt sich anders als jeder Eval-Lauf — und die Frage „mit welchem
+   *  Modell hat die App eigentlich gesprochen?" war von außen NICHT zu
+   *  beantworten. Provider und Modell liegen als Secrets vor; Secrets kann man
+   *  nicht auslesen, nur ihre Namen. /api/health meldete eine Versionsnummer,
+   *  die sich seit Ewigkeiten nicht ändert.
+   *  Solange niemand sieht, WOMIT die App spricht, ist jeder Vergleich mit
+   *  einem Eval-Lauf eine Vermutung. Das ist die Lücke, die diese Route
+   *  schließt — dieselbe Lehre wie bei Versandweg und Meldeweg (S118/S120):
+   *  Ein Weg, den niemand prüfen kann, ist ein Weg, dem niemand trauen kann.
+   *
+   *  WERTE vs. VORHANDENSEIN: Ausgegeben werden nur Angaben, die eine
+   *  Konfiguration BESCHREIBEN — Provider, Modellname, Denkmodus, Kern-Hash.
+   *  Von allem, was ein Geheimnis ist, steht hier ausschließlich, OB es
+   *  gesetzt ist. Kein Schlüssel, kein Token, keine Adresse verlässt diese
+   *  Route, auch nicht gekürzt: Ein halber Schlüssel im Log ist ein ganzes
+   *  Problem. ---- */
+  if (p === "/api/betriebsbild" && request.method === "GET") {
+    if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
+    const da = (name) => !!(env[name] && String(env[name]).length);
+    const provider = env.LLM_PROVIDER || null;
+    const pOben = provider ? provider.toUpperCase() : null;
+    return json({
+      kern: {
+        app: APP_NAME,
+        version: CORE_VERSION,
+        // Der Hash kommt aus dem Build-Banner (scripts/build-pages.js) und
+        // benennt den Stand, der wirklich deployt ist — anders als die
+        // Versionskonstante, die sich nie ändert.
+        hash: (typeof globalThis !== "undefined" && globalThis.__CORE_HASH__) || null,
+      },
+      llm: {
+        provider,
+        modell: pOben ? (env[pOben + "_MODEL"] || null) : null,
+        schluesselGesetzt: pOben ? da(pOben + "_API_KEY") : false,
+        denkmodus: env.LLM_THINKING === "adaptiv" ? "adaptiv" : "aus",
+        vollstaendig: !!(provider && pOben && env[pOben + "_MODEL"] && da(pOben + "_API_KEY")),
+      },
+      mail: {
+        hostGesetzt: da("SMTP_HOST"), absenderGesetzt: da("SMTP_FROM"),
+        anmeldungGesetzt: da("SMTP_USER") && da("SMTP_PASS"),
+        heloGesetzt: da("SMTP_HELO"), adressSchluesselGesetzt: da("EMAIL_KEY"),
+        // Notaus, nicht Einschalter (S115): nur eine ausdrückliche 0/false
+        // hebt die Adresspflicht auf.
+        adressPflicht: !(env.EMAIL_PFLICHT === "0" || env.EMAIL_PFLICHT === "false" || env.EMAIL_PFLICHT === false),
+      },
+      meldeweg: { tokenGesetzt: da("TELEGRAM_TOKEN"), zielGesetzt: da("TELEGRAM_CHAT") },
+      push: { schluesselGesetzt: da("VAPID_PUBLIC") && da("VAPID_PRIVATE") },
+      speicher: { kvGebunden: !!kv },
+    });
+  }
+
   if (p === "/api/mailstat" && request.method === "GET") {
     if (!(await requireAdmin(env, request))) return fehler("Admin-Zugang erforderlich.", 401);
     return json(await leseMailStat(kv));
