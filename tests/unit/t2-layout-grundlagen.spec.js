@@ -109,7 +109,11 @@ describe("T2c ist mit S121.1 entfallen — es gibt keinen Innen-Rollbereich mehr
   // nur die Bildlaufleiste ziehen, nicht wischen, während die zweite Zone
   // (die über das Dokument rollt) normal reagierte.
   it("die Zone ist kein Rollbereich mehr", () => {
-    expect(KOMPONENTEN_CSS).not.toContain(".rz-split:not(.rz-regal-offen)>.rz-half:first-child{");
+    // Bewusst auf die REGEL gezielt, nicht auf den Selektor: Der Selektor
+    // selbst ist legitim und trägt seit S121.3 den Freiraum an der Naht.
+    // Verboten ist, dass die Zone wieder in sich rollt.
+    expect(KOMPONENTEN_CSS).not.toContain(
+      ".rz-split:not(.rz-regal-offen)>.rz-half:first-child{min-height:0;overflow:auto");
   });
 
   it("und keine Hälfte trägt overflow:auto", () => {

@@ -290,6 +290,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Nicht fixed: Das legte es ueber Fuss, Dialoge und Tastatur wie eine
            Chat-Blase und braeuchte eine eigene z-index-Verabredung. */
         .rz-split:not(.rz-regal-offen) .rz-auf-naht{left:0;top:50dvh}
+        /* S121.3 (Turn 48 §2.5) · Die rollende Spalte braucht Luft an der Naht.
+           Das Badge steht seit S121.2 auf JEDER Rollhoehe an der Naht. Ohne
+           diesen Freiraum laeuft es ueber die rechtsbuendigen Werte der
+           Haarlinien-Zeilen (die Zustaende in den Regalzeilen, die Pfeile) und
+           schneidet sie ab. Vorher ging das gut, weil es nur auf einer
+           Bildschirmhoehe stand und die Flanke (Q3a) den Text dort weghielt.
+           Nur die Papier-Spalte: An ihrer Kante liegt das Badge. Die zweite
+           Haelfte bleibt vorerst unangetastet — ob sie denselben Freiraum
+           braucht, ist eine Gestaltungsfrage und keine Reparatur.
+           Nur ab 900px: Gestapelt liegt die Naht waagerecht, dort haelt der
+           Zonenfuss den Abstand ueber --rz-nahtfrei. */
+        .rz-split:not(.rz-regal-offen)>.rz-half:first-child{
+          padding-right:var(--rz-nahtfrei-x)}
         /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Regel stand
            bis S114d.3 HIER und blieb wirkungslos: Sie hat dieselbe
            Spezifitaet wie die Grundregel weiter unten in der Datei, und eine

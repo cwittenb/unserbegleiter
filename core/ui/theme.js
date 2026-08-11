@@ -83,6 +83,21 @@ export const THEME_CSS = String.raw`
            mit Text endet, braucht sie diesen Freiraum, sonst laufen die
            Silhouetten durch die letzten Zeilen. */
         --rz-kulissenfrei:96px;
+        /* S121.3 (Turn 48 §2.5) · Freiraum an der Naht in der BREITE.
+           Seit S121.2 steht das Badge auf jeder Rollhoehe an der Naht, nicht
+           mehr nur auf einer Bildschirmhoehe, an der man vorbeisetzen konnte.
+           Es ist auf der Naht zentriert und ragt damit mit seiner halben
+           Breite in die Papier-Spalte.
+           Hergeleitet, nicht uebernommen: Turn 48 rechnet mit einem 170px
+           breiten Badge und kommt auf 88px = 2 x 44 (dortiges Randmass).
+           Unser Badge ist schmaler — 11px Versalien, .16em gesperrt, 18px
+           Polster je Seite: rund 113px ("WEGWEISER") bis 140px ("RAUM FUER
+           MICH", das laengste der sechs Etiketten in beiden Sprachen), halb
+           also hoechstens 70px. Plus das regulaere Randmass (24px) sind das
+           94px; aufgerundet auf ein Vielfaches davon: 96px = 4 x --rz-rand.
+           Die Zahl ist eine Rechnung, keine Messung — sie steht auf der
+           Sichtprobe (Pruefliste Turn 48 §4, Punkt 4). */
+        --rz-nahtfrei-x:96px;
 
         /* ---- Radien. Rund ist das Blatt, eckig die Zeile. ---- */
         --rz-rund-knopf:12px;
