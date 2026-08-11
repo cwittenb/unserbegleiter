@@ -17,6 +17,21 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Seitenlaenge bei jedem Oeffnen: Die Leiste kaeme und ginge, und der
          ganze Inhalt spraenge um ihre Breite hin und her. Auf Systemen mit
          ueberlagerten Leisten (macOS, iOS) aendert sich nichts. */
+      /* ============ S122 · box-sizing global ============
+         Bis hierher gab es keine allgemeine Regel; sie stand punktuell an
+         einzelnen Flaechen. Wo sie fehlte, wurde ein Kasten stillschweigend
+         groesser als gedacht: Hoehe UND Polster ergaben zusammen mehr als das
+         Mass, das in der Regel steht. Genau so entstand der 54px-Ueberhang des
+         Chats (S119.3) — 100dvh Inhaltshoehe plus 30px Kopf- und 24px
+         Fusspolster, und das Dokument lief ueber.
+         Die Kanarie aus S119.3 faengt diesen Fehlertyp bereits ab (Hoehe plus
+         Polster ohne border-box faellt auf). Sie bleibt: Sie schuetzt die
+         Absicht, diese Regel schuetzt die Umsetzung.
+         Die punktuellen Setzungen bleiben stehen. Sie sind jetzt redundant,
+         aber sie DOKUMENTIEREN an Ort und Stelle, dass dort mit Hoehe und
+         Polster zugleich gerechnet wird — und sie zu entfernen waere ein
+         zweiter Eingriff mit eigenem Risiko in demselben Schritt. */
+      *,*::before,*::after{box-sizing:border-box}
       html{scrollbar-gutter:stable}
       body{margin:0;min-height:100%;background:var(--rz-papier);transition:background .5s}
       #app{max-width:660px;position:relative;z-index:1;font-family:var(--rz-sans);
