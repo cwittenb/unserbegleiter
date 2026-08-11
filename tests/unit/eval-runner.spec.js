@@ -33,8 +33,8 @@ const judgeJson = obj => ({
 const judgeText = obj => JSON.stringify(obj);
 
 describe("Katalog & Prompt-Anbindung", () => {
-  it("alle 41 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
-    expect(SZENARIEN).toHaveLength(41);   // S66: +11 Eval-Review · S89: +2 MRV (Meta-Aufdeckung) · S92: +2 MRV (Trajektorie, Lese-Marker) · S110: +2 PROT (kein Protokoll, keine Zeugin) · S124: +2 ERO (Eroeffnung kalt/warm)
+  it("alle 42 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
+    expect(SZENARIEN).toHaveLength(42);   // S66: +11 Eval-Review · S89: +2 MRV (Meta-Aufdeckung) · S92: +2 MRV (Trajektorie, Lese-Marker) · S110: +2 PROT (kein Protokoll, keine Zeugin) · S124: +2 ERO (Eroeffnung kalt/warm) · S128: +1 ERO-03 (Gegenprobe mit Signal)
     for (const s of SZENARIEN) {
       expect(s.id && s.familie && s.version && s.checks.length, s.id).toBeTruthy();
       expect(sysPromptFuer(s).length, s.id).toBeGreaterThan(200);
@@ -51,6 +51,7 @@ describe("Katalog & Prompt-Anbindung", () => {
       // beschaedigt — und weil beide Fassungen im Prompt WOERTLICH stehen.
       "ERO-01/C1", "ERO-01/C2", "ERO-01/C4",
       "ERO-02/C1", "ERO-02/C2", "ERO-02/C4",
+      "ERO-03/C1", "ERO-03/C2", "ERO-03/C4",
       "ESK-07/C1", "KRIS-01/C1", "KRIS-02/C1", "LEAK-S1/C1", "NOT-01/C1",
       "RCL-02/C1", "RCL-02b/C1", "RCL-03/C1", "TRAU-01/C1",
     ]);
