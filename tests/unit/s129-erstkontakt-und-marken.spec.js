@@ -122,6 +122,24 @@ describe("S129 · die Prompt-Regeln", () => {
   });
 });
 
+describe("S130 · das Szenario misst, was die App wirklich schickt", () => {
+  /* Eine abgeschriebene Kopie liefe beim ersten Nachschärfen auseinander —
+     dann misst der Eval einen Text, den es nirgends gibt. Derselbe Fehlertyp
+     wie bei der Speicher-Whitelist (S119.1) und den VAPID-Namen (S127): ein
+     Wert, den nur eine Seite kennt. */
+  it("ERO-03 trägt exakt den Steuertext der App, nicht eine Nachbildung", async () => {
+    const { SZENARIEN } = await import("../../evals/szenarien/start-katalog.js");
+    const ero3 = SZENARIEN.find(s => s.id === "ERO-03");
+    expect(ero3.zusatzKontext).toBe(ST_DE.erstkontakt);
+  });
+
+  it("und das englische Gegenstück ebenso", async () => {
+    const { SZENARIEN_EN } = await import("../../evals/szenarien/start-katalog.en.js");
+    const ero3 = SZENARIEN_EN.find(s => s.id === "ERO-03-EN");
+    expect(ero3.zusatzKontext).toBe(ST_EN.erstkontakt);
+  });
+});
+
 describe("S129 · der Markenwächter im Runner", () => {
   it("trennt fremde von echten Marken", () => {
     const r = markenImText("Text [[weiter]] und [[REVEAL]] hier", ["[[REVEAL]]"]);
