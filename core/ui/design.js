@@ -925,12 +925,31 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Nicht gewaehlt: das Polster nach .rz-chat-innen verlegen. Das haette
          die Ausblut-Rechnung der Schreibkante (S114c) verschoben, die gegen
          --rz-rand rechnet. */
+      /* S121.4 (Turn 48, uebertragen auf den Chat) · Der Chat gibt seinen
+         eigenen Rollbereich auf; gerollt wird die Seite. Die Schreibkante
+         klebt stattdessen am unteren Fensterrand (siehe .rz-chat-unten).
+         Damit rollt eine Geste UEBERALL — auch ueber der dunklen Flaeche, die
+         vorher nur den 54px-Ueberhang des Dokuments bewegte.
+         min-height statt height: Der Screen ist so hoch wie sein Inhalt,
+         mindestens aber fensterhoch, damit die Schreibkante auch bei kurzem
+         Verlauf unten steht.
+         overflow-y:hidden ist ERSATZLOS entfallen: Es machte den Screen zum
+         Rollbereich (wenn auch zu einem ohne Balken) und waere damit der
+         Bezugsrahmen des klebenden Randes geworden — der Rand haette an einem
+         Kasten geklebt, der selbst nie rollt, also gar nicht.
+         overflow-x:clip bleibt (eine Ebene tiefer, T2j): clip eroeffnet
+         keinen Rollbereich, hidden haette es getan. */
       .rz-app #scrChat{max-width:none;margin:0;background:var(--rz-papier);color:var(--rz-ink);
-        height:100dvh;min-height:0;overflow-y:hidden;box-sizing:border-box;
+        min-height:100dvh;display:flex;flex-direction:column;box-sizing:border-box;
         padding:calc(30px + env(safe-area-inset-top,0px)) var(--rz-rand)
         calc(var(--rz-rand) + env(safe-area-inset-bottom,0px))}
+      /* S121.4 · height:100% haette jetzt ins Leere gegriffen: Der Screen hat
+         keine feste Hoehe mehr, eine Prozenthoehe gegen einen unbestimmten
+         Rahmen wird zu auto. Die Spalte streckt sich stattdessen als
+         Flex-Kind — sie fuellt den Screen, wenn der Verlauf kurz ist, und
+         waechst mit ihm, wenn er lang wird. */
       .rz-chat-innen{max-width:var(--rz-chat-spalte);margin:0 auto;display:flex;flex-direction:column;
-        height:100%;min-height:0}
+        flex:1 1 auto;width:100%;min-height:0}
       #scrChat .pb-msgs{gap:22px;flex:1}
       /* T2g (Handover Turn 40 §3.8) · Die Sprecher-Marke hing mit
          margin-bottom:-17px gegen den gap:22px der Nachrichtenliste — zwei
@@ -1003,8 +1022,13 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          (.rz-app #scrChat{overflow-x:clip}) sitzt eine Ebene hoeher und wurde
          nie erreicht. Sie steht jetzt auch dort, wo gerollt wird.
          clip statt hidden: hidden eroeffnete einen zweiten Rollbereich. */
-      #scrChat .rz-chat-oben{flex:1 1 auto;display:flex;flex-direction:column;min-height:0;padding:0;
-        overflow-y:auto;overflow-x:clip;overscroll-behavior:contain}
+      /* S121.4 · U10.4 IST HIERMIT UMGEKEHRT. Die Zone war der eigene
+         Rollbereich des Chats ("DIESE Zone rollt — und nur sie"). Genau das
+         war der Befund: Am Geraet liess sich darin nur die Bildlaufleiste
+         ziehen, nicht wischen. Jetzt rollt die Seite; die Zone laeuft einfach
+         mit. overflow-x:clip bleibt gegen breite Panels (T2j). */
+      #scrChat .rz-chat-oben{flex:1 1 auto;display:flex;flex-direction:column;padding:0;
+        overflow-x:clip}
       /* Die Schreibkante bringt ihr flex:none schon mit (= 0 0 auto): Sie
          kann nicht schrumpfen, ein langer Composer gibt der rollenden Zone
          nicht nach. Eine zweite Regel dafuer waere Doppelpflege gewesen. */
@@ -1024,7 +1048,13 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          -var(--rz-rand), also das alte Verhalten. Das Polster braucht die
          Klammer nach unten (max), sonst wird es negativ, sobald das Fenster
          schmaler als die Lesespalte ist. */
-      #scrChat .rz-chat-unten{flex:none;position:relative;background:var(--rz-tiefgruen);
+      /* S121.4 · Die Schreibkante klebt am unteren Fensterrand — dieselbe
+         Bauform wie die klebende Haelfte (Turn 48 §2.3), nur waagerecht. Sie
+         bleibt damit erreichbar, waehrend der Verlauf unter ihr durchlaeuft,
+         und der dunkle Bereich rollt trotzdem die Seite: Eine Geste ueber
+         einem klebenden Element bewegt den Rollbereich, an dem es klebt.
+         z-index, weil der Verlauf unter ihr hindurchzieht. */
+      #scrChat .rz-chat-unten{flex:none;position:sticky;bottom:0;z-index:2;background:var(--rz-tiefgruen);
         margin:var(--rz-r-5) calc(50% - 50vw)
                calc(-1 * var(--rz-rand) - env(safe-area-inset-bottom,0px));
         padding:40px max(var(--rz-rand), calc(50vw - var(--rz-chat-spalte) / 2))

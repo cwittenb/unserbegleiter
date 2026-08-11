@@ -382,11 +382,14 @@ describe("S114h · Beim Aufklappen steht die linke Spalte still", () => {
 
 describe("S114.12 · Keine waagerechte Bildlaufleiste über der Naht", () => {
   it("die rollende Zone schneidet die andere Achse ab", () => {
-    // overflow-y:auto macht die andere Achse implizit zu "auto" — jeder
-    // waagerechte Überlauf legte die Leiste an den unteren Rand DIESER Zone,
-    // also direkt über der Naht. Die Abfangregel am Screen wurde nie erreicht.
+    // Ursprünglich: overflow-y:auto machte die andere Achse implizit zu
+    // "auto" — jeder waagerechte Überlauf legte die Leiste an den unteren
+    // Rand DIESER Zone, direkt über der Naht.
+    // S121.4 · Das senkrechte Rollen ist fort (die Seite rollt), der
+    // waagerechte Abfang bleibt: Ein breites Panel darf den Screen nicht
+    // sprengen, und clip eröffnet dabei keinen Rollbereich.
     expect(DESIGN_CSS).toMatch(/#scrChat \.rz-chat-oben\{[^}]*overflow-x:clip/);
-    expect(DESIGN_CSS).toMatch(/#scrChat \.rz-chat-oben\{[^}]*overflow-y:auto/);
+    expect(DESIGN_CSS).not.toMatch(/#scrChat \.rz-chat-oben\{[^}]*overflow-y:auto/);
   });
 });
 

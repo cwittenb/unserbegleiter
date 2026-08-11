@@ -75,33 +75,23 @@ const REVEAL = {
    Composer. Der Composer steht seit U10.4 immer — die alte Frage haette sich
    nicht mehr stellen koennen. Gestubbt wird deshalb die Zone: viel Inhalt
    (scrollHeight), kleines Fenster darauf (clientHeight), oben stehend. */
+/* S121.4 · U10.4 ist umgekehrt: Der Chat hat keinen eigenen Rollbereich mehr,
+   die SEITE rollt. Beide Helfer arbeiten deshalb wieder am Fenster — dort, wo
+   sie vor U10.4 schon einmal waren. Die Zusicherungen selbst bleiben. */
 function stelleFern(abstand = 500) {
-  const r = root.querySelector("#scrChat .rz-chat-oben");
-  if (!r) return;
-  Object.defineProperty(r, "scrollHeight", { value: abstand * 4, configurable: true });
-  Object.defineProperty(r, "clientHeight", { value: 100, configurable: true });
-  r.__rzTop = 0;
+  Object.defineProperty(document.documentElement, "scrollHeight", { value: abstand * 4, configurable: true });
+  Object.defineProperty(window, "innerHeight", { value: 100, configurable: true });
+  Object.defineProperty(window, "scrollY", { value: 0, configurable: true, writable: true });
 }
 
-/* U10.4 · Gescrollt wird nicht mehr das Fenster, sondern die obere Zone des
-   Chats. Der Spion sitzt am Prototyp und nicht am Knoten: Das Chat-Markup
-   entsteht erst in startChat, ein Spion auf dem Element waere zu frueh da. */
 function beobachteRoller() {
   const aufrufe = [];
-  const proto = Object.getPrototypeOf(document.createElement("div"));
-  Object.defineProperty(proto, "scrollTop", {
-    configurable: true,
-    get() { return this.__rzTop || 0; },
-    set(v) {
-      this.__rzTop = v;
-      if (this.classList && this.classList.contains("rz-chat-oben")) aufrufe.push([0, v]);
-    },
-  });
+  window.scrollTo = (x, y) => aufrufe.push([x, y]);
   return aufrufe;
 }
 
 describe("S62 · Scroll-Disziplin", () => {
-  it("Betreten eines Gesprächs scrollt einmalig — Ziel ist die Composer-Unterkante, nicht das Seitenende", async () => {
+  it("Betreten eines Gesprächs scrollt einmalig — Ziel ist seit S121.4 das Seitenende", async () => {
     const mock = new MockLLM(["Hallo Anna."]);
     const backend = memoryBackend(mock);
     const app = await bootApp(backend);
@@ -109,14 +99,17 @@ describe("S62 · Scroll-Disziplin", () => {
     await app.startChat("solo");
     await ruhe(12);
     expect(aufrufe.length).toBeGreaterThan(0);
-    // Nullmaße im Test-DOM: das Ziel ist die (gestubbte oder leere)
-    // Composer-Position, NIE document.scrollHeight (der wäre > 0 gestubbt).
+    /* S62 zielte ausdrücklich NICHT auf document.scrollHeight: Footer und
+       Dev-Panel lagen unterhalb des Composers, das Seitenende war zu tief.
+       U10.4 verlegte das Ziel in die Gesprächszone. Mit S121.4 rollt wieder
+       die Seite — und diesmal IST ihr Ende das Ziel, weil die Schreibkante
+       klebt und nichts mehr unter ihr steht, was man erst wegrollen müsste. */
     Object.defineProperty(document.documentElement, "scrollHeight", { value: 9999, configurable: true });
     aufrufe.length = 0;
     await app.startChat("solo");
     await ruhe(12);
     expect(aufrufe.length).toBeGreaterThan(0);
-    for (const [, y] of aufrufe) expect(y).not.toBe(9999);
+    for (const [, y] of aufrufe) expect(y).toBe(9999);
   });
 
   it("hochgescrollt (fern vom Eingabefeld): Stream-Deltas und Renderläufe scrollen NICHT mehr mit", async () => {

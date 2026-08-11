@@ -167,33 +167,41 @@ describe("U10.3 (F2) · Der Klick-oben-Weg gilt auf allen drei Screens", () => {
   });
 });
 
-describe("U10.4 (F3a) · Nur das Gespräch rollt", () => {
+/* S121.4 · U10.4 IST UMGEKEHRT.
+   "Nur das Gespräch rollt" war eine bewusste Entscheidung: der Chat auf
+   Schirmhöhe genagelt, die Verlaufszone als eigener Rollbereich, die
+   Schreibkante fest am Boden. Der Befund am Gerät hat sie gekippt — in genau
+   diesem Rollbereich ließ sich nur die Bildlaufleiste ziehen, nicht wischen,
+   während der dunkle Bereich (der über das Dokument rollte) normal reagierte.
+   Turn 48 löst es an der Wurzel: Die SEITE rollt, überall. Damit die
+   Schreibkante trotzdem steht, klebt sie jetzt am Fensterboden — dieselbe
+   Bauform wie die klebende Hälfte in §2.3, nur waagerecht.
+   Die Fälle bleiben stehen, mit gedrehtem Vorzeichen. */
+describe("U10.4 ist mit S121.4 umgekehrt: die Seite rollt, die Kante klebt", () => {
   const CSS = DESIGN_CSS.replace(/\/\*[\s\S]*?\*\//g, "");
   const r = sel => {
     const m = CSS.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\{([^}]*)\\}"));
     return m ? m[1] : null;
   };
 
-  it("der Chat ist auf Schirmhöhe genagelt, nicht mindestens so hoch", () => {
-    // min-height hiess: der Kasten darf wachsen. Er wuchs, das Dokument
-    // rollte, und die Schreibkante fuhr mit hinaus.
+  it("der Chat ist mindestens schirmhoch, nicht darauf genagelt", () => {
+    // Der Kasten DARF jetzt wachsen — das Dokument rollt, und die
+    // Schreibkante fährt nicht mit hinaus, weil sie klebt.
     const s = r(".rz-app #scrChat");
-    expect(s).toContain("height:100dvh");
-    expect(s).toContain("min-height:0");
-    expect(s).toContain("overflow-y:hidden");
+    expect(s).toContain("min-height:100dvh");
+    expect(s).not.toContain("overflow-y:hidden");
   });
 
-  it("die obere Zone rollt — und sie allein", () => {
-    expect(r("#scrChat .rz-chat-oben")).toContain("overflow-y:auto");
-    // flex:none == 0 0 auto — die Kante kann nicht schrumpfen.
+  it("keine Zone rollt mehr in sich", () => {
+    expect(r("#scrChat .rz-chat-oben")).not.toContain("overflow-y:auto");
+    // flex:none bleibt: Ein langer Composer darf dem Verlauf nichts wegnehmen.
     expect(r("#scrChat .rz-chat-unten")).toContain("flex:none");
   });
 
-  it("die Flex-Kette kann schrumpfen", () => {
-    // Flex-Kinder haben min-height:auto und weigern sich sonst zu schrumpfen;
-    // ohne die Null wächst die Zone am overflow vorbei.
-    expect(r(".rz-chat-innen")).toContain("min-height:0");
-    expect(r("#scrChat .rz-chat-oben")).toContain("min-height:0");
+  it("die Schreibkante klebt am Fensterboden", () => {
+    const u = r("#scrChat .rz-chat-unten");
+    expect(u).toContain("position:sticky");
+    expect(u).toContain("bottom:0");
   });
 
   it("die Kulisse hängt an der Schreibkante — kein eigener Schritt nötig", () => {

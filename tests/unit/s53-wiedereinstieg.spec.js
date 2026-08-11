@@ -72,17 +72,13 @@ async function speichereEinzel(backend, letzterAssistantText) {
 /* U10.4 · Gescrollt wird nicht mehr das Fenster, sondern die obere Zone des
    Chats. Der Spion sitzt am Prototyp und nicht am Knoten: Das Chat-Markup
    entsteht erst in startChat, ein Spion auf dem Element waere zu frueh da. */
+/* S121.4 · Gerollt wird nicht mehr die Gespraechszone, sondern die SEITE
+   (U10.4 umgekehrt). Der Beobachter horcht deshalb am Fenster statt am
+   Element. Die Zusicherung bleibt dieselbe: Beim Wiedereinstieg muss die
+   Sicht ans Ende des Verlaufs gehen. */
 function beobachteRoller() {
   const aufrufe = [];
-  const proto = Object.getPrototypeOf(document.createElement("div"));
-  Object.defineProperty(proto, "scrollTop", {
-    configurable: true,
-    get() { return this.__rzTop || 0; },
-    set(v) {
-      this.__rzTop = v;
-      if (this.classList && this.classList.contains("rz-chat-oben")) aufrufe.push([0, v]);
-    },
-  });
+  window.scrollTo = (x, y) => aufrufe.push([x, y]);
   return aufrufe;
 }
 
@@ -167,7 +163,7 @@ describe("S53 · Wiedereinstieg in die laufende Auftragsklärung", () => {
 });
 
 describe("S53 · Seite scrollt ans Ende des Verlaufs", () => {
-  it("rollt die Gespraechszone ans Ende beim Rendern des Wiedereinstiegs (U10.4)", async () => {
+  it("rollt die Seite ans Ende des Verlaufs beim Wiedereinstieg (S121.4)", async () => {
     const mock = new MockLLM(["Schön, dass du wieder da bist, Anna."]);
     const backend = memoryBackend(mock);
     await speichereEinzel(backend, "Magst du mehr erzählen?");

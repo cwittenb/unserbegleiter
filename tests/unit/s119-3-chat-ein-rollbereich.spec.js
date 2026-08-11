@@ -37,11 +37,14 @@ describe("S119.3 · der Chat hat genau einen Rollbereich", () => {
     expect(regel.koerper).toContain("box-sizing:border-box");
   });
 
-  it("die gewollte Leiste bleibt, wo sie ist: in .rz-chat-oben", () => {
-    expect(DESIGN_CSS).toMatch(/#scrChat \.rz-chat-oben\{[^}]*overflow-y:auto/);
-    // ... und #scrChat selbst eroeffnet weiterhin KEINEN eigenen senkrechten
-    // Rollbereich — sonst haetten wir die zweite Leiste nur verschoben.
-    expect(DESIGN_CSS).toMatch(/\.rz-app #scrChat\{[^}]*overflow-y:hidden/);
+  it("die eine Leiste ist seit S121.4 die des Dokuments", () => {
+    // S119.3 hat die zweite Leiste beseitigt, indem der Screen wieder ins
+    // Fenster passte; die verbliebene war die der Gespraechszone. S121.4 hat
+    // die Richtung gedreht: Es rollt die SEITE, und kein Kasten im Chat
+    // eroeffnet noch einen eigenen Rollbereich. Die Zusicherung "genau eine
+    // Leiste" gilt unveraendert — sie sitzt nur woanders.
+    expect(DESIGN_CSS).not.toMatch(/#scrChat \.rz-chat-oben\{[^}]*overflow-y:auto/);
+    expect(DESIGN_CSS).not.toMatch(/\.rz-app #scrChat\{[^}]*overflow-y:hidden/);
   });
 
   it("Waechter: jede Regel mit fester Hoehe UND Polster traegt box-sizing:border-box", () => {
