@@ -122,7 +122,10 @@ describe("D12-2b · Wegweiser faehrt mit der Kante", () => {
     expect(DESIGN_CSS).not.toMatch(/\.rz-regal-offen \.rz-weg-badge[^{]*\{[^}]*opacity:0/);
     /* S114.8 · Sichtbar bleibt es (es markiert weiter die Naht), still ist es
        trotzdem: bei aufgeklapptem Regal nimmt es keine Klicks mehr an. */
-    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}");
+    // S125 · Die Zahl ist von 6 auf 9 gewandert: Die klebende obere Zone liegt
+    // seit S121.6 auf 8, das Badge verschwand dahinter. Die Aussage bleibt
+    // dieselbe — sichtbar, aber ohne Klickannahme.
+    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:9;pointer-events:none}");
   });
 
   it("die Kulisse tritt weiterhin ab", () => {

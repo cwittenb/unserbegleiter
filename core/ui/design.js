@@ -771,7 +771,11 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          inset(50% 0 50% 0) ist die Naht als Linie, inset(0) das volle Band.
          Optisch dasselbe Aufklappen aus der Naht heraus — und sauberer, weil
          scaleY den Text mitgestaucht hat und clip-path ihn nur freigibt. */
-      .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:4;padding:30px var(--rz-rand);
+      /* S125 · Das Panel liegt UEBER dem Badge. Solange das Badge absolut in
+         seiner Haelfte sass, ergab sich das von selbst; seit es fest am Fenster
+         steht (S121.6, z-index:9), schob es sich auf dem Desktop darueber.
+         Mobil war es richtig — jetzt in beiden Lagen aus demselben Grund. */
+      .rz-weg-panel{position:absolute;left:0;right:0;top:0;z-index:10;padding:30px var(--rz-rand);
                     background:var(--rz-flaeche-hoch);color:var(--rz-ink);
                     border-top:1px solid var(--rz-hairline);border-bottom:1px solid var(--rz-hairline);
                     transform:translateY(-50%);
@@ -884,6 +888,9 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Polster laeuft die letzte Hairline-Zeile darunter. Nur die ERSTE
          Haelfte einer Zweiteilung — der Zonenfuss der zweiten Haelfte steht
          am Screenrand, nicht an der Naht. */
+      /* S125 · Zonentitel oben (nur wo er so gebaut ist, s. app.js): kein
+         margin-top:auto, kein Naht-Polster — beides gehoert zum Fuss. */
+      .rz-fuss.rz-fuss-oben{margin-top:0;padding-top:0;padding-bottom:var(--rz-r-5)}
       .rz-split>.rz-half:first-child .rz-fuss{padding-bottom:var(--rz-nahtfrei)}
       .rz-still{font-size:var(--rz-fs-fein);margin-top:10px}
       .rz-lz-leiste{display:inline-flex;gap:6px;margin-left:auto}
@@ -1456,6 +1463,15 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       @media(min-width:900px){
         .rz-regal-offen>.rz-half:first-child{position:sticky;top:0;height:100dvh;
           align-self:flex-start}
+        /* S125 · Und ihre Zeilen bleiben, wo sie waren. Zugeklappt haelt die
+           Flanke (Q3a) den Zonenfuss an der Naht: .rz-fuss{margin-bottom:50dvh}
+           — die Regel gilt aber nur :not(.rz-regal-offen). Faellt sie beim
+           Oeffnen weg, sackt der Fuss (margin-top:auto) an den unteren Rand,
+           und die halbe Seite springt, die gar nicht gemeint war.
+           S114h hatte genau das schon einmal geloest; S121.6 hat die Zeile mit
+           der Vollbild-Mechanik verworfen, obwohl sie mit ihr nichts zu tun
+           hatte. Hier steht sie wieder — diesmal aus eigenem Grund. */
+        .rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
       }
       .rz-half{transition:transform .36s var(--rz-kurve)}
       /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht
@@ -1476,7 +1492,12 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          war sogar schaedlich: Der Klick fiel durch das Badge hindurch, traf
          rechts die Regal-Zone (nichts) und links die andere Haelfte, was das
          Regal schloss. Der Wegweiser oeffnet dort jetzt wie immer. */
-      .rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}
+      /* S125 · Das Badge lag im offenen Regal auf z-index:6 — die klebende obere
+         Zone liegt seit S121.6 auf 8, also verschwand es dahinter. Die 6 stammt
+         aus der Zeit, als die Zone eine absolut positionierte Flaeche war und
+         das Badge nur ueber IHR liegen musste. Jetzt gilt dieselbe Zahl wie
+         sonst: ueber der Zone, unter dem Panel. */
+      .rz-regal-offen .rz-weg-badge{z-index:9;pointer-events:none}
       .rz-regal-offen>.rz-half:last-child .rz-fuss{display:none}
       .rz-regal-offen .rz-regal-inhalt:not(.pb-hidden){animation:rzEinblenden .28s .08s both}
       .rz-regal-offen .rz-regal-reihen{flex:1 1 auto}

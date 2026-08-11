@@ -202,14 +202,22 @@ export function createApp({ doc, backend, root, diktat }) {
           <span class="rz-zurueck rz-blind">←</span>
         </div>
         <h1 class="rz-h1">${t("einst.titel")}</h1>
-        <div id="einstOben"></div>
-        <div class="rz-fuss">
+        <!-- S125 · Der Zonentitel steht hier OBEN, nicht unten. In den
+             Vorraeumen sitzt er am Zonenfuss, weil die Naht dort nach
+             Reichweite trennt und der Titel die Grenze bezeichnet. Die
+             Einstellungen sind kein Raum, sondern eine Liste: Dort sagt der
+             Titel, was man vor sich hat, und gehoert an den Anfang. -->
+        <div class="rz-fuss rz-fuss-oben">
           <h2 class="rz-h2 rz-h2-oben">${t("einst.zoneGeraet")}</h2>
         </div>
+        <div id="einstOben"></div>
       </div>
       <div class="rz-half rz-tiefgruen rz-naht-anker">
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeEinst">${IKON.wegweiser}<span>${t("einst.titel")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegEinst"></div>
+        <div class="rz-fuss rz-fuss-oben">
+          <h2 class="rz-h2">${t("einst.zoneFolgen")}</h2>
+        </div>
         <div class="rz-regal-reihen" id="einstUnten">
           <!-- Vom Modul gefuellt: was ihr GEMEINSAM aendert. -->
           <div class="rz-einst-gruppe" id="einstGemeinsam"></div>
@@ -245,9 +253,6 @@ export function createApp({ doc, backend, root, diktat }) {
               ` target="_blank" rel="noopener noreferrer">` +
               `<span>${esc(t(w.schluessel))}</span><span class="rz-pfeil">→</span></a>`).join("")}
           </div>
-        </div>
-        <div class="rz-fuss">
-          <h2 class="rz-h2">${t("einst.zoneFolgen")}</h2>
         </div>
         <div class="rz-kulisse-fuss" id="kulisseEinst"></div>
         <span class="rz-fussmarke" data-rz-marke></span>

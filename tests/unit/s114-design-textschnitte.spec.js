@@ -205,7 +205,10 @@ describe("S114.8 · Bei aufgeklapptem Regal ist der Wegweiser still", () => {
   }));
 
   it("die Sperre steht als Grundregel und wird zweispaltig zurückgenommen", () => {
-    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}");
+    // S125 · Die Zahl ist von 6 auf 9 gewandert: Die klebende obere Zone liegt
+    // seit S121.6 auf 8, das Badge verschwand dahinter. Die Aussage bleibt
+    // dieselbe — sichtbar, aber ohne Klickannahme.
+    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:9;pointer-events:none}");
     expect(DESIGN_CSS).toContain(".rz-split.rz-regal-offen .rz-weg-badge{pointer-events:auto}");
   });
 
@@ -220,7 +223,10 @@ describe("S114.8 · Bei aufgeklapptem Regal ist der Wegweiser still", () => {
 
   it("sichtbar bleibt es trotzdem — es markiert weiter die Naht", () => {
     expect(DESIGN_CSS).not.toMatch(/\.rz-regal-offen \.rz-weg-badge\{[^}]*display:none/);
-    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:6;pointer-events:none}");
+    // S125 · Die Zahl ist von 6 auf 9 gewandert: Die klebende obere Zone liegt
+    // seit S121.6 auf 8, das Badge verschwand dahinter. Die Aussage bleibt
+    // dieselbe — sichtbar, aber ohne Klickannahme.
+    expect(DESIGN_CSS).toContain(".rz-regal-offen .rz-weg-badge{z-index:9;pointer-events:none}");
   });
 });
 
@@ -357,10 +363,13 @@ describe("S114h · Beim Aufklappen steht die linke Spalte still", () => {
   });
 
   it("der Nahtabstand gilt auch im aufgeklappten Zustand", () => {
-    // S121.6 · Entfallen: Die Spalte klebt und behaelt ihre Hoehe ohnehin;
-    // ein 50dvh-Abstand darin waere jetzt eine Leerflaeche mitten im Bild.
+    /* S125 · Doch wieder da — und S114h hatte recht. S121.6 hat die Zeile mit
+       der Vollbild-Mechanik verworfen, obwohl sie mit ihr nichts zu tun hatte:
+       Zugeklappt haelt die Flanke (Q3a) den Zonenfuss an der Naht, aber nur
+       :not(.rz-regal-offen). Faellt sie beim Oeffnen weg, sackt der Fuss an den
+       unteren Rand und die linke Spalte springt. */
     expect(desktopBloecke().filter(q =>
-      q.includes(".rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}")).length).toBe(0);
+      q.includes(".rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}")).length).toBe(1);
   });
 
   /* S114i · Umgekehrt zu S114h: --rz-regal-top ist die Höhe der Kopfzeile,

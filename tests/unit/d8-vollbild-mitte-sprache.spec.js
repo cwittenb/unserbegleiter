@@ -37,8 +37,14 @@ describe("D8 · Vollbild ohne Rand", () => {
   });
 
   it("der Wegweiser-Knopf liegt UNTER dem Textpanel", () => {
-    expect(DESIGN_CSS).toMatch(/\.rz-weg-badge\{z-index:3;/);   // Panel liegt auf 4
-    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*z-index:4/);
+    /* S125 · Die Aussage gilt unveraendert, die Zahlen sind gewandert: Das
+       Badge steht seit S121.6 fest am Fenster und liegt ueber der klebenden
+       oberen Zone (9 gegen 8) — damit lag es auch ueber dem Panel, das auf 4
+       stand. Auf dem Desktop war das sichtbar falsch, mobil zufaellig richtig.
+       Das Panel liegt jetzt auf 10 und damit wieder ueber allem. */
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-badge\{z-index:3;/);
+    expect(DESIGN_CSS).toMatch(/\.rz-weg-panel\{[^}]*z-index:10/);
+    expect(DESIGN_CSS).toMatch(/\.rz-auf-naht\{[^}]*z-index:9/);
   });
 
   it("body traegt Papier statt Verlauf, damit Overscroll nicht aus dem Bild faellt", () => {
