@@ -17,6 +17,7 @@ import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, mess
 import { applyDesign, setzeAnsicht, gemerkteAnsicht, merkeAnsicht, verdrahteWegweiser, istZweispaltig } from "./design.js";
 import { kulisseAnzahl, baueKulisse } from "./kulisse.js";
 import { RECHT_WEGE } from "./rechtliches.js";   // L3
+import { richteKlebenEin } from "./kleben.js";   // S121.2
 import { t, fuelle, getLocale, setLocale, fehlerText } from "../i18n/index.js";
 import { esc, mdRender, IKON, lesezeichenLabels } from "./html.js";   // R3/R4a
 import { schneideStreamText } from "./stream-anzeige.js";   // R4a
@@ -2337,6 +2338,13 @@ export function createApp({ doc, backend, root, diktat }) {
     $("meinIntro").textContent = t("mein.intro");
     $("pbBusyTxt").textContent = t("allg.arbeitet");
     zeigeRecovery();
+    /* S121.2 · Welche Haelfte klebt, haengt am Inhalt und wird gemessen —
+       einmal jetzt, danach bei jeder Groessenaenderung von Fenster oder
+       Inhalt. Kein Abmelder wird gehalten: Die Screens leben so lange wie die
+       App, ein Abbau gaebe es nur mit der ganzen Wurzel. */
+    richteKlebenEin(
+      ["scrStart", "scrMyRoom", "scrShared", "scrEinstellungen"].map(id => $(id)),
+      doc.defaultView || globalThis);
     betrete("scrStart");
     /* S115 · Seit die Adress-Pflicht der Normalfall ist (Worker: emailRequired
        ist fail-closed), traegt diese Zeile das ganze Gewicht. notausAktiv()

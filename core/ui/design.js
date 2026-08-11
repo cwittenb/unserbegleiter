@@ -260,8 +260,36 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Seiten, damit die Naht bis zum unteren Fensterrand geht. dvh, nicht
            vh: sonst springt es auf iOS beim Ein- und Ausblenden der
            Browserleiste. */
-        .rz-split:not(.rz-regal-offen)>.rz-naht-anker{position:static}
-        .rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}
+        /* ---- S121.2 (Turn 48 §2.3/2.4) · die kurze Haelfte klebt ----
+           Seit die Hoehen gefallen sind (S121.1), endet die kurze Haelfte nach
+           ihrem Inhalt, waehrend die lange weiterlaeuft: Man rollt an einer
+           leeren Flaeche entlang, und was dort stand — Titel, Weg, Wegweiser —
+           ist nach einem Bildschirm fort.
+           position:sticky haelt sie im Blick, solange die andere laeuft.
+           align-self:flex-start ist dabei nicht Kosmetik: Ohne sie streckt der
+           Flex-Rahmen die Haelfte auf die volle Hoehe des Rahmens, und ein
+           Element, das seinen Rahmen ausfuellt, hat keinen Weg zum Kleben.
+           WELCHE Haelfte klebt, steht nicht im Stylesheet: Es haengt am Inhalt
+           und wird gemessen (core/ui/kleben.js). Eine zu hohe klebende Spalte
+           waere gefaehrlich — sie friert oben fest und ihr unteres Ende wird
+           nie erreichbar. Der Rueckfall ist deshalb immer "klebt nicht". */
+        .rz-split:not(.rz-regal-offen)>.rz-half.rz-klebt{
+          position:sticky;top:0;height:100dvh;align-self:flex-start}
+        /* §2.4 · Das Badge ist absolute IN seiner Haelfte, nicht fixed.
+           Bis T2d hing es am .rz-split (die Haelfte wurde static) und mass
+           top:50% — richtig, solange der Split hoehenfest 100dvh war. Seit
+           S121.1 ist der Split so hoch wie sein Inhalt: 50% waere die halbe
+           DOKUMENThoehe, das Badge saesse auf einer langen Seite viel zu tief.
+           Jetzt ankert es wieder an seiner Haelfte (rz-naht-anker ist
+           position:relative) und misst top:50dvh vom Spaltenanfang. Eine Regel
+           fuer beide Faelle: Klebt die Haelfte, ist sie genau eine
+           Fensterhoehe hoch — 50dvh ist ihre Mitte, das Badge steht auf halber
+           Fensterhoehe an der Naht, wie mit fixed. Klebt sie nicht, sitzt es
+           50dvh unter dem Spaltenanfang, also beim ersten Blick an derselben
+           Stelle, und rollt danach mit.
+           Nicht fixed: Das legte es ueber Fuss, Dialoge und Tastatur wie eine
+           Chat-Blase und braeuchte eine eigene z-index-Verabredung. */
+        .rz-split:not(.rz-regal-offen) .rz-auf-naht{left:0;top:50dvh}
         /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Regel stand
            bis S114d.3 HIER und blieb wirkungslos: Sie hat dieselbe
            Spezifitaet wie die Grundregel weiter unten in der Datei, und eine

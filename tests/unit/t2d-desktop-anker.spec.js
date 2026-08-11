@@ -53,13 +53,23 @@ describe("T2d ist mit S121.1 umgekehrt: das Dokument rollt", () => {
   });
 });
 
-describe("T2d · die Naht-Aufbauten ankern am Split, nicht an der Hälfte", () => {
-  it("rz-naht-anker gibt seine Ankerrolle im zugeklappten Zustand ab", () => {
-    expect(D1).toContain(".rz-split:not(.rz-regal-offen)>.rz-naht-anker{position:static}");
+/* S121.2 · Auch diese beiden Zusicherungen sind umgekehrt.
+   T2d hängte die Naht-Aufbauten an den .rz-split, weil der höhenfest 100dvh
+   war: 50% war damit per Definition die Fenstermitte. Seit S121.1 ist der
+   Split so hoch wie sein Inhalt — 50% wäre die halbe DOKUMENThöhe, und das
+   Badge säße auf einer langen Seite viel zu tief.
+   Turn 48 §2.4 dreht es zurück: Das Badge ankert wieder an SEINER Hälfte und
+   misst 50dvh vom Spaltenanfang. Klebt die Hälfte, ist das ihre Mitte; klebt
+   sie nicht, ist es die Fenstermitte beim ersten Blick. Eine Regel, beide
+   Fälle. */
+describe("T2d ist mit S121.2 umgekehrt: die Aufbauten ankern wieder an der Hälfte", () => {
+  it("rz-naht-anker behält seine Ankerrolle", () => {
+    expect(D1).not.toContain(".rz-split:not(.rz-regal-offen)>.rz-naht-anker{position:static}");
   });
 
-  it("das Badge misst dann von der Mitte des Splits", () => {
-    expect(D1).toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}");
+  it("das Badge misst 50dvh vom Spaltenanfang, nicht 50% des Splits", () => {
+    expect(D1).not.toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:50%}");
+    expect(D1).toContain(".rz-split:not(.rz-regal-offen) .rz-auf-naht{left:0;top:50dvh}");
   });
 
   /* S114e · Die Krücke ist im Ruhezustand ganz fort: Das Band hängt am
