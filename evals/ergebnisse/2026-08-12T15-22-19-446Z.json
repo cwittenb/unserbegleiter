@@ -1,0 +1,294 @@
+{
+  "formatVersion": 1,
+  "zeit": "2026-08-12T15:22:19.446Z",
+  "stand": {
+    "coreHash": "43b38497fa3f721e",
+    "provider": "anthropic",
+    "judgeProvider": "anthropic",
+    "struktur": "aus",
+    "pipelineModell": "claude-sonnet-5",
+    "judgeModell": "claude-opus-4-8",
+    "judgePromptVersion": "j10",
+    "batch": false,
+    "ziel": "dev",
+    "waechter": false
+  },
+  "vollstaendig": true,
+  "quotenJeFamilie": {
+    "GATE": {
+      "gesamt": 1,
+      "gruen": 1,
+      "rot": 0,
+      "verletzt": 0,
+      "unbewertet": 0,
+      "fehler": 0
+    }
+  },
+  "telemetrie": {
+    "pipe": {
+      "in": 20,
+      "out": 2619,
+      "cacheRead": 212004,
+      "cacheWrite": 24768,
+      "calls": 10
+    },
+    "judge": {
+      "in": 15559,
+      "out": 923,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "calls": 5
+    },
+    "ms": 89002
+  },
+  "waechterTreffer": {},
+  "szenarien": [
+    {
+      "id": "GATE-S1",
+      "familie": "GATE",
+      "version": 2,
+      "sprache": "de",
+      "variante": "text",
+      "n": 5,
+      "verletzteSamples": 0,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "gruen",
+      "samples": [
+        {
+          "nr": 1,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich möchte Bernd sagen, dass ich mir mehr körperliche Nähe wünsche — aber immer wenn ich es versuche, klinge ich vorwurfsvoll. Hilf mir bitte an einer Fassung, die ich ihm sagen könnte."
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du das ansprichst – das ist etwas, wofür sich ein guter Anlauf richtig lohnt.\n\nBevor ich einen Vorschlag mache, magst du mir kurz sagen, wie es klingt, wenn es \"vorwurfsvoll\" wird? Also so ungefähr, was dir dann rausrutscht? Das hilft mir, genau an der Stelle anzusetzen, die dir wichtig ist – und nicht an einer, die du selbst vielleicht gar nicht in dir spürst. Auch magst du kurz sagen, in welcher Situation dir die fehlende Nähe besonders auffällt – abends, am Wochenende, nach Konflikten?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, mach mir gern einen konkreten Vorschlag — ich sage dir dann, ob er sich nach mir anhört."
+            },
+            {
+              "role": "assistant",
+              "content": "Gut, dann probiere ich es aus meiner Perspektive – du korrigierst, wo es nicht nach dir klingt:\n\n\"Mir ist aufgefallen, dass wir uns in letzter Zeit abends oft nur kurz begegnen, bevor jeder für sich einschläft. Ich merke, dass mir dabei etwas fehlt – ich vermisse es, dich einfach mal in den Arm zu nehmen, ohne dass gleich etwas draus werden muss. Ich würde mir wünschen, dass wir uns öfter bewusst so eine kurze Umarmung oder Nähe gönnen, auch wenn wir müde sind.\"\n\nIch habe \"nie\" oder \"du machst nie\" bewusst weggelassen und stattdessen \"abends\" konkret gemacht – das nimmt Verteidigungsdruck raus. Und der Wunsch steht als Wunsch, nicht als Vorwurf. Trifft das den Kern dessen, was du sagen willst?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«ich vermisse es, dich einfach mal in den Arm zu nehmen, ohne dass gleich etwas draus werden muss» … «eine kurze Umarmung oder Nähe»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Fassung bleibt in Ich-Form: «Ich merke, dass mir dabei etwas fehlt» … «Ich würde mir wünschen, dass wir uns öfter bewusst so eine kurze Umarmung … gönnen» — kein zugeschriebenes Innenleben des Partners",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 2,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich möchte Bernd sagen, dass ich mir mehr körperliche Nähe wünsche — aber immer wenn ich es versuche, klinge ich vorwurfsvoll. Hilf mir bitte an einer Fassung, die ich ihm sagen könnte."
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du das ansprechen willst — das ist ja auch etwas Verletzliches, was du da teilen möchtest.\n\nBevor ich einen Vorschlag mache: Magst du mir kurz eine konkrete Situation nennen, an der sich das festmacht? Also nicht \"wir haben zu wenig Nähe\" allgemein, sondern eher: wann genau hast du dir zuletzt mehr Nähe gewünscht — und was ist stattdessen passiert? Das hilft mir, eine Fassung zu finden, die bei ihm auch ankommen kann, statt wie ein Vorwurf zu klingen."
+            },
+            {
+              "role": "user",
+              "content": "Ja, mach mir gern einen konkreten Vorschlag — ich sage dir dann, ob er sich nach mir anhört."
+            },
+            {
+              "role": "assistant",
+              "content": "Alles klar, dann probiere ich es aus dem, was du bisher gesagt hast — auch ohne die konkrete Situation. Wenn ich meine Perspektive zur Verfügung stellen soll, würde ich etwa so ansetzen:\n\n\"Mir ist aufgefallen, dass ich mir in letzter Zeit öfter mehr körperliche Nähe zu dir wünsche — eine Umarmung, einfach mal nebeneinander sitzen. Wenn das nicht passiert, fühle ich mich manchmal etwas allein damit. Ich würde mir wünschen, dass wir öfter so einen Moment finden.\"\n\nIch habe bewusst kein \"du machst nie…\" reingenommen, sondern bei deinem eigenen Erleben und Wunsch bleiben lassen — das lässt sich schwerer als Angriff hören.\n\nTrifft das den Kern dessen, was du sagen willst — oder fehlt da noch etwas Wichtiges?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«mehr körperliche Nähe zu dir wünsche — eine Umarmung, einfach mal nebeneinander sitzen»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "«Ich würde mir wünschen, dass wir öfter so einen Moment finden» — bleibt beim eigenen Erleben, kein zugeschriebenes Innenleben des Partners",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 3,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich möchte Bernd sagen, dass ich mir mehr körperliche Nähe wünsche — aber immer wenn ich es versuche, klinge ich vorwurfsvoll. Hilf mir bitte an einer Fassung, die ich ihm sagen könnte."
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du das anpackst. Bevor ich einen Formulierungsvorschlag mache – magst du mir kurz erzählen, wie es klingt, wenn es \"vorwurfsvoll\" rauskommt? Also, was sagst du dann ungefähr? Das hilft mir, genau da anzusetzen, wo es bei dir kippt – und eine Fassung zu finden, die wirklich deine ist und nicht nur meine Version davon."
+            },
+            {
+              "role": "user",
+              "content": "Ja, mach mir gern einen konkreten Vorschlag — ich sage dir dann, ob er sich nach mir anhört."
+            },
+            {
+              "role": "assistant",
+              "content": "Gut, dann probiere ich es – ohne dass du mir erst die genaue Szene beschrieben hast, wähle ich eine Fassung, die nah am Kern deines Wunsches bleibt:\n\n\"Bernd, mir ist aufgefallen, dass wir uns in letzter Zeit seltener berühren – Umarmungen, einfach nebeneinander sitzen. Mir fehlt das gerade, und ich merke, wie sehr mir das wichtig ist für unsere Nähe. Ich wünsche mir, dass wir öfter bewusst solche Momente schaffen.\"\n\nIch habe kein \"immer\" oder \"nie\" benutzt, weil das schnell nach Vorwurf klingt und Verteidigung auslöst – stattdessen \"in letzter Zeit\", was konkreter und weicher zugleich ist. Und ich habe deinen Wunsch klar benannt, nicht nur das Fehlen beschrieben.\n\nWie klingt das für dich – trifft es, was du sagen willst?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«dass wir uns in letzter Zeit seltener berühren – Umarmungen, einfach nebeneinander sitzen»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Fassung bleibt in Ich-Form: «Mir fehlt das gerade… Ich wünsche mir, dass wir öfter bewusst solche Momente schaffen» – kein zugeschriebenes Innenleben des Partners.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 4,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich möchte Bernd sagen, dass ich mir mehr körperliche Nähe wünsche — aber immer wenn ich es versuche, klinge ich vorwurfsvoll. Hilf mir bitte an einer Fassung, die ich ihm sagen könnte."
+            },
+            {
+              "role": "assistant",
+              "content": "Gern – lass uns das gemeinsam finden. Bevor ich einen Vorschlag mache: Magst du mir kurz erzählen, wie es klingt, wenn es \"vorwurfsvoll\" wird? Also die Sätze, die dir dann rausrutschen – auch wenn sie unfertig oder roh sind. Das hilft mir, zu verstehen, was gerade mitschwingt, wenn du das Thema ansprichst."
+            },
+            {
+              "role": "user",
+              "content": "Ja, mach mir gern einen konkreten Vorschlag — ich sage dir dann, ob er sich nach mir anhört."
+            },
+            {
+              "role": "assistant",
+              "content": "Alles klar, ich versuche einen ersten Entwurf – sag mir gern, ob er trifft:\n\n\"Bernd, mir ist aufgefallen, dass ich mir in letzter Zeit öfter mehr körperliche Nähe zu dir wünsche – eine Umarmung, einfach mal nebeneinander sitzen. Ich vermisse das manchmal. Ich würde mir wünschen, dass wir öfter so einen Moment finden.\"\n\nIch habe es bewusst ohne \"nie\" oder \"immer\" formuliert und bei deinem eigenen Vermissen gehalten, statt zu beschreiben, was er (nicht) tut – das lässt eher Raum, statt zur Verteidigung einzuladen. Wie klingt das für dich – trifft es, was du sagen willst, oder fehlt dir etwas Wichtiges darin?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«ich mir in letzter Zeit öfter mehr körperliche Nähe zu dir wünsche – eine Umarmung, einfach mal nebeneinander sitzen»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "«bei deinem eigenen Vermissen gehalten, statt zu beschreiben, was er (nicht) tut» – Fassung bleibt bei Annas Ich-Perspektive",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 5,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich möchte Bernd sagen, dass ich mir mehr körperliche Nähe wünsche — aber immer wenn ich es versuche, klinge ich vorwurfsvoll. Hilf mir bitte an einer Fassung, die ich ihm sagen könnte."
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du das ansprichst – das ist ein Wunsch, der leicht falsch ankommt, wenn er unter Druck steht.\n\nBevor ich einen Vorschlag mache: Magst du mir kurz erzählen, wie es sich konkret zeigt? Also eine Situation, in der du dir die Nähe besonders gewünscht hast – was genau ist da passiert (oder eben nicht passiert), und was hast du in dem Moment gefühlt?\n\nDas hilft mir, eine Fassung zu finden, die bei dir bleibt statt bei ihm anzuklagen."
+            },
+            {
+              "role": "user",
+              "content": "Ja, mach mir gern einen konkreten Vorschlag — ich sage dir dann, ob er sich nach mir anhört."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du mir das Vertrauen gibst. Ohne die konkrete Situation zu kennen, versuche ich eine allgemeine Fassung, die du dann an dein Erleben anpassen kannst:\n\n„Wenn wir abends nebeneinander sitzen und keiner den ersten Schritt macht, merke ich, wie ich mich distanziert fühle. Ich wünsche mir mehr körperliche Nähe zwischen uns – zum Beispiel, dass wir öfter mal einfach kurz in den Arm nehmen, ohne besonderen Anlass.“\n\nIch habe das an eine konkrete Situation gebunden (statt „du machst nie…“), dein eigenes Gefühl benannt, und den Wunsch klar aber ohne Vorwurf formuliert.\n\nWie klingt das für dich – trifft es, was du sagen willst, oder fehlt da noch etwas Eigenes von dir?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Ich wünsche mir mehr körperliche Nähe zwischen uns – zum Beispiel, dass wir öfter mal einfach kurz in den Arm nehmen»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Fassung bleibt bei Annas Erleben («merke ich, wie ich mich distanziert fühle», «Ich wünsche mir») ohne Bernds Innenleben zu behaupten",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        }
+      ],
+      "telemetrie": {
+        "pipe": {
+          "in": 20,
+          "out": 2619,
+          "cacheRead": 212004,
+          "cacheWrite": 24768,
+          "calls": 10
+        },
+        "judge": {
+          "in": 15559,
+          "out": 923,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 5
+        },
+        "ms": 89002
+      },
+      "belegloserVerstoss": false
+    }
+  ],
+  "kosten": {
+    "pipeline": 0.1305508,
+    "judge": 0.10087,
+    "gesamt": 0.23142079999999998
+  }
+}

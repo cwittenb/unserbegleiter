@@ -95,8 +95,12 @@ function befehl(lauf, szenario) {
     "--judge-modell", JUDGE.modell];
   // --judge-provider nur, wenn er von der Pipeline abweicht; sonst ist er Default.
   if (lauf.provider !== JUDGE.provider) a.push("--judge-provider", JUDGE.provider);
-  if (lauf.batch) a.push("--batch");
-  if (lauf.drossel) a.push("--rpm", rpm);
+  /* S134 · IMMER --rpm, NIE --batch. Ohne --rpm faellt der Runner auf seinen
+     Free-Tier-sicheren Default von 2 RPM zurueck — 15 Aufrufe dauern dann eine
+     Viertelstunde statt einer Minute. Und --batch wartet auf Anthropics
+     Verarbeitung (Poll 20s, Cap 60min): Er halbiert die Kosten, die hier
+     ohnehin Cent betragen, und kostet dafuer Stunden. */
+  a.push("--rpm", rpm);
   return a;
 }
 
