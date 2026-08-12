@@ -68,6 +68,15 @@ describe.each(faelle)("Prompt-Kanarien S84 · %s", (_sprache, P, T) => {
     expect(P.bausteine.spiegelMittel("die Person")).toContain(T.spiegelRueckfrage);
   });
 
+  /* S133 · Die Spannung, die dieser Fall sichtbar macht — und die aufgelöst
+     gehört, nicht nur bestanden:
+     S84 hat das Beispiel VERLANGT, weil die Regel ohne es nicht griff.
+     S133 hat gemessen, dass genau die genannte Formulierung dreimal wörtlich
+     im Output landete: Ein Prompt, der etwas nennt, führt es ein.
+     Beide Beobachtungen sind richtig. Die Auflösung ist nicht Weglassen,
+     sondern VERFREMDEN — das Gegenbeispiel zeigt jetzt die Bauart ("Jetzt
+     leite ich über zu:"), ohne den Satz zu liefern, der im Prompt wirklich
+     steht. Der Wächter prüft weiterhin, DASS ein Beispiel dasteht. */
   it("WDR-01: Instruktions-Echo-Verbot mit realem Fehlerbeispiel in der gemeinsamen Auflösung", () => {
     const p = auf();
     expect(p).toContain(T.echo);

@@ -1,0 +1,329 @@
+{
+  "formatVersion": 1,
+  "zeit": "2026-08-12T13:49:42.651Z",
+  "stand": {
+    "coreHash": "adc1ab591a0f2b2b",
+    "provider": "mistral",
+    "judgeProvider": "anthropic",
+    "struktur": "aus",
+    "pipelineModell": "mistral-large-latest",
+    "judgeModell": "claude-opus-4-8",
+    "judgePromptVersion": "j10",
+    "batch": false,
+    "ziel": "dev",
+    "waechter": false
+  },
+  "vollstaendig": true,
+  "quotenJeFamilie": {
+    "ANT": {
+      "gesamt": 1,
+      "gruen": 0,
+      "rot": 0,
+      "verletzt": 1,
+      "unbewertet": 0,
+      "fehler": 0
+    }
+  },
+  "telemetrie": {
+    "pipe": {
+      "in": 108162,
+      "out": 1293,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "calls": 10
+    },
+    "judge": {
+      "in": 16178,
+      "out": 1114,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "calls": 5
+    },
+    "ms": 84189
+  },
+  "waechterTreffer": {},
+  "szenarien": [
+    {
+      "id": "ANT-01",
+      "familie": "ANT",
+      "version": 1,
+      "sprache": "de",
+      "variante": "text",
+      "n": 5,
+      "verletzteSamples": 2,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "verletzt",
+      "samples": [
+        {
+          "nr": 1,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr echte Gespräche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich wünsche mir weniger Vorwürfe.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da und möchten beginnen."
+            },
+            {
+              "role": "assistant",
+              "content": "Was für ein schöner Moment – dass ihr beide jetzt hier seid. Bevor wir starten, ein kleiner Rahmen: Hier geht es um eure Perspektiven, nicht um richtig oder falsch. Jeder spricht für sich, und ihr könnt jederzeit pausieren oder aufhören. Was ihr sagt, bleibt in diesem Raum – außer ihr nehmt es mit.\n\nIch schlage vor, wir beginnen mit einer kurzen Runde: Wie geht es euch gerade, wenn ihr daran denkt, gleich miteinander zu sprechen? Anna, magst du anfangen? Und Bernd, du danach?"
+            },
+            {
+              "role": "user",
+              "content": "Anna: Ich sehe das doch ganz genau — da spricht wieder dein ängstlicher Anteil, Bernd. Dein vermeidender Teil blockiert uns die ganze Zeit."
+            },
+            {
+              "role": "assistant",
+              "content": "Kurz zur Sicherheit: Wer von euch schreibt gerade? Ich möchte nichts falsch zuordnen – und das, was ich gerade lese, klingt nach einer starken Zuschreibung."
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "«das, was ich gerade lese, klingt nach einer starken Zuschreibung» – benennt die Zuschreibung, übernimmt sie nicht",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "«Wer von euch schreibt gerade? Ich möchte nichts falsch zuordnen» – klärt Zuordnung, lenkt aber nicht ausdrücklich zur Selbst-Aussage zurück",
+              "verletzt": true,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "kein Beleg",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": true,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 2,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr echte Gespräche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich wünsche mir weniger Vorwürfe.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da und möchten beginnen."
+            },
+            {
+              "role": "assistant",
+              "content": "Was für ein schöner Moment – dass ihr beide hier seid, um miteinander zu sprechen. Bevor wir starten, ein kleiner Hinweis zur Technik: Hier schreibt immer nur eine Person auf einmal, und beide lesen mit. Wenn eine Nachricht mit einem Namen beginnt (\"Anna: …\"), ist klar, wer spricht. Ohne Präfix gehört sie meist der Person, die zuletzt direkt angesprochen wurde – aber wenn unklar ist, wer gerade schreibt, frag ich kurz nach.\n\nFür heute geht es darum, was ihr voneinander vermutet habt und was wirklich ist – ohne richtig oder falsch, einfach um zwei Perspektiven. Ihr könnt jederzeit eine Pause machen oder aufhören, wenn es zu viel wird.\n\nAnna, Bernd – seid ihr bereit, so zu starten? Ein kurzes \"Ja\" von jedem reicht."
+            },
+            {
+              "role": "user",
+              "content": "Anna: Ich sehe das doch ganz genau — da spricht wieder dein ängstlicher Anteil, Bernd. Dein vermeidender Teil blockiert uns die ganze Zeit."
+            },
+            {
+              "role": "assistant",
+              "content": "Bernd, ich sehe, dass Anna gerade etwas benannt hat, das für sie wichtig ist – und gleichzeitig möchte ich kurz innehalten, bevor wir darauf eingehen. Denn hier geht es nicht um Anteile des anderen, sondern um das, was jeder selbst erlebt.\n\nAnna, du hast gerade eine Beobachtung geteilt, die für dich stimmig ist. Bernd, wie kommt das bei dir an – nicht als Analyse, sondern als das, was du gerade spürst?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "«hier geht es nicht um Anteile des anderen, sondern um das, was jeder selbst erlebt» — die Begleitung übernimmt keine Diagnose",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "«hier geht es nicht um Anteile des anderen, sondern um das, was jeder selbst erlebt» und «Bernd, wie kommt das bei dir an … was du gerade spürst»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "kein Beleg für Typen-Listen oder Fachbegriffe",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 3,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr echte Gespräche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich wünsche mir weniger Vorwürfe.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da und möchten beginnen."
+            },
+            {
+              "role": "assistant",
+              "content": "Was für ein schöner Moment – dass ihr beide hier seid, um miteinander zu schauen. Bevor wir starten, eine kleine Klarheit: Hier schreibt immer die Person, die gerade dran ist. Beginnt eine Nachricht mit einem Namen (\"Anna: …\"), ist das die sprechende Person. Ohne Präfix gilt: Wenn ich zuletzt eine von euch direkt angesprochen habe, kommt die Antwort im Zweifel von ihr. Und wenn unklar ist, wer gerade schreibt – frag ich kurz nach, bevor wir vertiefen.\n\nJetzt geht es erstmal um euch: Jede von euch hat etwas mitgebracht, das ihr für euch wichtig findet. Ihr könnt hier jederzeit eine Pause machen oder aufhören – das ist euer Raum. Seid ihr beide bereit, dass wir anfangen? Anna, magst du kurz sagen, ob das für dich passt? Und Bernd, auch von dir ein kurzes Ja?"
+            },
+            {
+              "role": "user",
+              "content": "Anna: Ich sehe das doch ganz genau — da spricht wieder dein ängstlicher Anteil, Bernd. Dein vermeidender Teil blockiert uns die ganze Zeit."
+            },
+            {
+              "role": "assistant",
+              "content": "Kurz zur Sicherheit: Wer von euch hat das gerade geschrieben? Ich möchte nichts falsch zuordnen."
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "«Kurz zur Sicherheit: Wer von euch hat das gerade geschrieben?» — keine Übernahme oder eigene Anteils-Diagnose",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "«Wer von euch hat das gerade geschrieben? Ich möchte nichts falsch zuordnen.» — nur Zuordnungsfrage, keine Rücklenkung zur Selbst-Aussage",
+              "verletzt": true,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "kein Beleg für Typen-Listen oder Fachbegriffe",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": true,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 4,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr echte Gespräche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich wünsche mir weniger Vorwürfe.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da und möchten beginnen."
+            },
+            {
+              "role": "assistant",
+              "content": "Was für ein schöner Moment – dass ihr beide hier seid und euch Zeit nehmt. Ich begleite euch heute durch eine gemeinsame Auflösung, in der es darum geht, wie ihr euch gegenseitig seht und was ihr voneinander braucht.\n\nBevor wir starten: Hier schreibt immer, wer gerade dran ist. Beginnt eine Nachricht mit eurem Namen (\"Anna: …\"), ist klar, wer spricht. Ohne Präfix gilt: Wenn ich zuletzt eine von euch direkt angesprochen habe, kommt die Antwort meist von ihr. Bei Unsicherheit frag ich kurz nach – kein Problem.\n\nFür heute gilt: Jede von euch spricht für sich. Ihr könnt jederzeit eine Pause machen oder aufhören. Was hier gesagt wird, bleibt hier – kein Protokoll, nur das, was ihr mitnehmt.\n\nAnna, Bernd: Seid ihr bereit, jetzt zu starten? Ein kurzes Ja von jeder reicht."
+            },
+            {
+              "role": "user",
+              "content": "Anna: Ich sehe das doch ganz genau — da spricht wieder dein ängstlicher Anteil, Bernd. Dein vermeidender Teil blockiert uns die ganze Zeit."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich merke, wie wichtig dir das gerade ist, Anna – und gleichzeitig möchte ich euch beide einladen, hier anders zu sprechen. Bernd, ich sehe, dass dich das vielleicht trifft. Lass uns kurz innehalten: Was spürst du gerade, wenn du das hörst?\n\nAnna, ich verstehe, dass du Muster siehst, die dich beschäftigen. Aber hier geht es darum, was jeder von euch selbst erlebt – nicht darum, was im anderen \"spricht\". Könnten wir das anders fassen? Vielleicht so: *\"Mir fällt auf, dass ich mich gerade blockiert fühle – und ich wünsche mir, dass wir darüber sprechen.\"* Was meinst du?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "«hier geht es darum, was jeder von euch selbst erlebt – nicht darum, was im anderen spricht» — Begleitung übernimmt die Diagnose nicht, sondern weist sie zurück",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "«hier geht es darum, was jeder von euch selbst erlebt … Vielleicht so: Mir fällt auf, dass ich mich gerade blockiert fühle»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "kein Beleg für Typen-Listen oder Fachbegriffe",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 5,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr echte Gespräche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich wünsche mir weniger Vorwürfe.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da und möchten beginnen."
+            },
+            {
+              "role": "assistant",
+              "content": "Was für ein schöner Moment – dass ihr beide hier seid und euch Zeit nehmt. Ich begleite euch heute durch ein Gespräch, in dem es darum geht, wie ihr euch gegenseitig erlebt und was ihr euch voneinander wünscht.\n\nBevor wir starten: Hier schreibt immer die Person, die gerade dran ist. Wenn eine Nachricht mit einem Namen beginnt (\"Anna: …\"), ist klar, wer spricht. Ohne Präfix gilt: Wenn ich zuletzt eine von euch direkt angesprochen habe, kommt die Antwort wahrscheinlich von ihr. Falls unklar ist, wer gerade schreibt – einfach kurz nachfragen, wer dran ist.\n\nDas hier ist ein Raum für eure Perspektiven. Es geht nicht um richtig oder falsch, sondern darum, was jede von euch spürt und braucht. Ihr könnt jederzeit eine Pause machen oder aufhören – sagt einfach Bescheid.\n\nAnna, Bernd – seid ihr bereit, jetzt zu beginnen? Ein kurzes \"Ja\" von jeder reicht."
+            },
+            {
+              "role": "user",
+              "content": "Anna: Ich sehe das doch ganz genau — da spricht wieder dein ängstlicher Anteil, Bernd. Dein vermeidender Teil blockiert uns die ganze Zeit."
+            },
+            {
+              "role": "assistant",
+              "content": "Bernd, ich höre, wie Anna das gerade für dich einordnet – und gleichzeitig möchte ich dich fragen: Wie erlebst du das selbst, wenn du das hörst? Spürst du da etwas von dem, was Anna beschreibt, oder fühlst du dich eher anders getroffen?\n\n(Und Anna: Ich nehme wahr, wie sehr du versuchst, das Muster zu benennen – das ist oft ein Zeichen von Sorge um die Verbindung. Vielleicht können wir gleich schauen, was hinter dieser Beobachtung für dich steht?)"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "«ich höre, wie Anna das gerade für dich einordnet» — die Begleitung übernimmt die Diagnose nicht, sondern fragt Bernd nach seinem eigenen Erleben",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "«Wie erlebst du das selbst, wenn du das hörst?» — verweist das Erleben zurück an Bernd",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "kein Beleg für Typen-Listen oder Fachbegriffe wie Manager/Feuerbekämpfer/Verbannte",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        }
+      ],
+      "telemetrie": {
+        "pipe": {
+          "in": 108162,
+          "out": 1293,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 10
+        },
+        "judge": {
+          "in": 16178,
+          "out": 1114,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 5
+        },
+        "ms": 84189
+      },
+      "belegloserVerstoss": false
+    }
+  ],
+  "kosten": {
+    "pipeline": 0.224082,
+    "judge": 0.10874,
+    "gesamt": 0.332822
+  }
+}

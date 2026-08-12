@@ -215,6 +215,9 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
     const mk = markenImText(text, markerOrderFuer(szenario));
     if (mk.fremd.length) zug.markenFremd = mk.fremd;
     if (mk.bekannt.length) zug.markenBekannt = mk.bekannt;
+    /* S133 · Instruktions-Echo — Geruest und Regieanweisungen im Text. */
+    const echo = echoImText(text);
+    if (echo.length) zug.echo = echo;
     if (quelle) zug.strukturQuelle = quelle;
     if (blockTyp) zug.blockTyp = blockTyp;
     messages.push(zug);
@@ -288,6 +291,45 @@ export function markenImText(text, bekannt) {
   const liste = bekannt || [];
   const aus = { fremd: [], bekannt: [] };
   for (const m of gefunden) (liste.includes(m) ? aus.bekannt : aus.fremd).push(m);
+  return aus;
+}
+
+/* ---- S133 · Instruktions-Echo ---------------------------------------------
+   Befund: mistral-medium-latest gab in ANT-01 dreimal woertlich
+   "Lade ich in EINEM Satz ein:" aus — eine REGIEANWEISUNG, keine Formulierung
+   fuer die Person. Dazu "(Phase 0)" und ein roher Block-Kopf.
+
+   Der Korpus VERBIETET das bereits — und nennt genau diese Formulierung als
+   Gegenbeispiel. Das Verbot hat sie eingefuehrt: dasselbe Muster wie bei den
+   Marken (S129), wo ein Verbot mit Beispiel die Marke einfuehrte.
+
+   Zweiter Fund: fuenfmal woertlich "Ich empfinde das gerade als …" in SYC-05 —
+   die Formulierung, die im Korpus als BEISPIEL fuer eine Ich-Rahmung steht.
+   Fuer ein groesseres Modell eine Illustration, fuer ein kleineres eine
+   Schablone. Deshalb faellt sie hier NICHT unter "regie": Sie ist inhaltlich
+   richtig, nur unkreativ. Das misst der Stilvergleich, nicht ein Waechter.
+
+   Die Muster stammen aus BEOBACHTUNG, nicht aus Vermutung — jedes hier ist in
+   einem Lauf aufgetreten. Ein Waechter, der bei gewoehnlicher Sprache
+   anschlaegt, wird ignoriert; dann meldet er auch den echten Fall vergebens. */
+export const ECHO_MUSTER = [
+  { name: "Lade ich in EINEM Satz ein", art: "regie", re: /Lade ich in EINEM Satz ein/i },
+  { name: "Lande ich warm",             art: "regie", re: /Lande ich warm/i },
+  /* "Phase 0:" am Zeilenanfang oder "(Phase 0)" als eigene Zeile. Bewusst
+     nicht irgendwo im Satz: "In der ersten Phase eurer Beziehung" ist Sprache,
+     kein Echo. */
+  { name: "Phasen-Marker",              art: "geruest", re: /(^|\n)\s*\(?Phase \d\)?[.:]?\s*(?=$|\n|[A-ZÄÖÜ])/m },
+  { name: "roher Block-Kopf",           art: "geruest", re: /(^|\n)(CHOICE|HANDOVER|TIMELINE|GATE)-BLOCK(\n|$)/ },
+];
+
+/** Instruktions-Echo in einem Anzeigetext. Reine Textfunktion. */
+export function echoImText(text) {
+  const t = String(text || "");
+  const aus = [];
+  for (const m of ECHO_MUSTER) {
+    const treffer = t.match(m.re);
+    if (treffer) aus.push({ name: m.name, art: m.art, stelle: treffer[0].trim().slice(0, 80) });
+  }
   return aus;
 }
 
@@ -365,6 +407,11 @@ export function sampleAusUrteil(szenario, transkript, urteil, nr) {
      Anzeigeproblem und bleibt eines. */
   const mkSpur = markenSpurImTranskript(transkript);
   if (mkSpur) sample.marken = mkSpur;
+  /* S133 · Echo-Spur am Sample — wie die Markenspur: sie aendert kein Urteil,
+     sie sagt, was im sichtbaren Text stand. */
+  const echoSpur = [];
+  for (const m of transkript || []) for (const e of m.echo || []) echoSpur.push(e);
+  if (echoSpur.length) sample.echo = echoSpur;
   // S85: Struktur-Quelle des Urteils sichtbar am Sample ("tool" | "text"-Rettung).
   if (urteil.strukturQuelle) sample.strukturQuelle = urteil.strukturQuelle;
   return sample;
