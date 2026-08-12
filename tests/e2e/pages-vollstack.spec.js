@@ -36,6 +36,11 @@ const E2E_FENSTER_MS = 10000;
 
 const ADMIN = "test-admin-geheim";
 let mf, clientCode, hash;
+/* S139 · Aus dem abgefangenen Mailversand: der PIN und ein Protokoll, WELCHE
+   Mails ueberhaupt hinausgingen. Das zweite ist die eigentliche Zusicherung —
+   eine Adresspflicht ohne Mail waere eine Sackgasse. */
+let letzterPin = null;
+const gesendeteMails = [];
 const urFetch = globalThis.fetch;   // I15 · zum Abklemmen der Bruecke im Abbau
 
 /** ST3 · Upstream-SSE für STRUKTUR-Anfragen (output_config): das schema-
@@ -82,6 +87,17 @@ beforeAll(async () => {
     compatibilityDate: "2026-06-01",
     bindings: { ADMIN_TOKEN: ADMIN, LLM_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key", ANTHROPIC_MODEL: "test-modell" },
     serviceBindings: {
+      /* S139 · Der Mailversand wird abgefangen wie das LLM. Der PIN geht sonst
+         nur per Mail hinaus — und ohne ihn kommt dieser Test nicht durch den
+         Adresspflicht-Schirm, den seit S115 JEDE neue Person zuerst sieht. */
+      async MAIL_UPSTREAM(request) {
+        const msg = await request.json();
+        const t = String(msg.text || "");
+        const m = t.match(/\b(\d{6})\b/);
+        if (m) letzterPin = m[1];
+        gesendeteMails.push({ to: msg.to, subject: msg.subject });
+        return new Response(JSON.stringify({ ok: true }), { headers: { "content-type": "application/json" } });
+      },
       async UPSTREAM(request) {
         const body = await request.json();
         const text = drehbuch.length ? drehbuch.shift() : "[VOLL] Drehbuch erschöpft";
@@ -101,7 +117,6 @@ beforeAll(async () => {
           usage: { input_tokens: 1, output_tokens: 1 },
         }), { headers: { "content-type": "application/json" } });
       },
-      async MAIL_UPSTREAM() { return new Response("ok"); },
     },
   });
 }, 30000);
@@ -184,6 +199,35 @@ describe("E2E · Pages-Vollstack (Worker + gebauter Client)", () => {
     await warteAuf(() => document.getElementById("btnMyRoom"), "App bootet bis zur Startseite", { timeoutMs: E2E_FENSTER_MS });
     expect(window.PAARBEGLEITUNG.coreHash).toBe(hash);
     expect(location.hash).toBe("");                            // Token aus der Adresszeile entfernt
+
+    /* 3b · S139 · DURCH DIE ADRESSPFLICHT.
+       Sie ist seit S115 der erste Schirm jeder neuen Person — und kein e2e-Test
+       ging bisher hindurch. Der Lauf blieb deshalb gelegentlich dort haengen,
+       und weil die Fehlerbox darueber lag, sah es wie ein Wettlauf aus.
+       Bewusst NICHT per EMAIL_PFLICHT:"0" umgangen: Ein Test, der die Huerde
+       auslaesst, die in Produktion an ist, prueft den Weg nicht, den es gibt.
+       Der PIN kommt aus dem abgefangenen Mailversand (MAIL_UPSTREAM) — genau
+       so, wie er in Wirklichkeit ankaeme, nur ohne Postfach. */
+    const pflicht = () => document.getElementById("pbEmailPflicht");
+    if (pflicht()) {
+      const feld = m => pflicht().querySelector('[data-rec=' + m + ']');
+
+      feld("mail").value = "anna@example.test";
+      feld("mail").dispatchEvent(new Event("input", { bubbles: true }));
+      feld("senden").click();
+
+      await warteAuf(() => letzterPin, "PIN aus der Verifikationsmail", { timeoutMs: E2E_FENSTER_MS });
+      // Die Mail ging wirklich hinaus — eine Adresspflicht ohne Mail waere eine Sackgasse.
+      expect(gesendeteMails.some(x => x.to === "anna@example.test")).toBe(true);
+
+      await warteAuf(() => feld("pin") && !feld("pin").disabled, "PIN-Feld freigegeben",
+        { timeoutMs: E2E_FENSTER_MS });
+      feld("pin").value = letzterPin;
+      feld("pin").dispatchEvent(new Event("input", { bubbles: true }));
+      feld("ok").click();
+
+      await warteAuf(() => !pflicht(), "Adresspflicht abgeschlossen", { timeoutMs: E2E_FENSTER_MS });
+    }
 
     // 4 · In den Solo-Raum und eine Nachricht durch den ECHTEN Proxy schicken.
     document.getElementById("btnMyRoom").click();

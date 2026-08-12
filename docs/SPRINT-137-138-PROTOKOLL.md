@@ -41,6 +41,31 @@ allein läuft, ist nicht flaky, bis das Gegenteil unter Last gezeigt ist.**
 **Nachweis:** Der zuvor fallende Lauf (`engine + worker + e2e` zusammen) ist grün, und drei
 aufeinanderfolgende e2e-Läufe ebenfalls. Test des Tests: Ohne den Zaun fällt der neue Fall.
 
+### Und der Zaun hat die eigentliche Ursache freigelegt (S139)
+
+Beim Pushen fiel der e2e-Lauf erneut — **aber ohne Fehlerbox**. Nur noch der Text des
+Schirms, an dem er hing:
+
+> „Your address / Send confirmation code"
+
+Der Test blieb an der **Adresspflicht** stehen. `EMAIL_PFLICHT` war in den Test-Bindings nie
+gesetzt, und nach der Notaus-Logik aus S115 heißt das: Sie ist **an**. Der Test lief seit
+S115 in einen Schirm, für den er nie gebaut wurde — und weil die Fehlerbox des Nachzüglers
+darüber lag, sah es wie ein Wettlauf aus.
+
+**Der Befund hinter dem Befund:** Der Pflichtschirm ist der erste Schirm jeder neuen Person,
+und **kein e2e-Test ging bisher durch ihn hindurch.**
+
+Der Test geht jetzt hindurch: Adresse eintragen, PIN aus dem abgefangenen Mailversand
+(`MAIL_UPSTREAM`, der Einhängepunkt existierte bereits), bestätigen, weiter in die Session.
+Bewusst **nicht** per `EMAIL_PFLICHT:"0"` umgangen — ein Test, der die Hürde ausl��sst, die in
+Produktion an ist, prüft den Weg nicht, den es gibt.
+
+Zusätzlich geprüft: Die Mail ging wirklich hinaus. Eine Adresspflicht ohne Mail wäre eine
+Sackgasse.
+
+**Fünf aufeinanderfolgende e2e-Läufe grün**, dazu die volle Suite.
+
 ---
 
 ## 2 · S138b · „Ich höre da …" trägt die Wertung nicht
