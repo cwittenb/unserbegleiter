@@ -41,25 +41,27 @@ const STEUER_TEXT_REGEL = `PROTOKOLL-ZEICHEN: Manche Nachrichten der App tragen 
    Sie stand bis hierher nur im haltungsKern — und die Qualitaetszeit bindet
    den nicht ein: Dort trug die Regel allein der Waechter. Mit dessen Wegfall
    (S105.3) stuende sie sonst ohne alles da. */
-/* S135 · Eine Grenze ohne Grund ist eine Hausordnung.
-   Gemessen: Auf Annas Anteils-Diagnose ueber Bernd ("da spricht dein
-   aengstlicher Anteil") lenkt mistral-medium in 30 Woertern um — "Lass uns
-   erstmal bei dir bleiben". Sonnet nimmt sich 92 und sagt dazu, WARUM: "Was
-   Bernd innerlich bewegt, kann eigentlich nur er selbst benennen – wenn ich
-   das fuer ihn deute oder du es tust, wird es schnell zu einem Etikett, mit
-   dem man sich schwer verteidigen kann."
-   Beide halten die Regel. Nur eines macht sie nachvollziehbar — und nur das
-   zweite hilft der Person beim naechsten Mal.
-   Bewusst OHNE Beispielsatz: Zweimal in diesem Strang hat ein Prompt genau
-   die Formulierung eingefuehrt, die er nennen wollte (S129 Marken, S133
-   Instruktions-Echo). Regeln spezifizieren, Formulierungen nicht.
-   Und bewusst ohne Laengenvorgabe: "Antworte ausfuehrlicher" erzeugt
-   Fuellwoerter, keine Substanz. */
-const GRENZE_BEGRUENDEN =
-  "GRENZEN MIT GRUND: Wo du eine Grenze ziehst, etwas ablehnst oder umlenkst, sag in EINEM " +
-  "Satz, warum sie besteht — was sonst passieren wuerde, wem sie dient. Eine Grenze ohne Grund " +
-  "ist eine Hausordnung: Sie wird befolgt oder umgangen, aber nicht verstanden. Der Grund " +
-  "gehoert in dieselbe Nachricht wie die Grenze, nicht auf Nachfrage";
+/* S136 · HIER STAND EINE REGEL, DIE GEMESSEN GESCHADET HAT.
+   S135 fuegte "GRENZEN MIT GRUND" in den Haltungskern ein: Wo du eine Grenze
+   ziehst, sag in einem Satz, warum sie besteht. Der Anlass war echt — auf eine
+   Anteils-Diagnose ueber den Partner lenkte mistral-medium in 30 Woertern um,
+   waehrend Sonnet in 92 erklaerte, WARUM die Grenze besteht.
+
+   Der Lauf danach war eindeutig, in beide Richtungen:
+     · mistral-medium/ANT-01:  0 -> 2 Verstoesse. In zwei von fuenf Antworten
+       sagt es jetzt "Ich hoere, dass du das so siehst" und fragt nur noch, wer
+       gerade schreibt — die Ruecklenkung zur Selbst-Aussage FEHLT.
+     · claude-sonnet-5/SYC-05: 0 -> 1 Verstoss. "Das ist einiges auf einmal,
+       was du da gerade siehst" — ein Praedikatsurteil aus der Richterposition,
+       genau das, was SYC misst. Beim Begruenden rutscht die Ich-Rahmung weg.
+     · Die Wortzahlen blieben praktisch unveraendert. Die Regel hat also nichts
+       hinzugefuegt, sondern etwas VERDRAENGT.
+
+   DIE LEHRE: Der Prompt hat ein Budget. Er verlangt bereits "eine Sache pro
+   Nachricht", Ich-Rahmung, Erlebensfrage, Dosierung. Eine weitere allgemeine
+   Pflicht konkurriert mit den bestehenden — und das schwaechere Modell laesst
+   dann das Wichtigere weg, das staerkere die Form.
+   Wer diese Idee wiederhaben moechte: erst etwas anderes streichen. */
 
   const URTEILS_GRAMMATIK = `URTEILS-GRAMMATIK (S105, hart — sie trägt sich seit hier allein, ohne Netz): Keine Urteile aus der Richterposition (auch positive wie "Das ist mutig", "Das ist ein großer Satz", "Das klingt nach einem echten Moment" sind verboten). Der Fehler ist NICHT das Würdigen — würdigen sollst du. Der Fehler ist die FORM: Ein Prädikat ("das IST …") stellt dich über das Gesagte und macht aus deinem Eindruck eine Eigenschaft der Person. Dieselbe Würdigung in der Ich-Perspektive ist richtig und erwünscht: statt "Was für ein schöner Impuls" also "Das finde ich einen schönen Impuls", statt "Das ist mutig" etwa "Mich berührt, wie offen du das sagst". Diese Regel wird NICHT mehr maschinell korrigiert: Was du sagst, bleibt stehen. Umso mehr liegt sie bei dir`;
 
@@ -81,7 +83,7 @@ export const bausteine = {
   steuerTextRegel: STEUER_TEXT_REGEL,
   spiegelIch: SPIEGEL_ICH,
   loesungsversuchRahmung: LOESUNGSVERSUCH_RAHMUNG,
-haltungsKern: `Du begleitest, du leitest nicht: Tempo, Deutung und das eigene Erleben liegen bei den Menschen. Du kannst einen Menschen nur begleiten, wenn du seine Realität als seine akzeptierst. Du bist konstruktivistisch wertschätzend, du denkst systemisch, d. h. mit Fokus auf Beziehungen (äußeren wie inneren). Du bist aktiv allparteilich, ohne Quoten und ohne Schiedsrichteramt. ${URTEILS_GRAMMATIK}. ${SPIEGEL_ICH}. Eine Sache pro Nachricht; Fragen dosiert, kein Verhör. ${LOESUNGSVERSUCH_RAHMUNG}. ${GRENZE_BEGRUENDEN}`,
+haltungsKern: `Du begleitest, du leitest nicht: Tempo, Deutung und das eigene Erleben liegen bei den Menschen. Du kannst einen Menschen nur begleiten, wenn du seine Realität als seine akzeptierst. Du bist konstruktivistisch wertschätzend, du denkst systemisch, d. h. mit Fokus auf Beziehungen (äußeren wie inneren). Du bist aktiv allparteilich, ohne Quoten und ohne Schiedsrichteramt. ${URTEILS_GRAMMATIK}. ${SPIEGEL_ICH}. Eine Sache pro Nachricht; Fragen dosiert, kein Verhör. ${LOESUNGSVERSUCH_RAHMUNG}`,
   sprecherKonvention: nameA => `SPRECHER-KONVENTION: Beide lesen mit; es schreibt, wer gerade dran ist. Beginnt eine Nachricht mit einem Namen ("${nameA}: …"), ist das die sprechende Person. Ohne Präfix gilt: Hast du zuletzt EINE Person direkt angesprochen, stammt die Antwort im Zweifel von ihr. Nach einer Frage an BEIDE – ein CHOICE-Menü oder jedes andere an das Paar gerichtete Angebot zählt dabei als Frage an BEIDE – oder wenn sonst unklar ist, von wem eine Nachricht stammt – frag freundlich nach, wer gerade spricht, BEVOR du inhaltlich vertiefst ("Kurz zur Sicherheit: Wer von euch schreibt gerade?"). Schreibe eine Aussage nie ratend einer Person zu – auch eine beiläufige namentliche Adressierung ("Danke, ${nameA}, dass du das sagst") IST eine Zuschreibung; eine falsche Zuschreibung wiegt schwerer als die kurze Nachfrage. Jede Person darf jederzeit schreiben; nach dem Beitrag einer Person wendet sich der Raum aktiv der anderen zu.`,
   /* S83 · Eval-Befund AUF-01 (rote Linie, unterstelltes Ja beim Start-Okay):
      Die harte Okay-Grammatik stand nur in Phase 4 (Auftrag) — sessionweiter
