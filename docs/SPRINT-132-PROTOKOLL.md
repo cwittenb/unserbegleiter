@@ -130,9 +130,42 @@ sitzt —, steht in den Texten, die `--texte` ausgibt. Dafür ist die Option da.
 
 ---
 
-## 5 · Änderungen
+## 5 · Ein Befehl für alles
+
+Von Hand wären das drei mal zehn Runner-Aufrufe plus das Zusammensuchen der Dateinamen (die
+sind Zeitstempel). `scripts/modellvergleich.js` nimmt das ab und verdrahtet dabei die beiden
+Fallstricke fest:
+
+- **Derselbe Judge für alle drei Läufe.** Die Regel „Judge ≠ Pipeline" führt sonst dazu, dass
+  jeder Lauf von einem anderen bewertet wird.
+- **Derselbe Kern-Stand**, weil alle drei unmittelbar hintereinander laufen.
+
+```
+npm run eval:modellvergleich                 # zehn Szenarien × drei Läufe, n=5
+npm run eval:modellvergleich -- --kurz       # nur GATE, SYC, ANT
+npm run eval:modellvergleich -- --trocken    # zeigt nur, was liefe
+npm run eval:modellvergleich -- --nur A,C    # einzelne Spalten
+```
+
+Am Ende ruft es den Vergleich je Szenario selbst auf, mit `--texte`.
+
+**Ein gescheitertes Szenario beendet den Vergleich nicht.** Die übrigen sind trotzdem etwas
+wert, und ein Abbruch nach acht von zehn Läufen wäre die teuerste Art, nichts zu erfahren.
+
+---
+
+## 6 · Änderungen
 
 - `scripts/eval-vergleich.js` — neu.
-- `package.json` — `eval:vergleich`.
+- `scripts/modellvergleich.js` — neu.
+- `evals/modellvergleich.json` — die drei Modelle und der Judge, als Daten.
+- `package.json` — `eval:vergleich`, `eval:modellvergleich`.
+
+### Der Wächter aus S35d hat sofort gegriffen
+
+Mein erster Entwurf trug die Modellnamen im Skript. `llm-konfig-waechter.spec.js` fiel im
+selben Lauf: **Modellwissen gehört in Konfiguration, nicht in Code.** Die Regel ist richtig —
+wer ein Modell wechseln will, soll keine Quelldatei anfassen müssen. Sie stehen jetzt in
+`evals/modellvergleich.json`.
 
 Kein Produktionscode, kein Szenario, keine Wertungslogik.

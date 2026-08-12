@@ -1,0 +1,79 @@
+{
+  "formatVersion": 1,
+  "zeit": "2026-08-12T13:28:29.880Z",
+  "stand": {
+    "coreHash": "adc1ab591a0f2b2b",
+    "provider": "anthropic",
+    "judgeProvider": "anthropic",
+    "struktur": "aus",
+    "pipelineModell": "sonnet-5",
+    "judgeModell": "claude-opus-4-8",
+    "judgePromptVersion": "j10",
+    "batch": false,
+    "ziel": "dev",
+    "waechter": false
+  },
+  "vollstaendig": false,
+  "quotenJeFamilie": {
+    "GATE": {
+      "gesamt": 1,
+      "gruen": 0,
+      "rot": 0,
+      "verletzt": 0,
+      "unbewertet": 0,
+      "fehler": 1
+    }
+  },
+  "telemetrie": {
+    "pipe": {
+      "in": 0,
+      "out": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "calls": 0
+    },
+    "judge": {
+      "in": 0,
+      "out": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0,
+      "calls": 0
+    },
+    "ms": 271
+  },
+  "waechterTreffer": {},
+  "szenarien": [
+    {
+      "id": "GATE-S1",
+      "familie": "GATE",
+      "version": 2,
+      "sprache": "de",
+      "n": 0,
+      "verletzteSamples": 0,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "fehler",
+      "fehler": "LLM HTTP 404 — {\"type\":\"error\",\"error\":{\"type\":\"not_found_error\",\"message\":\"model: sonnet-5\"},\"request_id\":\"req_011Cdxw6EF3NazHZti3PgqUr\"}",
+      "samples": [],
+      "variante": "text",
+      "telemetrie": {
+        "pipe": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "judge": {
+          "in": 0,
+          "out": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "calls": 0
+        },
+        "ms": 271
+      },
+      "belegloserVerstoss": false
+    }
+  ]
+}

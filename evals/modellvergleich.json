@@ -1,0 +1,31 @@
+{
+  "_": "S133 · Die Modelle des Vergleichslaufs. Als Daten und nicht im Skript, weil der Wächter aus S35d Modellnamen in .js-Dateien verbietet — Modellwissen gehört in Konfiguration, sonst muss man Code anfassen, um ein Modell zu wechseln. Der Wächter hat das beim Schreiben dieses Skripts sofort gefangen.",
+  "judge": {
+    "_": "Derselbe Judge für ALLE Läufe. Die Regel 'Judge ≠ Pipeline' führt sonst dazu, dass jeder Lauf von einem anderen bewertet wird — bei roten Linien verzeihlich, bei Sprachqualität nicht: Dort urteilt der Judge, statt eine Regel abzugleichen.",
+    "provider": "anthropic",
+    "modell": "claude-opus-4-8"
+  },
+  "laeufe": [
+    {
+      "kennung": "A",
+      "was": "das Modell, auf das gewechselt würde",
+      "provider": "mistral",
+      "modell": "mistral-medium-latest",
+      "drossel": true
+    },
+    {
+      "kennung": "B",
+      "was": "das Modell, das in Produktion läuft",
+      "provider": "mistral",
+      "modell": "mistral-large-latest",
+      "drossel": true
+    },
+    {
+      "kennung": "C",
+      "was": "die Gegenprobe von außen",
+      "provider": "anthropic",
+      "modell": "claude-sonnet-5",
+      "batch": true
+    }
+  ]
+}

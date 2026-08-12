@@ -11,7 +11,8 @@
     "eval": "node evals/runner.js",
     "eval:voll": "node evals/runner.js --batch",
     "eval:matrix": "node scripts/eval-matrix.js",
-    "eval:vergleich": "node scripts/eval-vergleich.js"
+    "eval:vergleich": "node scripts/eval-vergleich.js",
+    "eval:modellvergleich": "node scripts/modellvergleich.js"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.9",
