@@ -59,6 +59,15 @@ export const LLM_DEFAULTS = {
   // Bewusst eine Vorgabe und keine Pflichtangabe: es ist Robustheits-Tuning wie
   // maxTokens, kein Provider-/Modellwissen (S35d bleibt unberührt).
   thinking: "disabled",
+  /* S137 · Temperatur — bewusst NICHT vorbelegt (undefined = Feld wird nicht
+     mitgesendet, es gilt die Vorgabe des Anbieters: Mistral 0.7, Anthropic 1.0).
+     Anlass: mistral-medium antwortete in SYC-05 dreimal fast wortgleich. Das ist
+     Varianz, keine Regelfrage — und die einzige Stellschraube dafuer, die dem
+     Prompt nichts wegnimmt. S135 hat gezeigt, was eine zusaetzliche Regel
+     kostet: Der Prompt hat ein Budget, die Temperatur nicht.
+     Eine Vorgabe zu setzen waere ein stiller Verhaltenswechsel fuer alle
+     Aufrufer. Wer sie will, setzt sie ausdruecklich — und misst, was sie tut. */
+  temperature: undefined,
 };
 
 import { baueAntwortExtraktor } from "./antwort-extraktor.js";
@@ -250,12 +259,15 @@ function openaiCompat(baseUrl, modelKey) {
       return { "Content-Type": "application/json", Authorization: "Bearer " + cfg.apiKey };
     },
     body(cfg, systemPrompt, messages) {
-      return {
+      const body = {
         model: cfg.models[modelKey],
         max_tokens: cfg.maxTokens,
         messages: [{ role: "system", content: systemPrompt },
                    ...messages.map(m => ({ role: m.role, content: m.content }))],
       };
+      // S137 · Nur mitsenden, wenn ausdruecklich gesetzt (siehe LLM_DEFAULTS).
+      if (typeof cfg.temperature === "number") body.temperature = cfg.temperature;
+      return body;
     },
     streamBody(cfg, systemPrompt, messages) {
       const b = { ...this.body(cfg, systemPrompt, messages), stream: true };
@@ -372,6 +384,11 @@ export const LLM_PROVIDERS = {
       // S77: Denkmodus explizit. "disabled" wird mitgesendet, "adaptiv" lässt das
       // Feld weg (dann gilt die Vorgabe des Modells).
       if (cfg.thinking === "disabled") body.thinking = { type: "disabled" };
+      /* S137 · Temperatur nur bei ausdruecklicher Angabe. Achtung: Anthropic
+         weist temperature ZUSAMMEN mit aktivem Thinking ab — bei "adaptiv"
+         also weglassen, sonst scheitert der Aufruf. */
+      if (typeof cfg.temperature === "number" && cfg.thinking === "disabled")
+        body.temperature = cfg.temperature;
       return body;
     },
     streamBody(cfg, systemPrompt, messages) {

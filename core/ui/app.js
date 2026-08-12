@@ -1366,12 +1366,32 @@ export function createApp({ doc, backend, root, diktat }) {
     // D6/D12-2c · Kulisse still im Hintergrund — nie blockierend, nie kritisch.
     ladeLage().then(l => aktualisiereKulisse("scrChat", l)).catch(() => {});
     renderMsgs(true);   // (Wieder-)Betreten springt einmalig ans Verlaufs-Ende (S53/S62)
+    /* S138 · Nachzuegler-Zaun EINE EBENE FRUEHER.
+       Befund: Der e2e-Vollstacklauf zeigte in der Fehlerbox "Cannot read
+       properties of null (reading 'submitToolResult')". Die Ursache ist kein
+       Fehler im Ablauf, sondern ein Wettlauf: Der Aufbau einer Session wartet
+       an mehreren Stellen (Kontext, Uebergaben, Wortlaut-Abruf). Wird der Raum
+       in dieser Zeit verlassen, setzt raeume() state.engine auf null — und der
+       Aufruf danach greift ins Leere.
+       Der bestehende Zaun (state.chatGen, S87) verhindert nur die UI-WIRKUNG
+       eines Nachzueglers; der Zugriff selbst passiert trotzdem, und
+       warteAntwort zeigt den entstehenden Fehler brav in der Fehlerbox — in
+       einem Raum, den die Person gerade verlassen hat.
+       "lebt()" prueft, ob DIESE Session noch die aktuelle ist. Bewusst nicht
+       state.engine allein: Die Engine koennte auch schon die einer NEUEN
+       Session sein, und dann waere der Aufruf noch falscher als ein Absturz. */
+    const lebt = () => gen === state.chatGen && !!state.engine;
+
     if (chat.messages.length) {
+      if (!lebt()) return;
       await state.engine.resume();
-      if (einzelRueckkehr && zugFrei)
+      if (einzelRueckkehr && zugFrei) {
+        if (!lebt()) return;
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelRueckkehr, { hidden: true }));
-      else if (wiedereinstieg)
+      } else if (wiedereinstieg) {
+        if (!lebt()) return;
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte[wiedereinstieg], { hidden: true }));
+      }
     } else {
       if (art === "gemeinsam") {
         const [freiA, freiB, protokoll, alleG] = await Promise.all([
@@ -1482,6 +1502,9 @@ export function createApp({ doc, backend, root, diktat }) {
       // S59 · Fertig ohne Verlauf (geheilter Zustand): Eröffnung ist der
       // NACHKLANG, nie der Kapitel-1-Start.
       const startText = einzelRueckkehr ? K().steuerTexte.einzelRueckkehr : K().steuerTexte.start[art];   // Korpus: Sprachfassung liefert prompts.<locale>.js
+      /* Zwischen dem Aufbau oben und hier liegen mehrere await — der Raum kann
+         inzwischen verlassen sein. */
+      if (!lebt()) return;
       await warteAntwort(() => state.engine.submitToolResult(startText, { hidden: true }));
     }
   }

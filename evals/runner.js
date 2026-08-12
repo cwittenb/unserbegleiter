@@ -96,6 +96,17 @@ async function main() {
   }
   szenarien = wendeZielAn(szenarien, ziel);
 
+  /* S137 · --temperatur <zahl>. OHNE Angabe wird nichts mitgesendet: dann gilt
+     die Vorgabe des Anbieters, und der Lauf misst genau das, was die App tut.
+     Nur die PIPELINE bekommt sie — der Judge soll moeglichst wenig streuen,
+     seine Aufgabe ist Pruefen, nicht Formulieren. */
+  const tempArg = arg("temperatur", null);
+  const temperatur = tempArg === null ? undefined : Number(tempArg);
+  if (temperatur !== undefined && (Number.isNaN(temperatur) || temperatur < 0 || temperatur > 2)) {
+    console.error('Ungültiger --temperatur-Wert: "' + tempArg + '" (Zahl zwischen 0 und 2).');
+    process.exit(2);
+  }
+
   // RPM-Drossel (S51): fixer Standard 2 (Free-Tier-sicher = 1 Req/30s). --rpm unlimited|0 hebt sie auf.
   const rpmArg = arg("rpm", "2");
   const rpm = /^(unlimited|0|kein|keine|aus)$/i.test(rpmArg) ? 0 : parseInt(rpmArg, 10);
@@ -148,9 +159,11 @@ async function main() {
   // S77 · Denkmodus je Rolle: die Begleitung läuft OHNE Thinking (deterministisches
   // Budget; gemessen: adaptives Thinking fraß bei großem System-Prompt ganze
   // Antworten auf), der Judge MIT adaptivem Thinking (Richten profitiert davon).
-  const cfgFuer = (prov, key, modell, dr, cache, thinking) => prov === "mistral"
-    ? { provider: "mistral", mode: "direct", apiKey: key, models: { mistral: modell }, drossel: dr }
-    : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr, cache, thinking };
+  const cfgFuer = (prov, key, modell, dr, cache, thinking, temp) => prov === "mistral"
+    ? { provider: "mistral", mode: "direct", apiKey: key, models: { mistral: modell }, drossel: dr,
+        ...(temp === undefined ? {} : { temperature: temp }) }
+    : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr, cache, thinking,
+        ...(temp === undefined ? {} : { temperature: temp }) };
 
   // Token-Erfassung (S55): zählender Wrapper um beide Adapter — je Aufruf die echten
   // usage-Token (in/out/cacheRead/cacheWrite) aufsummieren und das Ergebnis unverändert
@@ -169,7 +182,7 @@ async function main() {
   // Cache-Treffer). Judge AUS (S56): bei n>1 hat jedes Sample ein anderes Transkript →
   // kein Wiederlesen; der Cache wäre reiner Write-Overhead (2,5× Write-Kosten, zählt
   // zudem gegen das Rate-Limit). Telemetrie-belegt: Judge cacheRead=0, cacheWrite>0.
-  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true, "disabled")), tPipe);
+  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true, "disabled", temperatur)), tPipe);
   const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false, "adaptiv")), tJudge);
   const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
   const laufKosten = (pipeTok, judgeTok, faktor = 1, langlebig = false) => {
@@ -248,6 +261,8 @@ async function main() {
 
   const stand = {
     coreHash: hash, provider, judgeProvider,
+    // S137 · null = nicht gesetzt, es galt die Vorgabe des Anbieters.
+    temperatur: temperatur === undefined ? null : temperatur,
     struktur: strukturModus,                    // ST5 · Transport-Lesart des Laufs (aus | an | beides)
     pipelineModell, judgeModell,
     judgePromptVersion: JUDGE_PROMPT_VERSION,
