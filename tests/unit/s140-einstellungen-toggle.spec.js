@@ -70,6 +70,10 @@ describe("S140.3 · das Zeichen kippt", () => {
     expect(sichtbar("scrEinstellungen")).toBe(true);
   });
 
+  /* S141 · Dieser Fall ist geschärft: Er verlangte "zurück auf den Start",
+     was damals stimmte, weil der Screen keinen anderen Rückweg kannte. Jetzt
+     führt er auf den Herkunftsscreen — hier ist das der Start, weil man von
+     dort kam. Die Aussage "derselbe Ausgang wie der Pfeil" bleibt. */
   it("von woanders aus öffnet er weiterhin, statt zu schließen", async () => {
     await bauen();
     root.querySelector("#btnSharedRoom").click();

@@ -1052,6 +1052,22 @@ export function createApp({ doc, backend, root, diktat }) {
     aktualisiereWegweiser(screenId);
   }
 
+  /* S141 · Die Einstellungen sind der einzige Ort, den man von ueberall her
+     betritt — der Rueckweg gehoert deshalb dorthin zurueck, wo man herkam,
+     und nicht pauschal auf den Start. Gemerkt wird beim Betreten, nicht beim
+     Verlassen: Beim Verlassen steht state.screen schon auf scrEinstellungen.
+     scrChat steht bewusst NICHT in der Liste. show() raeumt die
+     Chat-Oberflaeche ab, sobald man den Chat verlaesst (S87) — ein Rueckweg
+     dorthin fuehrte auf eine leere Flaeche. Aus einem laufenden Gespraech
+     heraus landet man also weiter auf dem Start; das ist eine Wiederaufnahme
+     und keine Rueckkehr, und die hat ihren eigenen Weg. */
+  const EINST_HERKUNFT = ["scrStart", "scrMyRoom", "scrShared", "scrProzess"];
+  let einstHerkunft = "scrStart";
+  function betreteEinstellungen(screenId) {
+    einstHerkunft = EINST_HERKUNFT.includes(state.screen) ? state.screen : "scrStart";
+    betrete(screenId);
+  }
+
   /* D6 · Kulisse nachziehen — still, fehlertolerant, nie blockierend.
      Startzeitpunkte liegen SERVERSEITIG (K4): der geteilte Zaehler im
      Bstate (Naht des Starts + Vorraum uns), der persoenliche im Pstate
@@ -1729,10 +1745,16 @@ export function createApp({ doc, backend, root, diktat }) {
      Jetzt gilt: Steht der Screen im Vollbild, schliesst der Pfeil NUR. Erst
      der zweite Tap fuehrt hinaus — "zurueck" heisst eine Ebene, nicht zwei.
      regalZu ist idempotent; der gebubbelte Zweitaufruf kehrt sofort zurueck. */
-  const zurueckAus = screenId => () => {
+  /* S141 · Der Rueckweg kennt jetzt ein Ziel. Bis hierher landete jeder
+     Zurueck-Weg auf scrStart — fuer die Vorraeume ist das richtig (sie SIND
+     die Ebene unter dem Start), fuer die Einstellungen nicht: Sie sind von
+     ueberall her erreichbar, also gehoert der Rueckweg dorthin zurueck, wo man
+     herkam. Das Ziel wird als Funktion gereicht, nicht als Wert: Es steht erst
+     beim Klick fest, nicht bei der Verdrahtung. */
+  const zurueckAus = (screenId, ziel = () => "scrStart") => () => {
     const screen = $(screenId);
     if (screen && screen.classList.contains("rz-regal-offen")) { regalZu(screen); return; }
-    betrete("scrStart");
+    betrete(ziel());
   };
   $("btnZurueck1").addEventListener("click", zurueckAus("scrMyRoom"));
   $("btnZurueck2").addEventListener("click", zurueckAus("scrShared"));
@@ -1759,7 +1781,7 @@ export function createApp({ doc, backend, root, diktat }) {
   // damit es nicht zusaetzlich zum Pflicht-Screen im Dokument lebt. Der
   // Oeffner macht beides in einem Schritt (sichtbar + bauen, idempotent) —
   // deshalb ruft der Toggle hier oeffneRecovery statt classList.remove.
-  $("btnEinstZurueck").addEventListener("click", zurueckAus("scrEinstellungen"));
+  $("btnEinstZurueck").addEventListener("click", zurueckAus("scrEinstellungen", () => einstHerkunft));
   /* 3.7 · Die Zahl wird beim Oeffnen geholt, nicht vorgehalten: sie steht in
      einer Frage, die man nicht zuruecknehmen kann, und darf nicht veralten. */
   $("btnVerlaeufeWeg").addEventListener("click", () =>
@@ -2407,7 +2429,8 @@ export function createApp({ doc, backend, root, diktat }) {
     // eine zusätzliche Runde durch die API, bevor die Sitzung stand.
     setzeAnsicht(doc, gemerkteAnsicht());
     // S140 · Zweiter Weg: derselbe, den der Zurueck-Pfeil des Screens geht.
-    verdrahteEinstellungen(betrete, zurueckAus("scrEinstellungen"));
+    // S141 · Und beide fuehren auf den Herkunftsscreen, nicht auf den Start.
+    verdrahteEinstellungen(betreteEinstellungen, zurueckAus("scrEinstellungen", () => einstHerkunft));
     verdrahteRechtsWege(wurzel);        // L3
     aktualisierePunkt();
     backend.pstate.get("theme").then(w => {

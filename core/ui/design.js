@@ -1495,6 +1495,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            der Vollbild-Mechanik verworfen, obwohl sie mit ihr nichts zu tun
            hatte. Hier steht sie wieder — diesmal aus eigenem Grund. */
         .rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:50dvh}
+        /* S141 · Und genau diese Regel trifft die Einstellungen falsch herum.
+           Sie haelt einen Zonenfuss an der Naht, der UNTEN steht (Vorraeume,
+           margin-top:auto). Auf diesem Screen steht er OBEN (S125,
+           .rz-fuss-oben) und traegt die Zonenueberschrift; darunter folgt der
+           Inhalt. 50dvh margin-bottom schieben dort nicht den Fuss an die
+           Naht, sondern den gesamten Inhalt der Papier-Spalte eine halbe
+           Fensterhoehe nach unten — sichtbar in dem Moment, in dem rechts eine
+           Sektion aufklappt.
+           S119.4 hatte die Flanke fuer diesen Screen schon einmal
+           stillgelegt, aber nur im zugeklappten Zustand
+           (:not(.rz-regal-offen)); der offene blieb uebrig. Eine Kennung
+           sticht die Klassenregel, die Reihenfolge entscheidet also nicht mit. */
+        #scrEinstellungen.rz-regal-offen>.rz-half:first-child .rz-fuss{margin-bottom:0}
       }
       .rz-half{transition:transform .36s var(--rz-kurve)}
       /* D12-2b · Der Wegweiser blendet NICHT mehr ab: er haengt per rz-auf-naht
