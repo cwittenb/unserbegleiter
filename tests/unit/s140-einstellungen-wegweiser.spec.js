@@ -35,6 +35,12 @@ function backendEinfach(info = {}) {
     handover: { get: async () => null, post: async () => true },
     llm: async () => ({ text: "ok", stop: "end_turn" }),
     language: { request: async () => ({}), withdraw: async () => ({}) },
+    /* S142 · Die Fassade traegt jetzt recovery. Ohne sie faellt die
+       Zugangs-Zeile weg (die Regal-Zeile waere dann auch ausgeblendet) — die
+       Faelle hier pruefen aber die RUHIGE Lage einer vollstaendigen App, nicht
+       den Artefakt-Bau ohne Wiedereinstieg. Der stille Wegfall haette die
+       Aussage dieser Datei unbemerkt halbiert. */
+    recovery: { beginVerify: async () => ({}), confirm: async () => ({}) },
   };
 }
 

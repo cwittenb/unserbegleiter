@@ -81,11 +81,14 @@ Komfortanzeige.
 |---|---|---|
 | 2 | `languageRequest` von der ANDEREN Person | `weg.einstSprachAntrag` |
 | 2 | `languageRequest` von mir | `weg.einstSprachWartet` |
-| 4 | immer | `weg.einstZugang` |
+| 3 | `backend.recovery` && **keine** `recoveryEmail` | `weg.einstZugang` |
+| 4 | `backend.recovery` && `recoveryEmail` | `weg.einstZugangDa` |
 | 4 | immer | `weg.einstEndgueltig` |
 
-Die beiden Stufe-2-Zeilen schließen einander aus (ein Antrag, nicht zwei).
-Ruhige Lage ⇒ zwei Zeilen; mit offenem Antrag ⇒ drei.
+Die beiden Stufe-2-Zeilen schließen einander aus (ein Antrag, nicht zwei), die
+beiden Zugangs-Zeilen ebenso (S142: ein Zustand, nicht zwei). Ohne
+`backend.recovery` entfällt die Zugangs-Zeile ganz — dann ist auch die
+Regal-Zeile ausgeblendet. Ruhige Lage ⇒ zwei Zeilen; mit offenem Antrag ⇒ drei.
 
 ## Beispiel-Lagen (aus den S54-Tests)
 

@@ -279,7 +279,13 @@ export const de = {
      wartet: ein offener Sprachvorschlag. */
   "weg.einstSprachAntrag": "{partner} schlägt einen Wechsel der Begleitungssprache vor — entschieden wird er in der Agenda im gemeinsamen Raum.",
   "weg.einstSprachWartet": "Dein Sprachvorschlag wartet auf {partner} — er liegt in der Agenda im gemeinsamen Raum.",
-  "weg.einstZugang": "Den Zugang wiederfinden richtest du am besten ein, bevor du ihn brauchst — er holt dich auf ein neues Gerät zurück.",
+  /* S142 · Zwei Texte statt einem. Der eingerichtete Zustand sagt etwas
+     anderes (aendern) als der leere (hinterlegen) — ein Satz mit
+     Und-sonst-anders-Teil waere in beiden Lagen halb falsch. Die Stufe wechselt
+     mit: fehlende Adresse ist ein offener Punkt (3), eine vorhandene eine
+     stehende Auskunft (4). */
+  "weg.einstZugang": "Für deine Zugangslinks ist noch keine E-Mail-Adresse hinterlegt — hinterlege sie hier, bevor du sie brauchst: Sie holt dich auf ein neues Gerät zurück.",
+  "weg.einstZugangDa": "Für deine Zugangslinks ist eine E-Mail-Adresse hinterlegt — du kannst sie hier jederzeit ändern.",
   "weg.einstEndgueltig": "Verläufe löschen lässt sich nicht zurücknehmen; die Zeile nennt dir vorher die Zahl.",
   /* Paarsprache — beidseitig bestätigter Wechsel (S30·C3) */
   "paarspr.aktuell": "Eure gemeinsame Begleitungssprache: {sprache}.",
@@ -363,8 +369,12 @@ export const de = {
   "fg.wieder": "Und ein einziges Mal noch die Aufdeck-Runde: Hättest du Freude daran, wenn ihr eure Top 5 einander preisgebt – auch wenn der Gedanke vielleicht etwas Aufregung auslöst? Gezeigt würden nur deine Top 5 und deine drei Tipps für {partner}. Ohne Häkchen bleibt alles bei dir; danach fragt niemand mehr.",
   "fg.check": "Ja – Top 5 und Tipps dürfen in der Aufdeck-Runde gezeigt werden.",
 
-  // Zugang wiederfinden (App-intern)
-  "rec.titel": "Zugang wiederfinden",
+  // Zugangslinks per E-Mail (App-intern)
+  /* S142 · Die Zeile hiess "Zugang wiederfinden". Das benannte den Anlass,
+     nicht die Sache: Dahinter liegt genau eine hinterlegte Adresse, und im
+     eingerichteten Zustand tut man dort nichts anderes, als sie zu aendern.
+     Der Name sagt das jetzt. */
+  "rec.titel": "E-Mail-Adresse für deine Zugangslinks",
   "rec.hinterlegt": "Eine bestätigte E-Mail-Adresse ist hinterlegt. Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.",
   "rec.neu": "Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Über diese Adresse erhältst du außerdem wichtige Betriebsmitteilungen (z. B. geplante Wartung oder Sicherheitshinweise) — keine Werbung. Nimm ein Postfach, auf das nur du Zugriff hast.",
   "rec.platzhalter": "dein@postfach.de",

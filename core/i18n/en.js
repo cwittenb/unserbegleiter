@@ -263,7 +263,9 @@ export const en = {
      proposal. */
   "weg.einstSprachAntrag": "{partner} suggests switching the companion language — that is decided on the agenda in the shared room.",
   "weg.einstSprachWartet": "Your language suggestion is waiting for {partner} — it sits on the agenda in the shared room.",
-  "weg.einstZugang": "Set up regaining access before you need it — it brings you back on a new device.",
+  /* S142 · Two texts instead of one — see de.js. */
+  "weg.einstZugang": "No email address is stored for your access links yet — add it here before you need it: it brings you back on a new device.",
+  "weg.einstZugangDa": "An email address is stored for your access links — you can change it here at any time.",
   "weg.einstEndgueltig": "Deleting records cannot be undone; the row tells you the number first.",
   /* Couple language — bilaterally confirmed switch (S30·C3) */
   "paarspr.aktuell": "Your shared companion language: {sprache}.",
@@ -345,8 +347,9 @@ export const en = {
   "fg.wieder": "And one single time more, the Reveal Round: would it bring you joy to reveal your Top 5 to each other – even if the thought stirs a little excitement? Only your Top 5 and your three guesses for {partner} would be shown. Without the checkmark everything stays with you; after this, no one asks again.",
   "fg.check": "Yes – my Top 5 and guesses may be shown in the Reveal Round.",
 
-  // Regain access (in-app)
-  "rec.titel": "Regain Access",
+  // Access links by email (in-app)
+  /* S142 · See de.js: the row named the occasion, not the thing. */
+  "rec.titel": "Email address for your access links",
   "rec.hinterlegt": "A confirmed email address is on file. If you sign in on a new device or lose your access, you can have a fresh link sent there.",
   "rec.neu": "Add an email address so you can request a new access link when needed — including for a second device. This address also receives important service notices (e.g. planned maintenance or security alerts) — never advertising. Use a mailbox only you can access.",
   "rec.platzhalter": "you@mailbox.com",

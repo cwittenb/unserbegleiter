@@ -818,7 +818,22 @@ export function createApp({ doc, backend, root, diktat }) {
       const meins = !!(antrag && antrag.by === state.info.role);
       zeile(2, "gemeinsam", antrag && !meins && t("weg.einstSprachAntrag", { partner }));
       zeile(2, "gemeinsam", meins && t("weg.einstSprachWartet", { partner }));
-      zeile(4, "mein", t("weg.einstZugang"));
+      /* S142 · Die Zeile folgt dem Zustand, statt unbedingt dazustehen. Ohne
+         hinterlegte Adresse rät sie zum Hinterlegen (Stufe 3, offener Punkt);
+         mit Adresse sagt sie, dass man sie hier ändern kann (Stufe 4, stehende
+         Auskunft). Bis S141 riet sie auch dann noch zum Einrichten, wenn
+         längst alles eingerichtet war.
+         Der Zustand steht in state.info — kein zusätzlicher Backend-Weg (die
+         Notiz aus S140, das brauche einen Umbau von ladeLage(), war falsch:
+         /api/me liefert das Feld schon, recovery-screen.js liest es an
+         derselben Stelle).
+         Ohne backend.recovery fällt die Zeile ganz weg: Dann blendet
+         zeigeRecovery() auch die Regal-Zeile aus, und ein Wegweiser, der auf
+         etwas Unsichtbares zeigt, ist schlechter als keiner. */
+      if (backend.recovery) {
+        const hinterlegt = !!state.info.recoveryEmail;
+        zeile(hinterlegt ? 4 : 3, "mein", t(hinterlegt ? "weg.einstZugangDa" : "weg.einstZugang"));
+      }
       zeile(4, "mein", t("weg.einstEndgueltig"));
     }
     return k;
@@ -1575,7 +1590,11 @@ export function createApp({ doc, backend, root, diktat }) {
      jetzt in recovery-screen.js. Ihre Abhaengigkeiten sind dort explizit statt
      ueber die Closure eingesammelt. */
   const { zeigeRecovery, oeffneRecovery, zeigeEmailPflicht } =
-    macheRecoveryScreen({ doc, $, backend, state, wurzel });
+    macheRecoveryScreen({ doc, $, backend, state, wurzel,
+      // S142 · Nach dem Hinterlegen den Wegweiser nachziehen — er sagt jetzt
+      // aus, ob eine Adresse liegt, und wird sonst erst beim naechsten
+      // Betreten neu gezeichnet.
+      nachZugang: () => aktualisiereWegweiser(state.screen) });
 
   /* S95.7e · Leseansicht. Eine eigene Flaeche ueber dem Vorraum, kein
      wiederverwendeter Chat: renderMsgs zoege Auswahlflaeche, Aufdeck-Tafeln,

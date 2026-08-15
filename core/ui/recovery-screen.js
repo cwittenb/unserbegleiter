@@ -61,8 +61,20 @@ export function merkeNotaus(jetzt = Date.now) {
  * @param {object} ctx.backend              Backend-Fassade (recovery optional)
  * @param {object} ctx.state                Sitzungszustand (liest/schreibt state.info)
  * @param {Element} ctx.wurzel              Wurzelknoten (Ausweichziel fürs Modal)
+ * @param {()=>void} [ctx.nachZugang]       S142 · Läuft, nachdem eine Adresse
+ *   bestätigt wurde. Der Wegweiser sagt seit S142 aus, ob eine Adresse
+ *   hinterlegt ist, wird aber nur beim Betreten eines Screens gezeichnet —
+ *   ohne diesen Ruf stünde direkt nach dem Hinterlegen noch "noch keine
+ *   Adresse" da. Bewusst ein gereichter Rückruf und kein Ereigniskanal: Wer
+ *   hier liest, sieht, wer mitzieht. Optional — Aufrufer ohne ihn brechen nicht.
  */
-export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
+export function macheRecoveryScreen({ doc, $, backend, state, wurzel, nachZugang }) {
+
+  /** S142 · Adresse steht — Zustand setzen und alles nachziehen, was ihn zeigt. */
+  function zugangHinterlegt() {
+    state.info.recoveryEmail = true;
+    if (typeof nachZugang === "function") nachZugang();
+  }
 
   /* ---- Wiedereinstieg per E-Mail — zweistufig mit Bestätigungscode (S45).
    *  Ein Bauelement für beide Orte (Karte im Raum, Pflicht-Modal): Adresse →
@@ -178,7 +190,7 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
   function baueRegalFormular(box) {
     const wirt = doc.createElement("div");
     box.appendChild(wirt);
-    baueVerifikation(wirt, { onFertig: () => { state.info.recoveryEmail = true; zeigeRecovery(); } });
+    baueVerifikation(wirt, { onFertig: () => { zugangHinterlegt(); zeigeRecovery(); } });
   }
 
   function zeigeRecovery() {
@@ -363,7 +375,7 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel }) {
     };
 
     baueVerifikation(wirt, {
-      onFertig: () => { state.info.recoveryEmail = true; schliesse(); },
+      onFertig: () => { zugangHinterlegt(); schliesse(); },
       beiVersandStoerung: oeffneNotausgang,
     });
     const erstes = overlay.querySelector("[data-rec=mail]");
