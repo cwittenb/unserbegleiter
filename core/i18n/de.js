@@ -375,7 +375,13 @@ export const de = {
      eingerichteten Zustand tut man dort nichts anderes, als sie zu aendern.
      Der Name sagt das jetzt. */
   "rec.titel": "E-Mail-Adresse für deine Zugangslinks",
-  "rec.hinterlegt": "Eine bestätigte E-Mail-Adresse ist hinterlegt. Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.",
+  /* S143 · Aufgeteilt statt dupliziert. Steht die maskierte Adresse da, sagt
+     sie selbst, dass eine hinterlegt ist — der erste Satz waere dann eine
+     Wiederholung. Ohne Maske (aelterer Worker, lokales Backend) traegt ihn
+     rec.hinterlegtDa. Der Zweck-Satz gilt in beiden Faellen und steht deshalb
+     genau einmal. */
+  "rec.hinterlegtDa": "Eine bestätigte E-Mail-Adresse ist hinterlegt.",
+  "rec.hinterlegtZweck": "Wenn du dich auf einem neuen Gerät anmelden oder deinen Zugang verlierst, kannst du dir darüber einen frischen Link schicken lassen.",
   "rec.neu": "Hinterlege eine E-Mail-Adresse, damit du dir bei Bedarf einen neuen Zugangslink schicken lassen kannst — auch für ein zweites Gerät. Über diese Adresse erhältst du außerdem wichtige Betriebsmitteilungen (z. B. geplante Wartung oder Sicherheitshinweise) — keine Werbung. Nimm ein Postfach, auf das nur du Zugriff hast.",
   "rec.platzhalter": "dein@postfach.de",
   "rec.aendern": "Adresse ändern",

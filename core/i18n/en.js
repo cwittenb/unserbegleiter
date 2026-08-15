@@ -350,7 +350,9 @@ export const en = {
   // Access links by email (in-app)
   /* S142 · See de.js: the row named the occasion, not the thing. */
   "rec.titel": "Email address for your access links",
-  "rec.hinterlegt": "A confirmed email address is on file. If you sign in on a new device or lose your access, you can have a fresh link sent there.",
+  /* S143 · Split instead of duplicated — see de.js. */
+  "rec.hinterlegtDa": "A confirmed email address is on file.",
+  "rec.hinterlegtZweck": "If you sign in on a new device or lose your access, you can have a fresh link sent there.",
   "rec.neu": "Add an email address so you can request a new access link when needed — including for a second device. This address also receives important service notices (e.g. planned maintenance or security alerts) — never advertising. Use a mailbox only you can access.",
   "rec.platzhalter": "you@mailbox.com",
   "rec.aendern": "Change address",

@@ -13,6 +13,7 @@
 // lässt sich mit einem gestellten Backend prüfen, ohne eine ganze App zu bauen.
 
 import { t, fehlerText } from "../i18n/index.js";
+import { esc } from "./html.js";   // S143
 
 /* ---- S115 · Notausgang bei gestoertem Versand (F3b) ---------------------
  *  Die Adress-Pflicht ist seit S115 der Normalfall: wer ohne bestaetigte
@@ -71,8 +72,12 @@ export function merkeNotaus(jetzt = Date.now) {
 export function macheRecoveryScreen({ doc, $, backend, state, wurzel, nachZugang }) {
 
   /** S142 · Adresse steht — Zustand setzen und alles nachziehen, was ihn zeigt. */
-  function zugangHinterlegt() {
+  function zugangHinterlegt(ergebnis) {
     state.info.recoveryEmail = true;
+    // S143 · Fehlt die Maske (aelterer Worker, lokales Backend), wird sie
+    // geleert statt stehengelassen: Eine alte Maske neben einer neuen Adresse
+    // waere schlimmer als gar keine.
+    state.info.recoveryEmailMaske = (ergebnis && ergebnis.maske) || null;
     if (typeof nachZugang === "function") nachZugang();
   }
 
@@ -171,8 +176,11 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel, nachZugang
     ok.addEventListener("click", async () => {
       ok.disabled = true;
       try {
-        await backend.recovery.confirm(pin.value.trim(), gesendetAn);
-        onFertig();
+        // S143 · Die Antwort traegt die maskierte Adresse (der Worker kennt
+        // sie hier ohnehin im Klartext). Sie wird durchgereicht, damit der
+        // hinterlegt-Zustand die neue Adresse sofort nennt und nicht die alte.
+        const r = await backend.recovery.confirm(pin.value.trim(), gesendetAn);
+        onFertig(r);
       } catch (e) {
         sage(fehlerText(e), true);
         // Abgelaufen/zu viele Versuche: zurück auf Schritt 1 — neuer Code nötig.
@@ -190,7 +198,7 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel, nachZugang
   function baueRegalFormular(box) {
     const wirt = doc.createElement("div");
     box.appendChild(wirt);
-    baueVerifikation(wirt, { onFertig: () => { zugangHinterlegt(); zeigeRecovery(); } });
+    baueVerifikation(wirt, { onFertig: r => { zugangHinterlegt(r); zeigeRecovery(); } });
   }
 
   function zeigeRecovery() {
@@ -213,9 +221,25 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel, nachZugang
     }
     if (zeile) zeile.classList.remove("pb-hidden");
     const hinterlegt = !!(state.info && state.info.recoveryEmail);
+    /* S143 · Steht eine Adresse, nennt der Zustand sie auch — maskiert, so wie
+       der Worker sie liefert. "Bestaetigt" heisst nur, dass sie DAMALS
+       erreichbar war; ohne Anzeige faellt ein altes oder falsches Postfach
+       erst auf, wenn es zaehlt.
+       Das Etikett ist dasselbe wie ueber dem Eingabefeld (rec.labelAdresse) —
+       gleiche Sache, gleiches Wort, und keine zweite Uebersetzung, die
+       auseinanderlaufen kann.
+       Ohne Maske (aelterer Worker, lokales Backend) faellt nur die Zeile weg,
+       der erklaerende Text bleibt. */
+    const maske = hinterlegt && state.info ? state.info.recoveryEmailMaske : null;
     box.innerHTML =
+      (maske
+        ? `<div class="rz-caps">${esc(t("rec.labelAdresse"))}</div>` +
+          `<p class="rz-fein-betont" data-rec="maske">${esc(maske)}</p>`
+        : "") +
       `<p class="rz-fein-leise">` +
-      (hinterlegt ? t("rec.hinterlegt") : t("rec.neu")) +
+      (hinterlegt ? (maske ? t("rec.hinterlegtZweck")
+                           : t("rec.hinterlegtDa") + " " + t("rec.hinterlegtZweck"))
+                  : t("rec.neu")) +
       `</p>`;
     if (!hinterlegt) return;                    // Formular folgt beim Oeffnen
     const aendern = doc.createElement("button");
@@ -375,7 +399,7 @@ export function macheRecoveryScreen({ doc, $, backend, state, wurzel, nachZugang
     };
 
     baueVerifikation(wirt, {
-      onFertig: () => { zugangHinterlegt(); schliesse(); },
+      onFertig: r => { zugangHinterlegt(r); schliesse(); },
       beiVersandStoerung: oeffneNotausgang,
     });
     const erstes = overlay.querySelector("[data-rec=mail]");

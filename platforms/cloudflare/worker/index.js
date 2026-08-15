@@ -24,10 +24,11 @@ import { pruefeUndZaehle, quotaCfg } from "./quota.js";
 import { erfasseUsage, leseTokenStand, leseTokenHistorie, leseTokenExport, monatsTag } from "./tokenstat.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
          mintMagic, RECOVER_MS, beginRecoveryEmail, confirmRecoveryEmail,
-         hasRecoveryEmail, lookupRecovery } from "./auth.js";
+         hasRecoveryEmail, leseRecoveryEmail, lookupRecovery } from "./auth.js";
 import { randomToken, sha256Hex, leseJson, holePaar, schreibeAudit } from "./util.js";
 import { mailText } from "./mail-texte.js";   // R7
 import { importEmailKey, entschluessele, emailAad } from "./krypto.js";
+import { maskiereMail } from "./mailmaske.js";   // S143
 import { makeMailer, pruefeVersand } from "./mailer.js";
 import { leseMailStat } from "./mailstat.js";   // S118
 import { pruefeMeldeweg } from "./betriebsmeldung.js";   // S120
@@ -482,6 +483,21 @@ async function route(request, env) {
 
   if (p === "/api/me") {
     const couple = await holePaar(kv, session.code);
+    /* S143 · Die App erfuhr bisher nur, DASS eine Adresse liegt. Jetzt bekommt
+       sie zusätzlich eine maskierte Fassung — genug zum Wiedererkennen des
+       eigenen Postfachs, zu wenig für jemanden, der mitliest. Maskiert wird
+       HIER, nicht in der Oberfläche: Sonst reiste der Klartext trotzdem.
+       Fehlertolerant: Ein fehlender oder gewechselter EMAIL_KEY darf /api/me
+       nicht kippen — dann steht eben keine Maske, und die Oberfläche zeigt
+       weiter nur den hinterlegt-Zustand. */
+    const emailSatz = await leseRecoveryEmail(kv, session.code, session.role);
+    let recoveryEmailMaske = null;
+    if (emailSatz && emailSatz.verified && emailSatz.enc) {
+      try {
+        recoveryEmailMaske = maskiereMail(await entschluessele(
+          await importEmailKey(env), emailSatz.enc, emailAad(session.code, session.role)));
+      } catch { /* ohne Maske weiter */ }
+    }
     return json({
       role: session.role,
       name: session.role === "A" ? couple.nameA : couple.nameB,
@@ -489,7 +505,8 @@ async function route(request, env) {
       nameA: couple.nameA, nameB: couple.nameB,
       locale: couple.locale || "de",
       languageRequest: couple.languageRequest || null,
-      recoveryEmail: await hasRecoveryEmail(kv, session.code, session.role),
+      recoveryEmail: !!(emailSatz && emailSatz.verified),
+      recoveryEmailMaske,
       /* S115 · Die Adress-Pflicht ist der Normalfall, nicht mehr ein Schalter,
          den jemand umlegen muss. Wer ohne bestaetigte Adresse in der App steht,
          haelt seinen Zugang an einem einzigen Cookie — geht das Geraet verloren,
@@ -618,7 +635,11 @@ async function route(request, env) {
       // Deploy-Fehlermeldung statt still fehlendem enc-Feld.
       const emailKey = await importEmailKey(env);
       await confirmRecoveryEmail(kv, session, { pin, email, emailKey }, now);
-      return json({ ok: true });
+      /* S143 · Die Maske reist gleich mit. Die Alternative wäre ein zweiter
+         /api/me-Ruf direkt nach der Bestätigung — ein Weg mehr für eine
+         Auskunft, die hier ohnehin schon vorliegt: Wir kennen die Adresse in
+         diesem Moment im Klartext, sie kam gerade aus dem Formular. */
+      return json({ ok: true, maske: maskiereMail(email) });
     }
     catch (e) { return fehler(e.message, e.status || 400, e.code); }
   }

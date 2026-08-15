@@ -157,6 +157,15 @@ export async function hasRecoveryEmail(kv, code, role) {
   return !!(e && e.verified);
 }
 
+/** S143 · Derselbe Datensatz, aber vollständig — für die maskierte Anzeige
+ *  braucht /api/me neben dem Ja/Nein auch den Ciphertext. Bewusst als eigene
+ *  Funktion statt als Rückgabe-Erweiterung von hasRecoveryEmail: Deren
+ *  Aufrufer (Admin-Liste, Pflicht-Gate) wollen genau das Ja/Nein, und ein
+ *  Datensatz, der überall herumliegt, wird irgendwo versehentlich verschickt. */
+export async function leseRecoveryEmail(kv, code, role) {
+  return J(kv, emailForKey(code, role));
+}
+
 /** Adresse → {code, role} | null. Kein Fund heißt: still verwerfen (keine Enumeration). */
 export async function lookupRecovery(kv, email) {
   const clean = normMail(email);

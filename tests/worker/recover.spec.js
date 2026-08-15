@@ -99,7 +99,59 @@ describe("Wiedereinstieg · Adresse hinterlegen (zweistufig)", () => {
     expect((await anna.call("POST", "/api/email/confirm", { pin, email: "Anna@Beispiel.de" })).status).toBe(200);
     const me = (await anna.call("GET", "/api/me")).data;
     expect(me.recoveryEmail).toBe(true);
-    expect(JSON.stringify(me)).not.toContain("beispiel.de");   // nur Status, nie die Adresse
+    /* S143 · Die Zusage ist geschaerft, nicht gelockert: Seit /api/me eine
+       MASKIERTE Fassung mitliefert, sagt dieselbe Zeile mehr als vorher —
+       naemlich dass der Klartext auch dann nicht mitreist, wenn eine Anzeige
+       daraus entsteht. */
+    expect(JSON.stringify(me)).not.toContain("beispiel.de");
+    expect(JSON.stringify(me)).not.toContain("anna@");
+  });
+
+  /* ---- S143 · Welche Adresse liegt? ---- */
+
+  it("die Maske nennt Anfang und Ende samt Endung — sonst nichts", async () => {
+    const { anna } = await frischesPaar();
+    await registriere(anna, "anna.s143a@beispiel.de");
+    const me = (await anna.call("GET", "/api/me")).data;
+    expect(me.recoveryEmailMaske).toBe("a\u2022\u2022\u2022a@b\u2022\u2022\u2022l.de");
+  });
+
+  it("ohne bestaetigte Adresse gibt es keine Maske", async () => {
+    const { anna } = await frischesPaar();
+    expect((await anna.call("GET", "/api/me")).data.recoveryEmailMaske).toBe(null);
+    // Schritt 1 allein reicht nicht — unbestaetigt zaehlt nirgends.
+    await anna.call("POST", "/api/email", { email: "anna.s143b@beispiel.de" });
+    expect((await anna.call("GET", "/api/me")).data.recoveryEmailMaske).toBe(null);
+  });
+
+  it("jede Person sieht nur ihre eigene Maske", async () => {
+    const { anna, bernd } = await frischesPaar();
+    await registriere(anna, "anna.s143c@beispiel.de");
+    await registriere(bernd, "bernd.s143c@woanders.org");
+    const a = (await anna.call("GET", "/api/me")).data;
+    const b = (await bernd.call("GET", "/api/me")).data;
+    expect(a.recoveryEmailMaske).not.toBe(b.recoveryEmailMaske);
+    expect(a.recoveryEmailMaske.endsWith(".de")).toBe(true);
+    expect(b.recoveryEmailMaske.endsWith(".org")).toBe(true);
+  });
+
+  it("die Bestaetigung liefert die Maske gleich mit", async () => {
+    // Sonst brauchte die Oberflaeche direkt danach einen zweiten /api/me-Ruf
+    // fuer eine Auskunft, die hier schon vorliegt.
+    const { anna } = await frischesPaar();
+    await anna.call("POST", "/api/email", { email: "anna.s143d@beispiel.de" });
+    const pin = pinAus(mails[mails.length - 1].text);
+    const r = await anna.call("POST", "/api/email/confirm", { pin, email: "anna.s143d@beispiel.de" });
+    expect(r.data.maske).toBe("a\u2022\u2022\u2022d@b\u2022\u2022\u2022l.de");
+    expect(JSON.stringify(r.data)).not.toContain("beispiel.de");
+  });
+
+  it("nach dem Wechsel steht die neue Maske, nicht die alte", async () => {
+    const { anna } = await frischesPaar();
+    await registriere(anna, "anna.s143e@beispiel.de");
+    await registriere(anna, "anna.s143e@spaeter.net");
+    const me = (await anna.call("GET", "/api/me")).data;
+    expect(me.recoveryEmailMaske.endsWith(".net")).toBe(true);
   });
 
   it("ungültige Adresse → 400, keine Mail", async () => {
