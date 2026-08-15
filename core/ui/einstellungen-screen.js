@@ -219,11 +219,19 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
     }
   }
 
-  function verdrahteEinstellungen(betrete) {
+  /* S140 · Das Zeichen ist ein Kippschalter geworden. Vorher fuehrte jeder Tap
+     hinein, auch der zweite — wer die Einstellungen mit demselben Zeichen
+     wieder zumachen wollte, drueckte ins Leere.
+     `verlasse` ist genau der Weg des Zurueck-Pfeils links (zurueckAus), nicht
+     ein zweiter, eigener: Ein Ort soll nicht zwei verschiedene Ausgaenge
+     haben. Damit gilt hier auch dessen Regel aus U10.3 — steht ein Fach
+     offen, schliesst der erste Tap NUR das Fach. */
+  function verdrahteEinstellungen(betrete, verlasse) {
     const knopf = chrome("pbEinst");
     if (!knopf || knopf.dataset.rzVerdrahtet) return;
     knopf.dataset.rzVerdrahtet = "1";
     knopf.addEventListener("click", () => {
+      if (state.screen === "scrEinstellungen" && typeof verlasse === "function") { verlasse(); return; }
       zeigeEinstellungen();
       betrete("scrEinstellungen");
     });

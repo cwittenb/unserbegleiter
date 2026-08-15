@@ -201,7 +201,11 @@ export function createApp({ doc, backend, root, diktat }) {
           <span class="rz-signatur" data-rz-signatur></span>
           <span class="rz-zurueck rz-blind">←</span>
         </div>
-        <h1 class="rz-h1">${t("einst.titel")}</h1>
+        <!-- S140 · Kein Titel mehr. Er stand wortgleich zweimal auf demselben
+             Schirm: als h1 hier und im Wegweiser-Zeichen an der Naht. Nach K5
+             nennt das Zeichen den Ort, an dem man steht — damit ist die
+             Ueberschrift eine Wiederholung, und sie schob zugleich die
+             Zonenueberschrift dieser Haelfte gegen die der anderen. -->
         <!-- S125 · Der Zonentitel steht hier OBEN, nicht unten. In den
              Vorraeumen sitzt er am Zonenfuss, weil die Naht dort nach
              Reichweite trennt und der Titel die Grenze bezeichnet. Die
@@ -212,11 +216,24 @@ export function createApp({ doc, backend, root, diktat }) {
         </div>
         <div id="einstOben"></div>
       </div>
-      <div class="rz-half rz-tiefgruen rz-naht-anker">
+      <div class="rz-half rz-tiefgruen rz-naht-anker rz-einst-unten">
+        <!-- S140 · Beide Zonenueberschriften stehen auf diesem Screen OBEN
+             (S125). Zweispaltig beginnen beide Haelften auf derselben Linie —
+             links steht davor aber die Kopfzeile, rechts nichts. Die
+             Ueberschriften lagen deshalb um genau eine Kopfhoehe versetzt.
+             Ausgeglichen wird das mit einem blinden Spiegel statt mit einem
+             gerechneten Polster: Die Kopfhoehe haengt an Schriftgrad und
+             Zeilenhoehe, ein Pixelmass liefe beim naechsten Rastermass
+             auseinander. Dieselbe Bauform benutzt die Kopfzeile schon intern
+             fuer ihren rechten Rand. aria-hidden, kein Knopf: hier ist nichts
+             zu bedienen. Gestapelt (mobil) ist der Spiegel per CSS weg — dort
+             liegen die Haelften untereinander, eine gemeinsame Hoehe gibt es
+             nicht. -->
+        <div class="rz-kopf rz-kopf-spiegel" aria-hidden="true"><span class="rz-zurueck rz-blind">←</span></div>
         <button class="rz-weg-badge rz-auf-naht" id="wegBadgeEinst">${IKON.wegweiser}<span>${t("einst.titel")}</span></button>
         <div class="rz-weg-panel pb-hidden" id="wegEinst"></div>
         <div class="rz-fuss rz-fuss-oben">
-          <h2 class="rz-h2">${t("einst.zoneFolgen")}</h2>
+          <h2 class="rz-h2 rz-h2-oben">${t("einst.zoneFolgen")}</h2>
         </div>
         <div class="rz-regal-reihen" id="einstUnten">
           <!-- Vom Modul gefuellt: was ihr GEMEINSAM aendert. -->
@@ -787,6 +804,22 @@ export function createApp({ doc, backend, root, diktat }) {
       zeile(3, "gemeinsam", lage.agendaOffen > 0 && t("weg.agendaOffen", { n: lage.agendaOffen }));
       zeile(4, "gemeinsam", t("weg.optQzTeil"));
       zeile(4, "gemeinsam", !lage.regalNeu && t("weg.optRegalTeil"));
+    }
+    /* S140 · Die Einstellungen waren der einzige Ort ohne Wegweiser — nicht,
+       weil dort keiner vorgesehen war (die boxId-Tabelle kennt ihn seit U7),
+       sondern weil es keine Kandidaten gab: null Zeilen blenden Panel UND
+       Zeichen aus. Hier gibt es keinen "nächsten Schritt" wie in den
+       Vorräumen; Stufe 4 sagt deshalb, was die beiden Zonen bedeuten, und
+       Stufe 2 trägt den einen Zustand, der wirklich wartet.
+       Der Sprachantrag steht bereits in state.info — kein zusätzlicher
+       Backend-Weg für eine Komfortanzeige. */
+    if (screenId === "scrEinstellungen") {
+      const antrag = state.info.languageRequest;
+      const meins = !!(antrag && antrag.by === state.info.role);
+      zeile(2, "gemeinsam", antrag && !meins && t("weg.einstSprachAntrag", { partner }));
+      zeile(2, "gemeinsam", meins && t("weg.einstSprachWartet", { partner }));
+      zeile(4, "mein", t("weg.einstZugang"));
+      zeile(4, "mein", t("weg.einstEndgueltig"));
     }
     return k;
   }
@@ -2373,7 +2406,8 @@ export function createApp({ doc, backend, root, diktat }) {
     // aufhalten (dieselbe Regel wie bei der Kulisse). Der Boot lief sonst in
     // eine zusätzliche Runde durch die API, bevor die Sitzung stand.
     setzeAnsicht(doc, gemerkteAnsicht());
-    verdrahteEinstellungen(betrete);
+    // S140 · Zweiter Weg: derselbe, den der Zurueck-Pfeil des Screens geht.
+    verdrahteEinstellungen(betrete, zurueckAus("scrEinstellungen"));
     verdrahteRechtsWege(wurzel);        // L3
     aktualisierePunkt();
     backend.pstate.get("theme").then(w => {

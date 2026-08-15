@@ -333,10 +333,19 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
            Haelfte bleibt vorerst unangetastet — ob sie denselben Freiraum
            braucht, ist eine Gestaltungsfrage und keine Reparatur.
            Nur ab 900px: Gestapelt liegt die Naht waagerecht, dort haelt der
-           Zonenfuss den Abstand ueber --rz-nahtfrei. */
-        .rz-split:not(.rz-regal-offen)>.rz-half:first-child{
+           Zonenfuss den Abstand ueber --rz-nahtfrei.
+           S140 · Der Freiraum galt bis hierher nur bei geschlossenem Regal
+           (:not(.rz-regal-offen)) — uebernommen von den Nachbarregeln der
+           Flanke, die im offenen Regal wirklich nicht gelten duerfen. Fuer
+           DIESE Regel stimmte die Begruendung nie: Das Badge steht auf dem
+           Desktop auch im aufgeklappten Regal auf der Naht (Q3 setzt es
+           ausdruecklich auf 50dvh). Netto wuchsen die Haarlinien-Zeilen beim
+           Aufklappen um das Freimass in die Naht hinein und liefen unter das
+           Badge. Der Freiraum haengt jetzt am Badge, nicht am Regalzustand —
+           und beide Haelften atmen beim Aufklappen nicht mehr. */
+        .rz-split>.rz-half:first-child{
           padding-right:var(--rz-nahtfrei-x)}
-        .rz-split:not(.rz-regal-offen)>.rz-half:last-child{
+        .rz-split>.rz-half:last-child{
           padding-left:var(--rz-nahtfrei-x)}
         /* Q2 · Aufgeklappt bleibt das Regal in SEINER Haelfte. Die Regel stand
            bis S114d.3 HIER und blieb wirkungslos: Sie hat dieselbe
@@ -430,6 +439,15 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         #scrEinstellungen.rz-split:not(.rz-regal-offen)>.rz-half:first-child .rz-fuss{margin-bottom:0}
         #scrEinstellungen.rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-zeile,
         #scrEinstellungen.rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-regal-reihen{margin-top:0}
+        /* S140 · Erst hier traegt der Spiegel: Zweispaltig beginnen beide
+           Haelften auf derselben Linie, und nur die erste hat eine Kopfzeile.
+           Im aufgeklappten Regal nicht — dort verbirgt die zweite Haelfte
+           ohnehin ihren Zonenfuss, ein leerer Kopf ueber der Liste waere ein
+           Rest aus einem anderen Zustand. */
+        #scrEinstellungen.rz-split:not(.rz-regal-offen)>.rz-half:last-child>.rz-kopf-spiegel{display:flex}
+        /* Und derselbe Abstand darunter wie links (.rz-einst-oben .rz-h2-oben):
+           gespiegelt wird die ganze Staffel, nicht nur die Kopfhoehe. */
+        .rz-einst-unten .rz-h2-oben{margin-top:var(--rz-r-6)}
       }
 
       /* S119.4 · Und die zweite Haelfte des Befunds, unabhaengig von der
@@ -717,6 +735,11 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          Mass fuer das Badge, nicht fuer die Kulisse. */
       .rz-einst-oben{padding-bottom:var(--rz-kulissenfrei)}
       .rz-einst-oben .rz-h2-oben{margin-top:var(--rz-r-6)}
+      /* S140 · Der blinde Kopf-Spiegel der zweiten Haelfte (siehe app.js).
+         Grundstellung: weg. Gestapelt stehen die Haelften untereinander, ein
+         leerer Kopf waere dort nur ein Loch zwischen Naht und Ueberschrift.
+         Erst zweispaltig gleicht er die Kopfzeile der ersten Haelfte aus. */
+      .rz-kopf-spiegel{display:none}
       /* Nur auf dem Startscreen steht das Ortsetikett ueber der Betreten-Zeile;
          in den Vorraeumen traegt das Badge den Ort (Turn 27, §1). */
       .rz-caps-ueber{margin-bottom:11px}

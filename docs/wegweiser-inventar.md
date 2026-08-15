@@ -64,6 +64,29 @@ Stand: S54 (Basis `0f079c1` + patch-s53). Quelle: `wegKandidaten()` +
 | 4 | immer | `weg.optQzTeil` |
 | 4 | `regalNeu == 0` | `weg.optRegalTeil` |
 
+### Einstellungen (`scrEinstellungen`) — seit S140
+
+Der Screen stand seit U7 in der `boxId`-Tabelle, hatte aber keine Kandidaten:
+null Zeilen blenden Panel **und** Zeichen aus — der Ort war der einzige ohne
+Wegweiser. Die Bedeutung der Stufen ist hier eine andere als in den Vorräumen,
+aus demselben Grund wie im Chat (T2i): Man steht nicht **vor** einer Wahl,
+sondern **in** einer Liste. Einen „nächsten Schritt" gibt es nicht; Stufe 4
+sagt, was die beiden Zonen bedeuten, Stufe 2 trägt den einen Zustand, der
+wirklich wartet.
+
+Quelle der Bedingung ist `state.info` — kein zusätzlicher Backend-Weg für eine
+Komfortanzeige.
+
+| Stufe | Bedingung | Zeile |
+|---|---|---|
+| 2 | `languageRequest` von der ANDEREN Person | `weg.einstSprachAntrag` |
+| 2 | `languageRequest` von mir | `weg.einstSprachWartet` |
+| 4 | immer | `weg.einstZugang` |
+| 4 | immer | `weg.einstEndgueltig` |
+
+Die beiden Stufe-2-Zeilen schließen einander aus (ein Antrag, nicht zwei).
+Ruhige Lage ⇒ zwei Zeilen; mit offenem Antrag ⇒ drei.
+
 ## Beispiel-Lagen (aus den S54-Tests)
 
 - Gemeinsamer Raum, Volllage (QZ offen, Freigaben+Aufdeck, Regal neu, Agenda,

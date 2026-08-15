@@ -271,6 +271,16 @@ export const de = {
   "weg.optQz": "Oder ihr beginnt gemeinsam mit einer Qualitätszeit im gemeinsamen Raum.",
   "weg.optRueckblickSpaeter": "Nach einiger Zeit kannst du auch in die vergangenen Gespräche schauen und die Zwischenzeit reflektieren.",
   "weg.optRueckblick": "Oder schaue in die vergangenen Gespräche und beantworte die Prozessreflexion.",
+  /* S140 · Wegweiser in den Einstellungen. Bis hierher hatte der Screen keine
+     Kandidaten — damit blendete aktualisiereWegweiser() Panel UND Zeichen aus,
+     und der Ort war der einzige ohne Wegweiser. Einen "nächsten Schritt" wie in
+     den Vorräumen gibt es hier nicht; die Stufe-4-Zeilen sagen deshalb, was die
+     beiden Zonen bedeuten. Stufe 2 trägt den einen Zustand, der wirklich
+     wartet: ein offener Sprachvorschlag. */
+  "weg.einstSprachAntrag": "{partner} schlägt einen Wechsel der Begleitungssprache vor — entschieden wird er in der Agenda im gemeinsamen Raum.",
+  "weg.einstSprachWartet": "Dein Sprachvorschlag wartet auf {partner} — er liegt in der Agenda im gemeinsamen Raum.",
+  "weg.einstZugang": "Den Zugang wiederfinden richtest du am besten ein, bevor du ihn brauchst — er holt dich auf ein neues Gerät zurück.",
+  "weg.einstEndgueltig": "Verläufe löschen lässt sich nicht zurücknehmen; die Zeile nennt dir vorher die Zahl.",
   /* Paarsprache — beidseitig bestätigter Wechsel (S30·C3) */
   "paarspr.aktuell": "Eure gemeinsame Begleitungssprache: {sprache}.",
   "paarspr.vorschlagen": "Wechsel zu {sprache} vorschlagen",

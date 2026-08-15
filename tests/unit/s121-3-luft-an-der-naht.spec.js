@@ -36,7 +36,7 @@ const DESKTOP = medienBlock(CSS, "min-width:900px");
 describe("S121.3 · Luft an der Naht", () => {
   it("die Papier-Spalte hält den Freiraum rechts", () => {
     expect(DESKTOP).toMatch(
-      /\.rz-split:not\(\.rz-regal-offen\)>\.rz-half:first-child\{\s*padding-right:var\(--rz-nahtfrei-x\)\}/);
+      /\.rz-split>\.rz-half:first-child\{\s*padding-right:var\(--rz-nahtfrei-x\)\}/);
   });
 
   it("das Maß liegt als Token vor, nicht als Zahl in der Regel", () => {
@@ -66,7 +66,7 @@ describe("S121.3 · Luft an der Naht", () => {
     // dann entschieden: Das Badge ist auf der Naht ZENTRIERT und ragt genauso
     // weit nach rechts, wo es den Zeilenanfang der Regalzeilen deckte.
     expect(DESKTOP).toMatch(
-      /\.rz-split:not\(\.rz-regal-offen\)>\.rz-half:last-child\{\s*padding-left:var\(--rz-nahtfrei-x\)\}/);
+      /\.rz-split>\.rz-half:last-child\{\s*padding-left:var\(--rz-nahtfrei-x\)\}/);
   });
 
   it("und zwar mit demselben Maß — eine Naht, ein Freiraum", () => {
@@ -75,10 +75,20 @@ describe("S121.3 · Luft an der Naht", () => {
     expect(links[1]).toBe(rechts[1]);
   });
 
-  it("im aufgeklappten Regal gilt der Freiraum nicht", () => {
-    // Dort ist die Hälfte absolut positioniert und das Badge ankert an ihr
-    // (Q2/Q3) — eine andere Rechnung, die dieser Schritt nicht anfasst.
-    expect(DESKTOP).toContain(".rz-split:not(.rz-regal-offen)>.rz-half:first-child{");
+  /* S140 · DIESER FALL IST UMGEKEHRT.
+     Er stand hier mit der Begründung, im aufgeklappten Regal sei die Hälfte
+     absolut positioniert und das Badge ankere an ihr — eine Rechnung, die
+     S121.3 nicht anfassen wollte. Die Begründung stimmt heute nicht mehr
+     (S121.6/S125 haben die Hälfte auf sticky umgestellt) und traf diese Regel
+     auch damals nicht: Q3 setzt das Badge im offenen Regal ausdrücklich auf
+     50dvh, es steht also weiterhin auf der Naht. Netto wuchsen die Zeilen der
+     Papier-Spalte beim Aufklappen um das Freimaß und liefen unter das Badge.
+     Der Fall bleibt stehen, mit gedrehtem Vorzeichen. */
+  it("und er gilt auch im aufgeklappten Regal — das Badge steht dort weiter auf der Naht", () => {
+    expect(DESKTOP).not.toContain(".rz-split:not(.rz-regal-offen)>.rz-half:first-child{padding-right");
+    expect(DESKTOP).not.toContain(".rz-split:not(.rz-regal-offen)>.rz-half:last-child{padding-left");
+    // Und die Zusage dahinter: das Badge bleibt im offenen Regal auf 50dvh.
+    expect(DESKTOP).toMatch(/\.rz-split\.rz-regal-offen \.rz-auf-naht\{top:50dvh\}/);
   });
 
   it("das senkrechte Freimaß bleibt daneben bestehen", () => {

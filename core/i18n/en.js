@@ -257,6 +257,14 @@ export const en = {
   "weg.optQz": "Or the two of you begin together with some quality time in the shared space.",
   "weg.optRueckblickSpaeter": "After a while you can also look back on past conversations and reflect on the time in between.",
   "weg.optRueckblick": "Or look into your past conversations and answer the process reflection.",
+  /* S140 · Signpost in the settings. See de.js for the reasoning: this place
+     has no "next step", so the level-4 lines say what the two zones mean, and
+     level 2 carries the one state that really waits — an open language
+     proposal. */
+  "weg.einstSprachAntrag": "{partner} suggests switching the companion language — that is decided on the agenda in the shared room.",
+  "weg.einstSprachWartet": "Your language suggestion is waiting for {partner} — it sits on the agenda in the shared room.",
+  "weg.einstZugang": "Set up regaining access before you need it — it brings you back on a new device.",
+  "weg.einstEndgueltig": "Deleting records cannot be undone; the row tells you the number first.",
   /* Couple language — bilaterally confirmed switch (S30·C3) */
   "paarspr.aktuell": "Your shared companion language: {sprache}.",
   "paarspr.vorschlagen": "Suggest switching to {sprache}",
