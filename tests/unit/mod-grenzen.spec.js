@@ -78,14 +78,14 @@ describe("MOD-0 · Importrichtung: Mechanik kennt keinen Inhalt", () => {
 const MODELL_TEXT = /^\[(APP-HINWEIS|SYSTEM-REVISION|APP NOTE|SYSTEM REVISION)/;
 const DEUTSCH_IM_MUSTER = /[äöüßÄÖÜ]|eigene|raum|telefonseelsorge|krisendienst|suizid|selbstmord|umbringen|leben|sterben|ritz|verletz|sache|mein|dein|unser|entscheid/i;
 
-/** Ist-Liste beim Anlegen (S143). Shrink-only: Eintraege duerfen verschwinden,
- *  keiner darf hinzukommen. MOD-2a fuehrt sie auf {} zurueck. */
-const IST_INHALT_IN_ENGINE = {
-  "abschluss-waechter.js":     { texte: ["ABSCHLUSS_REVISION", "MARKEN_REVISION", "META_PLATZ_REVISION"], muster: [] },
-  "aufdeck-waechter.js":       { texte: ["AUFDECK_SCHAERFUNG"], muster: [] },
-  "krisen-waechter.js":        { texte: ["KRISEN_SCHAERFUNG"], muster: ["EINZELRAUM", "KRISENHILFE", "KRISEN_SIGNALE"] },
-  "zweiseitigkeit-waechter.js": { texte: ["ZWEISEITIGKEIT_SCHAERFUNG"], muster: ["EIGENE_SACHE", "VERFUEGUNG"] },
-};
+/** Ist-Liste beim Anlegen (S143) — MOD-2a hat sie geleert. Was dort stand:
+ *    abschluss-waechter.js      ABSCHLUSS_REVISION, MARKEN_REVISION, META_PLATZ_REVISION (jetzt Kennungen)
+ *    aufdeck-waechter.js        AUFDECK_SCHAERFUNG                     → waechter.aufdeck.text
+ *    krisen-waechter.js         KRISEN_SCHAERFUNG, KRISEN_SIGNALE,
+ *                               KRISENHILFE, EINZELRAUM                → waechter.krise / .krisenhilfe / .einzelraum
+ *    zweiseitigkeit-waechter.js ZWEISEITIGKEIT_SCHAERFUNG, EIGENE_SACHE, VERFUEGUNG → waechter.zweiseitigkeit
+ *  Shrink-only bleibt die Regel: Ein neuer Eintrag ist rot. */
+const IST_INHALT_IN_ENGINE = {};
 
 async function inhaltInEngine() {
   const befund = {};
@@ -111,7 +111,10 @@ describe("MOD-0 · Inhalt in core/engine (Ist-Liste, shrink-only)", () => {
       expect({ datei, neueTexte, neueMuster }).toEqual({ datei, neueTexte: [], neueMuster: [] });
     }
   });
-  it("die Ist-Liste beschreibt den Stand (sie schrumpft mit MOD-2a — dann hier nachziehen)", async () => {
+  it("die Ist-Liste ist leer (MOD-2a) — und core/engine traegt keinen Inhalt mehr", async () => {
+    expect(await inhaltInEngine()).toEqual({});
+  });
+  it("die Ist-Liste beschreibt den Stand (Shrink-only-Buchfuehrung)", async () => {
     const ist = await inhaltInEngine();
     for (const [datei, soll] of Object.entries(IST_INHALT_IN_ENGINE)) {
       const hat = ist[datei] || { texte: [], muster: [] };

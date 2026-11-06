@@ -25,14 +25,11 @@
 // hängt am Ton, nicht an Wörtern — das gehört in den Prompt (dort steht es),
 // nicht in eine Textprüfung, die im Zweifel das Würdigen mitverbietet.
 
-/** Nennungen professioneller Krisenhilfe. Die Nummer ist der harte Anker; die
- *  Wörter fangen Fälle, in denen sie sinngemäß genannt wird. */
-export const KRISENHILFE = /0800\s*111\s*0\s*111|Telefonseelsorge|Krisendienst|crisis line|helpline/i;
-
-/** Verweise auf den geschützten Einzelraum. Bewusst großzügig: Ein Wächter, der
- *  hier zu eng liest, revidiert richtige Antworten. */
-export const EINZELRAUM = /eigene[nrms]?\s+Raum|eigenen\s+Raum|Einzelraum|dein\s+Raum|deinem\s+Raum|individual\s+space|own\s+space|your\s+own\s+room/i;
-
+/* MOD-2a · Die Erkenner KRISENHILFE und EINZELRAUM (S103) leben jetzt im
+   Korpus (prompts.<sprache>.js → waechter.krisenhilfe, waechter.einzelraum).
+   Sie sind Inhalt — Woerter, an denen eine Lage erkannt wird — und gehoeren
+   damit in die Sprachfassung, nicht in die Mechanik. Seit S113 ohne
+   Produktions-Aufrufer; einzeln geprueft bleiben sie dort. */
 
 /* S105.3 · VORWAERTS statt rueckwaerts.
    Bis hierher pruefte dieser Waechter die fertige Antwort und liess sie neu
@@ -45,32 +42,40 @@ export const EINZELRAUM = /eigene[nrms]?\s+Raum|eigenen\s+Raum|Einzelraum|dein\s
    Zeichen macht sie vorhanden, aber nicht praesent.
    Die Erkennung darf grosszuegig sein: Ein grundloser Zusatzsatz kostet ein
    paar unsichtbare Zeilen. Eine uebersehene Krisenlage kostet mehr. */
-export const KRISEN_SIGNALE =
-  // Wortanfaenge ohne Endgrenze: deutsche Beugung haengt an ("ritze", "ritzt",
-  // "selbstverletzendes"). Eine Endgrenze liess genau die Formen durch, in
-  // denen Menschen tatsaechlich sprechen.
-  /\bsuizid|\bselbstmord|\bumbringen|nicht mehr leben|nicht mehr weiterleben|sterben will|\britz(e|t|en|est)\b|\bselbst ?verletz|weg sein wollen|keinen sinn mehr|am ende sein|self-harm|\bsuicid|kill myself|end it all/i;
+/* MOD-2a · Das Signal-Muster und der Zusatztext stehen im Korpus
+   (waechter.krise). Dieses Modul kennt keine Sprache mehr: Es bekommt beides
+   hereingereicht und entscheidet nur noch, WANN geschaerft wird. Vorher
+   lieferte es seinen deutschen Satz auch an englische Sessions (Review K1). */
 
 /**
  * Schärfung für den geteilten Raum (Engine-Hook `schaerfe`).
  * Liefert den Zusatztext oder null.
  *
- * @param {object[]} messages — Verlauf inkl. der eben eingegangenen Nachricht
- * @param {{text?:string}} [ctx]
+ * Fabrik (MOD-2a): `baueKrisenSchaerfung(inhalt)` → `(messages, ctx) ⇒ string|null`.
+ * `inhalt` ist `waechter.krise` des Korpus ({signal, text}) oder eine Funktion,
+ * die es liefert. `ctx.text` ueberstimmt den Text (Eval, Sonden).
+ *
+ * @param {{signal:RegExp, text:string}|function} inhalt
  */
-export function krisenSchaerfung(messages, ctx = {}) {
-  const letzte = [...(messages || [])].reverse().find(m => m && m.role === "user");
-  const text = String((letzte && letzte.content) || "");
-  if (!KRISEN_SIGNALE.test(text)) return null;
-  return ctx.text || KRISEN_SCHAERFUNG;
+export function baueKrisenSchaerfung(inhalt) {
+  return (messages, ctx = {}) => {
+    const { signal, text } = liesInhalt(inhalt);
+    const letzte = [...(messages || [])].reverse().find(m => m && m.role === "user");
+    const nachricht = String((letzte && letzte.content) || "");
+    if (!signal.test(nachricht)) return null;
+    return ctx.text || text;
+  };
 }
 
-export const KRISEN_SCHAERFUNG =
-  "[APP-HINWEIS für diesen Zug: In der Nachricht klingt eine mögliche Krise an. Es gilt die " +
-  "Reihenfolge des geteilten Raumes: ZUERST der Verweis in den eigenen Raum (dort bist du ganz " +
-  "für die Person, und was dort gesagt wird, bleibt dort), DANN professionelle Krisenhilfe als " +
-  "nächster Schritt. Die Krisenhilfe ersetzt den Verweis nicht. Der Partner bekommt keinen " +
-  "Auftrag für die Sicherheit der anderen Person.]";
+/** Inhalt als Objekt oder als Funktion, die ihn zur Laufzeit liefert — so kann
+ *  eine SessionDef den Korpus der aktiven Sprache LAZY lesen (K()), statt ihn
+ *  beim Def-Bau einzufrieren. */
+export function liesInhalt(inhalt) {
+  const i = typeof inhalt === "function" ? inhalt() : inhalt;
+  if (!i || !(i.signal instanceof RegExp) || typeof i.text !== "string")
+    throw new Error("Krisen-Schaerfung braucht {signal: RegExp, text: string} aus dem Korpus.");
+  return i;
+}
 
 /* S113 · `pruefeKrisenReihenfolge` und `KRISEN_REIHENFOLGE_REVISION` sind
    entfallen. Sie prueften die fertige Antwort und liessen sie neu schreiben —
@@ -78,5 +83,4 @@ export const KRISEN_SCHAERFUNG =
    verweigern laesst sich hier nichts, weil der Fehler im gesprochenen Text
    steckt (die Nummer ohne den Verweis in den eigenen Raum), nicht in einer
    Uebergabe. `krisenSchaerfung` (oben) greift stattdessen VOR der Antwort.
-   Die Erkenner KRISENHILFE und EINZELRAUM bleiben — sie sind einzeln geprueft
-   und benennen, woran die Lage erkannt wird. */
+   Die Erkenner KRISENHILFE und EINZELRAUM blieben — seit MOD-2a im Korpus. */

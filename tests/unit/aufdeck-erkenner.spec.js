@@ -4,7 +4,11 @@
 // normalen AUFTAKT-Texten nicht an. Engine-Ebene mit Mock-LLM (Ebene 1.5-Stil).
 
 import { describe, it, expect } from "vitest";
-import { stamme, extrahiereStapelItems, findetStapelLeck, tafelSchonGezeigt, imAufdeckPfad, aufdeckSchaerfung, AUFDECK_SCHAERFUNG } from "../../core/engine/aufdeck-waechter.js";
+import { stamme, extrahiereStapelItems, findetStapelLeck, tafelSchonGezeigt, imAufdeckPfad, baueAufdeckSchaerfung } from "../../core/engine/aufdeck-waechter.js";
+import { waechter } from "../../core/prompts/prompts.de.js";
+/* MOD-2a · Der Text kommt aus dem Korpus; die Mechanik ist eine Fabrik. */
+const AUFDECK_SCHAERFUNG = waechter.aufdeck.text;
+const aufdeckSchaerfung = baueAufdeckSchaerfung(waechter.aufdeck);
 
 // Wire-Erstnachricht wie in der echten App: HANDOVER-BLOCKS **plus**
 // REVEAL-CONTEXT mit „AUFDECKUNG STEHT AUS" (S73: ohne diesen Kopf ist die

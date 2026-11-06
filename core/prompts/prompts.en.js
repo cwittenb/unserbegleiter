@@ -591,6 +591,46 @@ export const korpusTexte = {
    all WHEN rules and the JSON field documentation of the blocks apply
    verbatim; only the transport changes.
    Placeholders: {liste} = marker names · {start} = block start token · {typ} = dataset. */
+/* ---------------------------------------------------------------
+ * WATCHER CONTENT (MOD-2a): signals and per-turn notes of the sharpenings.
+ * Mechanics live in core/engine/*-waechter.js; this is WHAT the model is
+ * told and WHAT a situation is recognised by — per language, parity-tested.
+ * Crisis signals and recognisers are IDENTICAL in DE and EN on purpose
+ * (union of both languages). The two-sidedness patterns are the German
+ * ones, unchanged: in EN sessions they never fired before MOD-2a, and
+ * English patterns are an open decision, not a silent one.
+ * --------------------------------------------------------------- */
+export const waechter = {
+  krise: {
+    signal: /\bsuizid|\bselbstmord|\bumbringen|nicht mehr leben|nicht mehr weiterleben|sterben will|\britz(e|t|en|est)\b|\bselbst ?verletz|weg sein wollen|keinen sinn mehr|am ende sein|self-harm|\bsuicid|kill myself|end it all/i,
+    text:
+      "[APP NOTE for this turn: The message hints at a possible crisis. The order of the shared " +
+      "space applies: FIRST the referral to the person's own space (there you are fully there for " +
+      "them, and what is said there stays there), THEN professional crisis help as the next step. " +
+      "Crisis help does not replace the referral. The partner is not given any task for the other " +
+      "person's safety.]",
+  },
+  krisenhilfe: /0800\s*111\s*0\s*111|Telefonseelsorge|Krisendienst|crisis line|helpline/i,
+  einzelraum: /eigene[nrms]?\s+Raum|eigenen\s+Raum|Einzelraum|dein\s+Raum|deinem\s+Raum|individual\s+space|own\s+space|your\s+own\s+room/i,
+  zweiseitigkeit: {
+    eigeneSache: /\b(ich|mir|mein[e]?[nrs]?)\b[^.!?]{0,60}\b(nicht gemacht|nicht geschafft|nicht dazu gekommen|vergessen|nicht fertig|nicht ausgefüllt|nicht abgegeben|nicht hinbekommen|keine zeit)|\bhab(e)? (es|sie|das)? ?(diesmal )?(gar )?nicht\b/i,
+    verfuegung: /\b(lass uns|lassen wir|dann lassen wir|wir (machen|holen|überspringen|lassen)|einfach weiter|trotzdem weiter|ein andermal|später nach|nachholen|überspringen|auslassen|ruhen lassen|dann eben ohne|geht auch ohne)\b/i,
+    text:
+      "[APP NOTE for this turn: One person has just decided about the OTHER person's matter — " +
+      "something the other named as their own. Check in with the affected person ONCE, briefly, " +
+      "before you agree or move on (“does that work for you too?”), and take their answer as it comes. " +
+      "This is NOT leading and not an interruption, but exactly the frame you hold: in the shared " +
+      "space nobody decides for the other just by speaking faster. Half a line is enough. Do not " +
+      "name the reason, and do not push for catching up — the question is about consent, not the task.]",
+  },
+  aufdeck: {
+    text:
+      "[APP NOTE for this turn: The board has NOT been revealed yet. Nothing from the stacks belongs " +
+      "in your text now — no values, no rankings, no hints at them, not even in substance. " +
+      "Revealing is the board's job, not yours.]",
+  },
+};
+
 export const strukturTexte = {
   kopf: `OUTPUT FORMAT (takes precedence over everything below): Each of your messages is EXACTLY ONE call of the "turn" tool with the fields antwort/marker/block — no text outside the tool, no second output next to it.`,
   antwort: `"antwort" is your companion text to the person — the only thing they see. ALL conversation rules below apply unchanged to this field. "antwort" NEVER contains markers (no [[…]]), no block tokens (no "…-BLOCK"), no JSON.`,

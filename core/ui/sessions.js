@@ -12,8 +12,8 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { pruefeAbschlussAntwort, uebergabeKette, pruefeMetaMarke } from "../engine/abschluss-waechter.js";
-import { krisenSchaerfung } from "../engine/krisen-waechter.js";
-import { zweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
+import { baueKrisenSchaerfung } from "../engine/krisen-waechter.js";
+import { baueZweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
@@ -32,6 +32,14 @@ import { fuelle } from "../i18n/index.js";
    EINE Zeile je Def (schalteStruktur), soll aber eine bewusste Handlung sein;
    der Kanarienvogel in tests/unit/strukturmodus-ruht.spec.js haelt das fest.
    Vollstaendige Bilanz: docs/SPRINT-ST8-PROTOKOLL.md */
+
+/* MOD-2a · Schaerfungs-Kette des geteilten Raums (Qualitaetszeit): Krise
+   zuerst — sie wiegt schwerer. Beide lesen den Korpus bei jedem Zug (K()). */
+function schaerfeMoment() {
+  const krise = baueKrisenSchaerfung(() => K().waechter.krise);
+  const zweiseitigkeit = baueZweiseitigkeitsSchaerfung(() => K().waechter.zweiseitigkeit);
+  return (messages, ctx) => krise(messages, ctx) || zweiseitigkeit(messages, ctx);
+}
 
 /** Reflexionsgespräch (persönlicher Raum). */
 export function soloDef(backend, hooks = {}) {
@@ -185,8 +193,10 @@ export function momentDef(backend, hooks = {}) {
        geschaerft — bevor geantwortet wird (siehe schaerfeKontext). */
     /* MRV.3 · Zwei Schaerfungen, Krise zuerst — sie wiegt schwerer, und mehr
        als ein Zusatzsatz je Zug waere Rauschen. */
-    schaerfe: (messages, ctx) =>
-      krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx),
+    /* MOD-2a · Die Waechter sind Fabriken ohne eigenen Text: Signal und
+       Zusatztext kommen aus dem Korpus der aktiven Sprache — LAZY ueber K(),
+       damit eine englische Session englische Hinweise bekommt. */
+    schaerfe: schaerfeMoment(),
     // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
     // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort
     // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es

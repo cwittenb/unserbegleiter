@@ -19,7 +19,10 @@ import { Bstate, Pstate } from "../../core/store/bundles.js";
 import { MemoryStore } from "../../core/store/store.js";
 import { legeVerlaufAb } from "../../core/ui/verlauf-ablage.js";
 import { soloDef, momentDef } from "../../core/ui/sessions.js";
-import { krisenSchaerfung, KRISEN_SIGNALE } from "../../core/engine/krisen-waechter.js";
+import { baueKrisenSchaerfung } from "../../core/engine/krisen-waechter.js";
+/* MOD-2a · Signal und Text aus dem Korpus; die Mechanik ist eine Fabrik. */
+const KRISEN_SIGNALE = dePrompts.waechter.krise.signal;
+const krisenSchaerfung = baueKrisenSchaerfung(dePrompts.waechter.krise);
 import { de } from "../../core/i18n/de.js";
 import { en } from "../../core/i18n/en.js";
 import { steuerTexte } from "../../core/prompts/prompts.de.js";

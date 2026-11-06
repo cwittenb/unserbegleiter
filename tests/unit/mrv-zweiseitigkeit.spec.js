@@ -15,9 +15,11 @@
 // gerade weitergehen wollte, fühlt sich wie Leitung an.
 
 import { describe, it, expect } from "vitest";
-import {
-  zweiseitigkeitsSchaerfung, ZWEISEITIGKEIT_SCHAERFUNG, sprecherVon,
-} from "../../core/engine/zweiseitigkeit-waechter.js";
+import { baueZweiseitigkeitsSchaerfung, sprecherVon } from "../../core/engine/zweiseitigkeit-waechter.js";
+import { waechter } from "../../core/prompts/prompts.de.js";
+/* MOD-2a · Muster und Text kommen aus dem Korpus; die Mechanik ist eine Fabrik. */
+const ZWEISEITIGKEIT_SCHAERFUNG = waechter.zweiseitigkeit.text;
+const zweiseitigkeitsSchaerfung = baueZweiseitigkeitsSchaerfung(waechter.zweiseitigkeit);
 import { momentDef, soloDef } from "../../core/ui/sessions.js";
 import { gemeinsamDef, einzelDef } from "../../core/ui/kernwetten.js";
 

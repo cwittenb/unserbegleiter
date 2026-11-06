@@ -18,7 +18,8 @@ import { fileURLToPath } from "node:url";
 import { baueSessionDef, baueSystemText, mitKorpusSprache, markerOrderFuer, SESSION_ARTEN, BACKEND_ATTRAPPE } from "../../core/komposition.js";
 import { getKorpusSprache, setKorpusSprache } from "../../core/prompts/prompts.js";
 import { sysPromptFuer, schaerfungFuer, uebergabeFuer, markerOrderFuer as runnerMarkerOrder } from "../../evals/runner-kern.js";
-import { KRISEN_SCHAERFUNG } from "../../core/engine/krisen-waechter.js";
+import { waechter } from "../../core/prompts/prompts.de.js";
+const KRISEN_SCHAERFUNG = waechter.krise.text;
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const CTX = { me: "Anna", partner: "Bernd", nameA: "Anna", nameB: "Bernd" };

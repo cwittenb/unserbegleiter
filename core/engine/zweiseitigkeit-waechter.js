@@ -36,29 +36,14 @@
 // ist nachweislich etwas anderes als Korpus-Position (Variante C hat genau die
 // gemessen und nichts bewirkt).
 
-/** Jemand markiert etwas als SEINE Sache, die fehlt oder nicht geht. */
-export const EIGENE_SACHE =
-  /\b(ich|mir|mein[e]?[nrs]?)\b[^.!?]{0,60}\b(nicht gemacht|nicht geschafft|nicht dazu gekommen|vergessen|nicht fertig|nicht ausgefüllt|nicht abgegeben|nicht hinbekommen|keine zeit)|\bhab(e)? (es|sie|das)? ?(diesmal )?(gar )?nicht\b/i;
-
-/** Jemand verfügt darüber — weitermachen, überspringen, vertagen. */
-export const VERFUEGUNG =
-  /\b(lass uns|lassen wir|dann lassen wir|wir (machen|holen|überspringen|lassen)|einfach weiter|trotzdem weiter|ein andermal|später nach|nachholen|überspringen|auslassen|ruhen lassen|dann eben ohne|geht auch ohne)\b/i;
+/* MOD-2a · EIGENE_SACHE und VERFUEGUNG (die Muster) und der Zusatztext leben im
+   Korpus (waechter.zweiseitigkeit). Dieses Modul kennt keine Sprache mehr. */
 
 /** Namens-Präfix einer Nachricht, falls vorhanden ("Anna: …"). */
 export function sprecherVon(inhalt) {
   const m = /^\s*([A-ZÄÖÜ][\wÄÖÜäöüß-]{1,20})\s*:/.exec(String(inhalt || ""));
   return m ? m[1] : null;
 }
-
-export const ZWEISEITIGKEIT_SCHAERFUNG =
-  "[APP-HINWEIS für diesen Zug: Eine Person hat gerade über die Sache der ANDEREN verfügt — " +
-  "über etwas, das die andere selbst als ihres benannt hat. Hol die betroffene Person EINMAL " +
-  "kurz ein, bevor du zustimmst oder weitergehst (»passt das auch für dich?«), und nimm ihre " +
-  "Antwort, wie sie kommt. " +
-  "Das ist KEINE Leitung und keine Unterbrechung, sondern genau der Rahmen, den du hältst: " +
-  "Im geteilten Raum entscheidet niemand für den anderen mit, nur weil er schneller spricht. " +
-  "Eine halbe Zeile genügt. Den Anlass sprichst du dabei nicht aus, und du drängst nicht auf " +
-  "das Nachholen — die Frage gilt der Zustimmung, nicht der Aufgabe.]";
 
 /**
  * Schärfung für den geteilten Raum (Engine-Hook `schaerfe`).
@@ -73,26 +58,38 @@ export const ZWEISEITIGKEIT_SCHAERFUNG =
  * unterscheiden; dann wird geschärft, weil ein unnötiger Zusatzsatz weniger
  * kostet als eine übergangene Person.
  *
- * @param {object[]} messages
- * @param {{text?:string}} [ctx]
+ * Fabrik (MOD-2a): `baueZweiseitigkeitsSchaerfung(inhalt)` → `(messages, ctx)`.
+ * `inhalt` ist `waechter.zweiseitigkeit` des Korpus oder eine Funktion dazu.
+ *
+ * @param {{eigeneSache:RegExp, verfuegung:RegExp, text:string}|function} inhalt
  */
-export function zweiseitigkeitsSchaerfung(messages, ctx = {}) {
-  const zuege = (messages || []).filter(m => m && m.role === "user" && !m.hidden);
-  if (zuege.length < 2) return null;
+export function baueZweiseitigkeitsSchaerfung(inhalt) {
+  return (messages, ctx = {}) => {
+    const { eigeneSache, verfuegung, text } = liesInhalt(inhalt);
+    const zuege = (messages || []).filter(m => m && m.role === "user" && !m.hidden);
+    if (zuege.length < 2) return null;
 
-  const letzte = zuege[zuege.length - 1];
-  const inhalt = String(letzte.content || "");
-  if (!VERFUEGUNG.test(inhalt)) return null;
+    const letzte = zuege[zuege.length - 1];
+    const nachricht = String(letzte.content || "");
+    if (!verfuegung.test(nachricht)) return null;
 
-  // Wer hat etwas als seine Sache markiert — und war das jemand anderes?
-  const verfueger = sprecherVon(inhalt);
-  for (let i = zuege.length - 2; i >= 0; i--) {
-    const frueher = String(zuege[i].content || "");
-    if (!EIGENE_SACHE.test(frueher)) continue;
-    const betroffen = sprecherVon(frueher);
-    // Beide erkennbar UND dieselbe Person → sie verfügt über sich selbst.
-    if (betroffen && verfueger && betroffen === verfueger) return null;
-    return ctx.text || ZWEISEITIGKEIT_SCHAERFUNG;
-  }
-  return null;
+    // Wer hat etwas als seine Sache markiert — und war das jemand anderes?
+    const verfueger = sprecherVon(nachricht);
+    for (let i = zuege.length - 2; i >= 0; i--) {
+      const frueher = String(zuege[i].content || "");
+      if (!eigeneSache.test(frueher)) continue;
+      const betroffen = sprecherVon(frueher);
+      // Beide erkennbar UND dieselbe Person → sie verfügt über sich selbst.
+      if (betroffen && verfueger && betroffen === verfueger) return null;
+      return ctx.text || text;
+    }
+    return null;
+  };
+}
+
+function liesInhalt(inhalt) {
+  const i = typeof inhalt === "function" ? inhalt() : inhalt;
+  if (!i || !(i.eigeneSache instanceof RegExp) || !(i.verfuegung instanceof RegExp) || typeof i.text !== "string")
+    throw new Error("Zweiseitigkeits-Schaerfung braucht {eigeneSache, verfuegung: RegExp, text: string} aus dem Korpus.");
+  return i;
 }

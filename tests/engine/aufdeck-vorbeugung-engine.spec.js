@@ -18,7 +18,10 @@
 import { describe, it, expect } from "vitest";
 import { Engine } from "../../core/engine/engine.js";
 import { MockLLM } from "../../core/engine/mock-llm.js";
-import { aufdeckSchaerfung, AUFDECK_SCHAERFUNG } from "../../core/engine/aufdeck-waechter.js";
+import { baueAufdeckSchaerfung } from "../../core/engine/aufdeck-waechter.js";
+import { waechter } from "../../core/prompts/prompts.de.js";
+const AUFDECK_SCHAERFUNG = waechter.aufdeck.text;
+const aufdeckSchaerfung = baueAufdeckSchaerfung(waechter.aufdeck);
 
 const ERSTE = `HANDOVER-BLOCK – Anna
 S1: Ich wünsche mir mehr gemeinsame Unternehmungen.

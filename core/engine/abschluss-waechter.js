@@ -73,12 +73,14 @@ export function findetFrage(text, blockName) {
 
 // Deutscher Rückfall für Aufrufer ohne Korpus (ältere Tests, Werkzeuge) —
 // derselbe Bau wie AUFDECK_REVISION und URTEILS_REVISION.
-export const ABSCHLUSS_REVISION =
-  "[SYSTEM-REVISION: Deine letzte Nachricht stellt eine Frage UND schließt die Sitzung " +
-  "(Abschluss-Block). Mit dem Block endet die Sitzung sofort — die Person kann dann nichts " +
-  "mehr antworten. Wiederhole die Nachricht OHNE den Block: erst die Gabelung bzw. deine " +
-  "Frage, und warte auf die Antwort. Der Block folgt in einer SPÄTEREN Nachricht, zusammen " +
-  "mit dem würdigenden Schlusssatz und ohne jede Frage.]";
+/* MOD-2a · Die Vorgabewerte sind KENNUNGEN, keine Texte. Seit S105.3 wird
+   nichts mehr neu geschrieben — ein Treffer ist eine Spur ("warum fiel die
+   Handlung aus"), und jeder Aufrufer reicht seine Kennung herein. Die alten
+   deutschen Revisionstexte standen hier nur noch als Rueckfall, einer davon
+   bereits vom Korpus abgedriftet (MOD-0 B2). Inhalt gehoert nicht in die
+   Mechanik; die Kennungen sind dieselben, die sessions.js/kernwetten.js
+   und der Eval-Runner setzen. */
+export const ABSCHLUSS_REVISION = "abschluss-mit-frage";
 
 /**
  * Validator für die Abschluss-Familie (Engine-Hook `validiereAntwort`):
@@ -110,11 +112,7 @@ export function pruefeAbschlussAntwort(text, ctx = {}) {
    derselben Nachricht unschön, nicht folgenschwer. Ohne Befund kein Wächter. */
 export const AUFDECK_MARKEN = /\[\[REVEAL(-A|-B)?\]\]/;
 
-export const MARKEN_REVISION =
-  "[SYSTEM-REVISION: Deine letzte Nachricht stellt eine Frage UND setzt eine Aufdeck-Marke. " +
-  "Mit der Marke zeigt die App die Tafel — die Frage käme zu spät, und ein Okay danach wäre keins. " +
-  "Wiederhole die Nachricht OHNE Marke: erst die Frage, dann warte auf die Antwort. Die Marke " +
-  "folgt in einer SPÄTEREN Nachricht, allein in der letzten Zeile.]";
+export const MARKEN_REVISION = "marke-mit-frage";
 
 /**
  * Validator für die Aufdeckung (Engine-Hook `validiereAntwort`).
@@ -144,11 +142,7 @@ export function pruefeMarkenAntwort(text, ctx = {}) {
    nicht sieht — sie braucht eine andere Bauart. */
 export const META_MARKE = /\[\[META-REVEALED\]\]/;
 
-export const META_PLATZ_REVISION =
-  "[SYSTEM-REVISION: Deine letzte Nachricht setzt [[META-REVEALED]], aber nicht allein in der " +
-  "letzten Zeile. Die Marke ist die Übergabe an die App: Was nach ihr steht, kommt zu spät. " +
-  "Wiederhole die Nachricht so, dass die Marke ALLEIN auf der letzten Zeile steht — und nur, " +
-  "wenn du die Aufdeckung in DIESER Nachricht bereits erzählt hast.]";
+export const META_PLATZ_REVISION = "meta-marke-platz";
 
 /**
  * Prüft Vorhandensein UND Platz der Meta-Marke.

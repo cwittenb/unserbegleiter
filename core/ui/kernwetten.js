@@ -5,9 +5,9 @@
 
 import { BLOECKE } from "../contracts/registry.js";
 import { uebergabeKette, pruefeMarkenAntwort } from "../engine/abschluss-waechter.js";
-import { krisenSchaerfung } from "../engine/krisen-waechter.js";
-import { zweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
-import { aufdeckSchaerfung } from "../engine/aufdeck-waechter.js";
+import { baueKrisenSchaerfung } from "../engine/krisen-waechter.js";
+import { baueZweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
+import { baueAufdeckSchaerfung } from "../engine/aufdeck-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -71,6 +71,15 @@ export function startwerteErgebnis(nameA, wA, nameB, wB) {
 }
 
 /** Auftragsklärung — Einzelsession (persönlicher Raum). */
+/* MOD-2a · Schaerfungs-Kette der Aufloesung: Aufdeckung, dann Krise, dann
+   Zweiseitigkeit (MRV.3). Inhalt kommt bei jedem Zug aus dem Korpus. */
+function schaerfeGemeinsam() {
+  const aufdeck = baueAufdeckSchaerfung(() => K().waechter.aufdeck);
+  const krise = baueKrisenSchaerfung(() => K().waechter.krise);
+  const zweiseitigkeit = baueZweiseitigkeitsSchaerfung(() => K().waechter.zweiseitigkeit);
+  return (messages, ctx) => aufdeck(messages, ctx) || krise(messages, ctx) || zweiseitigkeit(messages, ctx);
+}
+
 export function einzelDef(backend, hooks = {}) {
   return {
     id: "einzel",
@@ -143,8 +152,8 @@ export function gemeinsamDef(backend, hooks = {}) {
       text => pruefeMarkenAntwort(text, { revision: "marke-mit-frage" }),
     ]),
     // MRV.3 · Auch die Aufloesung ist ein geteilter Raum.
-    schaerfe: (messages, ctx) => aufdeckSchaerfung(messages, ctx)
-      || krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx),
+    // MOD-2a · Fabriken ohne eigenen Text; Inhalt lazy aus dem Korpus (K()).
+    schaerfe: schaerfeGemeinsam(),
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)

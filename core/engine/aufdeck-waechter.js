@@ -99,15 +99,21 @@ export function tafelSchonGezeigt(messages) {
    Raum, um zu widersprechen.
    Hier laesst sich gut vorbeugen, weil die Lage aus dem ZUSTAND folgt und
    nicht aus einer Textdeutung: Solange die Tafel nicht gezeigt ist, gilt die
-   Regel — das weiss die App sicher. */
-export function aufdeckSchaerfung(messages, ctx = {}) {
-  const erste = (messages || []).find(m => m && m.role === "user");
-  if (!imAufdeckPfad(erste && erste.content)) return null;
-  if (tafelSchonGezeigt(messages)) return null;
-  return ctx.aufdeckSchaerfungsText || AUFDECK_SCHAERFUNG;
+   Regel — das weiss die App sicher.
+   Fabrik (MOD-2a): `baueAufdeckSchaerfung(inhalt)` → `(messages, ctx)`;
+   `inhalt` ist `waechter.aufdeck` des Korpus ({text}) oder eine Funktion dazu. */
+export function baueAufdeckSchaerfung(inhalt) {
+  return (messages, ctx = {}) => {
+    const i = typeof inhalt === "function" ? inhalt() : inhalt;
+    if (!i || typeof i.text !== "string")
+      throw new Error("Aufdeck-Schaerfung braucht {text: string} aus dem Korpus.");
+    const erste = (messages || []).find(m => m && m.role === "user");
+    if (!imAufdeckPfad(erste && erste.content)) return null;
+    if (tafelSchonGezeigt(messages)) return null;
+    return ctx.aufdeckSchaerfungsText || i.text;
+  };
 }
 
-export const AUFDECK_SCHAERFUNG =
-  "[APP-HINWEIS für diesen Zug: Die Tafel ist noch NICHT gezeigt. Kein Inhalt aus den Stapeln " +
-  "gehört jetzt in deinen Text — keine Werte, keine Reihenfolgen, keine Andeutungen daraus, auch " +
-  "nicht sinngemäß. Das Aufdecken ist die Sache der Tafel, nicht deine.]";
+/* MOD-2a · Der Zusatztext steht im Korpus (waechter.aufdeck.text); dieses
+   Modul kennt keine Sprache mehr. Die Lage selbst folgt aus dem Zustand
+   (Aufdeckpfad, Tafel gezeigt) und bleibt hier. */
