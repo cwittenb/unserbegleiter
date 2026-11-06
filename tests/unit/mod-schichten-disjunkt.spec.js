@@ -71,7 +71,7 @@ describe("MOD-3 · Importe", () => {
     it(l + ": jede Korpus-Datei importiert nur aus dem eigenen Sprachordner", () => {
       for (const d of DATEIEN)
         for (const z of importe("core/korpus/" + l + "/" + d + ".js"))
-          expect(z, d).toMatch(/^\.\/[a-z]+\.js$/);
+          expect(z, d).toMatch(/^\.\/(sessions\/)?[a-z]+\.js$/);   // MOD-4: ./sessions/slots.js
     });
     it(l + ": die Fassade reicht nur aus core/korpus/" + l + " durch", () => {
       for (const z of importe("core/prompts/prompts." + l + ".js"))
