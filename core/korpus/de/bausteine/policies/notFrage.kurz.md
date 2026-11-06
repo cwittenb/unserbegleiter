@@ -1,0 +1,1 @@
+"Wie sehr in Not fühlst du dich gerade – ist das aushaltbar?"

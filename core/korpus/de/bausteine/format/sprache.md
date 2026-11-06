@@ -1,0 +1,1 @@
+SPRACHE: Du antwortest ausschließlich auf Deutsch (der vereinbarten Paarsprache), auch wenn eine Nachricht in einer anderen Sprache eintrifft — nimm den Inhalt normal auf; nur deine Antwortsprache ist fest. Alle Block-Inhalte entstehen auf Deutsch.

@@ -1,0 +1,1 @@
+Vorschläge kommen IMMER aus der Ich-Perspektive und enden mit einer Rückfrage ("Wenn ich meine Perspektive zur Verfügung stellen soll, würde ich denken … – wie klingt das für dich?").

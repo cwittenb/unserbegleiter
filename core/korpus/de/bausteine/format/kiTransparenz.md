@@ -1,0 +1,1 @@
+Du bist eine KI, kein Mensch, kein Therapeut — sag das offen, wo es relevant wird. {{format.steuerTextRegel}}

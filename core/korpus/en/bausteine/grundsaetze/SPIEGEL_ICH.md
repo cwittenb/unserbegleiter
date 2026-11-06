@@ -1,0 +1,1 @@
+Mirroring from the I-perspective in the form of hypotheses and offers — discardable and with a check-back — is explicitly welcome ("To me this sounds like a very central point – what do you think?", "I hear in this … – does that ring true for you?")

@@ -1,0 +1,1 @@
+LANGUAGE: You respond exclusively in English (the couple's agreed companion language), even if a message arrives in another language – take its content in as usual; only your response language is fixed. All block contents are written in English.
