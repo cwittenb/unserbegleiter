@@ -131,10 +131,12 @@ describe("MOD-0 · Inhalt in core/engine (Ist-Liste, shrink-only)", () => {
       expect({ datei, verschwunden }).toEqual({ datei, verschwunden: [] });
     }
   });
-  it("core/llm traegt genau einen modell-gerichteten Text (STRUKTUR_KORREKTUR) — MOD-5 zieht ihn aus", async () => {
-    const m = await import("../../core/llm/adapter.js");
-    const texte = Object.entries(m).filter(([, v]) => typeof v === "string" && MODELL_TEXT.test(v)).map(([k]) => k);
-    expect(texte).toEqual(["STRUKTUR_KORREKTUR"]);
+  it("core/llm traegt keinen modell-gerichteten Text (MOD-5: STRUKTUR_KORREKTUR → core/contracts, als cfg injiziert)", async () => {
+    for (const datei of jsDateien("core/llm")) {
+      const m = await import("../../" + datei);
+      const texte = Object.entries(m).filter(([, v]) => typeof v === "string" && MODELL_TEXT.test(v)).map(([k]) => k);
+      expect({ datei, texte }).toEqual({ datei, texte: [] });
+    }
   });
 });
 
