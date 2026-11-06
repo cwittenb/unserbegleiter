@@ -11,9 +11,6 @@
 //                                          streamt Text-Häppchen (optional)
 
 import { BLOECKE } from "../contracts/registry.js";
-import { pruefeAbschlussAntwort, uebergabeKette, pruefeMetaMarke } from "../engine/abschluss-waechter.js";
-import { baueKrisenSchaerfung } from "../engine/krisen-waechter.js";
-import { baueZweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
 import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
@@ -32,14 +29,6 @@ import { fuelle } from "../i18n/index.js";
    EINE Zeile je Def (schalteStruktur), soll aber eine bewusste Handlung sein;
    der Kanarienvogel in tests/unit/strukturmodus-ruht.spec.js haelt das fest.
    Vollstaendige Bilanz: docs/SPRINT-ST8-PROTOKOLL.md */
-
-/* MOD-2a · Schaerfungs-Kette des geteilten Raums (Qualitaetszeit): Krise
-   zuerst — sie wiegt schwerer. Beide lesen den Korpus bei jedem Zug (K()). */
-function schaerfeMoment() {
-  const krise = baueKrisenSchaerfung(() => K().waechter.krise);
-  const zweiseitigkeit = baueZweiseitigkeitsSchaerfung(() => K().waechter.zweiseitigkeit);
-  return (messages, ctx) => krise(messages, ctx) || zweiseitigkeit(messages, ctx);
-}
 
 /** Reflexionsgespräch (persönlicher Raum). */
 export function soloDef(backend, hooks = {}) {
@@ -64,14 +53,9 @@ export function soloDef(backend, hooks = {}) {
        Der Urteils-Waechter ist HIER NICHT MEHR: Ein Praedikats-Urteil steckt im
        Text selbst, nicht in einer Uebergabe. Es zu verweigern ginge nicht, es
        zurueckzunehmen wollen wir nicht — bleibt der Prompt (S105.4). */
-    pruefeUebergabe: uebergabeKette([
-      (text, engine) => pruefeAbschlussAntwort(text, {
-        messages: (engine && engine.chat && engine.chat.messages) || [],
-        block: "TIMELINE-BLOCK",
-        token: K().steuerTexte.soloAbschluss,
-        revision: "abschluss-mit-frage",
-      }),
-    ]),
+    /* MOD-2b · Waechter (schaerfe, pruefeUebergabe) kommen aus dem
+       Policy-Katalog (core/policies/katalog.js) und werden in der
+       Komposition angehaengt — die Def kennt sie nicht mehr. */
     markerOrder: [],
     markers: {},
     canAct: c => c.status === "running",
@@ -177,16 +161,8 @@ export function momentDef(backend, hooks = {}) {
        kommt auch VERBAL ("lass uns Schluss machen"), also ohne Steuertext. Eine
        Anlass-Prüfung ließe genau die Fälle durch, um die es geht. */
     /* S105.3 · Uebergabe-Pruefung (siehe soloDef). */
-    pruefeUebergabe: uebergabeKette([
-      text => pruefeAbschlussAntwort(text, {
-        block: "MOMENT-BLOCK", anlassNoetig: false,
-        revision: "abschluss-mit-frage",
-      }),
-      /* S103 · Die vierte Regie-Übergabe: [[META-REVEALED]]. Sie lebt in
-         dieser Session (Aufdeckung der Prozessreflexion) und trägt eine
-         Bedingung mehr — allein in der letzten Zeile. */
-      text => pruefeMetaMarke(text, { revision: "meta-marke-platz", frageRevision: "marke-mit-frage" }),
-    ]),
+    /* MOD-2b · Uebergabe-Pruefungen (MOMENT-BLOCK, [[META-REVEALED]] — S103)
+       und Schaerfungen stehen im Policy-Katalog; die Komposition haengt sie an. */
     /* S105.3 · Die Krisen-Reihenfolge ist KEINE Uebergabe-Frage: Der Fehler
        steckt im gesprochenen Text (die Nummer ohne den Verweis in den eigenen
        Raum), und dort verweigern laesst sich nichts. Sie wird jetzt VORWAERTS
@@ -196,7 +172,6 @@ export function momentDef(backend, hooks = {}) {
     /* MOD-2a · Die Waechter sind Fabriken ohne eigenen Text: Signal und
        Zusatztext kommen aus dem Korpus der aktiven Sprache — LAZY ueber K(),
        damit eine englische Session englische Hinweise bekommt. */
-    schaerfe: schaerfeMoment(),
     // S89 · [[META-REVEALED]] ist die RÜCKMELDUNG des Modells, dass die
     // Meta-Aufdeckung erzählt wurde — Gegenrichtung zu [[REVEAL-A/B]] (dort
     // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es

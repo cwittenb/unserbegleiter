@@ -11,6 +11,9 @@
 // Eine Regel ohne Wächter ist eine Bitte.
 
 import { describe, it, expect } from "vitest";
+/* MOD-2b · Waechter (schaerfe, pruefeUebergabe) haengen seit dem Policy-Katalog an der
+   KOMPONIERTEN Def (core/komposition.js), nicht an der rohen Fabrik. */
+import { baueSessionDef } from "../../core/komposition.js";
 import { JUDGE_PROMPT_VERSION, baueJudgePrompt } from "../../evals/judge/judge.js";
 import { GOLDEN } from "../../evals/judge/golden.js";
 import { pruefeMetaMarke, META_PLATZ_REVISION } from "../../core/engine/abschluss-waechter.js";
@@ -149,16 +152,16 @@ describe("S103.3 · Die vierte Regie-Übergabe ist bewacht", () => {
     // S105.3 · Die Marke wird jetzt VERWEIGERT statt revidiert: Der Text bleibt
     // stehen, nur die Aufdeckung unterbleibt.
     const eng = { chat: { messages: [] }, ctx: {} };
-    expect(momentDef(backendStumm(), {}).pruefeUebergabe("[[META-REVEALED]]\nText danach.", eng))
+    expect(baueSessionDef("moment", { backend: backendStumm() }).pruefeUebergabe("[[META-REVEALED]]\nText danach.", eng))
       .toBe("meta-marke-platz");
     // Die Auflösung kennt diese Marke nicht — dort bleibt sie folgenlos.
-    expect(gemeinsamDef(backendStumm(), {}).pruefeUebergabe("[[META-REVEALED]]\nText danach.", eng))
+    expect(baueSessionDef("gemeinsam", { backend: backendStumm() }).pruefeUebergabe("[[META-REVEALED]]\nText danach.", eng))
       .toBeNull();
   });
 
   it("[[CHOICE-CONNECT]] bleibt unberührt", () => {
     const eng = { chat: { messages: [] }, ctx: {} };
-    expect(momentDef(backendStumm(), {}).pruefeUebergabe("Mögt ihr?\n[[CHOICE-CONNECT]]", eng))
+    expect(baueSessionDef("moment", { backend: backendStumm() }).pruefeUebergabe("Mögt ihr?\n[[CHOICE-CONNECT]]", eng))
       .toBeNull();
   });
 });
@@ -221,7 +224,7 @@ describe("S103.5 · Woran die Krisenlage erkannt wird", () => {
        Nachricht der Person Krisensignale trägt. */
     const krise = [{ role: "user", content: "Ich will nicht mehr leben." }];
     const harmlos = [{ role: "user", content: "Wir hatten einen schönen Abend." }];
-    for (const def of [momentDef(backendStumm(), {}), gemeinsamDef(backendStumm(), {})]) {
+    for (const def of [baueSessionDef("moment", { backend: backendStumm() }), baueSessionDef("gemeinsam", { backend: backendStumm() })]) {
       expect(typeof def.schaerfe).toBe("function");
       expect(def.schaerfe(krise, {})).toContain("ZUERST der Verweis in den eigenen Raum");
       expect(def.schaerfe(harmlos, {})).toBeNull();

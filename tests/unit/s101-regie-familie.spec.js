@@ -13,6 +13,9 @@
 //      "Frage UND Marke" fiel durch beide Netze.
 
 import { describe, it, expect } from "vitest";
+/* MOD-2b · Waechter (schaerfe, pruefeUebergabe) haengen seit dem Policy-Katalog an der
+   KOMPONIERTEN Def (core/komposition.js), nicht an der rohen Fabrik. */
+import { baueSessionDef } from "../../core/komposition.js";
 import { gemeinsamDef } from "../../core/ui/kernwetten.js";
 import { reflexionsPrompt, momentPrompt, aufloesungsPrompt, steuerTexte } from "../../core/prompts/prompts.de.js";
 import { bausteine } from "../../core/prompts/prompts.de.js";
@@ -87,7 +90,7 @@ describe("S101 · Alle drei kennen die Invariante", () => {
    das Gewollte: Die Tafel erscheint nicht, die Frage steht da, und das Okay
    kann kommen, bevor irgendetwas sichtbar wird. */
 describe("S105.3 · Die Aufdeck-Marke wird verweigert, nicht revidiert", () => {
-  const def = () => gemeinsamDef(backendStumm(), {});
+  const def = () => baueSessionDef("gemeinsam", { backend: backendStumm() });
   const eng = { chat: { messages: [] }, ctx: { nameA: "Anna", nameB: "Bernd" } };
 
   it("Bereitschaftsfrage UND Aufdeck-Marke ⇒ Marke fällt aus", () => {
