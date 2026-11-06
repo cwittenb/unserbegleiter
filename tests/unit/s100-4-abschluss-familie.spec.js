@@ -20,6 +20,9 @@
 // Abstraktion, die nicht passt.
 
 import { describe, it, expect, beforeEach } from "vitest";
+/* MOD-2b · Waechter (schaerfe, pruefeUebergabe) haengen seit dem Policy-Katalog an der
+   KOMPONIERTEN Def (core/komposition.js), nicht an der rohen Fabrik. */
+import { baueSessionDef } from "../../core/komposition.js";
 import { soloDef, momentDef } from "../../core/ui/sessions.js";
 import { einzelDef, gemeinsamDef } from "../../core/ui/kernwetten.js";
 import { pruefeAbschlussAntwort } from "../../core/engine/abschluss-waechter.js";
@@ -46,7 +49,7 @@ const FAMILIE = [
     // Anknüpfungsfrage NACH dem Block richtig ist — deshalb urteilt der
     // Wächter dort nur nach einem Abschluss-Anlass.
     anlassNoetig: true,
-    def: () => soloDef(backendStumm(), {}),
+    def: () => baueSessionDef("solo", { backend: backendStumm() }),
     prompt: () => reflexionsPrompt("Anna", "Bernd"),
     promptEn: () => reflexionsPromptEn("Anna", "Bernd"),
     blockJson: { summary: "Anna hat über die Abende gesprochen.", topics: ["Abende"], recurrenceNote: null, goals: [] },
@@ -59,7 +62,7 @@ const FAMILIE = [
     // Der MOMENT-BLOCK kennt nur den Abschluss — und der kommt auch VERBAL,
     // ganz ohne Steuertext. Eine Anlass-Prüfung ließe genau die Fälle durch.
     anlassNoetig: false,
-    def: () => momentDef(backendStumm(), {}),
+    def: () => baueSessionDef("moment", { backend: backendStumm() }),
     prompt: () => momentPrompt("Anna", "Bernd"),
     promptEn: () => momentPromptEn("Anna", "Bernd"),
     blockJson: { summary: "Ein ruhiger Abend.", topics: ["Abend"], addressed: [], deferred: [], selfResolved: [], shift: null, gentleInvitation: null },
@@ -160,7 +163,7 @@ describe("S100.4 · Jedes Familienmitglied ist bewacht, nicht nur gewarnt", () =
 describe("S100.4 · Die Grenze der Familie", () => {
   it("Auftragsklärung und Auflösung schließen anders — und tragen den Wächter nicht", () => {
     const stumm = backendStumm();
-    for (const def of [einzelDef(stumm, {}), gemeinsamDef(stumm, {})]) {
+    for (const def of [baueSessionDef("einzel", { backend: stumm }), baueSessionDef("gemeinsam", { backend: stumm })]) {
       // Ein Abschluss-Block existiert dort gar nicht; ein Text mit TIMELINE-BLOCK
       // darf trotzdem keine Verweigerung auslösen.
       const grund = def.pruefeUebergabe && def.pruefeUebergabe(

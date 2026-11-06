@@ -15,6 +15,9 @@
 // gerade weitergehen wollte, fühlt sich wie Leitung an.
 
 import { describe, it, expect } from "vitest";
+/* MOD-2b · Waechter (schaerfe, pruefeUebergabe) haengen seit dem Policy-Katalog an der
+   KOMPONIERTEN Def (core/komposition.js), nicht an der rohen Fabrik. */
+import { baueSessionDef } from "../../core/komposition.js";
 import { baueZweiseitigkeitsSchaerfung, sprecherVon } from "../../core/engine/zweiseitigkeit-waechter.js";
 import { waechter } from "../../core/prompts/prompts.de.js";
 /* MOD-2a · Muster und Text kommen aus dem Korpus; die Mechanik ist eine Fabrik. */
@@ -106,18 +109,18 @@ describe("MRV.3 · Wo sie hängt", () => {
     const m = zuege(
       "Bernd: ich hab meine Prozessreflexion diesmal gar nicht gemacht.",
       "Anna: Lass uns trotzdem einfach weitermachen.");
-    expect(momentDef(backendStumm(), {}).schaerfe(m, {})).toBeTruthy();
-    expect(gemeinsamDef(backendStumm(), {}).schaerfe(m, {})).toBeTruthy();
+    expect(baueSessionDef("moment", { backend: backendStumm() }).schaerfe(m, {})).toBeTruthy();
+    expect(baueSessionDef("gemeinsam", { backend: backendStumm() }).schaerfe(m, {})).toBeTruthy();
     // Im eigenen Raum gibt es keine zweite Person, über deren Sache verfügt würde.
-    expect(soloDef(backendStumm(), {}).schaerfe).toBeUndefined();
-    expect(einzelDef(backendStumm(), {}).schaerfe).toBeUndefined();
+    expect(baueSessionDef("solo", { backend: backendStumm() }).schaerfe).toBeUndefined();
+    expect(baueSessionDef("einzel", { backend: backendStumm() }).schaerfe).toBeUndefined();
   });
 
   it("die Krise hat Vorrang — nie zwei Zusätze in einem Zug", () => {
     const m = zuege(
       "Bernd: ich hab meine Reflexion nicht gemacht.",
       "Anna: Lass uns weitermachen. Ich will manchmal nicht mehr leben.");
-    const zusatz = momentDef(backendStumm(), {}).schaerfe(m, {});
+    const zusatz = baueSessionDef("moment", { backend: backendStumm() }).schaerfe(m, {});
     expect(zusatz).toContain("ZUERST der Verweis in den eigenen Raum");
     expect(zusatz).not.toContain("KEINE Leitung");
   });

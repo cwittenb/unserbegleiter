@@ -13,6 +13,9 @@
 // Wächter, der sie messbar macht.
 
 import { describe, it, expect, beforeEach } from "vitest";
+/* MOD-2b · Waechter (schaerfe, pruefeUebergabe) haengen seit dem Policy-Katalog an der
+   KOMPONIERTEN Def (core/komposition.js), nicht an der rohen Fabrik. */
+import { baueSessionDef } from "../../core/komposition.js";
 import {
   pruefeAbschlussAntwort, abschlussAngefordert, findetFrage,
   hatBlock, ohneBlock, ABSCHLUSS_REVISION,
@@ -109,7 +112,7 @@ describe("S99.3 · Die Bausteine einzeln", () => {
    stehen, nur der Block wird nicht ausgeführt. Damit endet die Sitzung nicht,
    die Frage ist lesbar, die Person kann antworten. */
 describe("S105.3 · Die Übergabe hängt am Reflexionsgespräch", () => {
-  const def = () => soloDef({ pstate: { get: async () => null, set: async () => true } }, {});
+  const def = () => baueSessionDef("solo", { backend: { pstate: { get: async () => null, set: async () => true } } });
 
   it("die Frage mit Block wird erkannt", () => {
     const engine = { chat: { messages: ABSCHLUSS } };

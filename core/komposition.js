@@ -28,7 +28,9 @@
 
 import { soloDef, momentDef } from "./ui/sessions.js";
 import { einzelDef, gemeinsamDef } from "./ui/kernwetten.js";
-import { getKorpusSprache, setKorpusSprache, getPrompts, istKorpusDa } from "./prompts/prompts.js";
+import { K, getKorpusSprache, setKorpusSprache, getPrompts, istKorpusDa } from "./prompts/prompts.js";
+import { POLICY_KATALOG } from "./policies/katalog.js";
+import { baueSchaerfe, baueUebergabe } from "./policies/waechter.js";
 
 /** Die Session-Arten mit eigener Def, in der Reihenfolge des Nutzerwegs. */
 export const SESSION_ARTEN = ["einzel", "gemeinsam", "solo", "moment"];
@@ -73,6 +75,14 @@ export function baueSessionDef(art, { backend = BACKEND_ATTRAPPE, hooks = {}, sp
   const bau = BAU[art];
   if (!bau) throw new Error("Unbekannte Session-Art: " + art + " (bekannt: " + SESSION_ARTEN.join(", ") + ")");
   const def = mitKorpusSprache(sprache, () => bau(backend, hooks));
+  /* MOD-2b · Die Waechter kommen aus dem Policy-Katalog, nicht aus der Def.
+     Der Korpus-Leser ist immer K(): Im App-Pfad ist das der globale
+     Schnappschuss, im sprachgebundenen Pfad laeuft jeder Aufruf der Haken
+     unter mitKorpusSprache (unten) — K() liest dann die Szenario-Sprache. */
+  const eintrag = POLICY_KATALOG[art];
+  if (!eintrag) throw new Error("Kein Policy-Katalog-Eintrag fuer Session-Art: " + art);
+  def.schaerfe = baueSchaerfe(eintrag, K) || undefined;
+  def.pruefeUebergabe = baueUebergabe(eintrag, K) || undefined;
   if (!sprache) return def;
   const binde = fn => (typeof fn === "function" ? (...a) => mitKorpusSprache(sprache, () => fn(...a)) : fn);
   return {

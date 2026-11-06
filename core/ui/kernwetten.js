@@ -4,10 +4,6 @@
 // Modell-Kontrakts (die Prompts referenzieren sie wörtlich).
 
 import { BLOECKE } from "../contracts/registry.js";
-import { uebergabeKette, pruefeMarkenAntwort } from "../engine/abschluss-waechter.js";
-import { baueKrisenSchaerfung } from "../engine/krisen-waechter.js";
-import { baueZweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
-import { baueAufdeckSchaerfung } from "../engine/aufdeck-waechter.js";
 import { DOMAINS, K } from "../prompts/prompts.js";
 import { fuelle, t } from "../i18n/index.js";
 import { merkeMerkposten } from "./sessions.js";
@@ -71,15 +67,6 @@ export function startwerteErgebnis(nameA, wA, nameB, wB) {
 }
 
 /** Auftragsklärung — Einzelsession (persönlicher Raum). */
-/* MOD-2a · Schaerfungs-Kette der Aufloesung: Aufdeckung, dann Krise, dann
-   Zweiseitigkeit (MRV.3). Inhalt kommt bei jedem Zug aus dem Korpus. */
-function schaerfeGemeinsam() {
-  const aufdeck = baueAufdeckSchaerfung(() => K().waechter.aufdeck);
-  const krise = baueKrisenSchaerfung(() => K().waechter.krise);
-  const zweiseitigkeit = baueZweiseitigkeitsSchaerfung(() => K().waechter.zweiseitigkeit);
-  return (messages, ctx) => aufdeck(messages, ctx) || krise(messages, ctx) || zweiseitigkeit(messages, ctx);
-}
-
 export function einzelDef(backend, hooks = {}) {
   return {
     id: "einzel",
@@ -148,12 +135,9 @@ export function gemeinsamDef(backend, hooks = {}) {
        ausdruecklich akzeptiert (Produktentscheidung, siehe SPRINT-S105-PROTOKOLL).
        Was bleibt, ist die Uebergabe: eine Aufdeck-Marke neben einer Frage wird
        nicht ausgefuehrt. Die Marke faellt, der Text bleibt. */
-    pruefeUebergabe: uebergabeKette([
-      text => pruefeMarkenAntwort(text, { revision: "marke-mit-frage" }),
-    ]),
-    // MRV.3 · Auch die Aufloesung ist ein geteilter Raum.
-    // MOD-2a · Fabriken ohne eigenen Text; Inhalt lazy aus dem Korpus (K()).
-    schaerfe: schaerfeGemeinsam(),
+    /* MOD-2b · Marken-Uebergabe und Schaerfungen (Aufdeckung, Krise,
+       Zweiseitigkeit — MRV.3) stehen im Policy-Katalog; die Komposition
+       haengt sie an. */
     // S62 · Zwei-Schritt-Aufdeckung: eine Richtung nach der anderen ([[REVEAL-A]]
     // deckt den Stapel von nameA auf, [[REVEAL-B]] den von nameB). Das nackte
     // [[REVEAL]] bleibt als Altbestands-Pfad registriert (spezifisch vor generisch)

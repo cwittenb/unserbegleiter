@@ -52,10 +52,13 @@ function importZiele(datei) {
 
 const VERBOTEN = {
   // Schicht → Verzeichnisse, aus denen sie NICHT importieren darf.
-  "core/engine":    ["core/prompts", "core/ui", "core/llm", "core/korpus", "platforms", "evals"],
-  "core/contracts": ["core/prompts", "core/ui", "core/llm", "core/engine", "core/korpus", "platforms", "evals"],
-  "core/llm":       ["core/prompts", "core/ui", "core/engine", "core/contracts", "core/korpus", "platforms", "evals"],
-  "core/prompts":   ["core/ui", "core/engine", "core/llm", "platforms", "evals"],
+  "core/engine":    ["core/prompts", "core/ui", "core/llm", "core/korpus", "core/policies", "platforms", "evals"],
+  "core/contracts": ["core/prompts", "core/ui", "core/llm", "core/engine", "core/korpus", "core/policies", "platforms", "evals"],
+  "core/llm":       ["core/prompts", "core/ui", "core/engine", "core/contracts", "core/korpus", "core/policies", "platforms", "evals"],
+  "core/prompts":   ["core/ui", "core/engine", "core/llm", "core/policies", "platforms", "evals"],
+  /* MOD-2b · Der Policy-Katalog kennt Mechanik (engine) und Korpus-SCHLUESSEL,
+     aber keinen Korpus-Inhalt: Er importiert weder prompts noch ui. */
+  "core/policies":  ["core/prompts", "core/ui", "core/llm", "core/korpus", "platforms", "evals"],
 };
 
 describe("MOD-0 · Importrichtung: Mechanik kennt keinen Inhalt", () => {

@@ -10,6 +10,9 @@
 // das war der Grund, warum sie durchrutschen konnten.
 
 import { describe, it, expect, beforeEach } from "vitest";
+/* MOD-2b · Waechter (schaerfe, pruefeUebergabe) haengen seit dem Policy-Katalog an der
+   KOMPONIERTEN Def (core/komposition.js), nicht an der rohen Fabrik. */
+import { baueSessionDef } from "../../core/komposition.js";
 import { Engine } from "../../core/engine/engine.js";
 import { MockLLM } from "../../core/engine/mock-llm.js";
 import { BLOECKE } from "../../core/contracts/registry.js";
@@ -158,8 +161,8 @@ describe("S105.3 · Krisen-Schärfung", () => {
 
   it("beide geteilten Räume tragen sie, die Einzelräume nicht", () => {
     const stumm = { pstate: { get: async () => null, set: async () => true }, bstate: { get: async () => null, set: async () => true } };
-    expect(typeof momentDef(stumm, {}).schaerfe).toBe("function");
-    expect(soloDef(stumm, {}).schaerfe).toBeUndefined();
+    expect(typeof baueSessionDef("moment", { backend: stumm }).schaerfe).toBe("function");
+    expect(baueSessionDef("solo", { backend: stumm }).schaerfe).toBeUndefined();
   });
 });
 
