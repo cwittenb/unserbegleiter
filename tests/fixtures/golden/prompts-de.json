@@ -1,0 +1,44 @@
+{
+  "sprache": "de",
+  "kontext": {
+    "me": "Anna",
+    "partner": "Bernd",
+    "nameA": "Anna",
+    "nameB": "Bernd"
+  },
+  "sessions": {
+    "solo": {
+      "text": "4040c81daeba16711fcb736b28c1bcd64a01ab5ac978a980c01ce79887fe1097",
+      "textLaenge": 47523,
+      "struktur": "bdd133eccfd6a426b031c6eb4eefd84305dcbf953fcbcacdd69e68c25fbd87ff",
+      "runner": "e6a57243010bef0b208d2a80c3018963c7c1acb02d7ccb4482ac84b3461ceec7",
+      "runnerGleichText": false
+    },
+    "moment": {
+      "text": "fce5df495b5c3f294fdbd616d17c7f1a2b039b61efb25c7741f08b340c8f548c",
+      "textLaenge": 41288,
+      "struktur": "143af3ba9b16c9b71be9a45137f2af697eb277b8671145e07304d81d5fb03848",
+      "runner": "1ed2ac91f773d62fff10dcc870bf7c5eb092a162a03de5c9ecce7c3a5803766c",
+      "runnerGleichText": false
+    },
+    "einzel": {
+      "text": "0e2bfb054cf96fde2f32c9880d8957a5be7f8b3f92192a0b574b79c9d2d380f3",
+      "textLaenge": 39716,
+      "struktur": "57548d9fb1a6858cb90c5214f56c4e54af0adbf79762ef1cd69792324c3a680d",
+      "runner": "0e2bfb054cf96fde2f32c9880d8957a5be7f8b3f92192a0b574b79c9d2d380f3",
+      "runnerGleichText": true
+    },
+    "gemeinsam": {
+      "text": "c32b9ae35117a1b78ae0c8b5eb0999c4c642567c6e8db748c4cc0312ae880ec1",
+      "textLaenge": 40551,
+      "struktur": "967c05f781529297beec91c8516b581ccb11cd111156b8ec6532475dfb8cc9d7",
+      "runner": "c32b9ae35117a1b78ae0c8b5eb0999c4c642567c6e8db748c4cc0312ae880ec1",
+      "runnerGleichText": true
+    },
+    "qualitytime": {
+      "text": "ffc252c1aba25481b43a6c62adbffbb8c90018e4d3c9e9c15b45c3652095651f",
+      "textLaenge": 3697,
+      "runner": "ffc252c1aba25481b43a6c62adbffbb8c90018e4d3c9e9c15b45c3652095651f"
+    }
+  }
+}

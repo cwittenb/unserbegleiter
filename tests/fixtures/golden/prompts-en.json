@@ -1,0 +1,44 @@
+{
+  "sprache": "en",
+  "kontext": {
+    "me": "Anna",
+    "partner": "Bernd",
+    "nameA": "Anna",
+    "nameB": "Bernd"
+  },
+  "sessions": {
+    "solo": {
+      "text": "e686f0d0f5b522303ed59515594fd8340dc2ee5a76dabcc609d7c5cbe4802ddd",
+      "textLaenge": 45966,
+      "struktur": "40a3f7df1146752a630082e944852d762aedaecaf109117100813ea09bc388e9",
+      "runner": "80f8713023bfdb5a795eac63a1c767926dc03f7dd7689ad553ff5bac79710ad6",
+      "runnerGleichText": false
+    },
+    "moment": {
+      "text": "c7c9ea0e2403d73ceadca4cadfc3857e8e6cfe866d50ed41e0c542b1f681047c",
+      "textLaenge": 39850,
+      "struktur": "f0120bbd6a2cb38bba8b7aeee5c5e578096da0778c9aad2668642c7fd298778f",
+      "runner": "2aef0ffada52db404cb94dcfbdec537e55fcccf073799213739531bb1d0b4588",
+      "runnerGleichText": false
+    },
+    "einzel": {
+      "text": "ac373b0338e9275bdf6037f9ecc62025c43e36ce881affe988d7f9ec91d27b10",
+      "textLaenge": 38996,
+      "struktur": "4bd0179638f3594f41b83918971be7881fe232f57cf0e4b85ac91a2e783c85ac",
+      "runner": "ac373b0338e9275bdf6037f9ecc62025c43e36ce881affe988d7f9ec91d27b10",
+      "runnerGleichText": true
+    },
+    "gemeinsam": {
+      "text": "d73edbcf831855db1f6173d145c0c5f4403d89af0fecfde141559ebb80e728e6",
+      "textLaenge": 39110,
+      "struktur": "74fcf0df2366b245118b2cf3e4681fa4e8c57fd018bb7076e2459f3bee836c23",
+      "runner": "d73edbcf831855db1f6173d145c0c5f4403d89af0fecfde141559ebb80e728e6",
+      "runnerGleichText": true
+    },
+    "qualitytime": {
+      "text": "5f15644db8e0b272b7cab19ea982910fdc85824ebba9f92daae30e69637ad518",
+      "textLaenge": 3609,
+      "runner": "5f15644db8e0b272b7cab19ea982910fdc85824ebba9f92daae30e69637ad518"
+    }
+  }
+}
