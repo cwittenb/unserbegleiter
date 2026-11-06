@@ -4,14 +4,16 @@
 // GEFALLEN: output_config ist thinking-kompatibel.
 
 import { describe, it, expect, vi } from "vitest";
-import { makeAdapter, STRUKTUR_KORREKTUR } from "../../core/llm/adapter.js";
+import { makeAdapter } from "../../core/llm/adapter.js";
+/* MOD-5 · Der Wire-Text lebt in den Vertraegen; die keyless-Plattform reicht ihn als cfg herein. */
+import { STRUKTUR_KORREKTUR } from "../../core/contracts/struktur-korrektur.js";
 
 const STRUCT = { name: "turn", schema: { type: "object", properties: { antwort: { type: "string" } }, required: ["antwort"] } };
 const antwortJson = (content, stop = "tool_use") => ({
   ok: true, status: 200,
   json: async () => ({ content, stop_reason: stop, usage: {} }),
 });
-const cfgKeyless = { mode: "keyless", provider: "anthropic", models: { anthropic: "test-modell" }, thinking: "disabled", stream: false };
+const cfgKeyless = { mode: "keyless", provider: "anthropic", models: { anthropic: "test-modell" }, thinking: "disabled", stream: false, strukturKorrektur: STRUKTUR_KORREKTUR };
 
 describe("Adapter · Struktur-Härtung (ST1)", () => {
   it("ST3 · structuredBody: output_config statt tools/tool_choice, Schema dialekt-gewandelt", async () => {
