@@ -11,15 +11,15 @@
       "text": "e686f0d0f5b522303ed59515594fd8340dc2ee5a76dabcc609d7c5cbe4802ddd",
       "textLaenge": 45966,
       "struktur": "40a3f7df1146752a630082e944852d762aedaecaf109117100813ea09bc388e9",
-      "runner": "80f8713023bfdb5a795eac63a1c767926dc03f7dd7689ad553ff5bac79710ad6",
-      "runnerGleichText": false
+      "runner": "e686f0d0f5b522303ed59515594fd8340dc2ee5a76dabcc609d7c5cbe4802ddd",
+      "runnerGleichText": true
     },
     "moment": {
       "text": "c7c9ea0e2403d73ceadca4cadfc3857e8e6cfe866d50ed41e0c542b1f681047c",
       "textLaenge": 39850,
       "struktur": "f0120bbd6a2cb38bba8b7aeee5c5e578096da0778c9aad2668642c7fd298778f",
-      "runner": "2aef0ffada52db404cb94dcfbdec537e55fcccf073799213739531bb1d0b4588",
-      "runnerGleichText": false
+      "runner": "c7c9ea0e2403d73ceadca4cadfc3857e8e6cfe866d50ed41e0c542b1f681047c",
+      "runnerGleichText": true
     },
     "einzel": {
       "text": "ac373b0338e9275bdf6037f9ecc62025c43e36ce881affe988d7f9ec91d27b10",
