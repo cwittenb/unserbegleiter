@@ -57,9 +57,9 @@ export const policies = {
  * Mechanics live in core/engine/*-waechter.js; this is WHAT the model is
  * told and WHAT a situation is recognised by — per language, parity-tested.
  * Crisis signals and recognisers are IDENTICAL in DE and EN on purpose
- * (union of both languages). The two-sidedness patterns are the German
- * ones, unchanged: in EN sessions they never fired before MOD-2a, and
- * English patterns are an open decision, not a silent one.
+ * (union of both languages). The two-sidedness patterns are English since
+ * MOD-2c (decision F7 a): before that, the German patterns stood here and
+ * never fired in EN sessions.
  * --------------------------------------------------------------- */
 export const waechter = {
   krise: {
@@ -74,8 +74,11 @@ export const waechter = {
   krisenhilfe: /0800\s*111\s*0\s*111|Telefonseelsorge|Krisendienst|crisis line|helpline/i,
   einzelraum: /eigene[nrms]?\s+Raum|eigenen\s+Raum|Einzelraum|dein\s+Raum|deinem\s+Raum|individual\s+space|own\s+space|your\s+own\s+room/i,
   zweiseitigkeit: {
-    eigeneSache: /\b(ich|mir|mein[e]?[nrs]?)\b[^.!?]{0,60}\b(nicht gemacht|nicht geschafft|nicht dazu gekommen|vergessen|nicht fertig|nicht ausgefüllt|nicht abgegeben|nicht hinbekommen|keine zeit)|\bhab(e)? (es|sie|das)? ?(diesmal )?(gar )?nicht\b/i,
-    verfuegung: /\b(lass uns|lassen wir|dann lassen wir|wir (machen|holen|überspringen|lassen)|einfach weiter|trotzdem weiter|ein andermal|später nach|nachholen|überspringen|auslassen|ruhen lassen|dann eben ohne|geht auch ohne)\b/i,
+    /* MOD-2c (F7 a) · English patterns, mirroring the German ones. Someone
+       marks something as THEIR matter that is missing or did not happen. */
+    eigeneSache: /\b(i|my|mine)\b[^.!?]{0,60}\b(didn'?t (do|get to|manage|finish|fill|hand|make)|did not (do|get to|manage|finish)|haven'?t (done|finished|gotten to|got to)|forgot|isn'?t (done|finished|ready)|not (done|finished|ready)|no time|never got (to|around))|\b(i )?(haven'?t|didn'?t|did not)( done| do)? (it|that|this|mine)\b/i,
+    /* Someone decides about it — continue, skip, postpone. */
+    verfuegung: /\b(let'?s|let us|shall we|we('ll| will| can| could)?)\s+(just |simply )?(continue|move on|carry on|go on|skip|leave it|catch up|do (it|that) (later|another time)|get on with it)|\b(just|simply|anyway) (continue|move on|carry on|go on)|\b(another time|some other time|later on|skip (it|that)|leave (it|that) out|let (it|that) rest|never mind|without it|works without)\b/i,
     text:
       "[APP NOTE for this turn: One person has just decided about the OTHER person's matter — " +
       "something the other named as their own. Check in with the affected person ONCE, briefly, " +
