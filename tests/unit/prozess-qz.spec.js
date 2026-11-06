@@ -5,8 +5,9 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createApp } from "../../core/ui/app.js";
 import {
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde,
-  qzStufe, baueQzMaterial, waehleEinladung, keineEinladung, vereinbarePause, QZ_STUFEN_TEXT,
+  qzStufe, baueQzMaterial, waehleEinladung, keineEinladung, vereinbarePause,
 } from "../../core/ui/prozess.js";
+import * as prozessModul from "../../core/ui/prozess.js";
 import { MockLLM } from "../../core/engine/mock-llm.js";
 import { Repo } from "../../core/store/repo.js";
 import { Bstate, Pstate } from "../../core/store/bundles.js";
@@ -98,7 +99,7 @@ describe("QZ · Leiter-Logik", () => {
     expect(qzStufe({ choices: [{ at: vor(40) }], ladder: { stage2At: vor(5), stage3At: vor(2) } }, now)).toBe(4);
     expect(qzStufe({ choices: [], ladder: { pausedUntil: new Date(Date.now() + TAG).toISOString() } }, now)).toBe("pause");
     expect(qzStufe({ startAt: vor(2), choices: [] }, now)).toBe(1);          // frischer Start: sanft
-    expect(QZ_STUFEN_TEXT[2]).toContain("ohne Druck");
+    expect(prozessModul.QZ_STUFEN_TEXT, "MOD-7: Stufentexte ohne Aufrufer sind fort").toBeUndefined();
   });
 
   it("Wahl setzt die Leiter zurück; zweimal Nicht-Aufgreifen macht eine Domäne ruhend", async () => {
