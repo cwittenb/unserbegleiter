@@ -87,9 +87,7 @@ export const policies = {
  * Krisen-Signale und -Erkenner sind in DE und EN bewusst IDENTISCH (Union
  * beider Sprachen): Wer in Not ist, wechselt unter Umstaenden die Sprache,
  * und eine Krise darf nicht an der Paarsprache scheitern. Die
- * Zweiseitigkeits-Muster sind deutsch und in EN unveraendert uebernommen
- * (Verhalten byte-gleich zum Stand vor MOD-2a: in EN-Sessions feuerten sie
- * nie) — englische Muster sind eine offene Entscheidung, keine stille.
+ * Zweiseitigkeits-Muster sind je Sprache eigene (EN seit MOD-2c, F7 a).
  * --------------------------------------------------------------- */
 export const waechter = {
   krise: {
