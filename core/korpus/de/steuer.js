@@ -1,7 +1,7 @@
 // Korpus DE · STEUER (MOD-3) — Wire zwischen App und Modell.
-// Steuertexte (hidden-Eroeffnungen, Protokoll-Meldungen, Revisions-Kennungen),
-// Struktur-Praeambel-Texte, Kapiteltitel, QZ-Stufen, korpusTexte (UI-nahe
-// Strings, Umzug nach core/i18n in MOD-3b).
+// Steuertexte (hidden-Eroeffnungen, Protokoll-Meldungen),
+// Struktur-Praeambel-Texte, Kapiteltitel, QZ-Stufen, kontextTexte (ans
+// Modell) und oberflaechenTexte (App, in Paarsprache) — MOD-3b.
 
 /** Aufdeck-Runde (G1) — spielerisches gemeinsames Kapitel VOR der Klärung. */
 /* S43: aufdeckPrompt entfällt — der Aufdeck-Auftakt lebt als AUFTAKT-Sektion
@@ -15,32 +15,6 @@
    ERGEBNIS:, REVEAL-SHOWN:) ist prompt-intern konsistent zu halten. */
 export const steuerTexte = {
   // S95.8b · Antworten auf den Wortlaut-Abruf.
-  // S103 · Meta-Marken-Wächter (Platz der Marke).
-  metaPlatzRevision:
-    "[SYSTEM-REVISION: Deine letzte Nachricht setzt [[META-REVEALED]], aber nicht allein in der " +
-    "letzten Zeile. Die Marke ist die Übergabe an die App: Was nach ihr steht, kommt zu spät. " +
-    "Wiederhole die Nachricht so, dass die Marke ALLEIN auf der letzten Zeile steht — und nur, " +
-    "wenn du die Aufdeckung in DIESER Nachricht bereits erzählt hast.]",
-  // S103 · Krisen-Wächter (Reihenfolge im geteilten Raum).
-  krisenReihenfolgeRevision:
-    "[SYSTEM-REVISION: Du nennst professionelle Krisenhilfe, aber der Verweis in den geschützten " +
-    "Einzelraum fehlt oder steht dahinter. Im geteilten Raum gilt IMMER beides, in dieser " +
-    "Reihenfolge: ZUERST der eigene Raum, DANN die Krisenhilfe als nächster Schritt. Die " +
-    "Krisenhilfe ersetzt den Verweis nicht. Wiederhole die Nachricht mit beidem in der " +
-    "richtigen Reihenfolge.]",
-  // S101 · Marken-Wächter: Frage und Aufdeck-Marke in einer Nachricht.
-  markenRevision:
-    "[SYSTEM-REVISION: Deine letzte Nachricht stellt eine Frage UND setzt eine Aufdeck-Marke. " +
-    "Mit der Marke zeigt die App die Tafel — die Frage käme zu spät, und ein Okay danach wäre keins. " +
-    "Wiederhole die Nachricht OHNE Marke: erst die Frage, dann warte auf die Antwort. Die Marke " +
-    "folgt in einer SPÄTEREN Nachricht, allein in der letzten Zeile.]",
-  // S99.3 · Abschluss-Wächter (core/engine/abschluss-waechter.js).
-  abschlussRevision:
-    "[SYSTEM-REVISION: Deine letzte Nachricht stellt eine Frage UND schließt die Sitzung " +
-    "(TIMELINE-BLOCK). Mit dem Block endet die Sitzung sofort — die Person hat danach kein " +
-    "Eingabefeld mehr und kann nicht antworten. Wiederhole die Nachricht OHNE den Block: erst " +
-    "die Gabelung bzw. deine Frage, dann wartest du auf die Antwort. Der Block folgt in einer " +
-    "SPÄTEREN Nachricht, zusammen mit dem würdigenden Schlusssatz und ohne jede Frage.]",
   abrufGefunden: "Der Wortlaut der Sitzung {vid} liegt jetzt vor. Knüpfe daran an; für einen Ausschnitt prüfe die Eignung ihrer Paare wie bei einer eigenen Sitzung.",
   abrufLeer: "Zu dieser Sitzung ist kein Wortlaut aufbewahrt. Sage das ausdrücklich und nenne den Weg: In der Zeitleiste stehen die Gespräche zum Nachlesen — die Person kann dort nachsehen und dir dann sagen, welches sie meint. Erfinde nichts.",
 
@@ -85,24 +59,6 @@ export const steuerTexte = {
   einzelRueckkehr: "[Rückkehr nach Abschluss: Die Auftragsklärung ist bereits abgeschlossen und freigegeben; ich betrete den Raum erneut. Eröffne den NACHKLANG.]",
   einzelWeiter: "[Rückkehr in die laufende Auftragsklärung: Ich betrete den Raum erneut; die Session ist pausiert. Eröffne den WIEDEREINSTIEG.]",
   gemeinsamWeiter: "[Rückkehr in die laufende Gemeinsame Auflösung: Wir betreten den Raum erneut; die Session war pausiert. Eröffne den WIEDEREINSTIEG.]",
-  /* S94 · Die Revisionstexte der beiden Wächter leben im Korpus, nicht mehr
-     hartkodiert im Modul: Bei einer englischen Session bekam das Modell bis
-     S93 eine deutsche SYSTEM-REVISION. Die Heuristik bleibt im Modul, der
-     Wortlaut gehört zur Sprachfassung. */
-  aufdeckRevision:
-    "[SYSTEM-REVISION: Deine letzte Nachricht gibt Inhalte der Stapel im Text wieder \u2014 " +
-    "die zeigt ausschlie\u00dflich die Tafel der App (STAPEL-WIEDERGABE-VERBOT). " +
-    "Wiederhole die Nachricht ohne jede Wiedergabe von Stapel-Inhalten; nenne h\u00f6chstens die RICHTUNG. " +
-    "Wenn beide zugestimmt haben und die Richtung gew\u00e4hlt ist, beende die Nachricht mit genau einer " +
-    "Aufdeck-Marke ([[REVEAL-A]] oder [[REVEAL-B]]) allein in der letzten Zeile.]",
-  urteilsRevision:
-    "[SYSTEM-REVISION: Deine letzte Nachricht enth\u00e4lt ein Urteil aus der Richterposition " +
-    "(\"Das ist \u2026\", \"Das klingt \u2026\", \"eine starke Fassung\" o. \u00e4.). Auch positive Urteile sind Urteile. " +
-    "Wiederhole die Nachricht ohne jede Benotung: Spiegle nah an den Worten der Person, " +
-    "oder \u2014 wenn du eine eigene Wahrnehmung anbietest \u2014 aus der Ich-Perspektive MIT R\u00fcckfrage " +
-    "(\"F\u00fcr mich klingt das wie \u2026 \u2013 stimmt das f\u00fcr dich?\"). F\u00e4llt dir nichts Substanzielles auf, " +
-    "ist die beste Spiegelung kurz oder keine: Stell die n\u00e4chste Frage. " +
-    "Inhalt und L\u00e4nge bleiben sonst gleich.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: Die App hat beiden die Richtung {owner} gezeigt – {owner}s Stapel neben dem Tipp von {tipper}, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach.",
 };
 
@@ -121,22 +77,17 @@ export const QZ_STUFEN_TEXT = {
   4: "Auch das ist eine legitime Möglichkeit: die gemeinsamen Momente bewusst zu pausieren, mit einem klaren Wiedereinstiegs-Datum — ein sauberer Ausstieg statt stiller Erosion.",
 };
 
-export const korpusTexte = {
-  "titel.solo": "Reflexionsgespräch",
-  "titel.einzel": "Auftragsklärung",
-  "titel.gemeinsam": "Gemeinsame Auflösung",
-  "titel.moment": "Qualitätszeit",
-
-  /* Builder-Erklärtexte (S30·C2) — Header-Token bleiben sprachinvariant. */
-  "rank.howto": "Du kannst jederzeit umsortieren oder etwas herausnehmen; Antippen genügt. Die Gegensatzpaare stehen als einzelne Pole zur Wahl. Sortiert wird nach Gefühl, nicht nach Perfektion.",
-  "rank.self.titel": "Was liegt dir am meisten am Herzen?",
-  "rank.self.desc": "Wähle die fünf Dinge in den Stapel, die dir in eurer Beziehung am meisten am Herzen liegen – ganz oben, was dir am allerwichtigsten ist. Du darfst auch beide Seiten eines Gegensatzpaars stapeln.",
+/* MOD-3b · korpusTexte in zwei Objekte, nach EMPFAENGER getrennt:
+   kontextTexte      — gehen ans MODELL (Kontext-Bauer: COMPANION-CONTEXT,
+                       MOMENT-CONTEXT, Regler-/Ranking-Ergebnisse, QZ-Menue).
+   oberflaechenTexte — zeigt die APP, aber in der PAARSPRACHE (Chat-Titel,
+                       Skalen- und Auswahl-Beschriftungen, Ranking-Panels) —
+                       deshalb hier und nicht in core/i18n (UI-Sprache, t()).
+   korpusTexte bleibt als Fassade mit allen Schluesseln in der alten
+   Reihenfolge; kein Aufrufer aendert sich. */
+export const kontextTexte = {
   "rank.self.kopf": "RANKING-RESULT – Top 5 (1 = liegt {me} am meisten am Herzen; Gegensatzpaare standen als getrennte Pole zur Wahl; die übrigen {rest} Einträge blieben bewusst ungeordnet; bei mehreren Ergebnissen zählt das jüngste):",
-  "rank.pwichtig.titel": "Was liegt {partner} vermutlich am meisten am Herzen?",
-  "rank.pwichtig.desc": "Reine Vermutung – du kannst es nicht wissen, und genau darum geht es. Wähle die drei Dinge in den Stapel, die {partner} vermutlich am wichtigsten sind.",
   "rank.pwichtig.kopf": "PARTNER-GUESS (Top 3, geraten von {me}; 1 = liegt {partner} vermutlich am meisten am Herzen; bei mehreren Ergebnissen zählt das jüngste):",
-  "rank.pchange.titel": "In welchem Bereich wünscht sich {partner} vermutlich am meisten Veränderung?",
-  "rank.pchange.desc": "Wieder reine Vermutung, kein richtig oder falsch. Wähle den einen Bereich in den Stapel, in dem sich {partner} vermutlich gerade am meisten Veränderung wünscht.",
   "rank.pchange.kopf": "PARTNER-GUESS-CHANGE (geraten von {me}; bei mehreren Ergebnissen zählt das jüngste):",
   "regler.kopf": "SLIDERS-RESULT (Reglerpositionen intern auf 1–10 abgebildet; {me} hat keine Zahlen gesehen – qualitativ spiegeln; bei mehreren Ergebnissen zählt das jüngste):",
   "regler.zeilePole": "{t}: Ist-Position {w} · Stimmig-Position {z} (Spektrum: 1={p0} … 10={p1})",
@@ -190,23 +141,6 @@ export const korpusTexte = {
      heißt "wir sehen unsere Beziehung verschieden", nicht "einer liegt falsch".
      Kein wahrer Wert, keine Rollen, nichts zu vergleichen. */
   "mess.wesen": "Beziehungswesen: {nameA} {a} · {nameB} {b} ⇒ Abstand {diff} (zwei Sichten auf dasselbe Dritte, kein Fehler, kein Mittelwert)",
-  "scale.safety.titel": "Wie sicher fühlst du dich bei {partner}?",
-  "scale.safety.text": "Gemeint ist dein Gesamtgefühl: Wie gut kannst du bei {partner} du selbst sein, dich entspannen und aussprechen, was dich wirklich bewegt?",
-  "scale.safety.min": "1 · gar nicht",
-  "scale.safety.max": "10 · völlig",
-  "scale.closing.titel": "Wie hat sich dieses Gespräch angefühlt?",
-  "scale.closing.min": "1 · wie eine Prüfung",
-  "scale.closing.max": "10 · verbindend",
-  "choice.connect.titel": "Womit mögt ihr ankommen?",
-  "choice.connect.o1": "Eine Minute gemeinsame Stille",
-  "choice.connect.o2": "Einen Moment Blickkontakt halten",
-  "choice.connect.o3": "Hand halten – einfach so",
-  "choice.connect.o4": "Einen positiven Gedanken über den anderen teilen",
-  "choice.connect.ohne": "Ohne Übung weiter",
-  "choice.arrive.titel": "Womit mögt ihr wieder ankommen?",
-  "choice.arrive.ohne": "Ohne Ankommens-Moment weiter",
-  "choice.farewell.titel": "Mögt ihr eine kleine Einladung mitnehmen?",
-  "choice.farewell.ohne": "Ohne Einladung verabschieden",
   /* S107 · Passung × Wirksamkeit je Thema. Hohe Passung bei niedriger
      Wirksamkeit ist die Stelle, an der das Paar Hilfe braucht. */
   /* S109 · mess.markerDistanz/Ueber/Unter entfernt — sie gehoerten zu
@@ -225,6 +159,134 @@ export const korpusTexte = {
   "qm.vorgemerkt": "Vorgemerkte Gesprächspunkte: ",
   "qm.katalog": "CATALOG der Lebensbereiche:",
 };
+
+export const oberflaechenTexte = {
+  "titel.solo": "Reflexionsgespräch",
+  "titel.einzel": "Auftragsklärung",
+  "titel.gemeinsam": "Gemeinsame Auflösung",
+  "titel.moment": "Qualitätszeit",
+
+  /* Builder-Erklärtexte (S30·C2) — Header-Token bleiben sprachinvariant. */
+  "rank.howto": "Du kannst jederzeit umsortieren oder etwas herausnehmen; Antippen genügt. Die Gegensatzpaare stehen als einzelne Pole zur Wahl. Sortiert wird nach Gefühl, nicht nach Perfektion.",
+  "rank.self.titel": "Was liegt dir am meisten am Herzen?",
+  "rank.self.desc": "Wähle die fünf Dinge in den Stapel, die dir in eurer Beziehung am meisten am Herzen liegen – ganz oben, was dir am allerwichtigsten ist. Du darfst auch beide Seiten eines Gegensatzpaars stapeln.",
+  "rank.pwichtig.titel": "Was liegt {partner} vermutlich am meisten am Herzen?",
+  "rank.pwichtig.desc": "Reine Vermutung – du kannst es nicht wissen, und genau darum geht es. Wähle die drei Dinge in den Stapel, die {partner} vermutlich am wichtigsten sind.",
+  "rank.pchange.titel": "In welchem Bereich wünscht sich {partner} vermutlich am meisten Veränderung?",
+  "rank.pchange.desc": "Wieder reine Vermutung, kein richtig oder falsch. Wähle den einen Bereich in den Stapel, in dem sich {partner} vermutlich gerade am meisten Veränderung wünscht.",
+  "scale.safety.titel": "Wie sicher fühlst du dich bei {partner}?",
+  "scale.safety.text": "Gemeint ist dein Gesamtgefühl: Wie gut kannst du bei {partner} du selbst sein, dich entspannen und aussprechen, was dich wirklich bewegt?",
+  "scale.safety.min": "1 · gar nicht",
+  "scale.safety.max": "10 · völlig",
+  "scale.closing.titel": "Wie hat sich dieses Gespräch angefühlt?",
+  "scale.closing.min": "1 · wie eine Prüfung",
+  "scale.closing.max": "10 · verbindend",
+  "choice.connect.titel": "Womit mögt ihr ankommen?",
+  "choice.connect.o1": "Eine Minute gemeinsame Stille",
+  "choice.connect.o2": "Einen Moment Blickkontakt halten",
+  "choice.connect.o3": "Hand halten – einfach so",
+  "choice.connect.o4": "Einen positiven Gedanken über den anderen teilen",
+  "choice.connect.ohne": "Ohne Übung weiter",
+  "choice.arrive.titel": "Womit mögt ihr wieder ankommen?",
+  "choice.arrive.ohne": "Ohne Ankommens-Moment weiter",
+  "choice.farewell.titel": "Mögt ihr eine kleine Einladung mitnehmen?",
+  "choice.farewell.ohne": "Ohne Einladung verabschieden",
+};
+
+const KORPUSTEXTE_ORDNUNG = [
+  "titel.solo",
+  "titel.einzel",
+  "titel.gemeinsam",
+  "titel.moment",
+  "rank.howto",
+  "rank.self.titel",
+  "rank.self.desc",
+  "rank.self.kopf",
+  "rank.pwichtig.titel",
+  "rank.pwichtig.desc",
+  "rank.pwichtig.kopf",
+  "rank.pchange.titel",
+  "rank.pchange.desc",
+  "rank.pchange.kopf",
+  "regler.kopf",
+  "regler.zeilePole",
+  "regler.zeileNormal",
+  "startwerte.kopf",
+  "aufdeckk.kopf",
+  "aufdeckk.top5",
+  "aufdeckk.guess3",
+  "klaerung.aufdeckAussteht",
+  "klaerung.protokoll",
+  "klaerung.beruehr",
+  "klaerung.vorgemerkt",
+  "sk.kopf",
+  "sk.merkpostenKopf",
+  "sk.materialKopf",
+  "sk.zeitleisteKopf",
+  "sk.sessionsKopf",
+  "ak.kopf",
+  "ak.teilenAusVerlauf",
+  "mk.kopf",
+  "mk.auftraegeLeer",
+  "mk.agendaKopf",
+  "mk.vermeidenKopf",
+  "mk.agendaVon",
+  "mk.agendaWunsch",
+  "mk.agendaKandidat",
+  "mk.agendaVorgemerkt",
+  "mk.agendaLeer",
+  "mk.fruehereKopf",
+  "mk.fruehereLeer",
+  "mk.impulsWar",
+  "mk.prozessKopf",
+  "mk.prozessNachtrag",
+  "mk.prozessVerlauf",
+  "mk.prozessLeer",
+  "mk.zwischenzeitKopf",
+  "mk.qzKopf",
+  "mk.qzWahlen",
+  "mk.qzWahlenLeer",
+  "mk.qzStufe",
+  "mk.materialVon",
+  "mk.materialLeer",
+  "mk.namen",
+  "mess.wesen",
+  "scale.safety.titel",
+  "scale.safety.text",
+  "scale.safety.min",
+  "scale.safety.max",
+  "scale.closing.titel",
+  "scale.closing.min",
+  "scale.closing.max",
+  "choice.connect.titel",
+  "choice.connect.o1",
+  "choice.connect.o2",
+  "choice.connect.o3",
+  "choice.connect.o4",
+  "choice.connect.ohne",
+  "choice.arrive.titel",
+  "choice.arrive.ohne",
+  "choice.farewell.titel",
+  "choice.farewell.ohne",
+  "mess.wirksam",
+  "mess.verlaufZeile",
+  "mess.fit",
+  "qm.kopf",
+  "qm.auftraege",
+  "qm.auftraegeLeer",
+  "qm.material",
+  "qm.materialLeer",
+  "qm.ruhend",
+  "qm.ruhendLeer",
+  "qm.zuletzt",
+  "qm.vorgemerkt",
+  "qm.katalog",
+];
+export const korpusTexte = Object.fromEntries(KORPUSTEXTE_ORDNUNG.map(k => {
+  const inK = k in kontextTexte, inO = k in oberflaechenTexte;
+  if (inK === inO) throw new Error("korpusTexte '" + k + "' muss in genau einem der beiden Objekte stehen.");
+  return [k, inK ? kontextTexte[k] : oberflaechenTexte[k]];
+}));
 
 export const strukturTexte = {
   kopf: `AUSGABEFORMAT (gilt vor allem Folgenden): Jede deiner Nachrichten ist GENAU EIN Aufruf des Werkzeugs "turn" mit den Feldern antwort/marker/block — kein Text außerhalb des Werkzeugs, keine zweite Ausgabe daneben.`,

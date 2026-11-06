@@ -12,31 +12,6 @@
    is kept consistent within THIS bundle's prompts. */
 export const steuerTexte = {
   // S95.8b · Replies to the wording recall.
-  // S103 · meta mark guard (placement).
-  metaPlatzRevision:
-    "[SYSTEM-REVISION: Your last message sets [[META-REVEALED]], but not alone on the last line. " +
-    "The mark is the handover to the app: whatever follows it comes too late. Repeat the message " +
-    "so the mark stands ALONE on the last line — and only if you have already told the reveal in " +
-    "THIS message.]",
-  // S103 · crisis guard (order in the shared room).
-  krisenReihenfolgeRevision:
-    "[SYSTEM-REVISION: You name professional crisis help, but the referral to the protected " +
-    "individual space is missing or comes after it. In the shared room BOTH always apply, in this " +
-    "order: FIRST their own space, THEN crisis help as a next step. Crisis help does not replace " +
-    "the referral. Repeat the message with both, in the right order.]",
-  // S101 · Mark guard: question and reveal mark in one message.
-  markenRevision:
-    "[SYSTEM-REVISION: Your last message asks a question AND sets a reveal mark. " +
-    "With the mark the app shows the board — the question would come too late, and an okay " +
-    "afterwards would be none. Repeat the message WITHOUT the mark: first the question, then " +
-    "wait for the answer. The mark follows in a LATER message, alone on the last line.]",
-  // S99.3 · Closing guard (core/engine/abschluss-waechter.js).
-  abschlussRevision:
-    "[SYSTEM-REVISION: Your last message asks a question AND closes the session " +
-    "(TIMELINE-BLOCK). With the block the session ends immediately — afterwards the person " +
-    "has no input field and cannot answer. Repeat the message WITHOUT the block: first the " +
-    "fork or your question, then wait for the answer. The block follows in a LATER message, " +
-    "together with the appreciating closing sentence and without any question.]",
   abrufGefunden: "The wording of session {vid} is now available. Pick up from it; for an excerpt, check the suitability of its pairs as you would for your own session.",
   abrufLeer: "No wording was kept for this session. Say so explicitly and name the way: the timeline lists the conversations for reading — the person can look there and then tell you which one they mean. Invent nothing.",
 
@@ -67,21 +42,6 @@ export const steuerTexte = {
   einzelRueckkehr: "[Return after completion: The mandate clarification is already completed and released; I am entering this space again. Open the AFTERGLOW.]",
   einzelWeiter: "[Return to the ongoing mandate clarification: I am entering this space again; the session is paused. Open the RE-ENTRY.]",
   gemeinsamWeiter: "[Return to the running Shared Resolution: We are entering the space again; the session was paused. Open the RE-ENTRY.]",
-  /* S94 \u00b7 Guard revision texts live in the corpus \u2014 see prompts.de.js. */
-  aufdeckRevision:
-    "[SYSTEM REVISION: Your last message reproduces stack contents in the text \u2014 " +
-    "only the app's board shows those (STACK REPRODUCTION BAN). " +
-    "Repeat the message without any reproduction of stack contents; name at most the DIRECTION. " +
-    "If both have agreed and the direction is chosen, end the message with exactly one " +
-    "reveal mark ([[REVEAL-A]] or [[REVEAL-B]]) alone on the last line.]",
-  urteilsRevision:
-    "[SYSTEM REVISION: Your last message contains a verdict from the judge's seat " +
-    "(\"That is \u2026\", \"That sounds \u2026\", \"a powerful wording\" or similar). Positive verdicts are verdicts too. " +
-    "Repeat the message without any grading: mirror close to the person's own words, " +
-    "or \u2014 if you offer your own perception \u2014 from the I-perspective WITH a return question " +
-    "(\"For me this sounds like \u2026 \u2013 does that fit for you?\"). If nothing substantial strikes you, " +
-    "the best mirroring is short or none: ask the next question. " +
-    "Content and length stay the same otherwise.]",
   aufdeckungAngezeigt: "REVEAL-SHOWN: The app has shown both of you the direction {owner} – {owner}'s stack next to {tipper}'s guess, touching points highlighted; the board stays visible within the conversation. Now FIRST ask the open question what catches their eye or surprises them – your own observations only afterwards.",
 };
 
@@ -99,22 +59,12 @@ export const QZ_STUFEN_TEXT = {
   4: "This, too, is a legitimate option: consciously pausing the shared moments, with a clear re-entry date — a clean exit instead of silent erosion.",
 };
 
-export const korpusTexte = {
-  "titel.solo": "Supported Reflection Session",
-  "titel.einzel": "Clarifying Your Focus",
-  "titel.gemeinsam": "Shared Resolution",
-  "titel.moment": "Quality time",
-
-  /* Builder explanation texts (review package 4) — header tokens invariant. */
-  "rank.howto": "You can re-sort or take something out at any time; a tap is enough. The polar pairs are available as separate poles. Sort by feeling, not by perfection.",
-  "rank.self.titel": "What matters most to you?",
-  "rank.self.desc": "Choose the five things in your relationship that matter most to you into the stack – at the very top, what matters most of all. You may also stack both sides of a polar pair.",
+/* MOD-3b · korpusTexte split by RECIPIENT: kontextTexte go to the MODEL,
+   oberflaechenTexte are shown by the APP in the couple's language. The facade
+   korpusTexte keeps every key in the old order. */
+export const kontextTexte = {
   "rank.self.kopf": "RANKING-RESULT – Top 5 (1 = matters most to {me}; polar pairs were available as separate poles; the remaining {rest} entries deliberately stayed unordered; if several results exist, the latest counts):",
-  "rank.pwichtig.titel": "What presumably matters most to {partner}?",
-  "rank.pwichtig.desc": "Pure guessing – you cannot know, and that is exactly the point. Choose the three things that presumably matter most to {partner} into the stack.",
   "rank.pwichtig.kopf": "PARTNER-GUESS (Top 3, guessed by {me}; 1 = presumably matters most to {partner}; if several results exist, the latest counts):",
-  "rank.pchange.titel": "In which area does {partner} most likely wish for the most change?",
-  "rank.pchange.desc": "Again pure guessing, no right or wrong. Choose the one area into the stack where {partner} most likely wishes for the most change right now.",
   "rank.pchange.kopf": "PARTNER-GUESS-CHANGE (guessed by {me}; if several results exist, the latest counts):",
   "regler.kopf": "SLIDERS-RESULT (slider positions mapped internally to 1–10; {me} has seen no numbers – mirror qualitatively; if several results exist, the latest counts):",
   "regler.zeilePole": "{t}: current position {w} · Inner Alignment {z} (spectrum: 1={p0} … 10={p1})",
@@ -161,6 +111,37 @@ export const korpusTexte = {
   "mk.namen": "Names: {nameA} (A), {nameB} (B).",
   /* S107 · The relationship being — both rate the same THIRD. */
   "mess.wesen": "Relationship being: {nameA} {a} \u00b7 {nameB} {b} \u21d2 distance {diff} (two views of the same third, not an error, no average)",
+  /* S109 · mess.markerDistanz/Ueber/Unter entfernt — sie gehoerten zu
+     pruefeLeserichtung, das mit S107 ersatzlos entfallen ist. */
+  "mess.wirksam": "Efficacy per topic: ",
+  "mess.verlaufZeile": "{datum}: relationship being {nameA} {a} \u00b7 {nameB} {b} (distance {diff})",
+  "mess.fit": "Goal fit: ",
+  "qm.kopf": "MATERIAL (shared layer):",
+  "qm.auftraege": "Goals: ",
+  "qm.auftraegeLeer": "Goals: none active.",
+  "qm.material": "Released material: ",
+  "qm.materialLeer": "Released material: none.",
+  "qm.ruhend": "RESTING (do not propose): ",
+  "qm.ruhendLeer": "RESTING: nothing.",
+  "qm.zuletzt": "Chosen recently: ",
+  "qm.vorgemerkt": "Earmarked talking points: ",
+  "qm.katalog": "CATALOG of the areas of life:",
+};
+
+export const oberflaechenTexte = {
+  "titel.solo": "Supported Reflection Session",
+  "titel.einzel": "Clarifying Your Focus",
+  "titel.gemeinsam": "Shared Resolution",
+  "titel.moment": "Quality time",
+
+  /* Builder explanation texts (review package 4) — header tokens invariant. */
+  "rank.howto": "You can re-sort or take something out at any time; a tap is enough. The polar pairs are available as separate poles. Sort by feeling, not by perfection.",
+  "rank.self.titel": "What matters most to you?",
+  "rank.self.desc": "Choose the five things in your relationship that matter most to you into the stack – at the very top, what matters most of all. You may also stack both sides of a polar pair.",
+  "rank.pwichtig.titel": "What presumably matters most to {partner}?",
+  "rank.pwichtig.desc": "Pure guessing – you cannot know, and that is exactly the point. Choose the three things that presumably matter most to {partner} into the stack.",
+  "rank.pchange.titel": "In which area does {partner} most likely wish for the most change?",
+  "rank.pchange.desc": "Again pure guessing, no right or wrong. Choose the one area into the stack where {partner} most likely wishes for the most change right now.",
   "scale.safety.titel": "How safe do you feel with {partner}?",
   "scale.safety.text": "This is about your overall feeling: How much can you be yourself around {partner}, relax, and speak about what really moves you?",
   "scale.safety.min": "1 · not at all",
@@ -178,22 +159,102 @@ export const korpusTexte = {
   "choice.arrive.ohne": "Continue without an arrival moment",
   "choice.farewell.titel": "Would you like to take a small invitation with you?",
   "choice.farewell.ohne": "Say goodbye without an invitation",
-  /* S109 · mess.markerDistanz/Ueber/Unter entfernt — sie gehoerten zu
-     pruefeLeserichtung, das mit S107 ersatzlos entfallen ist. */
-  "mess.wirksam": "Efficacy per topic: ",
-  "mess.verlaufZeile": "{datum}: relationship being {nameA} {a} \u00b7 {nameB} {b} (distance {diff})",
-  "mess.fit": "Goal fit: ",
-  "qm.kopf": "MATERIAL (shared layer):",
-  "qm.auftraege": "Goals: ",
-  "qm.auftraegeLeer": "Goals: none active.",
-  "qm.material": "Released material: ",
-  "qm.materialLeer": "Released material: none.",
-  "qm.ruhend": "RESTING (do not propose): ",
-  "qm.ruhendLeer": "RESTING: nothing.",
-  "qm.zuletzt": "Chosen recently: ",
-  "qm.vorgemerkt": "Earmarked talking points: ",
-  "qm.katalog": "CATALOG of the areas of life:",
 };
+
+const KORPUSTEXTE_ORDNUNG = [
+  "titel.solo",
+  "titel.einzel",
+  "titel.gemeinsam",
+  "titel.moment",
+  "rank.howto",
+  "rank.self.titel",
+  "rank.self.desc",
+  "rank.self.kopf",
+  "rank.pwichtig.titel",
+  "rank.pwichtig.desc",
+  "rank.pwichtig.kopf",
+  "rank.pchange.titel",
+  "rank.pchange.desc",
+  "rank.pchange.kopf",
+  "regler.kopf",
+  "regler.zeilePole",
+  "regler.zeileNormal",
+  "startwerte.kopf",
+  "aufdeckk.kopf",
+  "aufdeckk.top5",
+  "aufdeckk.guess3",
+  "klaerung.aufdeckAussteht",
+  "klaerung.protokoll",
+  "klaerung.beruehr",
+  "klaerung.vorgemerkt",
+  "sk.kopf",
+  "sk.merkpostenKopf",
+  "sk.materialKopf",
+  "sk.zeitleisteKopf",
+  "sk.sessionsKopf",
+  "ak.kopf",
+  "ak.teilenAusVerlauf",
+  "mk.kopf",
+  "mk.auftraegeLeer",
+  "mk.agendaKopf",
+  "mk.vermeidenKopf",
+  "mk.agendaVon",
+  "mk.agendaWunsch",
+  "mk.agendaKandidat",
+  "mk.agendaVorgemerkt",
+  "mk.agendaLeer",
+  "mk.fruehereKopf",
+  "mk.fruehereLeer",
+  "mk.impulsWar",
+  "mk.prozessKopf",
+  "mk.prozessNachtrag",
+  "mk.prozessVerlauf",
+  "mk.prozessLeer",
+  "mk.zwischenzeitKopf",
+  "mk.qzKopf",
+  "mk.qzWahlen",
+  "mk.qzWahlenLeer",
+  "mk.qzStufe",
+  "mk.materialVon",
+  "mk.materialLeer",
+  "mk.namen",
+  "mess.wesen",
+  "scale.safety.titel",
+  "scale.safety.text",
+  "scale.safety.min",
+  "scale.safety.max",
+  "scale.closing.titel",
+  "scale.closing.min",
+  "scale.closing.max",
+  "choice.connect.titel",
+  "choice.connect.o1",
+  "choice.connect.o2",
+  "choice.connect.o3",
+  "choice.connect.o4",
+  "choice.connect.ohne",
+  "choice.arrive.titel",
+  "choice.arrive.ohne",
+  "choice.farewell.titel",
+  "choice.farewell.ohne",
+  "mess.wirksam",
+  "mess.verlaufZeile",
+  "mess.fit",
+  "qm.kopf",
+  "qm.auftraege",
+  "qm.auftraegeLeer",
+  "qm.material",
+  "qm.materialLeer",
+  "qm.ruhend",
+  "qm.ruhendLeer",
+  "qm.zuletzt",
+  "qm.vorgemerkt",
+  "qm.katalog",
+];
+export const korpusTexte = Object.fromEntries(KORPUSTEXTE_ORDNUNG.map(k => {
+  const inK = k in kontextTexte, inO = k in oberflaechenTexte;
+  if (inK === inO) throw new Error("korpusTexte '" + k + "' muss in genau einem der beiden Objekte stehen.");
+  return [k, inK ? kontextTexte[k] : oberflaechenTexte[k]];
+}));
 
 export const strukturTexte = {
   kopf: `OUTPUT FORMAT (takes precedence over everything below): Each of your messages is EXACTLY ONE call of the "turn" tool with the fields antwort/marker/block — no text outside the tool, no second output next to it.`,
