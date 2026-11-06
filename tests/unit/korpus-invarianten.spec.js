@@ -37,7 +37,6 @@ describe("Korpus-Invarianten (alle Sprachfassungen)", () => {
       expect(Object.keys(k.steuerTexte.start).sort()).toEqual(Object.keys(korpora.de.steuerTexte.start).sort());
       expect(k.steuerTexte.weiterMitKapitel).toContain("{n}");
       expect(Object.keys(k.korpusTexte).sort()).toEqual(Object.keys(korpora.de.korpusTexte).sort());
-      expect(Object.keys(k.QZ_STUFEN_TEXT).sort()).toEqual(Object.keys(korpora.de.QZ_STUFEN_TEXT).sort());
       expect(k.KAPITEL_TITEL).toHaveLength(4);
       expect(k.DOMAINS).toHaveLength(korpora.de.DOMAINS.length);
     });

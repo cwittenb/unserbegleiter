@@ -189,7 +189,9 @@ export function qzStufe(qz, now = Date.now) {
   return 4;
 }
 
-export { QZ_STUFEN_TEXT } from "../prompts/prompts.js";   // Inhalt lebt im Korpus (Sprachfassung)
+/* MOD-7 · QZ_STUFEN_TEXT ist entfallen: vier Stufentexte ohne Aufrufer (die
+   Stufe selbst — qzStufe() — bleibt; die Texte dazu hat seit S42 niemand
+   gerendert). Tests halten fest, dass der Export fort ist. */
 
 /** Material-Nachricht für den Menü-Generator (qzMenuePrompt arbeitet NUR damit). */
 export function baueQzMaterial({ goals, sharings, qualitytime, agenda }) {

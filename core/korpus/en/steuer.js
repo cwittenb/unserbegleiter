@@ -52,13 +52,6 @@ export const steuerTexte = {
    invariants and identical to the German reference by construction. */
 export const KAPITEL_TITEL = ["Settling In & The Map", "What Matters Most", "Speculation Game", "Straight Talk"];
 
-export const QZ_STUFEN_TEXT = {
-  1: null,   // the gentle invitation needs no frame text
-  2: "It's been a while — no pressure at all: What is making it hard for you right now to find shared moments? (The question is the invitation; an answer is optional.)",
-  3: "If it's the calendar: Would you like to set a concrete date for a small shared moment right away? A fixed place takes the decision out of everyday life.",
-  4: "This, too, is a legitimate option: consciously pausing the shared moments, with a clear re-entry date — a clean exit instead of silent erosion.",
-};
-
 /* MOD-3b · korpusTexte split by RECIPIENT: kontextTexte go to the MODEL,
    oberflaechenTexte are shown by the APP in the couple's language. The facade
    korpusTexte keeps every key in the old order. */
