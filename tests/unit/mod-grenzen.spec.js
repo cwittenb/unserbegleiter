@@ -59,6 +59,9 @@ const VERBOTEN = {
   /* MOD-2b · Der Policy-Katalog kennt Mechanik (engine) und Korpus-SCHLUESSEL,
      aber keinen Korpus-Inhalt: Er importiert weder prompts noch ui. */
   "core/policies":  ["core/prompts", "core/ui", "core/llm", "core/korpus", "platforms", "evals"],
+  /* MOD-3 · Der Korpus ist Inhalt: Er importiert keine Mechanik und keine UI.
+     (prompts/ bleibt als Fassade und Lader; korpus/ ist, was die Fassade reicht.) */
+  "core/korpus":    ["core/ui", "core/engine", "core/llm", "core/policies", "core/prompts", "platforms", "evals"],
 };
 
 describe("MOD-0 · Importrichtung: Mechanik kennt keinen Inhalt", () => {
