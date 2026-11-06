@@ -252,10 +252,8 @@ describe("S99.3 · Die Regel steht im Prompt (erste Verteidigung)", () => {
     expect(p).toMatch(/NEVER carries a TIMELINE-BLOCK/);
   });
 
-  it("der Revisionstext lebt im Korpus, nicht nur im Wächter (de+en)", () => {
-    for (const st of [steuerTexte, steuerTexteEn]) {
-      expect(st.abschlussRevision).toContain("SYSTEM-REVISION");
-      expect(st.abschlussRevision).toContain("TIMELINE-BLOCK");
-    }
+  it("der Revisionstext ist fort (MOD-3b, F8 a): seit S105.3 wird nichts neu geschrieben — die Engine traegt nur die Kennung", () => {
+    for (const st of [steuerTexte, steuerTexteEn]) expect(st.abschlussRevision).toBeUndefined();
+    expect(ABSCHLUSS_REVISION).toBe("abschluss-mit-frage");
   });
 });

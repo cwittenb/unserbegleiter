@@ -238,10 +238,11 @@ describe("S103.5 · Woran die Krisenlage erkannt wird", () => {
     expect(aufloesungsPromptEn("Anna", "Bernd")).toContain("The number alone");
   });
 
-  it("beide Revisionstexte leben im Korpus", () => {
+  it("beide Revisionstexte sind fort (MOD-3b, F8 a) — die Kennung traegt die Engine, die Krise wird vorwaerts geschaerft", () => {
     for (const st of [steuerTexte, steuerTexteEn]) {
-      expect(st.metaPlatzRevision).toContain("SYSTEM-REVISION");
-      expect(st.krisenReihenfolgeRevision).toContain("SYSTEM-REVISION");
+      expect(st.metaPlatzRevision).toBeUndefined();
+      expect(st.krisenReihenfolgeRevision).toBeUndefined();
     }
+    expect(META_PLATZ_REVISION).toBe("meta-marke-platz");
   });
 });
