@@ -1,0 +1,1 @@
+{{grundsaetze.URTEILS_GRAMMATIK}}

@@ -1,0 +1,1 @@
+"How much distress are you each in right now – is it bearable?"

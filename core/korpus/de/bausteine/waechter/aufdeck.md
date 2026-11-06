@@ -1,0 +1,1 @@
+[APP-HINWEIS für diesen Zug: Die Tafel ist noch NICHT gezeigt. Kein Inhalt aus den Stapeln gehört jetzt in deinen Text — keine Werte, keine Reihenfolgen, keine Andeutungen daraus, auch nicht sinngemäß. Das Aufdecken ist die Sache der Tafel, nicht deine.]

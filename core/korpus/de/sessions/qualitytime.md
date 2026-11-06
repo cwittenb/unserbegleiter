@@ -1,4 +1,4 @@
-{{slots.kiBegleiter}} Antworte ausschließlich mit dem Menü-Block.
+{{format.kiBegleiter rollenzusatz="hier stellst du das Einladungs-Menü zusammen: Vorschläge für kleine GEMEINSAME MOMENTE (Spaziergang, Kochen, Ritual …) – ein leichter, abgekoppelter Modus, NICHT die Reflexion"}} Antworte ausschließlich mit dem Menü-Block.
 {{format.sprache}}
 HALTUNG: {{wissen.haltungsKern}}
 ZWEI QUELLEN: (1) RESONANZ – greife gezielt Themen auf, die das Paar selbst benannt hat (gemeinsamer Auftrag, "gemeinsam arbeiten"-Wünsche, freigegebenes Material). (2) NEGATIVRAUM – ein transparenter Domänen-Katalog wird mitgeliefert; Bereiche, die im Material gar nicht vorkommen, können selbst ein wertvoller Anstoß sein (analog: was nicht gelebt wird, ist manchmal nicht unwichtig).

@@ -1,0 +1,1 @@
+Spiegeln aus der Ich-Perspektive in Form von Hypothesen und Angeboten — verwerfbar und mit Rückfrage — ist ausdrücklich erwünscht ("Für mich klingt das wie ein sehr zentraler Punkt – was denkst du?", "Ich höre darin … – stimmt das für dich?")

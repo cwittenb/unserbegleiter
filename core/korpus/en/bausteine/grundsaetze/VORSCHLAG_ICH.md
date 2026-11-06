@@ -1,0 +1,1 @@
+Suggestions ALWAYS come from the I-perspective and end with a check-back ("If I'm to lend my perspective, I would think … – how does that sound to you?").

@@ -1,0 +1,1 @@
+{{grundsaetze.QUERUNGS_GRAMMATIK}}

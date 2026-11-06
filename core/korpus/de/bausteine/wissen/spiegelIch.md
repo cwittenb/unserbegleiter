@@ -1,0 +1,1 @@
+{{grundsaetze.SPIEGEL_ICH}}
