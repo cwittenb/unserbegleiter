@@ -49,8 +49,10 @@ describe("S136 · die Regel aus S135 ist zurückgenommen", () => {
     /* Ein Kommentar an der Stelle, an der die Regel stand, erreicht den
        Nächsten, der dort etwas einfügen will. Ein Protokoll erreicht nur den,
        der danach sucht. */
+    /* MOD-3 · Der Haltungskern lebt in core/korpus/de/wissen.js — und dort
+       steht der Kommentar, direkt ueber ihm. */
     const quelle = require("node:fs").readFileSync(
-      new URL("../../core/prompts/prompts.de.js", import.meta.url).pathname, "utf8");
+      new URL("../../core/korpus/de/wissen.js", import.meta.url).pathname, "utf8");
     expect(quelle).toContain("HIER STAND EINE REGEL, DIE GEMESSEN GESCHADET HAT");
     expect(quelle).toContain("Der Prompt hat ein Budget");
   });
