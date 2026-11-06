@@ -14,7 +14,9 @@ import { describe, it, expect } from "vitest";
 import { JUDGE_PROMPT_VERSION, baueJudgePrompt } from "../../evals/judge/judge.js";
 import { GOLDEN } from "../../evals/judge/golden.js";
 import { pruefeMetaMarke, META_PLATZ_REVISION } from "../../core/engine/abschluss-waechter.js";
-import { KRISENHILFE, EINZELRAUM } from "../../core/engine/krisen-waechter.js";
+/* MOD-2a · Die Erkenner sind Korpus-Inhalt (waechter.krisenhilfe / .einzelraum). */
+import { waechter } from "../../core/prompts/prompts.de.js";
+const { krisenhilfe: KRISENHILFE, einzelraum: EINZELRAUM } = waechter;
 import { momentDef } from "../../core/ui/sessions.js";
 import { gemeinsamDef } from "../../core/ui/kernwetten.js";
 import { bausteine, reflexionsPrompt, momentPrompt, aufloesungsPrompt, steuerTexte } from "../../core/prompts/prompts.de.js";

@@ -25,7 +25,7 @@ import * as krise from "../../core/engine/krisen-waechter.js";
 import * as abschluss from "../../core/engine/abschluss-waechter.js";
 import * as prozess from "../../core/ui/prozess.js";
 import * as sessions from "../../core/ui/sessions.js";
-import { korpusTexte } from "../../core/prompts/prompts.de.js";
+import { korpusTexte, waechter as korpusWaechter } from "../../core/prompts/prompts.de.js";
 import { korpusTexte as korpusEn } from "../../core/prompts/prompts.en.js";
 import { de } from "../../core/i18n/de.js";
 import { en } from "../../core/i18n/en.js";
@@ -70,11 +70,17 @@ describe("S113 · Die Revisions-Wächter sind fort", () => {
     expect(typeof urteil.findetUrteil).toBe("function");
     expect(typeof aufdeck.findetStapelLeck).toBe("function");
     expect(typeof aufdeck.imAufdeckPfad).toBe("function");
-    expect(krise.KRISENHILFE).toBeInstanceOf(RegExp);
-    expect(krise.EINZELRAUM).toBeInstanceOf(RegExp);
-    // Und die Schärfungen selbst.
-    expect(typeof aufdeck.aufdeckSchaerfung).toBe("function");
-    expect(typeof krise.krisenSchaerfung).toBe("function");
+    /* MOD-2a · Die Erkenner KRISENHILFE/EINZELRAUM sind Inhalt und leben im
+       Korpus (waechter.*); der Engine-Code traegt sie nicht mehr. Die
+       Schaerfungen sind Fabriken, die ihren Inhalt hereingereicht bekommen. */
+    expect(krise.KRISENHILFE).toBeUndefined();
+    expect(krise.EINZELRAUM).toBeUndefined();
+    expect(korpusWaechter.krisenhilfe).toBeInstanceOf(RegExp);
+    expect(korpusWaechter.einzelraum).toBeInstanceOf(RegExp);
+    expect(typeof aufdeck.baueAufdeckSchaerfung).toBe("function");
+    expect(typeof krise.baueKrisenSchaerfung).toBe("function");
+    expect(aufdeck.aufdeckSchaerfung).toBeUndefined();
+    expect(krise.krisenSchaerfung).toBeUndefined();
   });
 
   it("waechterKette ist fort, uebergabeKette da", () => {
@@ -95,8 +101,8 @@ describe("S113 · Keine Exporte ohne Verwender", () => {
   it("kein Export der Wächter-Module ist FUNKTIONSLOS", () => {
     /* Der Test prüft nicht »wird von außen benutzt« — das wäre zu streng.
        Mehrere Konstanten sind Vorgabewerte, die nur intern greifen
-       (ABSCHLUSS_TOKEN, AUFDECK_MARKEN, META_MARKE, MARKEN_REVISION,
-       KRISEN_SCHAERFUNG: `ctx.revision || MARKEN_REVISION`). Sie sind nicht
+       (ABSCHLUSS_TOKEN, AUFDECK_MARKEN, META_MARKE, MARKEN_REVISION:
+       `ctx.revision || MARKEN_REVISION`). Sie sind nicht
        tot, sondern die dokumentierte Vorgabe — und als Export lesbar, was den
        Standardfall benennt.
        Geprüft wird deshalb: Jeder Export kommt irgendwo vor, sei es in der

@@ -654,6 +654,61 @@ export const korpusTexte = {
    Korpus bleibt byte-identisch: Alle WANN-Regeln und die JSON-Feld-Dokumentation
    der Blöcke gelten wortgleich weiter; nur der Transport wechselt.
    Platzhalter: {liste} = Marken-Namen · {start} = Block-Startmarke · {typ} = dataset. */
+/* ---------------------------------------------------------------
+ * WAECHTER-INHALT (MOD-2a): Signale und Zusatztexte der Schaerfungen.
+ * Die Mechanik (WANN greift ein Waechter, aus welchem Zustand) lebt in
+ * core/engine/*-waechter.js; WAS er dem Modell mitgibt und WORAN er eine
+ * Lage erkennt, steht hier — je Sprache, paritaetsgeprueft.
+ *
+ * Krisen-Signale und -Erkenner sind in DE und EN bewusst IDENTISCH (Union
+ * beider Sprachen): Wer in Not ist, wechselt unter Umstaenden die Sprache,
+ * und eine Krise darf nicht an der Paarsprache scheitern. Die
+ * Zweiseitigkeits-Muster sind deutsch und in EN unveraendert uebernommen
+ * (Verhalten byte-gleich zum Stand vor MOD-2a: in EN-Sessions feuerten sie
+ * nie) — englische Muster sind eine offene Entscheidung, keine stille.
+ * --------------------------------------------------------------- */
+export const waechter = {
+  krise: {
+    /* S105.3 · Wortanfaenge ohne Endgrenze: deutsche Beugung haengt an
+       ("ritze", "ritzt", "selbstverletzendes"). Eine Endgrenze liess genau
+       die Formen durch, in denen Menschen tatsaechlich sprechen. */
+    signal: /\bsuizid|\bselbstmord|\bumbringen|nicht mehr leben|nicht mehr weiterleben|sterben will|\britz(e|t|en|est)\b|\bselbst ?verletz|weg sein wollen|keinen sinn mehr|am ende sein|self-harm|\bsuicid|kill myself|end it all/i,
+    text:
+      "[APP-HINWEIS für diesen Zug: In der Nachricht klingt eine mögliche Krise an. Es gilt die " +
+      "Reihenfolge des geteilten Raumes: ZUERST der Verweis in den eigenen Raum (dort bist du ganz " +
+      "für die Person, und was dort gesagt wird, bleibt dort), DANN professionelle Krisenhilfe als " +
+      "nächster Schritt. Die Krisenhilfe ersetzt den Verweis nicht. Der Partner bekommt keinen " +
+      "Auftrag für die Sicherheit der anderen Person.]",
+  },
+  /* Erkenner (S103): Nennungen professioneller Krisenhilfe — die Nummer ist der
+     harte Anker, die Woerter fangen sinngemaesse Nennungen. Und Verweise auf
+     den geschuetzten Einzelraum, bewusst grosszuegig. Seit S113 ohne
+     Produktions-Aufrufer, als benannte Erkenner einzeln geprueft. */
+  krisenhilfe: /0800\s*111\s*0\s*111|Telefonseelsorge|Krisendienst|crisis line|helpline/i,
+  einzelraum: /eigene[nrms]?\s+Raum|eigenen\s+Raum|Einzelraum|dein\s+Raum|deinem\s+Raum|individual\s+space|own\s+space|your\s+own\s+room/i,
+  zweiseitigkeit: {
+    /* MRV.3 · Jemand markiert etwas als SEINE Sache, die fehlt oder nicht geht. */
+    eigeneSache: /\b(ich|mir|mein[e]?[nrs]?)\b[^.!?]{0,60}\b(nicht gemacht|nicht geschafft|nicht dazu gekommen|vergessen|nicht fertig|nicht ausgefüllt|nicht abgegeben|nicht hinbekommen|keine zeit)|\bhab(e)? (es|sie|das)? ?(diesmal )?(gar )?nicht\b/i,
+    /* Jemand verfuegt darueber — weitermachen, ueberspringen, vertagen. */
+    verfuegung: /\b(lass uns|lassen wir|dann lassen wir|wir (machen|holen|überspringen|lassen)|einfach weiter|trotzdem weiter|ein andermal|später nach|nachholen|überspringen|auslassen|ruhen lassen|dann eben ohne|geht auch ohne)\b/i,
+    text:
+      "[APP-HINWEIS für diesen Zug: Eine Person hat gerade über die Sache der ANDEREN verfügt — " +
+      "über etwas, das die andere selbst als ihres benannt hat. Hol die betroffene Person EINMAL " +
+      "kurz ein, bevor du zustimmst oder weitergehst (»passt das auch für dich?«), und nimm ihre " +
+      "Antwort, wie sie kommt. " +
+      "Das ist KEINE Leitung und keine Unterbrechung, sondern genau der Rahmen, den du hältst: " +
+      "Im geteilten Raum entscheidet niemand für den anderen mit, nur weil er schneller spricht. " +
+      "Eine halbe Zeile genügt. Den Anlass sprichst du dabei nicht aus, und du drängst nicht auf " +
+      "das Nachholen — die Frage gilt der Zustimmung, nicht der Aufgabe.]",
+  },
+  aufdeck: {
+    text:
+      "[APP-HINWEIS für diesen Zug: Die Tafel ist noch NICHT gezeigt. Kein Inhalt aus den Stapeln " +
+      "gehört jetzt in deinen Text — keine Werte, keine Reihenfolgen, keine Andeutungen daraus, auch " +
+      "nicht sinngemäß. Das Aufdecken ist die Sache der Tafel, nicht deine.]",
+  },
+};
+
 export const strukturTexte = {
   kopf: `AUSGABEFORMAT (gilt vor allem Folgenden): Jede deiner Nachrichten ist GENAU EIN Aufruf des Werkzeugs "turn" mit den Feldern antwort/marker/block — kein Text außerhalb des Werkzeugs, keine zweite Ausgabe daneben.`,
   antwort: `"antwort" ist dein Begleitertext an die Person — das Einzige, was sie sieht. ALLE Gesprächsregeln unten gelten unverändert für dieses Feld. In "antwort" stehen NIE Marken (kein [[…]]), keine Block-Marken (kein "…-BLOCK"), kein JSON.`,
