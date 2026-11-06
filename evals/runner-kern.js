@@ -13,7 +13,8 @@
 // Engine (Vertrag 2), und im Transkript steht danach nur die revidierte
 // Fassung — genau das, was die Person in der App zu sehen bekaeme.
 
-import { getPrompts, registerKorpus } from "../core/prompts/prompts.js";
+import { registerKorpus } from "../core/prompts/prompts.js";
+import { baueSessionDef, baueSystemText, markerOrderFuer as markerOrderDerDef } from "../core/komposition.js";
 import { textSchatten } from "../core/engine/text-schatten.js";
 import { strukturFuer, istStrukturfaehig } from "./struktur-bruecke.js";
 import * as korpusEn from "../core/prompts/prompts.en.js";
@@ -27,11 +28,8 @@ registerKorpus("en", korpusEn);
 import { richte } from "./judge/judge.js";
 // S94 · Die Waechter werden IMPORTIERT, nicht nachgebaut. Ein Eval, das eine
 // eigene Kopie der Regel prueft, misst sich selbst.
-import { aufdeckSchaerfung } from "../core/engine/aufdeck-waechter.js";
-import { krisenSchaerfung } from "../core/engine/krisen-waechter.js";
-import { zweiseitigkeitsSchaerfung } from "../core/engine/zweiseitigkeit-waechter.js";
-import { pruefeAbschlussAntwort, pruefeMetaMarke, pruefeMarkenAntwort,
-         uebergabeKette } from "../core/engine/abschluss-waechter.js";
+// MOD-1 · Dasselbe gilt seither fuer ihre ZUORDNUNG zur Session: Sie kommt
+// aus der SessionDef (core/komposition.js), nicht aus einer Kopie hier.
 
 export const SZENARIO_FORMAT_VERSION = 1;
 
@@ -40,16 +38,15 @@ export const szenarioSprache = szenario => (szenario && szenario.sprache === "en
 
 export function sysPromptFuer(szenario) {
   const k = szenario.kontext || {};
-  const P = getPrompts(szenarioSprache(szenario));   // Korpus der Szenario-Sprache
-  let basis;
-  switch (szenario.session) {
-    case "solo": basis = P.reflexionsPrompt(k.me || "Anna", k.partner || "Bernd"); break;
-    case "moment": basis = P.momentPrompt(k.nameA || "Anna", k.nameB || "Bernd"); break;
-    case "einzel": basis = P.klaerungsPrompt(k.me || "Anna", k.partner || "Bernd"); break;
-    case "gemeinsam": basis = P.aufloesungsPrompt(k.nameA || "Anna", k.nameB || "Bernd"); break;
-    case "qualitytime": basis = P.qzMenuePrompt(); break;
-    default: throw new Error("Unbekannte Session im Szenario " + szenario.id + ": " + szenario.session);
-  }
+  const art = szenario.session;
+  if (!["solo", "moment", "einzel", "gemeinsam", "qualitytime"].includes(art))
+    throw new Error("Unbekannte Session im Szenario " + szenario.id + ": " + art);
+  /* MOD-1 · Der Text kommt aus derselben Komposition wie in der App — mit den
+     Festwerten Anna/Bernd, wo das Szenario keine Namen setzt. Fuer solo und
+     moment heisst das seit MOD-1: INKLUSIVE Themenrahmen (Entscheidung E6 a;
+     bis dahin mass der Eval hier einen anderen Prompt als die App, MOD-0 B1). */
+  const ctx = { me: k.me || "Anna", partner: k.partner || "Bernd", nameA: k.nameA || "Anna", nameB: k.nameB || "Bernd" };
+  const basis = baueSystemText(art, ctx, { sprache: szenarioSprache(szenario) });
   // Kontext-Injektion (S66): Szenarien dürfen App-seitig eingespielten Kontext
   // nachbilden (z. B. Merkposten im Reflexionsgespräch, RESTING-Stand im
   // QZ-Menü) — wie die App: an den System-Prompt angehängt, nie als User-Turn.
@@ -82,15 +79,8 @@ export function sysPromptFuer(szenario) {
  *   qualitytime → nichts (Menue-Generator, kein Gespraech)
  */
 export function schaerfungFuer(szenario) {
-  switch (szenario.session) {
-    case "moment":
-      return (messages, ctx) => krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx);
-    case "gemeinsam":
-      return (messages, ctx) => aufdeckSchaerfung(messages, ctx)
-        || krisenSchaerfung(messages, ctx) || zweiseitigkeitsSchaerfung(messages, ctx);
-    default:
-      return null;
-  }
+  const def = defFuer(szenario);
+  return def && typeof def.schaerfe === "function" ? def.schaerfe : null;
 }
 
 /**
@@ -100,28 +90,24 @@ export function schaerfungFuer(szenario) {
  * dasselbe. Gemessen wird hier nur, DASS eine Uebergabe verweigert worden
  * waere — als Telemetrie-Spur, nicht als Eingriff ins Transkript.
  * Rueckgabe: (text, messages) => Grund | null
+ *
+ * MOD-1 · Die Def prueft mit der Engine-Signatur (text, engine) und liest den
+ * Verlauf aus engine.chat.messages; der Runner reicht ihn in genau dieser
+ * Form hinein. Ein Treffer bleibt die kurze Kennung (S105.3).
  */
 export function uebergabeFuer(szenario) {
-  const P = getPrompts(szenarioSprache(szenario));
-  const st = P.steuerTexte || {};
-  switch (szenario.session) {
-    case "solo":
-      return (text, messages) => pruefeAbschlussAntwort(text, {
-        messages, block: "TIMELINE-BLOCK", token: st.soloAbschluss,
-        revision: "abschluss-mit-frage",
-      });
-    case "moment":
-      return uebergabeKette([
-        text => pruefeAbschlussAntwort(text, {
-          block: "MOMENT-BLOCK", anlassNoetig: false, revision: "abschluss-mit-frage",
-        }),
-        text => pruefeMetaMarke(text, { revision: "meta-marke-platz", frageRevision: "marke-mit-frage" }),
-      ]);
-    case "gemeinsam":
-      return text => pruefeMarkenAntwort(text, { revision: "marke-mit-frage" });
-    default:
-      return null;
-  }
+  const def = defFuer(szenario);
+  if (!def || typeof def.pruefeUebergabe !== "function") return null;
+  return (text, messages) => def.pruefeUebergabe(text, { chat: { messages: messages || [] } });
+}
+
+/** MOD-1 · Die SessionDef des Szenarios in der Szenario-Sprache; null fuer
+ *  Arten ohne Def (qualitytime). Jede Korpus-Lesung der Def laeuft unter der
+ *  Szenario-Sprache (DE und EN im selben Lauf). */
+function defFuer(szenario) {
+  const art = szenario && szenario.session;
+  if (!["solo", "moment", "einzel", "gemeinsam"].includes(art)) return null;
+  return baueSessionDef(art, { sprache: szenarioSprache(szenario) });
 }
 
 /** Welche Uebergabe wurde verweigert? Fuer die Telemetrie.
@@ -251,15 +237,10 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
    MESSEN, NICHT EINGREIFEN: Der Treffer wandert als Spur an den Zug, genau wie
    die verweigerte Uebergabe. Der Judge sieht ihn nicht, die Wertung aendert
    sich nicht. */
-/* Die Listen spiegeln die SessionDefs (core/ui/sessions.js, kernwetten.js).
-   Bewusst als Kopie und nicht importiert: Der Runner soll die UI-Module nicht
-   ziehen. Ein Test haelt beide Seiten deckungsgleich — genau die Bauform, die
-   S119.1 fuer die Speicher-Whitelist gelernt hat. */
-const MOMENT_MARKEN = ["[[CHOICE-CONNECT]]", "[[META-REVEALED]]"];
-const EINZEL_MARKEN = ["[[SCALE-SAFETY]]", "[[SLIDERS]]", "[[PARTNER-RANKING]]",
-  "[[PARTNER-GUESS-CHANGE]]", "[[RANKING]]", "[[CHAPTER-1]]", "[[CHAPTER-2]]", "[[CHAPTER-3]]"];
-const GEMEINSAM_MARKEN = ["[[REVEAL-A]]", "[[REVEAL-B]]", "[[REVEAL]]",
-  "[[BASELINE]]", "[[SCALE-CLOSING]]"];
+/* MOD-1 · Die markerOrder kommt aus der SessionDef (core/komposition.js).
+   Bis hierher stand sie als Kopie — "der Runner soll die UI-Module nicht
+   ziehen" — doch seit ST5 zieht er sie ueber struktur-bruecke.js ohnehin.
+   Eine Kopie, die nur noch Drift erzeugen kann, ist keine Entkopplung. */
 
 /* S131 · Dasselbe Muster wie im Anzeigefilter (core/contracts/steuertoken.js).
    Die erste Fassung verbot Leerzeichen im Inneren — und zaehlte deshalb
@@ -278,12 +259,7 @@ const MARKE_IM_TEXT = /\[\[[^\]]*\]\]/g;
  *  "fremd" oder "bekannt" entschieden wird. Solo und Klaerung kennen
  *  planmaessig KEINE Marken; jede dort ist per Definition fremd. */
 export function markerOrderFuer(szenario) {
-  switch (szenario && szenario.session) {
-    case "moment": return MOMENT_MARKEN;
-    case "einzel": return EINZEL_MARKEN;
-    case "gemeinsam": return GEMEINSAM_MARKEN;
-    default: return [];
-  }
+  return markerOrderDerDef(szenario && szenario.session);
 }
 
 export function markenImText(text, bekannt) {

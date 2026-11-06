@@ -6,11 +6,12 @@ import { cleanDisplay, findeBlock } from "../contracts/block.js";
 import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht, PAIRS_KOPF } from "../contracts/steuertoken.js";
 import { findeMarker } from "../contracts/marker.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
-import { soloDef, momentDef, quereGate, baueMomentKontext, baueSoloKontext, baueAnlassKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
+import { quereGate, baueMomentKontext, baueSoloKontext, baueAnlassKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
 import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, WEGE_FUER, inKarenz } from "../engine/regal.js";
 import { paareAusVerlauf, baueAusschnitt, paarWaehlbar, paarGrund, waehleUm,
   fuelleSpanne, ueberRichtwert, hatStilleLuecken } from "../engine/ausschnitt.js";
-import { einzelDef, gemeinsamDef, rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
+import { rankItems, RANK_MODES, reglerErgebnis, rankingErgebnis, startwerteErgebnis, beruehrungen, baueAufdeckung, baueAufdeckKontext, baueKlaerungsKontext } from "./kernwetten.js";
+import { baueSessionDef } from "../komposition.js";
 import { K, setKorpusSprache, stelleKorpusBereit } from "../prompts/prompts.js";
 import { holeMessIntervall, schlageMessIntervallVor, antworteMessIntervall, messFenster,
   trageMessbeitragEin, bereiteRunde, formatiereMessrunde, markiereAufgedeckt , formatiereVerlauf } from "./prozess.js";
@@ -1305,11 +1306,9 @@ export function createApp({ doc, backend, root, diktat }) {
         await verlaufAbschluss(e2 || state.engine);
       },
     };
-    const def =
-      art === "solo" ? soloDef(backend, hooks) :
-      art === "einzel" ? einzelDef(backend, hooks) :
-      art === "gemeinsam" ? gemeinsamDef(backend, hooks) :
-      momentDef(backend, hooks);
+    // MOD-1 · Die EINE Stelle, die aus Art + Backend + Hooks eine Def macht,
+    // liegt in core/komposition.js — der Eval-Runner ruft dieselbe.
+    const def = baueSessionDef(art, { backend, hooks });
     state.chatId = art;
     state.chatShared = null;
     state.herkunft = def.shared ? "scrShared" : "scrMyRoom";   // Raum verlassen → Vorraum

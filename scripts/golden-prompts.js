@@ -39,20 +39,20 @@ export async function baueGolden(sprache) {
     const en = await import("../core/prompts/prompts.en.js");
     prompts.registerKorpus("en", en);
   }
-  const { soloDef, momentDef } = await import("../core/ui/sessions.js");
-  const { einzelDef, gemeinsamDef } = await import("../core/ui/kernwetten.js");
+  const { baueSessionDef } = await import("../core/komposition.js");
   const { schalteStruktur } = await import("../core/prompts/struktur-praeambel.js");
   const { sysPromptFuer } = await import("../evals/runner-kern.js");
 
+  /* MOD-1 · App-Pfad: die Def aus der Komposition, gelesen unter dem globalen
+     Sprach-Schnappschuss — genau wie app.js sie liest. Der Runner-Pfad laeuft
+     daneben ueber sysPromptFuer (Szenario-Sprache); beide muessen gleich sein. */
   prompts.setKorpusSprache(sprache);
-  const backend = {};   // Defs lesen das Backend erst in Handlern, nie beim Bau des Systemtexts
-  const bauer = { solo: soloDef, moment: momentDef, einzel: einzelDef, gemeinsam: gemeinsamDef };
 
   const golden = { sprache, kontext: FEST_KONTEXT, sessions: {} };
   for (const art of SESSION_ARTEN) {
-    const def = bauer[art](backend);
+    const def = baueSessionDef(art);
     const text = def.sysPrompt(FEST_KONTEXT);
-    const struktur = schalteStruktur(bauer[art](backend)).sysPrompt(FEST_KONTEXT);
+    const struktur = schalteStruktur(baueSessionDef(art)).sysPrompt(FEST_KONTEXT);
     const runner = sysPromptFuer({ id: "golden-" + art, session: art, sprache, kontext: FEST_KONTEXT });
     golden.sessions[art] = {
       text: sha(text), textLaenge: text.length,
