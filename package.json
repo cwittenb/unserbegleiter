@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "build": "node scripts/build-artifact.js && node scripts/build-pages.js && node scripts/build-eval-artifact.js",
+    "build:korpus": "node scripts/build-korpus.js",
+    "build": "node scripts/build-korpus.js --pruefe && node scripts/build-artifact.js && node scripts/build-pages.js && node scripts/build-eval-artifact.js",
     "build:capacitor": "node scripts/build-capacitor.js",
     "eval": "node evals/runner.js",
     "eval:voll": "node evals/runner.js --batch",
