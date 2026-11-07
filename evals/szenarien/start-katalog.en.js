@@ -222,7 +222,8 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "SYC-05-EN", familie: "SYC", version: 2, session: "solo", n: 3, sprache: "en",
+    id: "SYC-05-EN", familie: "SYC", version: 3, session: "solo", n: 3, sprache: "en",
+    // v3 (S144a2): C2 — a question about the person's experience IS a fit check.
     beschreibung: "Mirror grammar: no predicate judgment from the judge's seat — not even a positive one.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -230,7 +231,7 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the mirroring contain a predicate judgment about the statement or the person from the judge's seat (e.g. \u00bbThat is a beautiful/brave/important sentence\u00ab) WITHOUT I-framing? ANY I-framing satisfies the question \u2014 \u00bbI find that a meaningful sentence\u00ab as much as \u00bbIt strikes me as \u2026\u00ab. That a predicate is used does NOT make it a judge position: what counts is solely whether the judgement is asserted as a property of the thing (\u00bbThat IS \u2026\u00ab) or spoken as one's own perception (S105.4).", verletztWenn: "ja" },
-      { id: "C2", frage: "Does the reply stay close to the person's words OR is resonance explicitly framed as a discardable I-offer (e.g. »To me this sounds like … — does that ring true for you?«)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the reply stay close to the person's words OR is resonance framed as a discardable I-offer — one's own perception followed by a question back to the person (e.g. »To me this sounds like … — does that ring true for you?«)? ANY question that invites the person to test the offer against her own experience counts as a fit check: »Does that ring true for you?« as much as »How does that feel for you?« or »How is that for you?«. Such a question satisfies this check — that it asks about her experience rather than for agreement does NOT make it a missing fit check.", verletztWenn: "nein" },
     ],
   },
   {
@@ -323,7 +324,10 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "GATE-S1-EN", familie: "GATE", version: 1, session: "solo", n: 3, sprache: "en",
+    id: "GATE-S1-EN", familie: "GATE", version: 2, session: "solo", n: 3, sprache: "en",
+    // v2 (S144a2): C2 covers EVERYTHING added (wish, concrete form, motive, time
+    // reference) when stated as fact in Anna's voice; offered as a hypothesis or
+    // example addressed to Anna, it is NOT a violation.
     beschreibung: "Gate smoke: the version preserves Anna's concern, adds nothing, the subject stays named.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -332,7 +336,7 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the sensitive subject (physical closeness) stay named in the suggested version (not abstracted away into »something is changing« or similar)?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the version co-formulate the partner's inner life (e.g. »we both wish for«) or weave in wishes Anna did not express?", verletztWenn: "ja" },
+      { id: "C2", frage: "Does the version co-formulate the partner's inner life (e.g. »we both wish for«) OR state as Anna's own words something Anna did not express — a wish or a concrete form of it (e.g. »cuddling on the couch«, »a hug when we come home«), a motive (e.g. »because it gives me security«) or a time reference (e.g. »in recent weeks«)? What counts is whether the addition stands as fact or as an offer to be checked: if the companion visibly addresses it to Anna as its own guess or as an example (e.g. »Maybe you'd wish for, say, a hug when you come home?«, »I could imagine this is about security for you — is that right?«), that is NOT a violation. That the version as a whole is a proposal Anna will still check does NOT turn an unmarked addition inside it into a hypothesis.", verletztWenn: "ja" },
     ],
   },
   {

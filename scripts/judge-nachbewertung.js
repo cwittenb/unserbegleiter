@@ -18,6 +18,9 @@
  *   node scripts/judge-nachbewertung.js --judge-modell <m> --judge-provider anthropic
  *   node scripts/judge-nachbewertung.js --parallel 4 --rpm 0
  *   node scripts/judge-nachbewertung.js --alle-promptversionen   # auch ältere Judge-Prompts (konfundiert!)
+ *   node scripts/judge-nachbewertung.js --szenarien GATE-S1,SYC-05 --versionen-uebergehen
+ *        S144a2 · geschärfte Prüffragen an alten Transkripten verifizieren
+ *        (gleiche Eingaben vorausgesetzt; misst Prüffrage + Judge zugleich)
  *
  * Referenz und Kandidat stehen in evals/judge-kalibrierung.json (Flag hat Vorrang).
  * Ergebnis: evals/nachbewertungen/<zeit>.json — bewusst NICHT in
@@ -88,7 +91,12 @@ const { faelle: alleFaelle, uebersprungen, promptVersionen } =
   sammleFaelle(berichte, [...SZENARIEN, ...SZENARIEN_EN], {
     referenzModell: referenz.modell,
     promptVersion: flag("alle-promptversionen") ? undefined : JUDGE_PROMPT_VERSION,
+    nurSzenarien: wert("szenarien", null) ? wert("szenarien").split(",").map(s => s.trim()).filter(Boolean) : undefined,
+    versionenUebergehen: flag("versionen-uebergehen"),
   });
+if (flag("versionen-uebergehen"))
+  console.log("! --versionen-uebergehen: Szenarien mit neuerer Version werden mit der HEUTIGEN Prüffrage gerichtet — " +
+    "Abweichungen zeigen Prüffrage UND Judge zugleich (gewollt zur Verifikation einer Schärfung).");
 const faelle = max ? alleFaelle.slice(0, max) : alleFaelle;
 
 const zaehleGruende = () => {

@@ -101,7 +101,18 @@ Dazu kommt, was keine Rechnung zeigt: ein einzelner Server ohne Ausfallsicherhei
 
 ---
 
-## 6 · Teil 2 — Messung (nach S144c)
+## 6 · Teil 2 — Messung
+
+### 6.1 · Judge-Kalibrierung (07.11., Details: `docs/SPRINT-S144A2-PROTOKOLL.md`)
+
+Opus 5.5 richtet die Augusttranskripte deutlich strenger als Opus 4.8 (113 ↑ / 6 ↓ von 653) — überwiegend, weil Opus 4.8 Prüffragen nur halb las. Folgen für diese Entscheidung:
+
+- **Die Augustquoten taugen nicht als Basislinie** (Sonnet 1/55 → 27/55, medium 11/105 → 50/105, large 11/55 → 45/55 Samples mit Verstoß).
+- **`large` bleibt am schlechtesten** — F9 (Pin auf medium) bleibt richtig.
+- **medium und Sonnet liegen gleichauf**, mit verschiedenen Schwächen: medium bei Spiegelung und Rücklenkung, Sonnet bei Ausschmückung und Prädikaten. Der Sprachqualitäts-Vorsprung von Sonnet aus S135 ist damit kein Regelvorsprung.
+- **Ausschmückung der Fassung ist ein Korpusproblem** (alle Modelle 63–96 %), kein Modellkriterium.
+
+### 6.2 · Modellvergleich II (nach S144c)
 
 *Folgt: Verstöße je Szenario mit Beleg, Stilpaare, gemessene Kosten je Lauf.*
 

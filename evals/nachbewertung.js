@@ -13,9 +13,16 @@
  * Fälle aus gespeicherten Berichten sammeln.
  * @param {{datei:string, bericht:object}[]} berichte
  * @param {object[]} katalog  aktuelle Szenario-Definitionen (DE + EN)
- * @param {{referenzModell?:string, promptVersion?:string}} opt
+ * @param {{referenzModell?:string, promptVersion?:string, nurSzenarien?:string[], versionenUebergehen?:boolean}} opt
  *        referenzModell — nur Berichte dieses Judges (Default: alle)
  *        promptVersion  — nur Berichte mit dieser Judge-Prompt-Version (Default: alle)
+ *        nurSzenarien   — nur diese Szenario-IDs (Default: alle)
+ *        versionenUebergehen — S144a2 · Szenarien trotz Versionssprung aufnehmen.
+ *                         Zweck: eine GESCHÄRFTE Prüffrage an alten Transkripten
+ *                         verifizieren (misst dann Prüffrage + Judge zugleich —
+ *                         gewollt). Schutz: Das Transkript muss jede heutige
+ *                         Eingabe des Szenarios enthalten; sonst wurde ein
+ *                         anderes Gespräch geführt (Grund "eingaben").
  * @returns {{faelle:object[], uebersprungen:object[], promptVersionen:string[]}}
  *
  * Übersprungen wird, was keinen fairen Vergleich erlaubt:
@@ -44,8 +51,10 @@ export function sammleFaelle(berichte, katalog, opt = {}) {
     if (stand.judgePromptVersion) versionen.add(stand.judgePromptVersion);
     for (const s of bericht.szenarien || []) {
       const def = jeId.get(s.id);
+      if (opt.nurSzenarien && !opt.nurSzenarien.includes(s.id)) continue;
       if (!def) { uebersprungen.push({ datei, szenario: s.id, grund: "unbekannt" }); continue; }
-      if (def.version !== s.version) {
+      const versionAlt = s.version;
+      if (def.version !== s.version && !opt.versionenUebergehen) {
         uebersprungen.push({ datei, szenario: s.id, grund: "version", detail: "v" + s.version + " → v" + def.version });
         continue;
       }
@@ -58,16 +67,27 @@ export function sammleFaelle(berichte, katalog, opt = {}) {
           uebersprungen.push({ datei, szenario: s.id, nr: sm.nr, grund: "format" });
           continue;
         }
+        if (versionAlt !== def.version && !gleicheEingaben(def, sm.transkript)) {
+          uebersprungen.push({ datei, szenario: s.id, nr: sm.nr, grund: "eingaben", detail: "v" + versionAlt + " → v" + def.version });
+          continue;
+        }
         const alt = {};
         for (const c of sm.checks) alt[c.id] = { antwort: c.antwort, beleg: c.beleg };
         faelle.push({
           datei, szenario: def, nr: sm.nr, transkript: sm.transkript, alt,
           pipelineModell: stand.pipelineModell || null, coreHash: stand.coreHash || null,
+          ...(versionAlt !== def.version ? { versionAlt } : {}),
         });
       }
     }
   }
   return { faelle, uebersprungen, promptVersionen: [...versionen].sort() };
+}
+
+/** Enthält das Transkript jede heutige Eingabe des Szenarios (als Nutzer-Turn)? */
+export function gleicheEingaben(def, transkript) {
+  const nutzer = (transkript || []).filter(m => m.role === "user").map(m => String(m.content || ""));
+  return (def.eingaben || []).every(e => nutzer.some(t => t.includes(e)));
 }
 
 /**
@@ -79,6 +99,7 @@ export function vergleiche(fall, urteilNeu) {
   const kopf = {
     datei: fall.datei, szenario: fall.szenario.id, nr: fall.nr,
     pipelineModell: fall.pipelineModell,
+    ...(fall.versionAlt !== undefined ? { versionAlt: fall.versionAlt } : {}),
   };
   if (!urteilNeu || !urteilNeu.bewertet)
     return [{ ...kopf, check: "*", unbewertet: true, fehler: (urteilNeu && urteilNeu.fehler) || "kein Urteil" }];

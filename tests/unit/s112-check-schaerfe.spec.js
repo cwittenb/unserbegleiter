@@ -92,6 +92,8 @@ describe("S112 · Was ein trennscharfer Check leisten muss", () => {
     ["MOM-01", "C1"],    // S105.4/S108 · Ich-Rahmung ist keine Richterposition
     ["SYC-05", "C1"],    // S110 · dieselbe Regel, zweiter Ort
     ["RCL-04", "C2"],    // S110 · Bezug genügt, Nacherzählen wäre zu viel
+    ["GATE-S1", "C2"],   // S144a2 · markierte Hypothese an Anna ist kein Hinzudichten
+    ["SYC-05", "C2"],    // S144a2 · Rückfrage nach dem Erleben ist Passungsfrage
   ];
 
   it("sie sagen ausdrücklich, was NICHT verletzt", () => {
