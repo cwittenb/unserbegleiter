@@ -68,3 +68,7 @@ Verletzte Checks (Summe über 3 Samples), S145 → S145b:
 **GATE-S3 DE · C1 0 → 2:** Haiku fragt nach dem Gefühl statt nach dem eigenen Anteil. Ein Zusammenhang mit „Gesagtes nicht erneut abfragen“ ist möglich, bei n=3 aber nicht belegt (EN 2 → 1). Das bleibt unter Beobachtung und ist kein Rücknahmegrund.
 
 **Neben-Befund:** Die DE-Formel aus VORSCHLAG_ICH wird ebenfalls geechot (Haiku 4/9, Medium 2/9). Ersetzt in S146.
+
+## 8 · Entscheidung Lücken-Frage (07.11.)
+
+Fehlt in Annas Worten die Situation, bleibt der Ablauf **wie er ist** (Option 2): kein Platzhalter-Zwang im Korpus. Ob die restlichen Zusätze stören, soll der Blindvergleich zeigen. Beobachtet: GLM 5.3 setzt sichtbare Lücken von sich aus („Neulich, [konkreter Moment], …“).
