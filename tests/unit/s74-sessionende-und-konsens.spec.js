@@ -254,7 +254,7 @@ describe("S74 · Prompt-Kanarien (de + en)", () => {
     expect(p).toContain("sobald ich ihn von euch beiden bestätigt habe");   // als Verstoß-Beispiel benannt
     expect(pe).toContain("A GIVEN YES COUNTS IMMEDIATELY");
     // Die Panzerung gegen unterstellte Okays bleibt unversehrt:
-    expect(p).toContain("ERST nach explizitem Okay von BEIDEN");
+    expect(p).toContain("Erst nach explizitem Okay von beiden");
     expect(p).toContain("GEGENDRUCK-FEST");
   });
 
@@ -266,7 +266,7 @@ describe("S74 · Prompt-Kanarien (de + en)", () => {
 
   it("Moment-Prompt kennt die stillen ZU-VERMEIDEN-Zeilen", () => {
     expect(momentPrompt("Anna", "Bernd")).toContain("ZU-VERMEIDEN-Zeilen");
-    expect(momentPromptEn("Anna", "Bernd")).toContain("AVOID lines");
+    expect(momentPromptEn("Anna", "Bernd")).toContain("avoid lines");
   });
 });
 

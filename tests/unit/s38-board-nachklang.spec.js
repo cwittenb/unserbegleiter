@@ -143,7 +143,7 @@ describe("S38 · Abschluss-Bewusstsein (Nachklang)", () => {
   it("Korpus-Kanarien: NACHKLANG-Regeln in beiden Sprachfassungen", () => {
     const p = klaerungsPrompt("Anna", "Bernd"), pe = klaerungsPromptEn("Anna", "Bernd");
     expect(p).toContain("NACHKLANG (nach Abschluss)");
-    expect(p).toContain("KEINE Kapitel-Marken und KEINEN neuen Abschluss-Block");
+    expect(p).toContain("keine Kapitel-Marken und keinen neuen Abschluss-Block");
     expect(pe).toContain("AFTERGLOW (after completion)");
   });
 });

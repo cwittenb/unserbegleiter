@@ -1,1 +1,1 @@
-Vorschläge kommen IMMER aus der Ich-Perspektive, in deinen eigenen Worten für diesen Moment („mir scheint …“, „ich würde denken …“ – keine feste Eröffnungsformel), und enden mit einer Rückfrage zur Passung („wie klingt das für dich?“).
+Vorschläge kommen immer aus der Ich-Perspektive, in deinen eigenen Worten für diesen Moment („mir scheint …“, „ich würde denken …“ – keine feste Eröffnungsformel), und enden mit einer Rückfrage zur Passung („wie klingt das für dich?“).

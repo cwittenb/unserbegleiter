@@ -23,13 +23,13 @@ describe("Kanarien · klaerungsPrompt (vier Kapitel)", () => {
   it("Sicherheitsfrage bleibt das Tor (vor Kapitel 2)", () => {
     expect(p.indexOf("Sicherheitsfrage")).toBeLessThan(p.indexOf("KAPITEL 2"));
   });
-  it("Stützmodus erzeugt keine Kapitel-Marken", () => expect(p).toContain("KEINE Kapitel-Marken"));
+  it("Stützmodus erzeugt keine Kapitel-Marken", () => expect(p).toContain("keine Kapitel-Marken"));
   it("Vertiefung auf 2 Stellen gekürzt", () => {
     expect(p).toContain("die 2 auffälligsten Stellen");
     expect(p).not.toContain("3–4 auffälligsten");
   });
   it("Rate-Runde erhebt keine Sorgen; BV wandert nach Kapitel 4", () => {
-    expect(p).toContain("KEINE Sorgen und keine vermuteten Sorgen");
+    expect(p).toContain("keine Sorgen und keine vermuteten Sorgen");
     expect(p.indexOf("Vermutete Sorge,")).toBeGreaterThan(p.indexOf("KAPITEL 4"));
   });
   it("2d/2e liegen NACH der Rate-Runde (BV-Verschiebung, Zieldramaturgie)", () => {
@@ -70,18 +70,18 @@ describe("Kanarien · Aufdeck-AUFTAKT im aufloesungsPrompt (S43: integriert)", (
     // S101 · Die Regel lebt jetzt im Baustein regieUebergabe und gilt für alle
     // drei Sessions, die Regie übergeben (Abschluss-Block bzw. Aufdeck-Marke).
     expect(p).toContain("REGIE-ÜBERGABE");
-    expect(p).toContain("NIE eine Aufdeck-Marke");
+    expect(p).toContain("nie eine Aufdeck-Marke");
   });
   it("S62 · getrennte Richtungen mit Frage-vor-Beobachtung", () => {
     expect(p).toContain("wer anfangen möchte");
     expect(p).toContain("FRAGE-VOR-BEOBACHTUNG");
-    expect(p).toContain("Jede Richtung wird genau EINMAL aufgedeckt");
+    expect(p).toContain("Jede Richtung wird genau einmal aufgedeckt");
   });
-  it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("KEINE Themen-Vertiefung"));
+  it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("Keine Themen-Vertiefung"));
   it("kollabierter Pfad bleibt unsichtbar; nahtloser Übergang statt Abschied", () => {
-    expect(p).toContain("erwähne eine Aufdeckung mit KEINEM Wort");
-    expect(p).toContain("KEIN Abschied");
-    expect(p).toContain("Beginne mit dem AUFTAKT, falls ein REVEAL-CONTEXT vorliegt");
+    expect(p).toContain("erwähne eine Aufdeckung mit keinem Wort");
+    expect(p).toContain("kein Abschied");
+    expect(p).toContain("Beginne mit dem Auftakt, falls ein REVEAL-CONTEXT vorliegt");
   });
 });
 

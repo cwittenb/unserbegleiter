@@ -64,6 +64,6 @@ describe("S136 · die Regel aus S135 ist zurückgenommen", () => {
        die Rahmungs-Form im Baustein für bedeutsame Momente. */
     const { aufloesungsPrompt } = await import("../../core/prompts/prompts.de.js");
     expect(aufloesungsPrompt("Anna", "Bernd")).toContain("KEIN INSTRUKTIONS-ECHO");
-    expect(P_DE).toContain("Die Rahmung ist eine FORM, kein Satz");
+    expect(P_DE).toContain("Die Rahmung ist eine Form, kein Satz");
   });
 });

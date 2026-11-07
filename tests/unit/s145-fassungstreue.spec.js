@@ -42,7 +42,7 @@ describe("S145 · Q2/Q3 HERKUNFT (hart) im Teilen-Ablauf", () => {
   it("DE: alle sechs Zusatzarten, beide erlaubten Wege, nichts unbenannt", () => {
     expect(solo.de).toMatch(/HERKUNFT \(hart\): Situation, Erleben, Motiv, Wunsch, Zeitangabe und Selbstanteil/);
     expect(solo.de).toMatch(/gern als Vermutung/);
-    expect(solo.de).toMatch(/im selben Zug GENAU DIESE Ergänzung offen/);
+    expect(solo.de).toMatch(/im selben Zug genau diese Ergänzung offen/);
     expect(solo.de).toMatch(/Unbenannt setzt du nichts ein/);
   });
   it("EN: dieselbe Regel", () => {

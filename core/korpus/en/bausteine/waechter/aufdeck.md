@@ -1,1 +1,1 @@
-[APP NOTE for this turn: The board has NOT been revealed yet. Nothing from the stacks belongs in your text now — no values, no rankings, no hints at them, not even in substance. Revealing is the board's job, not yours.]
+[APP NOTE for this turn: The board has not been revealed yet. Nothing from the stacks belongs in your text now — no values, no rankings, no hints at them, not even in substance. Revealing is the board's job, not yours.]

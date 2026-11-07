@@ -201,8 +201,8 @@ describe("S64 · Prompt-Kanarien Wiedereinstieg & Abschied", () => {
   const p = aufloesungsPrompt("Anna", "Bernd");
   it("WIEDEREINSTIEG: Wiederkehr-Begrüßung, keine 'heute'-Verwirrung, nahtlos weiter", () => {
     expect(p).toContain("WIEDEREINSTIEG (laufende Session)");
-    expect(p).toContain('NIE als "heute" oder "eben"');
-    expect(p).toContain("NAHTLOS an der aktuellen Phase weiter");
+    expect(p).toContain('nie als "heute" oder "eben"');
+    expect(p).toContain("nahtlos an der aktuellen Phase weiter");
   });
   it("Ankommens-Einladung als ablehnbares Menü (id arrive, 2–3 Optionen)", () => {
     expect(p).toContain("ANKOMMENS-EINLADUNG");

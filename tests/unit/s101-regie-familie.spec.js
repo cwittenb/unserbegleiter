@@ -35,7 +35,7 @@ describe("S101 · Der Baustein trägt nur die Invariante", () => {
     // Der Kern ist in beiden derselbe.
     for (const t of [ende, tafel]) {
       expect(t).toContain("REGIE-ÜBERGABE");
-      expect(t).toMatch(/fragen UND übergeben in einer Nachricht ist ein Verstoß/);
+      expect(t).toMatch(/fragen und übergeben in einer Nachricht ist ein Verstoß/);
     }
   });
 
@@ -69,7 +69,7 @@ describe("S101 · Alle drei kennen die Invariante", () => {
     it(`${f.titel}: die Regel nennt das eigene Übergabe-Element`, () => {
       const p = f.prompt();
       expect(p).toContain("REGIE-ÜBERGABE");
-      expect(p).toContain("NIE " + f.element);
+      expect(p).toContain("nie " + f.element);
     });
   }
 

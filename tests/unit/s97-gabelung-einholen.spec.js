@@ -22,9 +22,9 @@ describe("S97 · Gabelung am Auslöser (AUS-04/05)", () => {
   it("die Reihenfolge steht am [CLOSE SESSION]-Anlass selbst, nicht nur im TEILEN-Absatz", () => {
     beide(sp => {
       const txt = raum();
-      expect(txt, sp).toContain(sp === "de" ? "REIHENFOLGE (S97)" : "ORDER (S97)");
+      expect(txt, sp).toContain(sp === "de" ? "REIHENFOLGE:" : "ORDER:");
       // Die Regel muss VOR der Block-Anweisung stehen, sonst greift sie nicht am Auslöser.
-      const anlass = txt.indexOf(sp === "de" ? "REIHENFOLGE (S97)" : "ORDER (S97)");
+      const anlass = txt.indexOf(sp === "de" ? "REIHENFOLGE:" : "ORDER:");
       const gabelung = txt.indexOf(sp === "de" ? "ABSCHLUSS – DREI TÜREN" : "CLOSE – THREE DOORS");
       expect(anlass, sp).toBeGreaterThan(gabelung); // Verweis zeigt zurück auf die Türen
       expect(anlass, sp).toBeGreaterThan(-1);
@@ -44,7 +44,7 @@ describe("S97 · Einholen ohne Cues (MRV-02, K1a)", () => {
   it("die Regel steht im Moment-Prompt und ist anlassgebunden", () => {
     beide(sp => {
       const txt = moment();
-      expect(txt, sp).toContain(sp === "de" ? "EINHOLEN OHNE CUES (S97)" : "CHECKING IN WITHOUT CUES (S97)");
+      expect(txt, sp).toContain(sp === "de" ? "EINHOLEN OHNE CUES" : "CHECKING IN WITHOUT CUES");
       expect(txt, sp).toContain(sp === "de" ? "über die Sache der anderen bestimmt" : "determines a matter that is the other's");
     });
   });
@@ -52,8 +52,8 @@ describe("S97 · Einholen ohne Cues (MRV-02, K1a)", () => {
   it("der Anlass wird nicht ausgesprochen (Exposition im gemeinsamen Raum)", () => {
     beide(sp => {
       expect(moment(), sp).toContain(sp === "de"
-        ? "Den Anlass sprichst du NICHT aus"
-        : "You do NOT name the occasion");
+        ? "Den Anlass sprichst du nicht aus"
+        : "You do not name the occasion");
     });
   });
 

@@ -110,7 +110,7 @@ describe("Batch · Die Schärfung hängt am Systemtext des Zuges", () => {
     expect(s.length).toBeGreaterThanOrEqual(3);
     expect(s[0]).not.toContain("APP-HINWEIS");
     expect(s[1]).not.toContain("APP-HINWEIS");
-    expect(s[2]).toContain("KEINE Leitung");
+    expect(s[2]).toContain("keine Leitung");
   });
 
   it("ohne Flag bleibt der Systemtext in jedem Zug derselbe", async () => {

@@ -1,1 +1,1 @@
-PURE JSON, no markdown fences, no further text
+Pure JSON, no markdown fences, no further text

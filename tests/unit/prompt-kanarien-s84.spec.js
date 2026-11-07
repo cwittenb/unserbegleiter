@@ -13,38 +13,38 @@ import * as EN from "../../core/prompts/prompts.en.js";
 const faelle = [
   ["de", DE, {
     krisKonkret: "Telefonseelsorge 0800 111 0 111",
-    krisAktiv: "AKTIV an",
-    krisAbfrage: "Eine bloße Abfrage genügt NICHT",
+    krisAktiv: "aktiv an",
+    krisAbfrage: "Eine bloße Abfrage genügt nicht",
     krisBeispiel: '"Brauchst du Unterstützung?" oder "Ist das aushaltbar?" allein sind kein Hilfsangebot',
     spiegelRueckfrage: "Behauptung im Ich-Gewand",
     echo: "KEIN INSTRUKTIONS-ECHO",
     echoBeispiel: '"Lande ich warm:"',
     marker: "MARKEN-SELBSTCHECK",
     markerFolge: "unmittelbar nächste Nachricht",
-    choiceAllein: "steht dabei NIE allein",
+    choiceAllein: "steht dabei nie allein",
     choiceReihenfolge: "erst dann die Einladung",
-    merkWortlaut: "im WORTLAUT des Merkpostens",
+    merkWortlaut: "im Wortlaut des Merkpostens",
     merkVerbot: "ohne das Thema) ist ein Verstoß",
-    qzSchritt1: "NIE die Frage allein",
-    qzDirekt: "geh DIREKT zu SCHRITT 2",
+    qzSchritt1: "nie die Frage allein",
+    qzDirekt: "geh direkt zu Schritt 2",
     qzLandung: "LANDUNGS-PFLICHT",
   }],
   ["en", EN, {
-    krisKonkret: "name at least ONE concrete option",
-    krisAktiv: "ACTIVELY offer",
-    krisAbfrage: "A mere query is NOT enough",
+    krisKonkret: "name at least one concrete option",
+    krisAktiv: "actively offer",
+    krisAbfrage: "A mere query is not enough",
     krisBeispiel: '"Do you need support?" or "Is this bearable?" on their own are not an offer of help',
     spiegelRueckfrage: "assertion in I-clothing",
     echo: "NO INSTRUCTION ECHO",
     echoBeispiel: '"I land warmly:"',
     marker: "MARK SELF-CHECK",
     markerFolge: "very next message",
-    choiceAllein: "NEVER stands alone",
+    choiceAllein: "never stands alone",
     choiceReihenfolge: "only then the invitation",
-    merkWortlaut: "WORDING of the memo",
+    merkWortlaut: "wording of the memo",
     merkVerbot: "without the topic) is a violation",
-    qzSchritt1: "NEVER the question alone",
-    qzDirekt: "go DIRECTLY to STEP 2",
+    qzSchritt1: "never the question alone",
+    qzDirekt: "go directly to step 2",
     qzLandung: "LANDING OBLIGATION",
   }],
 ];
@@ -116,6 +116,6 @@ describe("Prompt-Kanarien S84 · Konsistenz mit S83", () => {
     expect(EN.bausteine.zustimmungsGrammatik).toContain("CONSENT GRAMMAR");
     expect(EN.bausteine.notbremseGemeinsam).toContain("EMERGENCY BRAKE (session-wide");
     expect(DE.momentPrompt("Anna", "Bernd")).toContain("END-SIGNALE ERNST NEHMEN");
-    expect(EN.momentPrompt("Anna", "Bernd")).toContain("TAKE END SIGNALS SERIOUSLY");
+    expect(EN.momentPrompt("Anna", "Bernd")).toContain("Take END SIGNALS SERIOUSLY");
   });
 });

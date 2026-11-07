@@ -7,7 +7,7 @@ describe("Kanarien · klaerungsPrompt (Übergänge)", () => {
   const p = klaerungsPrompt("Anna", "Bernd", true);
   it("Übergangs-Regel present: Drei-Schritt-Brücke statt abruptem Wechsel", () => {
     expect(p).toContain("ÜBERGÄNGE");
-    expect(p).toContain("NIE abrupt");
+    expect(p).toContain("nie abrupt");
   });
   it("Aufheben ist ein gehaltenes Versprechen, keine Floskel", () => {
     expect(p).toContain("halte das Versprechen");

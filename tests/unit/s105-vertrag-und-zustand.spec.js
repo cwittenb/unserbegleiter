@@ -147,7 +147,7 @@ describe("S105.3 · Krisen-Schärfung", () => {
   it("schweigt sonst — und die Schärfung nennt die Reihenfolge", () => {
     expect(krisenSchaerfung(krise("Wir hatten einen schönen Abend."))).toBeNull();
     expect(krisenSchaerfung(krise("Ich will nicht mehr leben.")))
-      .toContain("ZUERST der Verweis in den eigenen Raum");
+      .toContain("zuerst der Verweis in den eigenen Raum");
   });
 
   it("liest die JÜNGSTE Nachricht der Person, nicht irgendeine", () => {
@@ -268,9 +268,9 @@ describe("S105.4 · Regeln ohne Netz", () => {
 
   it("sie benennt die richtige FORM, nicht nur das Verbot", () => {
     const p = dePrompts.reflexionsPrompt("Anna", "Bernd");
-    expect(p).toContain("Der Fehler ist NICHT das Würdigen");
+    expect(p).toContain("Der Fehler ist nicht das Würdigen");
     expect(p).toContain("Das finde ich einen schönen Impuls");
-    expect(p).toContain("wird NICHT mehr maschinell korrigiert");
+    expect(p).toContain("wird nicht mehr maschinell korrigiert");
   });
 
   it("der Abruf wird getan, nicht angekündigt (de+en)", () => {

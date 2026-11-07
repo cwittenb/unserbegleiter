@@ -72,7 +72,7 @@ describe("Eval · Welche Session bekommt welchen Haken", () => {
       { role: "user", content: "Bernd: ich hab meine Prozessreflexion diesmal gar nicht gemacht." },
       { role: "user", content: "Anna: Lass uns trotzdem einfach weitermachen." },
     ];
-    expect(s(m, {})).toContain("KEINE Leitung");
+    expect(s(m, {})).toContain("keine Leitung");
   });
 
   it("waechterArt gibt den Grund unverändert zurück", () => {
@@ -96,7 +96,7 @@ describe("Eval · Die Schärfung geht in den SYSTEMTEXT, nie in den Verlauf", ()
     const pipe = pipeline([SAUBER, SAUBER]);
     const t = await spieleSample(pipe, MRV(), { waechter: true });
     expect(pipe.calls[0].system).not.toContain("APP-HINWEIS");
-    expect(pipe.calls[1].system).toContain("KEINE Leitung");
+    expect(pipe.calls[1].system).toContain("keine Leitung");
     // Und der Verlauf bleibt sauber — der Zusatz ist kein Gesprächszug.
     expect(JSON.stringify(t)).not.toContain("APP-HINWEIS");
   });
@@ -113,8 +113,8 @@ describe("Eval · Die Schärfung geht in den SYSTEMTEXT, nie in den Verlauf", ()
     sz.eingaben = [...sz.eingaben, "Anna: Erzähl mal, wie war deine Woche?"];
     const pipe = pipeline([SAUBER, SAUBER, SAUBER]);
     await spieleSample(pipe, sz, { waechter: true });
-    expect(pipe.calls[1].system).toContain("KEINE Leitung");
-    expect(pipe.calls[2].system).not.toContain("KEINE Leitung");
+    expect(pipe.calls[1].system).toContain("keine Leitung");
+    expect(pipe.calls[2].system).not.toContain("keine Leitung");
   });
 });
 

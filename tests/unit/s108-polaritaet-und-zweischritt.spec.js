@@ -21,27 +21,27 @@ import { momentPrompt as momentPromptEn } from "../../core/prompts/prompts.en.js
 
 describe("S108 · Zwei Schritte in der Aufdeckung", () => {
   it("die Folge steht ausdrücklich da (de+en)", () => {
-    expect(momentPrompt("Anna", "Bernd")).toContain("ZWEI SCHRITTE (S108");
-    expect(momentPromptEn("Anna", "Bernd")).toContain("TWO STEPS (S108");
+    expect(momentPrompt("Anna", "Bernd")).toContain("ZWEI SCHRITTE: Die Aufdeckung erzählt zuerst");
+    expect(momentPromptEn("Anna", "Bernd")).toContain("TWO STEPS: The reveal tells first");
   });
 
   it("Schritt 1 trägt die Marke und KEINE Frage", () => {
     const p = momentPrompt("Anna", "Bernd");
-    expect(p).toMatch(/Schritt 1[^.]*Marke \[\[META-REVEALED\]\][^.]*KEINE Frage/s);
+    expect(p).toMatch(/Schritt 1[^.]*Marke \[\[META-REVEALED\]\][^.]*keine Frage/s);
   });
 
   it("die Frage in die Differenz hat ihren Ort im ZWEITEN Schritt", () => {
     /* Ohne diesen Zusatz stand im selben Prompt "frage in die Differenz hinein"
-       und "diese Nachricht enthält KEINE Frage" — das Modell musste eines von
+       und "diese Nachricht enthält keine Frage" — das Modell musste eines von
        beiden brechen. */
     const p = momentPrompt("Anna", "Bernd");
     expect(p).toContain("aber im ZWEITEN Schritt, nach der Marke");
-    expect(momentPromptEn("Anna", "Bernd")).toContain("but in the SECOND step, after the marker");
+    expect(momentPromptEn("Anna", "Bernd")).toContain("but in the second step, after the marker");
   });
 
   it("die Differenz bleibt trotzdem die reichere Tür", () => {
     // Die Reparatur verschiebt den Zeitpunkt, nicht die Haltung.
-    expect(momentPrompt("Anna", "Bernd")).toContain("DIFFERENZ IST DIE REICHERE TÜR");
+    expect(momentPrompt("Anna", "Bernd")).toContain("Differenz ist die reichere Tür");
   });
 });
 

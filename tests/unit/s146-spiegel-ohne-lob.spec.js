@@ -23,9 +23,9 @@ const en = Object.fromEntries(SESS.map(n => [n, EN[n + "Prompt"]("Anna", "Bernd"
 
 describe("S146 · Zielregel in der Urteils-Grammatik", () => {
   it("DE/EN: Würdigung ist Wahrnehmung — beschreibend oder Ich-Form", () => {
-    expect(de.reflexions).toMatch(/WÜRDIGUNG IST WAHRNEHMUNG, NICHT URTEIL/);
-    expect(de.reflexions).toMatch(/BESCHREIBEND .* oder in ICH-FORM/);
-    expect(en.reflexions).toMatch(/APPRECIATION IS PERCEPTION, NOT JUDGEMENT/);
+    expect(de.reflexions).toMatch(/Würdigung ist Wahrnehmung, nicht Urteil/);
+    expect(de.reflexions).toMatch(/beschreibend .* oder in ICH-FORM/);
+    expect(en.reflexions).toMatch(/appreciation is perception, not judgement/);
   });
   it("jedes „würdige“ meint diese Form (H1 Salienz)", () => {
     expect(de.reflexions).toMatch(/wo immer hier „würdigen“ steht, ist diese Form gemeint/);
