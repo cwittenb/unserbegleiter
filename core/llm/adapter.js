@@ -61,6 +61,11 @@ export const LLM_DEFAULTS = {
   // Bewusst eine Vorgabe und keine Pflichtangabe: es ist Robustheits-Tuning wie
   // maxTokens, kein Provider-/Modellwissen (S35d bleibt unberührt).
   thinking: "disabled",
+  /* S147 · Denkaufwand für OpenAI-kompatible Anbieter (Mistral-Plattform:
+     reasoning_effort). null = Feld wird NICHT gesendet, es gilt die Vorgabe des
+     Modells (Medium 3.5: aus; GLM 5.3: "max" — teuer und langsam). Robustheits-
+     Tuning wie thinking/maxTokens, kein Modellwissen (S35d). */
+  reasoningEffort: null,
   /* S137 · Temperatur — bewusst NICHT vorbelegt (undefined = Feld wird nicht
      mitgesendet, es gilt die Vorgabe des Anbieters: Mistral 0.7, Anthropic 1.0).
      Anlass: mistral-medium antwortete in SYC-05 dreimal fast wortgleich. Das ist

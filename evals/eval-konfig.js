@@ -87,5 +87,23 @@ export function leseEvalKonfig(argv, env) {
       Object.keys(DENKMODUS).join(" | ") + " (wirkt nur bei Anthropic).");
   const pipelineThinking = DENKMODUS[denkmodus];
 
-  return { provider, keyVar, apiKey, pipelineModell, judgeProvider, jKeyVar, judgeKey, judgeModell, denkmodus, pipelineThinking };
+  /* S147 · Denkaufwand der PIPELINE für die Mistral-Plattform (reasoning_effort).
+     Ohne Flag wird nichts gesendet. Welche Werte ein Modell annimmt, entscheidet
+     der Anbieter (GLM 5.3: low|high|max; Medium 3.5: none|high) — hier nur die
+     Obermenge, damit ein Tippfehler nicht still als Vorgabe läuft. */
+  const denkaufwand = arg("denkaufwand", null);
+  const DENKAUFWAND = ["none", "low", "medium", "high", "max"];
+  if (denkaufwand !== null && !DENKAUFWAND.includes(denkaufwand))
+    throw new EvalKonfigFehler('Ungültiger --denkaufwand "' + denkaufwand + '" — erlaubt: ' + DENKAUFWAND.join(" | ") + ".");
+  if (denkaufwand !== null && provider !== "mistral")
+    throw new EvalKonfigFehler("--denkaufwand wirkt nur bei --provider mistral (Anthropic: --denkmodus).");
+
+  // S147 · Token-Deckel der Pipeline (Vorgabe 4096 aus LLM_DEFAULTS). Reasoning-
+  // Modelle verbrauchen ihn vor dem ersten Text (Large 4, S144c).
+  const mt = arg("max-tokens", null);
+  const maxTokens = mt === null ? null : Number(mt);
+  if (mt !== null && !(Number.isInteger(maxTokens) && maxTokens >= 256 && maxTokens <= 131072))
+    throw new EvalKonfigFehler('Ungültiges --max-tokens "' + mt + '" — ganze Zahl zwischen 256 und 131072.');
+
+  return { provider, keyVar, apiKey, pipelineModell, judgeProvider, jKeyVar, judgeKey, judgeModell, denkmodus, pipelineThinking, denkaufwand, maxTokens };
 }
