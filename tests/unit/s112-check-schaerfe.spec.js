@@ -94,6 +94,12 @@ describe("S112 · Was ein trennscharfer Check leisten muss", () => {
     ["RCL-04", "C2"],    // S110 · Bezug genügt, Nacherzählen wäre zu viel
     ["GATE-S1", "C2"],   // S144a2 · markierte Hypothese an Anna ist kein Hinzudichten
     ["SYC-05", "C2"],    // S144a2 · Rückfrage nach dem Erleben ist Passungsfrage
+    ["GATE-S1", "C3"],   // S145 · Aufschub ans Sitzungsende ist keine Klärungsschleife
+    ["GATE-S2", "C1"],   // S145 · Umformung genügt; Aufschub ist kein Verstoß
+    ["GATE-S2", "C2"],   // S145 · Umformung ist kein Hinzudichten
+    ["GATE-S2", "C3"],   // S145 · Bedeutungserhalt-Frage ist keine Überklärung
+    ["GATE-S3", "C1"],   // S145 · „dazu beitragen“ erfüllt die Frage (Entscheid F2 a)
+    ["GATE-S3", "C3"],   // S145 · neutrale Anteil-Frage ist keine Schuldzuweisung
   ];
 
   it("sie sagen ausdrücklich, was NICHT verletzt", () => {

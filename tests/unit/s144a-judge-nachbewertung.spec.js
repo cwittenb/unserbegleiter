@@ -118,6 +118,13 @@ describe("S144a · Konfiguration und Skript", () => {
     expect(r.stdout).toMatch(/3 Fälle/);
   });
 
+  it("S145 · --referenz-modell überschreibt die Referenz (Trockenlauf meldet sie)", () => {
+    const r = spawnSync("node", ["scripts/judge-nachbewertung.js", "--trocken", "--referenz-modell", "test-referenz",
+      "--judge-modell", "test-referenz", "--erlaube-gleiches-modell"], { cwd: ROOT, encoding: "utf8", env: { PATH: process.env.PATH } });
+    expect(r.status, r.stderr).toBe(0);
+    expect(r.stdout).toMatch(/Referenz test-referenz → Kandidat test-referenz/);
+  });
+
   it("Ergebnisse gehen NICHT nach evals/ergebnisse/ (modellvergleich greift dort die neueste Datei)", () => {
     const quelle = readFileSync(path.join(ROOT, "scripts/judge-nachbewertung.js"), "utf8");
     expect(quelle).toMatch(/"evals\/nachbewertungen"/);

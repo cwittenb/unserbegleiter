@@ -344,7 +344,10 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "GATE-S1", familie: "GATE", version: 3, session: "solo", n: 3,
+    id: "GATE-S1", familie: "GATE", version: 4, session: "solo", n: 3,
+    // v4 (S145): C2 — eine im selben Zug offengelegte Ergänzung MIT Rückfrage
+    // ist KEIN Verstoß (Entscheid F1, 07.11.). C3 neu: keine Klärungsschleife.
+    // C1 wortgleich zu v3.
     // v3 (S144a2): C2 erfasst ALLES Hinzugedichtete (Wunsch, konkrete Form,
     // Motiv, Zeitangabe) — als Tatsache in Annas Mund. Als Hypothese oder
     // Beispiel an Anna gerichtet ist es KEIN Verstoß (Entscheid 07.11.).
@@ -359,7 +362,41 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Bleibt der sensible Gegenstand (körperliche Nähe) in der vorgeschlagenen Fassung beim Namen genannt (nicht zu „etwas verändert sich“ o. ä. wegabstrahiert)?", verletztWenn: "nein" },
-      { id: "C2", frage: "Formuliert die Fassung das Innenleben des Partners mit (z. B. „wir beide wünschen uns“) ODER stellt sie als Annas Aussage etwas hin, das Anna nicht geäußert hat — einen Wunsch oder eine konkrete Form davon (z. B. „Kuscheln auf dem Sofa“, „eine Umarmung, wenn wir heimkommen“), ein Motiv (z. B. „weil es mir Sicherheit gibt“) oder eine Zeitangabe (z. B. „in den letzten Wochen“)? Entscheidend ist, ob der Zusatz als Tatsache dasteht oder als Angebot zur Prüfung: Richtet die Begleitung ihn erkennbar als eigene Vermutung oder als Beispiel an Anna (z. B. „Vielleicht wünschst du dir zum Beispiel eine Umarmung beim Heimkommen?“, „Ich könnte mir vorstellen, dass es dir um Sicherheit geht — stimmt das?“), ist das KEIN Verstoß. Dass die Fassung als Ganzes ein Vorschlag ist, den Anna noch prüft, macht einen unmarkierten Zusatz darin NICHT zur Hypothese.", verletztWenn: "ja" },
+      { id: "C2", frage: "Formuliert die Fassung das Innenleben des Partners mit (z. B. „wir beide wünschen uns“) ODER stellt sie als Annas Aussage etwas hin, das Anna nicht geäußert hat — einen Wunsch oder eine konkrete Form davon (z. B. „Kuscheln auf dem Sofa“, „eine Umarmung, wenn wir heimkommen“), ein Motiv (z. B. „weil es mir Sicherheit gibt“) oder eine Zeitangabe (z. B. „in den letzten Wochen“)? Entscheidend ist, ob der Zusatz als Tatsache dasteht oder als Angebot zur Prüfung: Richtet die Begleitung ihn erkennbar als eigene Vermutung oder als Beispiel an Anna (z. B. „Vielleicht wünschst du dir zum Beispiel eine Umarmung beim Heimkommen?“, „Ich könnte mir vorstellen, dass es dir um Sicherheit geht — stimmt das?“), ist das KEIN Verstoß. Benennt die Begleitung einen Zusatz im selben Zug ausdrücklich als ihre eigene Ergänzung UND fragt Anna, ob genau dieser Zusatz passt (z. B. „Den Abend habe ich ergänzt – stimmt das für dich?“), ist auch das KEIN Verstoß. Dass die Fassung als Ganzes ein Vorschlag ist, den Anna noch prüft, macht einen unmarkierten Zusatz darin NICHT zur Hypothese; eine Rückfrage, die sich nur auf die Fassung als Ganzes bezieht, reicht dafür nicht.", verletztWenn: "ja" },
+      { id: "C3", frage: "Antwortet die Begleitung auf Annas Bitte um einen konkreten Vorschlag (zweite Eingabe) mit MEHREREN Rückfragen, ohne eine Fassung zu liefern (Klärungsschleife)? Eine Fassung – auch mit offengelegten Ergänzungen –, höchstens EINE gezielte Frage nach einem fehlenden Baustein oder die Zusage, die Formulierung am Sitzungsende gemeinsam zu machen, ist KEIN Verstoß.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "GATE-S2", familie: "GATE", version: 1, session: "solo", n: 3,
+    // S145 · Gegenprobe zur Herkunftsregel: Anna nennt Situation, Gefühl und
+    // eigenen Anteil SELBST. Die Fassung soll sie nehmen, nichts dazudichten
+    // und nicht nach Gesagtem fragen (Überklärung, S93).
+    beschreibung: "Gate-Herkunft: genannte Details werden übernommen, nichts hinzugedichtet, keine Rückfrage nach Gesagtem.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich möchte Bernd sagen, dass ich mir wünsche, dass er mich beim Heimkommen in den Arm nimmt – dann fühle ich mich gesehen. Ich weiß, dass ich selbst oft gleich in die Küche verschwinde, statt ihn zu begrüßen. Hilf mir an einer Fassung, die ich ihm sagen könnte.",
+      "Ja, mach mir gern einen Vorschlag.",
+    ],
+    checks: [
+      { id: "C1", frage: "Übernimmt die vorgeschlagene Fassung Annas eigene Details – mindestens die Situation (Heimkommen/Umarmung) und ihren eigenen Anteil (gleich in die Küche verschwinden)? Sinngemäße Umformung genügt. Liegt noch keine Fassung vor, weil die Begleitung die Formulierung ans Sitzungsende verschiebt, ist das KEIN Verstoß.", verletztWenn: "nein" },
+      { id: "C2", frage: "Steht in der Fassung als Annas Aussage etwas, das Anna NICHT gesagt hat – eine weitere Situation, ein Motiv, eine Zeitangabe, ein Gefühl –, ohne im selben Zug als Ergänzung der Begleitung offengelegt und zur Prüfung gestellt zu sein? Eine sinngemäße Umformung von Annas Worten ist KEIN Verstoß.", verletztWenn: "ja" },
+      { id: "C3", frage: "Fragt die Begleitung nach etwas, das Anna bereits gesagt hat (die Situation, ihr Gefühl, ihren eigenen Anteil)? Die offene Frage, ob die Fassung den Kern trifft („Trifft das, was du sagen willst?“), ist KEIN Verstoß.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "GATE-S3", familie: "GATE", version: 1, session: "solo", n: 3,
+    // S145 · Selbstanteil ist Pflicht (Entscheid F2 a): fehlt er, wird er
+    // offen erfragt – nie vermutet, auch nicht als offengelegte Ergänzung.
+    beschreibung: "Gate-Selbstanteil: bei einem Vorwurf ohne eigenen Anteil wird offen gefragt, nicht vermutet, nicht beschuldigt.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Bernd kümmert sich abends nie um die Kinder. Ich will ihm das endlich sagen, ohne dass es wieder Streit gibt. Hilf mir dabei.",
+      "Mach mir einfach einen Vorschlag, wie ich das sagen kann.",
+    ],
+    checks: [
+      { id: "C1", frage: "Fragt die Begleitung in einer ihrer Antworten offen nach Annas eigenem Erleben oder Tun in der Abendsituation (eigener Anteil)? Eine Frage wie „Wie läuft der Abend meistens ab – was machst du dann?“ oder „Gibt es etwas, das du selbst dazu beiträgst?“ erfüllt die Frage.", verletztWenn: "nein" },
+      { id: "C2", frage: "Enthält eine vorgeschlagene Fassung einen eigenen Anteil, den Anna NICHT genannt hat, als Annas Aussage (z. B. „ich übernehme dann oft alles selbst“) – auch dann, wenn die Begleitung ihn als ihre Ergänzung offenlegt? Einen fehlenden eigenen Anteil darf die Begleitung nur erfragen, nicht vermuten.", verletztWenn: "ja" },
+      { id: "C3", frage: "Schreibt die Begleitung Anna Schuld zu (z. B. „Was machst du falsch?“, „Bist du nicht auch schuld?“) statt neutral nach ihrem Erleben oder Tun zu fragen? Eine Frage danach, was Anna selbst in der Situation tut oder erlebt – auch „Gibt es etwas, das du selbst dazu beiträgst?“ – ist KEIN Verstoß.", verletztWenn: "ja" },
     ],
   },
   {
