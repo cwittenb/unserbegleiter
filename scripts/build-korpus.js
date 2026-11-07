@@ -29,7 +29,9 @@
 //   <!-- args: a, b -->                 Argumente in Signatur-Reihenfolge
 //   <!-- args: x=true; sonst: key.kurz --> ein boolesches Argument mit Zweitfassung
 // danach der Text, verbatim (auch das Dateiende: kein Zeilenumbruch, wenn der
-// Text ohne endet — der Golden-Snapshot haelt das fest).
+// Text ohne endet — der Golden-Snapshot haelt das fest). Seit PRV-1a duerfen
+// Sessions und Bausteine <!-- … --> im Fliesstext tragen: Begruendungen fuer
+// Leser, nicht fuers Modell — entferneKommentare() streicht sie beim Bau.
 //
 //   node scripts/build-korpus.js            schreibt beide Sprachen
 //   node scripts/build-korpus.js --pruefe   nur vergleichen (Exit 1 bei Abweichung)
@@ -63,6 +65,21 @@ export function escapeTemplate(text) {
 }
 const jsString = s => JSON.stringify(s);
 const KOMMENTAR = /^<!--([\s\S]*?)-->\n?/;
+
+/* PRV-1a · Kommentare im Fliesstext. Bis PRV-0 standen Begruendungen und
+   Sprint-Referenzen ("(S103, aus dem Lauf gelernt)", "Zwei Gruende: …") im
+   Text, den das Modell sieht — Changelog im Prompt, der Aufmerksamkeit kostet
+   und nichts anweist (docs/REVIEW-PRV-prompt-verdichtung.md). Die Begruendung
+   bleibt in der Quelle, als <!-- … --> an Ort und Stelle; das Generat traegt
+   sie nicht. Ein Kommentar auf eigener Zeile verschwindet samt Zeile; ein
+   Kommentar im Satz verschwindet samt dem einen Leerzeichen davor. Die Kopf-
+   Kommentare der Bausteine (args, Historie) parst parseBaustein vorher weg —
+   sie kommen als Kommentar ins Generat wie bisher. */
+export function entferneKommentare(md) {
+  return md
+    .replace(/^[ \t]*<!--[\s\S]*?-->[ \t]*(?:\r?\n|$)/gm, "")
+    .replace(/[ \t]?<!--[\s\S]*?-->/g, "");
+}
 
 /** Baustein-Datei → { kommentare, args, defaults, sonst, body }. */
 export function parseBaustein(text, name) {
@@ -174,6 +191,7 @@ function endeVon(md, i, wo) {
 }
 
 export function kompiliere(md, ctx) {
+  md = entferneKommentare(md);
   let out = ""; let i = 0;
   while (i < md.length) {
     const start = md.indexOf("{{", i);
@@ -330,7 +348,7 @@ export function baueSessionsQuelle(sprache, reg = ladeBausteine(sprache)) {
     const k = kompiliere(md, { params: s.args, reg, wo: sprache + "/sessions/" + s.art + ".md", ref, daten });
     koerper += "\nexport function " + s.fn + "(" + s.args.join(", ") + "){\nreturn `" + k + "`;\n}\n";
   }
-  const tr = lies("themen-rahmen.md");
+  const tr = entferneKommentare(lies("themen-rahmen.md"));
   if (/\{\{/.test(tr)) throw new Error("themen-rahmen.md traegt Platzhalter — dort sind keine vorgesehen.");
   koerper += "\n/* Themen-Rahmen (sessions/themen-rahmen.md): wird von den Session-Definitionen\n   an die Betriebs-Prompts angehaengt. */\n" +
              "export const THEMEN_RAHMEN = `" + escapeTemplate(tr) + "`;\n";

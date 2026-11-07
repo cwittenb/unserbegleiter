@@ -120,13 +120,13 @@ describe("S42 · Sauberes Beenden", () => {
 
   it("Korpus-Kanarien: verbales Ende erzeugt den Block; 'gespeichert' wird nie behauptet (de/en)", () => {
     const p = momentPrompt("Anna", "Bernd"), pe = momentPromptEn("Anna", "Bernd");
-    expect(p).toContain("ODER beendet das Paar die Sitzung erkennbar verbal");
+    expect(p).toContain("oder beendet das Paar die Sitzung erkennbar verbal");
     // S100.1 · Das Speicher-Verbot lebt jetzt im Baustein regieUebergabe und
     // gilt damit für BEIDE Abschluss-Sessions statt nur für diese.
     expect(p).toContain("KEINE SPEICHER-BEHAUPTUNG");
     expect(p).toContain('sei "gespeichert"');
     expect(p).toContain("Gemeinsame Momente");
-    expect(pe).toContain("OR the couple recognizably ends the session verbally");
+    expect(pe).toContain("or the couple recognizably ends the session verbally");
     expect(steuerTexte.momentAbschluss).toBe("[CLOSE MOMENT]");
     expect(steuerTexteEn.momentAbschluss).toBe("[CLOSE MOMENT]");
   });

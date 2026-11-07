@@ -252,16 +252,16 @@ describe("S93 · B1/C2 Korpus-Kanarien (de+en)", () => {
   const en = reflexionsPromptEn("Anna", "Bernd");
 
   it("B1: der Kriterien-Check läuft still — bestandene Kriterien werden nie ausgesprochen", () => {
-    expect(de).toContain("verpflichtend – und STILL");
-    expect(de).toContain("Du prüfst INTERN");
+    expect(de).toContain("verpflichtend – und still");
+    expect(de).toContain("Du prüfst intern");
     expect(de).toContain("keine Prüfungs-Sprache");
     expect(en).toContain("mandatory – and SILENT");
-    expect(en).toContain("You check INTERNALLY");
+    expect(en).toContain("You check internally");
   });
 
   it("C2: die Weg-Wahl gehört der App, nicht dem Gespräch", () => {
     expect(de).toContain("die WAHL GEHÖRT DER APP");
-    expect(de).toContain("Frage die Wege NICHT im Gespräch ab");
+    expect(de).toContain("Frage die Wege nicht im Gespräch ab");
     expect(de).not.toContain("(5) WEG WÄHLEN (kombinierbar)");
     expect(en).toContain("the CHOICE BELONGS TO THE APP");
     expect(en).not.toContain("(5) CHOOSE A PATH (combinable)");
@@ -269,7 +269,7 @@ describe("S93 · B1/C2 Korpus-Kanarien (de+en)", () => {
 
   it("C2: ein gegebenes Ja zählt sofort — keine weitere Rückversicherung", () => {
     expect(de).toContain("GEGEBENES JA ZÄHLT SOFORT");
-    expect(de).toContain("in DERSELBEN nächsten Nachricht");
+    expect(de).toContain("in derselben nächsten Nachricht");
     expect(en).toContain("A GIVEN YES COUNTS IMMEDIATELY");
   });
 });

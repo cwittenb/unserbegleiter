@@ -8,14 +8,14 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 47310,
-      "tokenSchaetzung": 13915,
+      "zeichen": 47106,
+      "tokenSchaetzung": 13855,
       "zeilen": 63,
       "langeZeilen": 20,
-      "capsWoerter": 403,
-      "genauWoerter": 4,
-      "verstossWoerter": 1,
-      "sprintRefs": 22,
+      "capsWoerter": 242,
+      "genauWoerter": 0,
+      "verstossWoerter": 0,
+      "sprintRefs": 0,
       "blockSpezZeichen": 488,
       "wiederholungen": {
         "markeLetzteZeile": 1,
@@ -27,14 +27,14 @@
       }
     },
     "moment": {
-      "zeichen": 40230,
-      "tokenSchaetzung": 11832,
+      "zeichen": 40027,
+      "tokenSchaetzung": 11773,
       "zeilen": 58,
       "langeZeilen": 21,
-      "capsWoerter": 381,
-      "genauWoerter": 3,
+      "capsWoerter": 215,
+      "genauWoerter": 0,
       "verstossWoerter": 0,
-      "sprintRefs": 15,
+      "sprintRefs": 0,
       "blockSpezZeichen": 344,
       "wiederholungen": {
         "markeLetzteZeile": 3,
@@ -46,14 +46,14 @@
       }
     },
     "einzel": {
-      "zeichen": 39431,
-      "tokenSchaetzung": 11597,
+      "zeichen": 39407,
+      "tokenSchaetzung": 11590,
       "zeilen": 72,
       "langeZeilen": 21,
-      "capsWoerter": 226,
-      "genauWoerter": 10,
+      "capsWoerter": 114,
+      "genauWoerter": 0,
       "verstossWoerter": 0,
-      "sprintRefs": 2,
+      "sprintRefs": 0,
       "blockSpezZeichen": 252,
       "wiederholungen": {
         "markeLetzteZeile": 11,
@@ -65,14 +65,14 @@
       }
     },
     "gemeinsam": {
-      "zeichen": 39365,
-      "tokenSchaetzung": 11578,
+      "zeichen": 39028,
+      "tokenSchaetzung": 11479,
       "zeilen": 61,
       "langeZeilen": 20,
-      "capsWoerter": 301,
-      "genauWoerter": 8,
+      "capsWoerter": 151,
+      "genauWoerter": 0,
       "verstossWoerter": 0,
-      "sprintRefs": 6,
+      "sprintRefs": 0,
       "blockSpezZeichen": 972,
       "wiederholungen": {
         "markeLetzteZeile": 6,
@@ -84,14 +84,14 @@
       }
     },
     "qualitytime": {
-      "zeichen": 4044,
-      "tokenSchaetzung": 1189,
+      "zeichen": 4026,
+      "tokenSchaetzung": 1184,
       "zeilen": 11,
       "langeZeilen": 3,
-      "capsWoerter": 34,
+      "capsWoerter": 16,
       "genauWoerter": 0,
       "verstossWoerter": 0,
-      "sprintRefs": 1,
+      "sprintRefs": 0,
       "blockSpezZeichen": 156,
       "wiederholungen": {
         "markeLetzteZeile": 0,

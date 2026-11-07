@@ -10,25 +10,25 @@ import * as EN from "../../core/prompts/prompts.en.js";
 const faelle = [
   ["de", DE, {
     weiche: "KRISEN-VORRANG IM GETEILTEN RAUM",
-    keinNachfassen: "KEIN Nachfassen",
-    keineSicherheitsfrage: 'NICHT "Bist du in Sicherheit?"',
+    keinNachfassen: "kein Nachfassen",
+    keineSicherheitsfrage: 'nicht "Bist du in Sicherheit?"',
     einzelraum: "geschützten Einzelraum",
-    keinAuftrag: "KEINEN Auftrag für die Sicherheit",
+    keinAuftrag: "keinen Auftrag für die Sicherheit",
     skalen1: "Wie frei kannst du dich hier gerade zeigen?",
     verbot: "STAPEL-WIEDERGABE-VERBOT",
     verbotBeispiel: "ist bereits ein Verstoß",
-    nurRichtung: "nennt nur die RICHTUNG",
+    nurRichtung: "nennt nur die Richtung",
   }],
   ["en", EN, {
     weiche: "CRISIS PRIORITY IN THE SHARED ROOM",
-    keinNachfassen: "NO follow-up",
-    keineSicherheitsfrage: 'NOT "Are you safe?"',
+    keinNachfassen: "no follow-up",
+    keineSicherheitsfrage: 'not "Are you safe?"',
     einzelraum: "protected individual space",
-    keinAuftrag: "NO task for the person's safety",
+    keinAuftrag: "no task for the person's safety",
     skalen1: "How freely can you show yourself here right now?",
     verbot: "STACK REPRODUCTION BAN",
     verbotBeispiel: "is already a violation",
-    nurRichtung: "names only the DIRECTION",
+    nurRichtung: "names only the direction",
   }],
 ];
 

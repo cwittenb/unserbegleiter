@@ -41,7 +41,7 @@ describe("S95.4 · Teilenwunsch als Bremse", () => {
     expect(raum()).toContain("ich frage dich am Ende");   // ausdrücklich als Verstoß benannt
     expect(raum()).toContain("Das nehme ich mit");
     setKorpusSprache("en");
-    expect(raum()).toContain("COMMITMENT, not a question");
+    expect(raum()).toContain("commitment, not a question");
     setKorpusSprache("de");
   });
 
@@ -67,7 +67,7 @@ describe("S95.4 · Dreiwertige Gabelung", () => {
   });
 
   it("fragt nach Zweck, nicht nach Aufwand", () => {
-    beide((txt, sp) => expect(txt, sp).toMatch(sp === "de" ? /nach ZWECK, nie nach Aufwand/ : /about PURPOSE, never about effort/));
+    beide((txt, sp) => expect(txt, sp).toMatch(sp === "de" ? /nach Zweck, nie nach Aufwand/ : /about purpose, never about effort/));
   });
 
   it("die dritte Tür trägt keine Verneinungsformel", () => {

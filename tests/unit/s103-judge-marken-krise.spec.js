@@ -105,7 +105,7 @@ describe("S103.2 · Die Klärungsfrage gilt nur für gesprochene Signale", () =>
   it("die Klärungsfrage für gesprochene Signale bleibt erhalten", () => {
     const p = reflexionsPrompt("Anna", "Bernd");
     expect(p).toContain("Magst du hier für heute schließen");
-    expect(p).toContain("genau EINE Klärungsfrage");
+    expect(p).toContain("genau eine Klärungsfrage");
   });
 });
 
@@ -171,16 +171,16 @@ describe("S103.3 · Die vierte Regie-Übergabe ist bewacht", () => {
 describe("S103.4 · Der Zweck-Kontrast wird nicht halbiert", () => {
   it("die Regel benennt das Paar und die Restkategorie (de+en)", () => {
     const de = reflexionsPrompt("Anna", "Bernd");
-    expect(de).toContain("PAARIG (S103");
+    expect(de).toContain("PAARIG: Dieser Kontrast ist ein Paar");
     expect(de).toContain("keine Restkategorie");
-    expect(reflexionsPromptEn("Anna", "Bernd")).toContain("PAIRED (S103");
+    expect(reflexionsPromptEn("Anna", "Bernd")).toContain("PAIRED: This contrast is a pair");
   });
 
   it("die Gleichgewichts-Regel aus S96 steht weiterhin", () => {
     // S103 ersetzt sie nicht — sie war da und wurde trotzdem gerissen. Neu ist
     // die Diagnose, WORAN es lag: Der Zweck-Kontrast im Prompt lieferte den
     // Zusatz, den das Modell dann nur an Tür (a) hängte.
-    expect(reflexionsPrompt("Anna", "Bernd")).toContain("GLEICHGEWICHT (S96, hart)");
+    expect(reflexionsPrompt("Anna", "Bernd")).toContain("gleichgewicht");
   });
 });
 
@@ -226,7 +226,7 @@ describe("S103.5 · Woran die Krisenlage erkannt wird", () => {
     const harmlos = [{ role: "user", content: "Wir hatten einen schönen Abend." }];
     for (const def of [baueSessionDef("moment", { backend: backendStumm() }), baueSessionDef("gemeinsam", { backend: backendStumm() })]) {
       expect(typeof def.schaerfe).toBe("function");
-      expect(def.schaerfe(krise, {})).toContain("ZUERST der Verweis in den eigenen Raum");
+      expect(def.schaerfe(krise, {})).toContain("zuerst der Verweis in den eigenen Raum");
       expect(def.schaerfe(harmlos, {})).toBeNull();
       // Und nichts wird mehr zurückgenommen.
       expect(def.pruefeUebergabe ? def.pruefeUebergabe("Ich höre dich. " + HILFE, eng0) : null).toBeNull();

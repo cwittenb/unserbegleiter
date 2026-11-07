@@ -305,10 +305,10 @@ describe("S80 · Abschluss: Persistenz, Heilung, Solo-Ende", () => {
   it("Korpus-Kanarien: zweistufiger Abschluss (Frage abwarten, dann Block) in de und en", () => {
     const p = momentPrompt("Anna", "Bernd"), pe = momentPromptEn("Anna", "Bernd");
     expect(p).toContain("ZWEI SCHRITTE");
-    expect(p).toContain("WARTE auf ihre Antwort");
-    expect(p).toContain("KEIN Block");
+    expect(p).toContain("warte auf ihre Antwort");
+    expect(p).toContain("kein Block");
     expect(pe).toContain("TWO STEPS");
-    expect(pe).toContain("WAIT for their answer");
+    expect(pe).toContain("wait for their answer");
     expect(steuerTexte.soloAbschluss).toBe("[CLOSE SESSION]");
     expect(steuerTexteEn.soloAbschluss).toBe("[CLOSE SESSION]");
   });

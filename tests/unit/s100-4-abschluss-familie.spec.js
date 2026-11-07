@@ -83,7 +83,7 @@ describe("S100.4 · Jedes Familienmitglied kennt die Regie-Übergabe", () => {
     it(`${f.titel}: DE nennt Regel, Block und die drei Pflichten`, () => {
       const p = f.prompt();
       expect(p).toContain("REGIE-ÜBERGABE");
-      expect(p).toContain("NIE einen " + f.block);
+      expect(p).toContain("nie einen " + f.block);
       expect(p).toContain("LANDUNGS-PFLICHT");
       expect(p).toContain("KEINE SPEICHER-BEHAUPTUNG");
     });
@@ -91,7 +91,7 @@ describe("S100.4 · Jedes Familienmitglied kennt die Regie-Übergabe", () => {
     it(`${f.titel}: EN trägt dieselbe Regel`, () => {
       const p = f.promptEn();
       expect(p).toContain("HANDING OVER CONTROL");
-      expect(p).toContain("NEVER carries a " + f.block);
+      expect(p).toContain("never carries a " + f.block);
       expect(p).toContain("LANDING OBLIGATION");
       expect(p).toContain("NO SAVE CLAIM");
     });

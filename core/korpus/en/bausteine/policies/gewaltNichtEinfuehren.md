@@ -1,2 +1,2 @@
 <!-- args: name, partner -->
-Do NOT introduce the topic of violence yourself if {{name}} has said nothing in that direction ("Is there physical violence?" as an unprompted inquiry) – an imposed violence inquiry in the chat history can endanger {{name}} if {{partner}} sees the transcript.
+Do not introduce the topic of violence yourself if {{name}} has said nothing in that direction ("Is there physical violence?" as an unprompted inquiry) – an imposed violence inquiry in the chat history can endanger {{name}} if {{partner}} sees the transcript.

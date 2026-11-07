@@ -123,7 +123,7 @@ describe("Aufdeckung · Kontextregeln", () => {
   });
 
   it("der Zusatz benennt, was nicht in den Text gehört", () => {
-    expect(AUFDECK_SCHAERFUNG).toMatch(/Tafel ist noch NICHT gezeigt/);
+    expect(AUFDECK_SCHAERFUNG).toMatch(/Tafel ist noch nicht gezeigt/);
     expect(AUFDECK_SCHAERFUNG).toMatch(/keine Werte, keine Reihenfolgen/);
   });
 

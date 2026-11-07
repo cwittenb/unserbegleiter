@@ -89,7 +89,7 @@ describe("MRV.3 · Was der Zusatz sagt", () => {
   it("er räumt den Rollenkonflikt aus, statt die Regel zu wiederholen", () => {
     // Das ist der Unterschied zu Variante D: Nicht lauter, sondern an der
     // Stelle, an der das Modell zwischen zwei Prinzipien wählt.
-    expect(ZWEISEITIGKEIT_SCHAERFUNG).toMatch(/KEINE Leitung/);
+    expect(ZWEISEITIGKEIT_SCHAERFUNG).toMatch(/keine Leitung/);
     expect(ZWEISEITIGKEIT_SCHAERFUNG).toMatch(/der Rahmen, den du hältst/);
   });
 
@@ -121,8 +121,8 @@ describe("MRV.3 · Wo sie hängt", () => {
       "Bernd: ich hab meine Reflexion nicht gemacht.",
       "Anna: Lass uns weitermachen. Ich will manchmal nicht mehr leben.");
     const zusatz = baueSessionDef("moment", { backend: backendStumm() }).schaerfe(m, {});
-    expect(zusatz).toContain("ZUERST der Verweis in den eigenen Raum");
-    expect(zusatz).not.toContain("KEINE Leitung");
+    expect(zusatz).toContain("zuerst der Verweis in den eigenen Raum");
+    expect(zusatz).not.toContain("keine Leitung");
   });
 });
 

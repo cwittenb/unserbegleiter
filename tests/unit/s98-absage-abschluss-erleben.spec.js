@@ -27,7 +27,7 @@ describe("S98 · Grammatik der Absage (RCL-04)", () => {
   it("die Absage ist ein Satz, kein Gedankengang", () => {
     beide(sp => {
       const txt = raum();
-      expect(txt, sp).toContain(sp === "de" ? "EIN SATZ, DANN WEITER" : "ONE SENTENCE, THEN ON");
+      expect(txt, sp).toContain(sp === "de" ? "ein Satz, dann weiter" : "one sentence, then on");
       expect(txt, sp).toContain(sp === "de" ? "der Kontext fehlt mir schlicht" : "the context is simply missing for me");
     });
   });
@@ -35,7 +35,7 @@ describe("S98 · Grammatik der Absage (RCL-04)", () => {
   it("Anknüpfen braucht keinen Inhalt — der Faden wird nicht fallen gelassen", () => {
     beide(sp => {
       const txt = raum();
-      expect(txt, sp).toContain(sp === "de" ? "ANKNÜPFEN BRAUCHT KEINEN INHALT" : "CONNECTING NEEDS NO CONTENT");
+      expect(txt, sp).toContain(sp === "de" ? "anknüpfen braucht keinen Inhalt" : "connecting needs no content");
       expect(txt, sp).toContain(sp === "de"
         ? "Fehlender Wortlaut ist kein Grund, den Faden fallen zu lassen"
         : "Missing wording is no reason to drop the thread");
@@ -67,7 +67,7 @@ describe("S98 · Vorrang der Erlebensfrage (MOM-01)", () => {
   it("eine Klärungs- oder Bestätigungsfrage darf das Budget nicht aufbrauchen", () => {
     beide(sp => {
       const txt = moment();
-      expect(txt, sp).toContain(sp === "de" ? "VORRANG DER ERLEBENSFRAGE (S98)" : "PRECEDENCE OF THE EXPERIENCE QUESTION (S98)");
+      expect(txt, sp).toContain(sp === "de" ? "VORRANG DER ERLEBENSFRAGE" : "PRECEDENCE OF THE EXPERIENCE QUESTION");
       expect(txt, sp).toContain(sp === "de" ? "die andere wartet auf die nächste Nachricht" : "the other waits for the next message");
     });
   });

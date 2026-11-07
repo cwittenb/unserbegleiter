@@ -44,17 +44,17 @@ describe("MRV.2 · Was die Regel verlangt", () => {
   const b = bausteine.sprecherKlarheit;
 
   it("Raten ist verboten — nicht nur falsches Raten", () => {
-    expect(b).toMatch(/RATE nie/);
+    expect(b).toMatch(/rate nie/);
     expect(b).toMatch(/sprich sie nicht namentlich an/);
   });
 
   it("die beiden Fälle stehen ausdrücklich da (F1a)", () => {
     // (1) Antwort auf direkte Einzelansprache → gehört der Person, nicht fragen.
     expect(b).toMatch(/direkte Einzelansprache/);
-    expect(b).toMatch(/fragst NICHT/);
+    expect(b).toMatch(/fragst nicht/);
     // (2) kein Bezug UND personengebunden → einmal klären.
     expect(b).toMatch(/personengebunden/);
-    expect(b).toMatch(/EINMAL/);
+    expect(b).toMatch(/einmal/);
   });
 
   it("sonst: neutral weiterführen statt fragen", () => {
@@ -69,7 +69,7 @@ describe("MRV.2 · Was die Regel verlangt", () => {
 
   it("EN trägt dieselben vier Punkte", () => {
     const e = bausteineEn.sprecherKlarheit;
-    expect(e).toMatch(/NEVER guess/);
+    expect(e).toMatch(/never guess/);
     expect(e).toMatch(/direct address/);
     expect(e).toMatch(/person-bound/);
     expect(e).toMatch(/not a reprimand/);

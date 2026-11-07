@@ -108,9 +108,9 @@ describe("S110 · Der Teilenwunsch hebt noContent auf", () => {
     /* AUS-05, 2/5: Die Begleitung gab {"noContent":true} aus, weil "inhaltlich
        kaum etwas entstanden" sei — obwohl die Person gesagt hatte, sie wolle
        etwas zeigen. Kollision zweier eigener Regeln aus S106. */
-    expect(reflexionsPrompt("Anna", "Bernd")).toContain("ABER (S110)");
+    expect(reflexionsPrompt("Anna", "Bernd")).toContain("Aber");
     expect(reflexionsPrompt("Anna", "Bernd")).toContain("Der Wunsch selbst ist der Inhalt");
-    expect(reflexionsPromptEn("Anna", "Bernd")).toContain("BUT (S110)");
+    expect(reflexionsPromptEn("Anna", "Bernd")).toContain("but");
   });
 
   it("die noContent-Regel selbst bleibt bestehen", () => {

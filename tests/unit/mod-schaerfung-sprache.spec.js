@@ -8,6 +8,10 @@
 // Vier Dinge haelt dieser Test fest:
 //   1. Die deutschen Texte sind BYTE-IDENTISCH zu den alten Konstanten
 //      (SHA-256, gerechnet vor dem Umzug) — kein Prompt hat sich geaendert.
+//      PRV-1a (Redaktion A) hat die Texte bewusst angefasst: Betonungs-CAPS
+//      zurueck in Normalschrift, Wortlaut sonst identisch. Die Hashes unten
+//      sind seither die der PRV-1a-Fassung; wer sie aendert, aendert den
+//      Prompt und schreibt das ins Sprintprotokoll.
 //   2. Eine EN-Session bekommt den englischen Hinweis; die DE-Session den
 //      deutschen; die Mechanik ist dieselbe Funktion.
 //   3. DE und EN sind paritaetisch (Schluessel, Typen) und das Krisen-Signal
@@ -30,9 +34,9 @@ const sha = s => createHash("sha256").update(s, "utf8").digest("hex");
 
 describe("MOD-2a · Die deutschen Schaerfungstexte sind die alten (byte-identisch)", () => {
   it("krise / zweiseitigkeit / aufdeck", () => {
-    expect(sha(de.waechter.krise.text)).toBe("a9b6cd65e4778208347e30be1abc62bac0d9ad235cf331ce51dcfe7db37a464a");
-    expect(sha(de.waechter.zweiseitigkeit.text)).toBe("c6bf6b07cd4cb595d2bc9843716fa8d8c10f66fd3bb03c184537310ccb3ec0d9");
-    expect(sha(de.waechter.aufdeck.text)).toBe("6d48e83ff81fb43b9caaf7958bbefef89e06ff7c32a1346e06885ffeb9feaef1");
+    expect(sha(de.waechter.krise.text)).toBe("957843c61355653d23d20632b28de6bf03802157fc3e75e88a5253f13bc563dd");
+    expect(sha(de.waechter.zweiseitigkeit.text)).toBe("af3209d3d5d3d9ba0f952bcb10d79f80bd82d4b94f96c70faaba5a7bedf861d3");
+    expect(sha(de.waechter.aufdeck.text)).toBe("abbed5547f6bd0adfbc9a44d99999736ff44ea74801e4db5ba3ee3bf42d535cc");
   });
 });
 

@@ -43,7 +43,7 @@ describe("S96 · Abschluss-Gabelung (AUS-04/05)", () => {
   it("Gleichgewichts-Regel: ein Satz je Tür, keine Empfehlung, nie für den Abwesenden sprechen", () => {
     beide(sp => {
       const txt = raum();
-      expect(txt, sp).toContain(sp === "de" ? "GLEICHGEWICHT (S96, hart)" : "BALANCE (S96, hard)");
+      expect(txt, sp).toContain(sp === "de" ? "GLEICHGEWICHT:" : "BALANCE:");
       expect(txt, sp).toContain(sp === "de" ? "das wäre für ihn leichter zu lesen" : "that would be easier for him to read");
     });
   });
@@ -65,7 +65,7 @@ describe("S96 · Reveal-Zahlenregel und Trajektorien-Tür (MRV-01/03)", () => {
   it("Häppchen: die beiden Sichten nie im selben Atemzug", () => {
     beide(sp => {
       expect(moment(), sp).toContain(sp === "de"
-        ? "NIE im selben Atemzug abgehandelt" : "NEVER handled in the same breath");
+        ? "nie im selben Atemzug abgehandelt" : "never handled in the same breath");
     });
   });
 
@@ -125,7 +125,7 @@ describe("S96 · Moment-Abschluss (QZ-01)", () => {
       // die Zusatzmarke "(S96 geschärft)" ist mit dem Umzug entfallen, die
       // Regel selbst gilt jetzt für beide Abschluss-Sessions.
       expect(txt, sp).toContain(sp === "de" ? "LANDUNGS-PFLICHT" : "LANDING OBLIGATION");
-      expect(txt, sp).toContain(sp === "de" ? "in DERSELBEN Nachricht" : "in THE SAME message");
+      expect(txt, sp).toContain(sp === "de" ? "in derselben Nachricht" : "in the same message");
       expect(txt, sp).toContain(sp === "de" ? "ohne würdigenden Schlusssatz" : "without an appreciating closing sentence");
     });
   });

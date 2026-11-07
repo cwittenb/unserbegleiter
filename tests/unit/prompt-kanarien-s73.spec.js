@@ -10,18 +10,18 @@ import * as EN from "../../core/prompts/prompts.en.js";
 
 const faelle = [
   ["de", DE, {
-    reihenfolge: "IMMER beides, in dieser Reihenfolge",
+    reihenfolge: "Immer beides, in dieser Reihenfolge",
     ersetztNicht: "ersetzt den Einzelraum-Verweis nicht",
     momentBeispiel: "ihr wollt dasselbe",
-    momentVerwerfbar: "die BENENNUNG des Moments selbst ist ein Angebot",
-    merkTrigger: "SOFORT und KONKRET",
+    momentVerwerfbar: "die Benennung des Moments selbst ist ein Angebot",
+    merkTrigger: "sofort und konkret",
   }],
   ["en", EN, {
-    reihenfolge: "ALWAYS both, in this order",
+    reihenfolge: "Always both, in this order",
     ersetztNicht: "does not replace the individual-space referral",
     momentBeispiel: "you both want the same thing",
-    momentVerwerfbar: "the NAMING of the moment itself is an offer",
-    merkTrigger: "IMMEDIATELY and CONCRETELY",
+    momentVerwerfbar: "the naming of the moment itself is an offer",
+    merkTrigger: "immediately and concretely",
   }],
 ];
 

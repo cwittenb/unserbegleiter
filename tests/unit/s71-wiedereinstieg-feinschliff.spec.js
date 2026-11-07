@@ -143,7 +143,7 @@ describe("S71 · Prompt-Härtung Wiedereinstieg (de + en)", () => {
   const pe = aufloesungsPromptEn("Anna", "Bernd");
 
   it("Schritt 2: das ablehnbare Menü IST das Ankommen — keine zusätzliche offene Frage", () => {
-    expect(p).toContain("IST das Ankommen");
+    expect(p).toContain("ist das Ankommen");
     expect(p).toContain("Wie ist es euch seit der Pause ergangen?");   // ausdrücklich als Gegenbeispiel benannt
     expect(p).toContain("ANKOMMENS-EINLADUNG");
     expect(p).toContain('"id":"arrive"');
@@ -154,15 +154,15 @@ describe("S71 · Prompt-Härtung Wiedereinstieg (de + en)", () => {
   it("Schritt 3: Wahrheits-Pflicht — keine erfundene Zustimmung, offene Frage neu aufgreifen", () => {
     expect(p).toContain("WAHRHEITS-PFLICHT");
     expect(p).toContain("behaupte nie einen Schritt");
-    expect(p).toContain("greif genau diese Frage ruhig NEU auf");
-    expect(pe).toContain("TRUTHFULNESS");
-    expect(pe).toContain("ANEW");
+    expect(p).toContain("greif genau diese Frage ruhig neu auf");
+    expect(pe).toContain("Truthfulness");
+    expect(pe).toContain("anew");
   });
 
   it("erhält die S64-Kanarien (kein Regress am Wiedereinstieg)", () => {
     expect(p).toContain("WIEDEREINSTIEG (laufende Session)");
-    expect(p).toContain('NIE als "heute" oder "eben"');
-    expect(p).toContain("NAHTLOS an der aktuellen Phase weiter");
+    expect(p).toContain('nie als "heute" oder "eben"');
+    expect(p).toContain("nahtlos an der aktuellen Phase weiter");
     expect(p).toContain("2–3 kleine Ankommens-Momente");
   });
 });

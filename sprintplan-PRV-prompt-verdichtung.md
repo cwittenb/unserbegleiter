@@ -14,7 +14,8 @@ Leitplanken (gelten für alle Schritte):
 | Schritt | Inhalt | Art | Aufwand | Messbar durch |
 |---|---|---|---|---|
 | PRV-0 | Vermessung + Shrink-only-Kanarie | Tooling | S | Test, Kennzahlen-Datei |
-| PRV-1 | Redaktion A: Dev-Changelog raus, CAPS-Diät, Negativ → positiv mit Grund | Korpus | S–M | Kanarie, Snapshots, Vollmatrix |
+| PRV-1a | Redaktion A: Dev-Changelog raus, CAPS-Diät — inhaltsgleich, bewiesen | Korpus | S | Kanarie, Snapshots, Inhaltsgleichheit |
+| PRV-1b | Redaktion A′: Negativ → positiv mit Grund, Begründungssätze in Kommentare | Korpus | M | Kanarie, Snapshots, Artefakt-Eval |
 | PRV-2 | Redaktion B: Baustein-Dedup + Grundgesetz oben | Korpus | M | Kanarie, Snapshots, Vollmatrix |
 | PRV-3 | Transport: Schärfung + Zustandsobjekt als transiente `<regie>`-Erinnerung | Engine | M | Unit, MRV/KRIS/AUFD/AUS, Cache-Quote |
 | PRV-4 | Guideline-Matching: Theorie-Bausteine nur bei Trigger | Katalog/Korpus | M | Unit je Trigger, Vollmatrix |
@@ -29,7 +30,7 @@ Scope: `scripts/prompt-masse.js` misst je Art × Sprache (später × Phase): Zei
 Test: `tests/unit/prv-prompt-masse.spec.js` — Shrink-only-Kanarie (T1b-Muster): aktuelle Werte sind Obergrenzen je (Art, Sprache); jede Erhöhung schlägt fehl, Absenkung wird beim nächsten Schritt festgeschrieben.
 Abgeschlossen, wenn: Kennzahlen-Datei existiert, Kanarie grün, Vorher-Werte im Protokoll.
 
-## PRV-1 · Redaktion A
+## PRV-1 · Redaktion A (gesplittet in 1a + 1b, siehe docs/SPRINT-PRV-1A-PROTOKOLL.md §1)
 
 Scope (nur `core/korpus/{de,en}/**/*.md`, dann `node scripts/build-korpus.js`):
 - Sprint-Referenzen und Begründungsprosa („(S103, aus dem Lauf gelernt)“, „Zwei Gründe: …“) entfernen; die Begründung bleibt als Kommentar in der `.md`-Quelle unter `<!-- -->`, erreicht das Modell nicht (Build strippt Kommentare — prüfen, sonst Build erweitern).
@@ -110,4 +111,4 @@ Kleine Entscheidungen, selbst getroffen: Serienname PRV; Begründungen bleiben a
 
 Vorbefund für PRV-0 (Quellen, nicht Prompt): `GENAU`/`EXACTLY` 4–24× je Session, `VIOLATION` 9–19× im EN-Korpus (DE: 0 — EN trägt mehr Verstoß-Rhetorik), „allein in der letzten Zeile“ 11× in einzel.
 
-Start PRV-0 erst, wenn der parallel laufende Sprint auf `main` ist (Fixture verankert sich sonst am alten Stand).
+Stand: PRV-0 geliefert (Basis c1f2adc, Kern 07882d74) · PRV-1a geliefert (Kern 9257b959) · nächster Schritt PRV-1b.

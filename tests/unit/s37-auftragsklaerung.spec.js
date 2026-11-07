@@ -61,9 +61,9 @@ describe("S37 · Kanarien im Korpus (de/en)", () => {
     expect(pe).toContain("not a human and not a therapist");
   });
   it("Wiedereinstieg nahtlos: keine Rückkehr-Begrüßung", () => {
-    expect(p).toContain("KEINE Rückkehr-Begrüßung");
+    expect(p).toContain("keine Rückkehr-Begrüßung");
     expect(p).not.toContain("begrüße Anna in EINEM Satz zurück");
-    expect(pe).toContain("NO welcome-back greeting");
+    expect(pe).toContain("no welcome-back greeting");
   });
   it("Landkarten-Übergang ruhig, ohne Tiefen-Pathos", () => {
     expect(p).toContain("An einigen Stellen bin ich neugierig geworden");
@@ -72,7 +72,7 @@ describe("S37 · Kanarien im Korpus (de/en)", () => {
   });
   it("Umformung: hörende Einleitung statt korrigierender; 'gesprächsfähig' verboten", () => {
     expect(p).toContain("Ich habe jetzt gehört:");
-    expect(p).toContain('NIE davon sprechen, etwas "gesprächsfähig" zu machen');
+    expect(p).toContain('nie davon sprechen, etwas "gesprächsfähig" zu machen');
     expect(p).toContain("damit es besser landen kann");
     expect(pe).toContain("What I've heard is:");
   });

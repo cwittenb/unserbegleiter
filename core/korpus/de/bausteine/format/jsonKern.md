@@ -1,1 +1,1 @@
-REINES JSON, keine Markdown-Zäune, kein weiterer Text
+Reines JSON, keine Markdown-Zäune, kein weiterer Text
