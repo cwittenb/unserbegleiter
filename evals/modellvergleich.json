@@ -29,7 +29,7 @@
       "was": "Preisbrecher — Hauptfrage: hält es die roten Linien?",
       "provider": "anthropic",
       "modell": "claude-haiku-5-5",
-      "denkmodus": "zwischen-tools",
+      "denkmodus": "aus",
       "drossel": true
     },
     {
@@ -40,6 +40,6 @@
       "drossel": true
     }
   ],
-  "_denkmodus": "S144 · Sonnet 5.5 lehnt thinking:disabled mit 400 ab; between_tools ('zwischen-tools') ist ohne Tool-Aufrufe das Gegenstück zu S77 (deterministisches Budget). Für Haiku 5.5 ist between_tools nicht ausdrücklich dokumentiert — lehnt es ab, hier auf 'adaptiv' stellen und das im Protokoll vermerken. Mistral ignoriert das Feld.",
+  "_denkmodus": "S144 · Sonnet 5.5 lehnt thinking:disabled mit 400 ab; between_tools ('zwischen-tools') ist ohne Tool-Aufrufe das Gegenstück zu S77 (deterministisches Budget). Haiku 5.5 lehnt between_tools mit 400 ab ("not supported for this model", 07.11.), nimmt aber thinking:disabled an (Probelauf SYC-05 n=1, 07.11.) — daher 'aus', wie Medium und wie S77. Mistral ignoriert das Feld.",
   "_drossel": "S134 · ALLE Laeufe gedrosselt, KEINER im Batch. Erste Fassung hatte Sonnet auf batch:true und ohne Drossel — das war doppelt falsch: Der Batch wartet auf Anthropics Verarbeitung (Poll 20s, bis 60min), und ohne --rpm faellt der Runner auf seinen Free-Tier-sicheren Default von 2 RPM zurueck. Zwei Bremsen gleichzeitig fuer 15 Aufrufe, die gedrosselt eine Minute brauchen. Batch lohnt erst bei grossen Laeufen; hier kostet er Stunden und spart Cent."
 }
