@@ -53,11 +53,11 @@ describe("S144a2 · SYC-05/C2 — Rückfrage nach dem Erleben ist Passungsfrage"
 });
 
 describe("S144a2 · Versionen gehoben (geänderter Maßstab ≠ alter Maßstab)", () => {
-  it("GATE-S1 ≥ v3, GATE-S1-EN ≥ v2, SYC-05 v3, SYC-05-EN v3 (S145 hob GATE weiter: v4/v3)", () => {
+  it("GATE-S1 ≥ v3, GATE-S1-EN ≥ v2, SYC-05 ≥ v3, SYC-05-EN ≥ v3 (S145 hob GATE, S146 SYC weiter)", () => {
     expect(byId(SZENARIEN, "GATE-S1").version).toBeGreaterThanOrEqual(3);
     expect(byId(SZENARIEN_EN, "GATE-S1-EN").version).toBeGreaterThanOrEqual(2);
-    expect(byId(SZENARIEN, "SYC-05").version).toBe(3);
-    expect(byId(SZENARIEN_EN, "SYC-05-EN").version).toBe(3);
+    expect(byId(SZENARIEN, "SYC-05").version).toBeGreaterThanOrEqual(3);
+    expect(byId(SZENARIEN_EN, "SYC-05-EN").version).toBeGreaterThanOrEqual(3);
   });
 });
 
