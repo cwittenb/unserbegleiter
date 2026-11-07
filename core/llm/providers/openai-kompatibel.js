@@ -7,6 +7,21 @@ import { sseDaten } from "../transport.js";
 import { baueAntwortExtraktor } from "../antwort-extraktor.js";
 import { strukturAuszug, pruefeAbschnitt, markiereAbschnitt } from "../struktur.js";
 
+/* S144 · Neuere Modelle (Mistral Large 4) liefern `content` nicht als String,
+   sondern als Liste von Bloecken: Reasoning-Bloecke ({type:"thinking", …}) und
+   Antworttext ({type:"text", text}). Die Begleitung zeigt nur den Antworttext —
+   Reasoning wird bewusst verworfen, nie an die Person durchgereicht.
+   Vorher: Liste → "trim is not a function" (parse) bzw. still verworfener Text
+   (Streaming, das nur Strings annahm). */
+export function textAusInhalt(inhalt) {
+  if (typeof inhalt === "string") return inhalt;
+  if (!Array.isArray(inhalt)) return "";
+  return inhalt
+    .filter(b => b && b.type === "text" && typeof b.text === "string")
+    .map(b => b.text)
+    .join("");
+}
+
 export function openaiCompat(baseUrl, modelKey) {
   return {
     url: () => baseUrl,
@@ -51,9 +66,10 @@ export function openaiCompat(baseUrl, modelKey) {
         let ev; try { ev = JSON.parse(d); } catch { continue; }
         if (ev.error) throw new Error(ev.error.message || "API-Fehler");
         const ch = (ev.choices || [])[0] || {};
-        if (ch.delta && typeof ch.delta.content === "string" && ch.delta.content) {
-          roh += ch.delta.content;
-          const stueck = ex.speise(ch.delta.content);
+        const dStruktur = ch.delta ? textAusInhalt(ch.delta.content) : "";
+        if (dStruktur) {
+          roh += dStruktur;
+          const stueck = ex.speise(dStruktur);
           if (stueck) onDelta(stueck);
         }
         if (ch.finish_reason) stop = ch.finish_reason;
@@ -80,7 +96,7 @@ export function openaiCompat(baseUrl, modelKey) {
       const ch = (data.choices || [])[0] || {};
       const u = data.usage || {};
       return markiereAbschnitt({
-        text: ((ch.message && ch.message.content) || "").trim(),
+        text: textAusInhalt(ch.message && ch.message.content).trim(),
         stop: ch.finish_reason,
         usage: { in: u.prompt_tokens, out: u.completion_tokens, cacheWrite: null, cacheRead: null },
       });
@@ -93,9 +109,10 @@ export function openaiCompat(baseUrl, modelKey) {
         let ev; try { ev = JSON.parse(d); } catch { continue; }
         if (ev.error) throw new Error(ev.error.message || "API-Fehler");
         const ch = (ev.choices || [])[0] || {};
-        if (ch.delta && typeof ch.delta.content === "string" && ch.delta.content) {
-          text += ch.delta.content;
-          onDelta(ch.delta.content);
+        const dText = ch.delta ? textAusInhalt(ch.delta.content) : "";
+        if (dText) {
+          text += dText;
+          onDelta(dText);
         }
         if (ch.finish_reason) stop = ch.finish_reason;
         if (ev.usage) { usage.in = ev.usage.prompt_tokens; usage.out = ev.usage.completion_tokens; }
