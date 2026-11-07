@@ -22,11 +22,16 @@
  *     etwas dazwischenkommt.
  *
  * Aufruf:
- *   node scripts/modellvergleich.js                    # zehn Szenarien, n=5
+ *   node scripts/modellvergleich.js                    # zehn Szenarien, n=3 (S144)
  *   node scripts/modellvergleich.js --kurz             # nur GATE, SYC, ANT
- *   node scripts/modellvergleich.js --n 3              # weniger Durchläufe
+ *   node scripts/modellvergleich.js --n 5              # mehr Durchläufe
  *   node scripts/modellvergleich.js --nur A,C          # einzelne Spalten
  *   node scripts/modellvergleich.js --trocken          # nur zeigen, was liefe
+ *
+ * S144 · Je Lauf kann evals/modellvergleich.json einen `denkmodus` tragen
+ * (aus | adaptiv | zwischen-tools) — er geht als --denkmodus an den Runner.
+ * Und der Judge braucht `freigegeben: true`: Ein neuer Judge richtet erst,
+ * nachdem scripts/judge-nachbewertung.js ihn gegen den alten abgeglichen hat.
  *
  * Voraussetzung: MISTRAL_API_KEY und ANTHROPIC_API_KEY in der .env im
  * Repo-Wurzelverzeichnis.
@@ -75,7 +80,7 @@ const wert = (n, fallback) => {
 };
 
 const szenarien = flag("kurz") ? KURZ : SZENARIEN;
-const n = wert("n", "5");
+const n = wert("n", "3");   // S144 · n=3 (Entscheidung 07.11.); --n 5 für den alten Umfang
 const rpm = wert("rpm", "30");
 const trocken = flag("trocken");
 const nur = wert("nur", null);
@@ -84,7 +89,17 @@ const laeufe = nur
   : LAEUFE;
 
 if (!laeufe.length) {
-  console.error("--nur passt auf keinen Lauf. Erlaubt: A, B, C (kommagetrennt).");
+  console.error("--nur passt auf keinen Lauf. Erlaubt: " + LAEUFE.map(l => l.kennung).join(", ") + " (kommagetrennt).");
+  process.exit(2);
+}
+
+/* S144a · Ein neuer Judge richtet erst nach seiner Kalibrierung. Fehlt das Feld
+   (ältere Konfiguration), gilt der Judge als freigegeben — nur ein ausdrückliches
+   false sperrt. Der Trockenlauf bleibt erlaubt: Er kostet nichts. */
+if (JUDGE.freigegeben === false && !trocken) {
+  console.error("Judge " + JUDGE.modell + " ist noch nicht freigegeben (evals/modellvergleich.json → judge.freigegeben).\n" +
+    "Erst kalibrieren:  node scripts/judge-nachbewertung.js\n" +
+    "Zeigt der Abgleich keine einseitige Häufung, freigegeben auf true setzen.");
   process.exit(2);
 }
 
@@ -95,6 +110,8 @@ function befehl(lauf, szenario) {
     "--judge-modell", JUDGE.modell];
   // --judge-provider nur, wenn er von der Pipeline abweicht; sonst ist er Default.
   if (lauf.provider !== JUDGE.provider) a.push("--judge-provider", JUDGE.provider);
+  // S144 · Denkmodus nur, wenn der Lauf ihn setzt; sonst gilt die Runner-Vorgabe (aus).
+  if (lauf.denkmodus) a.push("--denkmodus", lauf.denkmodus);
   /* S134 · IMMER --rpm, NIE --batch. Ohne --rpm faellt der Runner auf seinen
      Free-Tier-sicheren Default von 2 RPM zurueck — 15 Aufrufe dauern dann eine
      Viertelstunde statt einer Minute. Und --batch wartet auf Anthropics
@@ -121,7 +138,8 @@ function starte(args) {
 
 console.log("Modellvergleich · " + szenarien.length + " Szenarien × " + laeufe.length +
   " Läufe, n=" + n);
-console.log("Judge für alle: " + JUDGE.modell + " (" + JUDGE.provider + ")");
+console.log("Judge für alle: " + JUDGE.modell + " (" + JUDGE.provider + ")" +
+  (JUDGE.freigegeben === false ? " — NICHT freigegeben, nur Trockenlauf" : ""));
 console.log("");
 
 if (trocken) {

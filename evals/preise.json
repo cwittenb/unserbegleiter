@@ -1,11 +1,16 @@
 {
-  "stand": "2026-07",
-  "hinweis": "USD pro 1 Mio Token. Bei Preisänderungen NUR hier pflegen. cacheRead/cacheWrite nur bei Anthropic relevant. cacheWrite1h = 1-Stunden-TTL (2x Input; im Batch-Modus genutzt, S65). Sonnet 5: Intro-Preis bis 31.08.2026 (danach 3 / 15).",
+  "stand": "2026-11",
+  "hinweis": "USD pro 1 Mio Token. Bei Preisänderungen NUR hier pflegen. cacheWrite1h = 1-Stunden-TTL (2x Input; im Batch-Modus genutzt, S65). Mistral: cacheRead = gecachter Input, sofern ausgewiesen; Writes kosten dort den Input-Preis. S144 · claude-haiku-5-5: Preise der Stufe bis 100K Prompt-Token (darüber 0,50/2,50/0,05/0,625) — unsere Prompts liegen bei ~12K. claude-opus-5-5: Cache-Read 0,20 laut Anthropic-Ankündigung (nicht 0,1x). claude-sonnet-5-5: cacheWrite1h aus 2x Input abgeleitet (nicht veröffentlicht gefunden). Die -latest-Einträge bleiben für ältere Ergebnisdateien stehen; neue Läufe nutzen gepinnte IDs. mistral-large-latest korrigiert auf Large 3 (mistral-large-2512: 0,50 / 1,50, cached 0,05) — der alte Eintrag 2 / 6 war der Preis der Vorgängergeneration und überschätzte die Kosten um das Vierfache; zeigt der Alias inzwischen auf Large 4, gilt 0,70 / 2,10.",
   "modelle": {
-    "claude-opus-4-8":       { "in": 5.00, "out": 25.00, "cacheRead": 0.50, "cacheWrite": 6.25, "cacheWrite1h": 10.00 },
-    "claude-sonnet-5":       { "in": 2.00, "out": 10.00, "cacheRead": 0.20, "cacheWrite": 2.50, "cacheWrite1h":  4.00 },
-    "claude-haiku-4-5":      { "in": 1.00, "out":  5.00, "cacheRead": 0.10, "cacheWrite": 1.25, "cacheWrite1h":  2.00 },
-    "mistral-medium-latest": { "in": 0.40, "out":  2.00, "cacheRead": 0.40, "cacheWrite": 0.40, "cacheWrite1h":  0.40 },
-    "mistral-large-latest":  { "in": 2.00, "out":  6.00, "cacheRead": 2.00, "cacheWrite": 2.00, "cacheWrite1h":  2.00 }
+    "claude-opus-4-8":       { "in": 5.00, "out": 25.00, "cacheRead": 0.50, "cacheWrite": 6.25,  "cacheWrite1h": 10.00 },
+    "claude-opus-5-5":       { "in": 4.00, "out": 20.00, "cacheRead": 0.20, "cacheWrite": 5.00,  "cacheWrite1h":  8.00 },
+    "claude-sonnet-5":       { "in": 2.00, "out": 10.00, "cacheRead": 0.20, "cacheWrite": 2.50,  "cacheWrite1h":  4.00 },
+    "claude-sonnet-5-5":     { "in": 2.00, "out": 10.00, "cacheRead": 0.20, "cacheWrite": 2.50,  "cacheWrite1h":  4.00 },
+    "claude-haiku-4-5":      { "in": 1.00, "out":  5.00, "cacheRead": 0.10, "cacheWrite": 1.25,  "cacheWrite1h":  2.00 },
+    "claude-haiku-5-5":      { "in": 0.10, "out":  0.50, "cacheRead": 0.01, "cacheWrite": 0.125, "cacheWrite1h":  0.20 },
+    "mistral-medium-latest": { "in": 0.40, "out":  2.00, "cacheRead": 0.40, "cacheWrite": 0.40,  "cacheWrite1h":  0.40 },
+    "mistral-medium-3-5":    { "in": 0.40, "out":  2.00, "cacheRead": 0.40, "cacheWrite": 0.40,  "cacheWrite1h":  0.40 },
+    "mistral-large-latest":  { "in": 0.50, "out":  1.50, "cacheRead": 0.05, "cacheWrite": 0.50,  "cacheWrite1h":  0.50 },
+    "mistral-large-4-0":     { "in": 0.70, "out":  2.10, "cacheRead": 0.07, "cacheWrite": 0.70,  "cacheWrite1h":  0.70 }
   }
 }

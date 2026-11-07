@@ -56,6 +56,8 @@ export const LLM_DEFAULTS = {
   //                Budget, keine unsichtbaren Kosten. Vorgabe für die Begleitung.
   //   "adaptiv"  — kein thinking-Feld; das Modell entscheidet selbst (API-Vorgabe).
   //                Für Prüf-/Richtaufgaben sinnvoll (Judge).
+  //   "zwischen-tools" — thinking:{type:"between_tools"} (S144). Für Modelle, die
+  //                "disabled" mit 400 ablehnen; ohne Tool-Aufrufe wirkt es wie "disabled".
   // Bewusst eine Vorgabe und keine Pflichtangabe: es ist Robustheits-Tuning wie
   // maxTokens, kein Provider-/Modellwissen (S35d bleibt unberührt).
   thinking: "disabled",

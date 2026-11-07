@@ -1,32 +1,44 @@
 {
-  "_": "S133 · Die Modelle des Vergleichslaufs. Als Daten und nicht im Skript, weil der Waechter aus S35d Modellnamen in .js-Dateien verbietet — Modellwissen gehoert in Konfiguration, sonst muss man Code anfassen, um ein Modell zu wechseln. Der Waechter hat das beim Schreiben dieses Skripts sofort gefangen.",
+  "_": "S133 · Die Modelle des Vergleichslaufs. Als Daten und nicht im Skript, weil der Waechter aus S35d Modellnamen in .js-Dateien verbietet — Modellwissen gehoert in Konfiguration, sonst muss man Code anfassen, um ein Modell zu wechseln. S144 · Neu zugeschnitten: gepinnte IDs statt -latest (ein Alias kann still auf ein neues Modell zeigen — mistral-large-latest tut es inzwischen), je Lauf der Denkmodus der Pipeline.",
   "judge": {
     "_": "Derselbe Judge für ALLE Läufe. Die Regel 'Judge ≠ Pipeline' führt sonst dazu, dass jeder Lauf von einem anderen bewertet wird — bei roten Linien verzeihlich, bei Sprachqualität nicht: Dort urteilt der Judge, statt eine Regel abzugleichen.",
     "provider": "anthropic",
-    "modell": "claude-opus-4-8"
+    "modell": "claude-opus-5-5",
+    "freigegeben": false,
+    "_freigabe": "S144a · Der Judge wechselt erst nach der Kalibrierung (scripts/judge-nachbewertung.js, Referenz/Kandidat in evals/judge-kalibrierung.json). Zeigt sie keine einseitige Häufung, hier auf true setzen. Bis dahin verweigert scripts/modellvergleich.js den Lauf (Trockenlauf geht) — Instrument und Kandidaten zugleich zu wechseln, wäre konfundiert."
   },
   "laeufe": [
     {
       "kennung": "A",
-      "was": "das Modell, auf das gewechselt würde",
+      "was": "Basislinie: das Modell der Augustläufe (deprecated seit 31.10.2026, Retirement 30.04.2027)",
       "provider": "mistral",
-      "modell": "mistral-medium-latest",
+      "modell": "mistral-medium-3-5",
       "drossel": true
     },
     {
       "kennung": "B",
-      "was": "das Modell, das in Produktion läuft",
-      "provider": "mistral",
-      "modell": "mistral-large-latest",
+      "was": "Nachfolger der bisherigen Gegenprobe (Sonnet 5 ist legacy)",
+      "provider": "anthropic",
+      "modell": "claude-sonnet-5-5",
+      "denkmodus": "zwischen-tools",
       "drossel": true
     },
     {
       "kennung": "C",
-      "was": "die Gegenprobe von außen",
+      "was": "Preisbrecher — Hauptfrage: hält es die roten Linien?",
       "provider": "anthropic",
-      "modell": "claude-sonnet-5",
+      "modell": "claude-haiku-5-5",
+      "denkmodus": "zwischen-tools",
+      "drossel": true
+    },
+    {
+      "kennung": "D",
+      "was": "Mistral-Nachfolger von Medium (EU, open-weight)",
+      "provider": "mistral",
+      "modell": "mistral-large-4-0",
       "drossel": true
     }
   ],
+  "_denkmodus": "S144 · Sonnet 5.5 lehnt thinking:disabled mit 400 ab; between_tools ('zwischen-tools') ist ohne Tool-Aufrufe das Gegenstück zu S77 (deterministisches Budget). Für Haiku 5.5 ist between_tools nicht ausdrücklich dokumentiert — lehnt es ab, hier auf 'adaptiv' stellen und das im Protokoll vermerken. Mistral ignoriert das Feld.",
   "_drossel": "S134 · ALLE Laeufe gedrosselt, KEINER im Batch. Erste Fassung hatte Sonnet auf batch:true und ohne Drossel — das war doppelt falsch: Der Batch wartet auf Anthropics Verarbeitung (Poll 20s, bis 60min), und ohne --rpm faellt der Runner auf seinen Free-Tier-sicheren Default von 2 RPM zurueck. Zwei Bremsen gleichzeitig fuer 15 Aufrufe, die gedrosselt eine Minute brauchen. Batch lohnt erst bei grossen Laeufen; hier kostet er Stunden und spart Cent."
 }
