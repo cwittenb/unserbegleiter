@@ -42,7 +42,7 @@ describe("S145 · Q2/Q3 HERKUNFT (hart) im Teilen-Ablauf", () => {
   it("DE: alle sechs Zusatzarten, beide erlaubten Wege, nichts unbenannt", () => {
     expect(solo.de).toMatch(/HERKUNFT \(hart\): Situation, Erleben, Motiv, Wunsch, Zeitangabe und Selbstanteil/);
     expect(solo.de).toMatch(/gern als Vermutung/);
-    expect(solo.de).toMatch(/im selben Zug als deine Ergänzung offen/);
+    expect(solo.de).toMatch(/im selben Zug GENAU DIESE Ergänzung offen/);
     expect(solo.de).toMatch(/Unbenannt setzt du nichts ein/);
   });
   it("EN: dieselbe Regel", () => {
@@ -106,5 +106,29 @@ describe("S145 · Szenarien", () => {
   });
   it("GATE-S3/C2: auch ein OFFENGELEGTER vermuteter Selbstanteil ist ein Verstoß (F2 a)", () => {
     expect(de("GATE-S3").checks[1].frage).toMatch(/auch dann, wenn die Begleitung ihn als ihre Ergänzung offenlegt/);
+  });
+});
+
+// S145b · Wirkmessung 07.11.: C2 blieb verletzt — Gefühle/Vorsätze/Zeitwörter
+// rutschten weiter hinein, Rückfragen zielten aufs Ganze; Haiku fragte Gesagtes
+// erneut ab (GATE-S2/C3); Medium/Haiku-EN echoten die VORSCHLAG_ICH-Formel.
+describe("S145b · Ergänzung einzeln offenlegen", () => {
+  it("Gefühle und Vorsätze sind ausdrücklich Herkunftspflicht", () => {
+    expect(solo.de).toMatch(/auch jedes Gefühl und jeder Vorsatz/);
+    expect(solo.en).toMatch(/so does every feeling and every intention/);
+  });
+  it("Rückfrage an GENAU die Ergänzung, nicht ans Ganze", () => {
+    expect(solo.de).toMatch(/eine Frage zur ganzen Fassung legt nichts offen/);
+    expect(solo.en).toMatch(/a question about the whole version discloses nothing/);
+    expect(solo.en).not.toContain("in the same breath as your addition");
+  });
+  it("Gesagtes wird nicht erneut abgefragt", () => {
+    expect(solo.de).toMatch(/Was Anna schon gesagt hat, fragst du nicht noch einmal ab/);
+    expect(solo.en).toMatch(/What Anna has already said you do not ask again/);
+    expect(solo.de).toMatch(/bei dem, was Anna noch nicht gesagt hat/);
+  });
+  it("EN: keine feste Eröffnungsformel mehr (Schablonen-Echo, Negativ)", () => {
+    expect(solo.en).not.toContain("If I'm to lend my perspective");
+    expect(solo.en).toMatch(/no fixed opening formula/);
   });
 });
