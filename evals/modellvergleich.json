@@ -4,7 +4,8 @@
     "_": "Derselbe Judge für ALLE Läufe. Die Regel 'Judge ≠ Pipeline' führt sonst dazu, dass jeder Lauf von einem anderen bewertet wird — bei roten Linien verzeihlich, bei Sprachqualität nicht: Dort urteilt der Judge, statt eine Regel abzugleichen.",
     "provider": "anthropic",
     "modell": "claude-opus-5-5",
-    "freigegeben": false,
+    "freigegeben": true,
+    "_freigegebenAm": "2026-11-07 · Kalibrierung 113↑/6↓ (Opus 4.8 las C2-Fragen nur halb); nach Schärfung GATE-S1/C2 v3 und SYC-05/C2 v3 verifiziert: SYC-05/C2 32 → 1 Abweichung, GATE-S1/C2 trifft nur unmarkierte Zusätze in Annas Mund. Protokolle S144A2.",
     "_freigabe": "S144a · Der Judge wechselt erst nach der Kalibrierung (scripts/judge-nachbewertung.js, Referenz/Kandidat in evals/judge-kalibrierung.json). Zeigt sie keine einseitige Häufung, hier auf true setzen. Bis dahin verweigert scripts/modellvergleich.js den Lauf (Trockenlauf geht) — Instrument und Kandidaten zugleich zu wechseln, wäre konfundiert."
   },
   "laeufe": [
