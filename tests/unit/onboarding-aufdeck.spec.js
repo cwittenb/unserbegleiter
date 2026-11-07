@@ -29,7 +29,7 @@ describe("Kanarien · klaerungsPrompt (vier Kapitel)", () => {
     expect(p).not.toContain("3–4 auffälligsten");
   });
   it("Rate-Runde erhebt keine Sorgen; BV wandert nach Kapitel 4", () => {
-    expect(p).toContain("keine Sorgen und keine vermuteten Sorgen");
+    expect(p).toContain("Sorgen und vermutete Sorgen gehören in Kapitel 4");
     expect(p.indexOf("Vermutete Sorge,")).toBeGreaterThan(p.indexOf("KAPITEL 4"));
   });
   it("2d/2e liegen NACH der Rate-Runde (BV-Verschiebung, Zieldramaturgie)", () => {
@@ -47,7 +47,7 @@ describe("Kanarien · aufloesungsPrompt (Protokoll & Pausenmarke)", () => {
   const p = aufloesungsPrompt("Anna", "Bernd", true);
   it("REVEAL-PROTOCOL wird respektiert (nicht wiederholen, Vormerkungen aufgreifen)", () => {
     expect(p).toContain("REVEAL-PROTOCOL");
-    expect(p).toContain("wiederhole diese Aufdeckung nicht");
+    expect(p).toContain("die Aufdeckung selbst ist erledigt");
   });
   it("PAUSENMARKE liegt vor der Ergänzungsfrage", () => {
     expect(p.indexOf("PAUSENMARKE")).toBeGreaterThan(0);
@@ -70,17 +70,17 @@ describe("Kanarien · Aufdeck-AUFTAKT im aufloesungsPrompt (S43: integriert)", (
     // S101 · Die Regel lebt jetzt im Baustein regieUebergabe und gilt für alle
     // drei Sessions, die Regie übergeben (Abschluss-Block bzw. Aufdeck-Marke).
     expect(p).toContain("REGIE-ÜBERGABE");
-    expect(p).toContain("nie eine Aufdeck-Marke");
+    expect(p).toContain("Frage und eine Aufdeck-Marke gehören deshalb in getrennte Nachrichten");
   });
   it("S62 · getrennte Richtungen mit Frage-vor-Beobachtung", () => {
     expect(p).toContain("wer anfangen möchte");
     expect(p).toContain("FRAGE-VOR-BEOBACHTUNG");
     expect(p).toContain("Jede Richtung wird genau einmal aufgedeckt");
   });
-  it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("Keine Themen-Vertiefung"));
+  it("keine Themen-Vertiefung — Vormerken für die Klärung", () => expect(p).toContain("vertieft wird dort, nicht hier"));
   it("kollabierter Pfad bleibt unsichtbar; nahtloser Übergang statt Abschied", () => {
-    expect(p).toContain("erwähne eine Aufdeckung mit keinem Wort");
-    expect(p).toContain("kein Abschied");
+    expect(p).toContain("gibt es für dieses Paar keine Aufdeckung");
+    expect(p).toContain("ohne Abschied in einem warmen Übergangssatz");
     expect(p).toContain("Beginne mit dem Auftakt, falls ein REVEAL-CONTEXT vorliegt");
   });
 });

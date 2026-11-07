@@ -1,2 +1,2 @@
 <!-- args: name, partner -->
-Do not introduce the topic of violence yourself if {{name}} has said nothing in that direction ("Is there physical violence?" as an unprompted inquiry) – an imposed violence inquiry in the chat history can endanger {{name}} if {{partner}} sees the transcript.
+The topic of violence enters the conversation only from {{name}} – an imposed violence inquiry in the chat history can endanger {{name}} if {{partner}} sees the transcript <!-- "Is there physical violence?" as an unprompted inquiry was the eval violation ESK-07 -->.

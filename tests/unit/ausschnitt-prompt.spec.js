@@ -37,11 +37,11 @@ describe("S95.4 · Freigabe-Ort", () => {
 describe("S95.4 · Teilenwunsch als Bremse", () => {
   it("verlangt eine Zusage und verbietet die Rückfrage-Formel", () => {
     setKorpusSprache("de");
-    expect(raum()).toContain("ZUSAGE, keine Frage");
-    expect(raum()).toContain("ich frage dich am Ende");   // ausdrücklich als Verstoß benannt
+    expect(raum()).toContain("gibst du eine ZUSAGE – vollständig und endgültig, keine Frage");
+    expect(raum()).not.toContain("ich frage dich am Ende");   // PRV-1b: die Rückfrage-Formel steht nur noch in der Quelle, nicht im Prompt
     expect(raum()).toContain("Das nehme ich mit");
     setKorpusSprache("en");
-    expect(raum()).toContain("commitment, not a question");
+    expect(raum()).toContain("you give a commitment – complete and final, not a question");
     setKorpusSprache("de");
   });
 
@@ -72,7 +72,7 @@ describe("S95.4 · Dreiwertige Gabelung", () => {
 
   it("die dritte Tür trägt keine Verneinungsformel", () => {
     setKorpusSprache("de");
-    expect(raum()).toContain("keine Verneinungsformel");
+    expect(raum()).toContain("ohne Verneinungsformel, Bedauern oder Nachhaken");
     expect(raum()).toContain("schließt sich die Gabelung lautlos");
     setKorpusSprache("de");
   });
@@ -112,10 +112,11 @@ describe("S95.4 · Ausschnitt-Regeln", () => {
 
   it("die Auswahl-Rahmung enthält keine Bedien-Begriffe", () => {
     setKorpusSprache("de");
-    expect(raum()).toContain("Nie Gesten");
+    expect(raum()).toContain("Du beschreibst den Vorgang, die Bedienung trägt die Oberfläche");
+    expect(raum()).not.toContain("antippen");   // PRV-1b: Bedien-Begriffe stehen nicht mehr im Prompt, auch nicht als Verbot
     expect(raum()).toContain("die Bedienung trägt die Oberfläche");
     setKorpusSprache("en");
-    expect(raum()).toContain("Never gestures");
+    expect(raum()).toContain("You describe the procedure, the interface carries the operation");
     setKorpusSprache("de");
   });
 });

@@ -23,23 +23,23 @@ import { en } from "../../core/i18n/en.js";
 describe("S99.4 · Die Regel steht jetzt auch im Reflexionsgespräch", () => {
   it("DE: nicht behaupten, ein Eintrag sei gespeichert", () => {
     const p = reflexionsPrompt("Anna", "Bernd");
-    expect(p).toContain("KEINE SPEICHER-BEHAUPTUNG");
-    expect(p).toMatch(/gespeichert/);
+    expect(p).toContain("DIE APP LEGT AB");
+    expect(p).toMatch(/das Speichern ist ihre Sache/);
     // S100.1 · Das Gegenbeispiel ist mit dem Umzug in den Baustein generisch
     // geworden ("dein Eintrag wurde gespeichert") — es gilt jetzt für beide
     // Abschluss-Sessions statt nur für die Zeitleiste.
-    expect(p).toContain("wurde gespeichert");
+    expect(p).not.toContain("wurde gespeichert");   // PRV-1b: das Fehlerbeispiel steht nur noch in der Quelle
   });
 
   it("EN: dieselbe Regel", () => {
     const p = reflexionsPromptEn("Anna", "Bernd");
-    expect(p).toContain("NO SAVE CLAIM");
-    expect(p).toMatch(/saved/);
+    expect(p).toContain("THE APP STORES");
+    expect(p).toMatch(/saving is its business/);
   });
 
   it("die Qualitätszeit trug sie schon — die beiden Sessions sagen jetzt dasselbe", () => {
-    expect(momentPrompt("Anna", "Bernd")).toMatch(/gespeichert/);
-    expect(momentPromptEn("Anna", "Bernd")).toMatch(/saved/);
+    expect(momentPrompt("Anna", "Bernd")).toMatch(/das Speichern ist ihre Sache/);
+    expect(momentPromptEn("Anna", "Bernd")).toMatch(/saving is its business/);
   });
 });
 

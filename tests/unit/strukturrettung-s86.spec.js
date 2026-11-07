@@ -54,17 +54,17 @@ describe("S86 · Überklärungs-Grenze und Marken-Anschluss (Kanarien)", () => {
   const faelle = [
     ["de", DE, {
       grenze: "ÜBERKLÄRUNGS-GRENZE",
-      beispiel: '"Anna, auch von dir ein kurzes Ja" nach ihrem präfixierten Ja ist ein Verstoß',
+      beispiel: "gilt beim ersten Mal; die Grammatik verlangt Ausdrücklichkeit, nicht Wiederholung",
       beide: "liegen damit beide Okays vor",
-      marke: "folgt die Marke SOFORT",
-      keineRueckfrage: "Keine Rückversicherungs-Frage dazwischen",
+      marke: "folgt die Marke sofort, ohne Rückversicherungs-Frage dazwischen",
+      keineRueckfrage: "ohne Rückversicherungs-Frage dazwischen",
     }],
     ["en", EN, {
       grenze: "OVER-CLARIFICATION LIMIT",
-      beispiel: '"Anna, a short yes from you too" after her prefixed yes is a violation',
+      beispiel: "counts the first time; the grammar demands explicitness, not repetition",
       beide: "both okays are thereby given",
-      marke: "the mark follows IMMEDIATELY",
-      keineRueckfrage: "no reassurance question in between",
+      marke: "the mark follows immediately, without a reassurance question in between",
+      keineRueckfrage: "without a reassurance question in between",
     }],
   ];
 

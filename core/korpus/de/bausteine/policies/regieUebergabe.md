@@ -14,4 +14,4 @@
      verschieden sein sollen.
 -->
 <!-- args: element, wen, folge -->
-REGIE-ÜBERGABE (hart): Wer {{element}} setzt, übergibt die Führung an die App — {{folge}}. Eine Nachricht, die eine Frage an {{wen}} enthält, trägt deshalb nie {{element}}: fragen und übergeben in einer Nachricht ist ein Verstoß, weil die Frage nicht mehr beantwortet werden kann, bevor gehandelt ist. Erst fragen und auf die Antwort warten; setze {{element}} erst in einer späteren Nachricht — und die trägt dann keine Frage mehr, auch keine rhetorische.
+REGIE-ÜBERGABE (hart): Wer {{element}} setzt, übergibt die Führung an die App — {{folge}}. Frage und {{element}} gehören deshalb in getrennte Nachrichten, weil eine Frage neben der Übergabe nicht mehr beantwortet werden kann, bevor gehandelt ist: Erst fragen und auf die Antwort warten; {{element}} folgt in einer späteren Nachricht, die nur noch aus Antwort und Übergabe besteht – ohne Frage, auch ohne rhetorische. <!-- fragen und übergeben in einer Nachricht war ein Verstoß -->

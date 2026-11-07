@@ -61,9 +61,9 @@ describe("S37 · Kanarien im Korpus (de/en)", () => {
     expect(pe).toContain("not a human and not a therapist");
   });
   it("Wiedereinstieg nahtlos: keine Rückkehr-Begrüßung", () => {
-    expect(p).toContain("keine Rückkehr-Begrüßung");
+    expect(p).toContain("ohne Rückkehr-Begrüßung");
     expect(p).not.toContain("begrüße Anna in EINEM Satz zurück");
-    expect(pe).toContain("no welcome-back greeting");
+    expect(pe).toContain("without a welcome-back greeting");
   });
   it("Landkarten-Übergang ruhig, ohne Tiefen-Pathos", () => {
     expect(p).toContain("An einigen Stellen bin ich neugierig geworden");
@@ -77,9 +77,10 @@ describe("S37 · Kanarien im Korpus (de/en)", () => {
     expect(pe).toContain("What I've heard is:");
   });
   it("Abschluss: Block nie beim Namen nennen; die Begleitung ist beim Gespräch dabei", () => {
-    expect(p).toContain("nenne ihn nie beim Namen");
+    expect(p).toContain("Der Block erscheint unangekündigt und namenlos");
     expect(p).toContain("unser gemeinsames Gespräch");
-    expect(p).toContain('("Ich wünsche euch ein gutes Gespräch")');
+    expect(p).toContain("Du bist beim gemeinsamen Gespräch dabei, und so klingt auch dein Abschied");
+    expect(p).not.toContain("Ich wünsche euch ein gutes Gespräch");   // PRV-1b: Gegenbeispiel nur in der Quelle
     expect(pe).toContain("our conversation together");
   });
   it("Block-Platzhalter tragen keine eckigen Klammern (kein Wire-Look im Chat)", () => {

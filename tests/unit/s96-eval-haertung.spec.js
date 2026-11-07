@@ -22,7 +22,8 @@ describe("S96 · Recall-Grenze (RCL-02b, rote Linie)", () => {
     beide(sp => {
       const txt = raum();
       expect(txt, sp).toContain(sp === "de" ? "KEIN KONTEXT, KEIN FUND" : "NO CONTEXT, NO FIND");
-      expect(txt, sp).toContain(sp === "de" ? "ich habe das in meinen Zusammenfassungen" : "I have that in my summaries");
+      expect(txt, sp).toContain(sp === "de" ? "sagst du sofort, dass du nichts findest" : "you say right away that you find nothing");
+      expect(txt, sp).not.toContain(sp === "de" ? "ich habe das in meinen Zusammenfassungen" : "I have that in my summaries");   // PRV-1b: Verstoß-Beispiel nur in der Quelle
     });
   });
 
@@ -44,7 +45,8 @@ describe("S96 · Abschluss-Gabelung (AUS-04/05)", () => {
     beide(sp => {
       const txt = raum();
       expect(txt, sp).toContain(sp === "de" ? "GLEICHGEWICHT:" : "BALANCE:");
-      expect(txt, sp).toContain(sp === "de" ? "das wäre für ihn leichter zu lesen" : "that would be easier for him to read");
+      expect(txt, sp).toContain(sp === "de" ? "der abwesende Bernd bekommt keine Stimme von dir" : "the absent Bernd gets no voice from you");
+      expect(txt, sp).not.toContain(sp === "de" ? "das wäre für ihn leichter zu lesen" : "that would be easier for him to read");   // PRV-1b
     });
   });
 
@@ -52,7 +54,8 @@ describe("S96 · Abschluss-Gabelung (AUS-04/05)", () => {
     beide(sp => {
       const txt = raum();
       expect(txt, sp).toContain(sp === "de" ? "EINLÖSE-PFLICHT" : "REDEEM OBLIGATION");
-      expect(txt, sp).toContain(sp === "de" ? "das nehmen wir beim nächsten Mal auf" : "we'll pick that up next time");
+      expect(txt, sp).toContain(sp === "de" ? "Die Zusage von unterwegs wird hier eingelöst" : "the commitment from along the way is redeemed here");
+      expect(txt, sp).not.toContain(sp === "de" ? "das nehmen wir beim nächsten Mal auf" : "we'll pick that up next time");   // PRV-1b
     });
   });
 });
@@ -74,7 +77,7 @@ describe("S96 · Reveal-Zahlenregel und Trajektorien-Tür (MRV-01/03)", () => {
       expect(moment(), sp).toContain(sp === "de"
         ? "in Worten, nicht in Zahlen" : "in words, not in numbers");
       expect(moment(), sp).toContain(sp === "de"
-        ? "sind eine Genauigkeitsaussage" : "are an accuracy statement");
+        ? "eine Genauigkeitsaussage sind" : "are an accuracy statement");
     });
   });
 
@@ -89,8 +92,8 @@ describe("S96 · Reveal-Zahlenregel und Trajektorien-Tür (MRV-01/03)", () => {
   it("Trajektorie: der erste Satz ist die Frage, nie eine Feststellung", () => {
     beide(sp => {
       const txt = moment();
-      expect(txt, sp).toContain(sp === "de" ? "dein erster Satz zur Trajektorie ist bereits die Frage" : "your first sentence about the trajectory is already the question");
-      expect(txt, sp).toContain(sp === "de" ? "ihr habt euch verbessert" : "you have improved");
+      expect(txt, sp).toContain(sp === "de" ? "Dein erster Satz zur Trajektorie ist bereits die Frage" : "Your first sentence about the trajectory is already the question");
+      expect(txt, sp).not.toContain(sp === "de" ? "ihr habt euch verbessert" : "you have improved");   // PRV-1b: Verstoß-Beispiel nur in der Quelle
     });
   });
 

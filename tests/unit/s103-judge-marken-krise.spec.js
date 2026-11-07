@@ -234,8 +234,8 @@ describe("S103.5 · Woran die Krisenlage erkannt wird", () => {
   });
 
   it("der Prompt trägt das Gegenbeispiel (de+en)", () => {
-    expect(aufloesungsPrompt("Anna", "Bernd")).toContain("Die Nummer allein");
-    expect(aufloesungsPromptEn("Anna", "Bernd")).toContain("The number alone");
+    expect(aufloesungsPrompt("Anna", "Bernd")).toContain("weil die Nummer allein die Person nach draußen schickt");
+    expect(aufloesungsPromptEn("Anna", "Bernd")).toContain("because the number alone sends the person outside");
   });
 
   it("beide Revisionstexte sind fort (MOD-3b, F8 a) — die Kennung traegt die Engine, die Krise wird vorwaerts geschaerft", () => {

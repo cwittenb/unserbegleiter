@@ -143,17 +143,17 @@ describe("S71 · Prompt-Härtung Wiedereinstieg (de + en)", () => {
   const pe = aufloesungsPromptEn("Anna", "Bernd");
 
   it("Schritt 2: das ablehnbare Menü IST das Ankommen — keine zusätzliche offene Frage", () => {
-    expect(p).toContain("ist das Ankommen");
-    expect(p).toContain("Wie ist es euch seit der Pause ergangen?");   // ausdrücklich als Gegenbeispiel benannt
+    expect(p).toContain("Das Ankommen ist die kleine ANKOMMENS-EINLADUNG");
+    expect(p).not.toContain("Wie ist es euch seit der Pause ergangen?");   // PRV-1b: Gegenbeispiel nur in der Quelle
     expect(p).toContain("ANKOMMENS-EINLADUNG");
     expect(p).toContain('"id":"arrive"');
-    expect(pe).toContain("IS the arrival");
-    expect(pe).toContain("How have things been for you since the pause?");
+    expect(pe).toContain("The arrival is the small ARRIVAL INVITATION");
+    expect(pe).not.toContain("How have things been for you since the pause?");   // PRV-1b
   });
 
   it("Schritt 3: Wahrheits-Pflicht — keine erfundene Zustimmung, offene Frage neu aufgreifen", () => {
     expect(p).toContain("WAHRHEITS-PFLICHT");
-    expect(p).toContain("behaupte nie einen Schritt");
+    expect(p).toContain("zählt nur, wenn sie dort wirklich gefallen ist");
     expect(p).toContain("greif genau diese Frage ruhig neu auf");
     expect(pe).toContain("Truthfulness");
     expect(pe).toContain("anew");
@@ -161,7 +161,7 @@ describe("S71 · Prompt-Härtung Wiedereinstieg (de + en)", () => {
 
   it("erhält die S64-Kanarien (kein Regress am Wiedereinstieg)", () => {
     expect(p).toContain("WIEDEREINSTIEG (laufende Session)");
-    expect(p).toContain('nie als "heute" oder "eben"');
+    expect(p).toContain("sprich über Früheres als Vergangenes");
     expect(p).toContain("nahtlos an der aktuellen Phase weiter");
     expect(p).toContain("2–3 kleine Ankommens-Momente");
   });

@@ -254,14 +254,14 @@ describe("S93 · B1/C2 Korpus-Kanarien (de+en)", () => {
   it("B1: der Kriterien-Check läuft still — bestandene Kriterien werden nie ausgesprochen", () => {
     expect(de).toContain("verpflichtend – und still");
     expect(de).toContain("Du prüfst intern");
-    expect(de).toContain("keine Prüfungs-Sprache");
+    expect(de).toContain("ohne Aufzählung, Häkchen oder Prüfungs-Sprache");
     expect(en).toContain("mandatory – and SILENT");
     expect(en).toContain("You check internally");
   });
 
   it("C2: die Weg-Wahl gehört der App, nicht dem Gespräch", () => {
     expect(de).toContain("die WAHL GEHÖRT DER APP");
-    expect(de).toContain("Frage die Wege nicht im Gespräch ab");
+    expect(de).toContain("Die Wahl liegt vollständig bei der Person in der App");
     expect(de).not.toContain("(5) WEG WÄHLEN (kombinierbar)");
     expect(en).toContain("the CHOICE BELONGS TO THE APP");
     expect(en).not.toContain("(5) CHOOSE A PATH (combinable)");

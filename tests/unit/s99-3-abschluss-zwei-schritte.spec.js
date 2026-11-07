@@ -242,14 +242,14 @@ describe("S99.3 · Die Regel steht im Prompt (erste Verteidigung)", () => {
   it("DE: die Regie-Übergabe-Regel am Abschluss-Anlass", () => {
     const p = reflexionsPrompt("Anna", "Bernd");
     expect(p).toContain("REGIE-ÜBERGABE");
-    expect(p).toMatch(/nie einen TIMELINE-BLOCK/);
+    expect(p).toMatch(/Frage und einen TIMELINE-BLOCK gehören deshalb in getrennte Nachrichten/);
     expect(p).toContain("Die Gabelung mit den drei Türen ist eine Frage");
   });
 
   it("EN: dieselbe Regel", () => {
     const p = reflexionsPromptEn("Anna", "Bernd");
     expect(p).toContain("HANDING OVER CONTROL");
-    expect(p).toMatch(/never carries a TIMELINE-BLOCK/);
+    expect(p).toMatch(/Question and a TIMELINE-BLOCK therefore belong in separate messages/);
   });
 
   it("der Revisionstext ist fort (MOD-3b, F8 a): seit S105.3 wird nichts neu geschrieben — die Engine traegt nur die Kennung", () => {

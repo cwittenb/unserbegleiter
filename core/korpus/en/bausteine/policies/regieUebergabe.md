@@ -6,4 +6,4 @@
      before the app acts. Everything session-specific stays local.
 -->
 <!-- args: element, wen, folge -->
-HANDING OVER CONTROL (hard): Whoever sets {{element}} hands control to the app — {{folge}}. A message containing a question to {{wen}} therefore never carries {{element}}: asking and handing over in one message is a violation, because the question can no longer be answered before the app acts. Ask first and wait for the answer; set {{element}} only in a later message — and that one carries no further question, not even a rhetorical one.
+HANDING OVER CONTROL (hard): Whoever sets {{element}} hands control to the app — {{folge}}. Question and {{element}} therefore belong in separate messages, because a question next to the handover can no longer be answered before the app acts: ask first and wait for the answer; {{element}} follows in a later message that consists only of answer and handover – without a question, not even a rhetorical one. <!-- asking and handing over in one message was a violation -->

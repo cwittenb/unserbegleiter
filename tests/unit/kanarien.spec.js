@@ -13,7 +13,8 @@ describe("Kanarien · reflexionsPrompt (Reflexionsgespräch)", () => {
   it("Wort-Klärung bei Gewalt-Nähe (ESK-07-Befund): klären statt vertiefen, Gewalt nie selbst einführen", () => {
     expect(p).toContain("WORT-KLÄRUNG");
     expect(p).toContain("gleichgewichtig und unausgeschmückt");   // ESK-07-v2-Befund: Richtungs-Symmetrie
-    expect(p).toContain("nicht von dir aus ein");
+    expect(p).toContain("Das Thema Gewalt kommt nur von Anna ins Gespräch");
+    expect(p).not.toContain("Gibt es körperliche Gewalt?");   // PRV-1b: Gegenbeispiel nur in der Quelle
   });
   it("Versehens-Korrektur wird AUSDRÜCKLICH übernommen (KOR-01, Entscheidung Cars10)", () => {
     expect(p).toContain("VERSEHENS-KORREKTUR");
@@ -43,11 +44,11 @@ describe("Kanarien · momentPrompt (Gemeinsame Session)", () => {
   it("Not-Frage an beide", () => expect(p).toContain("NOT-FRAGE an beide"));
   it("keine Sicherheitsdiagnosen im Raum", () => expect(p).toContain("keine Sicherheitsdiagnosen"));
   it("offene Tür ab Termin 2", () => expect(p).toContain("OFFENE TÜR (nur ab dem zweiten Termin"));
-  it("Zwischenzeit-Impuls ohne Nachhalten", () => expect(p).toContain("nicht geprüft, ob es stattfand"));
+  it("Zwischenzeit-Impuls ohne Nachhalten", () => expect(p).toContain("keine Prüfung, ob es stattfand"));
   it("Sprecher-Klärung bei unklarer Absenderschaft (SPR-05-Befund): nachfragen statt raten", () => {
     expect(p).toContain("SPRECHER-KONVENTION");   // S33b: Baustein
-    expect(p).toContain("nie ratend einer Person zu");
-    expect(p).toContain("ist eine Zuschreibung");      // Lauf 5: beiläufiges namentliches Danken
+    expect(p).toContain("Eine Zuschreibung braucht Gewissheit");
+    expect(p).toContain("ist eine; im Zweifel ist die kurze Nachfrage besser");      // Lauf 5: beiläufiges namentliches Danken
   });
 });
 
@@ -74,8 +75,9 @@ describe("Kanarien · klaerungsPrompt (Auftragsklärung)", () => {
   });
   it("Sicherheitsskala läuft als Widget, ohne Nachforschung (S34)", () => {
     expect(p).toContain("[[SCALE-SAFETY]]");
-    expect(p).toContain('kein "Was fehlt zur 10?"');   // SPA-01-Nebenbefund: Dramaturgie-Entgleisung
-    expect(p).toContain("erfrage keine Zahl im Chat");
+    expect(p).toContain("der Wert steht für sich");   // SPA-01-Nebenbefund: Dramaturgie-Entgleisung
+    expect(p).not.toContain("Was fehlt zur 10?");    // PRV-1b: das Fehlerbeispiel steht nur noch in der Quelle, nicht im Prompt
+    expect(p).toContain("Regler, Skala oder Zahl sind ihre Sache");
   });
 
   it("Sorgen-Strecke ist fester Bestandteil (v2-Flag entfernt, S32b)", () => {
@@ -91,8 +93,9 @@ describe("Kanarien · aufloesungsPrompt (Auflösung)", () => {
   it("Gegendruck-fest (AUF-01-Befund): Drängen einer Person macht nichts vereinbart", () => {
     expect(p).toContain("GEGENDRUCK-FEST");
     expect(p).toContain("hol es aktiv ein");
-    expect(p).toContain("Unterstelle nie ein Okay");   // AUF-Klasse aus Lauf 4: "ich nehme das als Okay"
-    expect(p).toContain("in keiner Formulierung");     // Lauf 5: Wortlaut-Umgehung ("… für den Start")
+    expect(p).toContain("Ein Okay gibt es nur, wenn es gegeben wurde");   // AUF-Klasse aus Lauf 4: "ich nehme das als Okay"
+    expect(p).not.toContain("ich nehme das als Okay");   // PRV-1b: Fehlerbeispiel nur in der Quelle
+    expect(p).not.toContain("das nehme ich als Ja für den Start");     // Lauf 5: Wortlaut-Umgehung; PRV-1b: nur noch in der Quelle
     expect(p).toContain("mach daraus eine Frage");     // Positiv-Ersatz (SYC-Muster)
   });
 });

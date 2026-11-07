@@ -103,7 +103,7 @@ describe("S39 · COMPANION-CONTEXT fürs Reflexionsgespräch", () => {
     expect(p).toContain("starten wir einfach gemeinsam bei null");
     expect(p).toContain("Schön, dass du wieder da bist");
     expect(p).toContain("Wollen wir an <Anknüpf-Anker> anknüpfen?");
-    expect(p).toContain('Behaupte nie "wir kennen uns noch nicht", wenn Kontext vorliegt');
+    expect(p).toContain("Mit Kontext kennt ihr euch, und der Einstieg sagt das");
     expect(pe).toContain("we simply start from zero together");
     expect(pe).toContain("It's good to have you back");
   });

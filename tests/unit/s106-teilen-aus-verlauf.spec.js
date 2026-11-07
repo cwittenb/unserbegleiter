@@ -250,8 +250,8 @@ describe("S106 · Was der Prompt jetzt sagt", () => {
   });
 
   it("Kennungen werden nie ausgesprochen (de+en)", () => {
-    expect(reflexionsPrompt("Anna", "Bernd")).toContain("NIE AUSSPRECHEN");
-    expect(reflexionsPromptEn("Anna", "Bernd")).toContain("NEVER SAY THEM ALOUD");
+    expect(reflexionsPrompt("Anna", "Bernd")).toContain("KENNUNGEN BLEIBEN IM BLOCK");
+    expect(reflexionsPromptEn("Anna", "Bernd")).toContain("IDENTIFIERS STAY IN THE BLOCK");
   });
 
   it("ist nichts geeignet, wird es gesagt statt geschwiegen (de+en)", () => {

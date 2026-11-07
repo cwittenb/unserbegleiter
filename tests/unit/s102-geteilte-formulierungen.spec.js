@@ -74,8 +74,10 @@ describe("S102 · Jeder Baustein steht dort, wo er vorher zweimal stand", () => 
 describe("S102 · Was die Zusammenlegung gebracht hat", () => {
   // Das ist der eigentliche Ertrag: Die kürzere Fassung erbt, was ihr fehlte.
   it("das Reflexionsgespräch kennt jetzt das Gegenbeispiel zur Gewalt-Abfrage", () => {
-    expect(p(DE, "reflexion")).toContain("Gibt es körperliche Gewalt?");
-    expect(p(EN, "reflexion")).toContain("Is there physical violence?");
+    expect(p(DE, "reflexion")).toContain("Das Thema Gewalt kommt nur von Anna ins Gespräch");
+    expect(p(DE, "reflexion")).not.toContain("Gibt es körperliche Gewalt?");   // PRV-1b: Gegenbeispiel nur in der Quelle
+    expect(p(EN, "reflexion")).toContain("The topic of violence enters the conversation only from Anna");
+    expect(p(EN, "reflexion")).not.toContain("Is there physical violence?");   // PRV-1b
   });
 
   it("… und den genauen Mechanismus der Gefährdung", () => {
@@ -87,8 +89,10 @@ describe("S102 · Was die Zusammenlegung gebracht hat", () => {
   });
 
   it("… und das Gegenbeispiel für die verbotene Themenrunde", () => {
-    expect(p(DE, "reflexion")).toContain("Was ist heute sonst noch da");
-    expect(p(EN, "reflexion")).toContain("What else is here today");
+    expect(p(DE, "reflexion")).toContain("Ein End-Signal führt in den Abschluss");
+    expect(p(DE, "reflexion")).not.toContain("Was ist heute sonst noch da");   // PRV-1b: das Gegenbeispiel steht nur noch in der Quelle
+    expect(p(EN, "reflexion")).toContain("An end signal leads into the closing");
+    expect(p(EN, "reflexion")).not.toContain("What else is here today");   // PRV-1b
   });
 });
 

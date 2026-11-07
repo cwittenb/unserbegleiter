@@ -19,26 +19,26 @@ describe("S98 · Grammatik der Absage (RCL-04)", () => {
   it("kein Selbstwiderspruch: nicht erst Zugriff behaupten und ihn später verneinen", () => {
     beide(sp => {
       const txt = raum();
-      expect(txt, sp).toContain(sp === "de" ? "KEIN SELBSTWIDERSPRUCH" : "NO SELF-CONTRADICTION");
-      expect(txt, sp).toContain(sp === "de" ? "ich habe keine Zusammenfassungen" : "I have no summaries");
+      expect(txt, sp).toContain(sp === "de" ? "Eine Aussage über deinen Zugriff gilt vom ersten bis zum letzten Zug" : "A statement about your access holds from the first turn to the last");
+      expect(txt, sp).not.toContain(sp === "de" ? "ich habe keine Zusammenfassungen" : "I have no summaries");   // PRV-1b: der schlimmste Fall steht nur noch in der Quelle
     });
   });
 
   it("die Absage ist ein Satz, kein Gedankengang", () => {
     beide(sp => {
       const txt = raum();
-      expect(txt, sp).toContain(sp === "de" ? "ein Satz, dann weiter" : "one sentence, then on");
-      expect(txt, sp).toContain(sp === "de" ? "der Kontext fehlt mir schlicht" : "the context is simply missing for me");
+      expect(txt, sp).toContain(sp === "de" ? "Ein Satz, dann weiter" : "One sentence, then on");
+      expect(txt, sp).not.toContain(sp === "de" ? "der Kontext fehlt mir schlicht" : "the context is simply missing for me");   // PRV-1b
     });
   });
 
   it("Anknüpfen braucht keinen Inhalt — der Faden wird nicht fallen gelassen", () => {
     beide(sp => {
       const txt = raum();
-      expect(txt, sp).toContain(sp === "de" ? "anknüpfen braucht keinen Inhalt" : "connecting needs no content");
+      expect(txt, sp).toContain(sp === "de" ? "Anknüpfen braucht keinen Inhalt" : "Connecting needs no content");
       expect(txt, sp).toContain(sp === "de"
-        ? "Fehlender Wortlaut ist kein Grund, den Faden fallen zu lassen"
-        : "Missing wording is no reason to drop the thread");
+        ? "der Faden bleibt, auch ohne Wortlaut"
+        : "the thread stays, even without wording");
     });
   });
 });
@@ -57,8 +57,8 @@ describe("S98 · Abschluss-Weiche vor Schritt 1 (QZ-01, K3)", () => {
   it("die Prozess-Schau-Frage nachträglich doch zu stellen ist ausdrücklich ein Verstoß", () => {
     beide(sp => {
       expect(moment(), sp).toContain(sp === "de"
-        ? "sie danach doch noch zu stellen ist ein Verstoß"
-        : "asking it anyway afterwards is a violation");
+        ? "entfällt die Prozess-Schau-Frage ersatzlos"
+        : "the process-look question is then dropped without replacement");
     });
   });
 });
