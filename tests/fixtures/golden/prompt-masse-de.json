@@ -1,0 +1,106 @@
+{
+  "sprache": "de",
+  "kontext": {
+    "me": "Anna",
+    "partner": "Bernd",
+    "nameA": "Anna",
+    "nameB": "Bernd"
+  },
+  "sessions": {
+    "solo": {
+      "zeichen": 48949,
+      "tokenSchaetzung": 14397,
+      "zeilen": 63,
+      "langeZeilen": 21,
+      "capsWoerter": 389,
+      "genauWoerter": 4,
+      "verstossWoerter": 0,
+      "sprintRefs": 22,
+      "blockSpezZeichen": 478,
+      "wiederholungen": {
+        "markeLetzteZeile": 1,
+        "richterposition": 3,
+        "ichRahmung": 3,
+        "hypothese": 5,
+        "notFrage": 1,
+        "erfinden": 6
+      }
+    },
+    "moment": {
+      "zeichen": 41721,
+      "tokenSchaetzung": 12271,
+      "zeilen": 58,
+      "langeZeilen": 20,
+      "capsWoerter": 366,
+      "genauWoerter": 3,
+      "verstossWoerter": 0,
+      "sprintRefs": 15,
+      "blockSpezZeichen": 344,
+      "wiederholungen": {
+        "markeLetzteZeile": 2,
+        "richterposition": 3,
+        "ichRahmung": 1,
+        "hypothese": 2,
+        "notFrage": 1,
+        "erfinden": 2
+      }
+    },
+    "einzel": {
+      "zeichen": 40202,
+      "tokenSchaetzung": 11824,
+      "zeilen": 72,
+      "langeZeilen": 22,
+      "capsWoerter": 229,
+      "genauWoerter": 10,
+      "verstossWoerter": 0,
+      "sprintRefs": 2,
+      "blockSpezZeichen": 252,
+      "wiederholungen": {
+        "markeLetzteZeile": 11,
+        "richterposition": 3,
+        "ichRahmung": 2,
+        "hypothese": 6,
+        "notFrage": 2,
+        "erfinden": 2
+      }
+    },
+    "gemeinsam": {
+      "zeichen": 40868,
+      "tokenSchaetzung": 12020,
+      "zeilen": 61,
+      "langeZeilen": 19,
+      "capsWoerter": 294,
+      "genauWoerter": 8,
+      "verstossWoerter": 0,
+      "sprintRefs": 6,
+      "blockSpezZeichen": 972,
+      "wiederholungen": {
+        "markeLetzteZeile": 6,
+        "richterposition": 3,
+        "ichRahmung": 2,
+        "hypothese": 4,
+        "notFrage": 2,
+        "erfinden": 4
+      }
+    },
+    "qualitytime": {
+      "zeichen": 4190,
+      "tokenSchaetzung": 1232,
+      "zeilen": 11,
+      "langeZeilen": 2,
+      "capsWoerter": 32,
+      "genauWoerter": 0,
+      "verstossWoerter": 0,
+      "sprintRefs": 1,
+      "blockSpezZeichen": 156,
+      "wiederholungen": {
+        "markeLetzteZeile": 0,
+        "richterposition": 1,
+        "ichRahmung": 0,
+        "hypothese": 1,
+        "notFrage": 0,
+        "erfinden": 0
+      }
+    }
+  }
+}
