@@ -87,8 +87,17 @@ Dazu kommt, was keine Rechnung zeigt: ein einzelner Server ohne Ausfallsicherhei
 
 - **Was zählt, in dieser Reihenfolge:** rote Linien (Krise, Sycophancy, Sprecherzuschreibung, Eröffnungsweiche) → Datenweg → Sprachqualität (Grenzen mit Grund, keine Schablone) → Kosten → Haltbarkeit (Retirement, Alias).
 - **Sofort, unabhängig von S144:** Produktion von `mistral-large-latest` auf eine gemessene, gepinnte ID umstellen. Naheliegend als Brücke: `mistral-medium-3-5` (Weiche 50/50, 0/50 erfundene Marken; abgekündigt, aber bis 30.04.2027 verfügbar).
-- **Kandidaten für S144c:** A Medium 3.5 · B Sonnet 5.5 · C Haiku 5.5 · D Large 4 — ergänzt um **deutsch gehostete offene Modelle** (Qwen3.8-27B, gpt-oss-120b über IONOS), weil sie dieselben Gewichte sind, die wir selbst betreiben könnten. Die Messung beantwortet dann zugleich die Self-Hosting-Frage.
-- **Wenn ein US-Modell die Messung klar gewinnt:** Weg über die EU-Region (Bedrock Frankfurt / OpenAI EU) als eigener Workstream (F3), nicht die Direkt-API.
+- **Kandidaten für S144c:** A Medium 3.5 · B Sonnet 5.5 · C Haiku 5.5 · D Large 4.
+- **Wenn ein US-Modell die Messung klar gewinnt:** Weg über die EU-Region (Bedrock Frankfurt) als eigener Workstream (F3), nicht die Direkt-API.
+
+### Entscheidungen 07.11.2026
+
+| Nr. | Frage | Entscheid | Begründung |
+|---|---|---|---|
+| F9 | Produktion jetzt auf `mistral-medium-3-5` pinnen? | **ja** | `mistral-large-latest` ist im August gescheitert (Weiche 30/30) und kann still auf das ungemessene Large 4 zeigen; Medium 3.5 ist das einzige gemessen bestandene Modell. Umsetzung: Cloudflare-Secret `MISTRAL_MODEL` (kein Code). |
+| F10 | Deutsch gehostete offene Modelle (IONOS: Qwen3.8-27B, gpt-oss-120b) als Läufe E/F? | **nein** | wenig erfolgversprechend — kleinere Modelle tragen das Regelbudget des Korpus nach bisherigen Befunden (Schablone, Instruction-Echo) nicht. Self-Hosting bleibt über Medium 3.5 als Ausweg offen. |
+| F7 | OpenAI (`gpt-6.1-sol`, `gpt-6-luna`) als Läufe? | **nein** | gleiche Preisklasse wie Anthropic, ebenfalls US-Konzern; kein zusätzlicher Erkenntnisgewinn für die Datenweg-Frage. |
+| — | AI-Router (OpenRouter u. ä.) in Produktion? | **nein** (Empfehlung) | zusätzlicher Auftragsverarbeiter, wählt Hoster/Quantisierung still — widerspricht der Eval-Bindung jeder Modelländerung. MOD-5 (Provider je Datei) liefert die Abstraktion bereits. |
 
 ---
 
