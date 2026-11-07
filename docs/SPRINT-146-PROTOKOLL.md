@@ -16,6 +16,7 @@
 |---|---|
 | `grundsaetze/URTEILS_GRAMMATIK` | ersetzt: WÜRDIGUNG IST WAHRNEHMUNG, NICHT URTEIL; beschreibend oder in Ich-Form; „wo immer ‚würdigen‘ steht, ist diese Form gemeint“ (H1); Eröffnung vor Ich-Satz zählt (Haiku-Muster); Dank nach F1; Motiv-Deutung als Frage (H3) |
 | Stilzeile in solo / einzel / gemeinsam / moment | + „Warm heißt wahrnehmen, nicht loben: Beginne nie mit einem Urteil über das Gesagte (s. URTEILS-GRAMMATIK).“ — die Zeile, die jede Antwort formt (H2) |
+| `grundsaetze/VORSCHLAG_ICH` (DE, Nachtrag) | feste Formel „Wenn ich meine Perspektive zur Verfügung stellen soll …“ ersetzt wie in S145b für EN. Die S145b-Messung zeigte das Echo auch auf Deutsch (Haiku 4/9, Medium 2/9 GATE-Samples) |
 | `wissen/bedeutsameMomente` | Beispielformel entfernt, wahrnehmende Form als Alternative; S133/S138-Historie aus dem Prompt in einen Quellkommentar (H4) |
 
 **Abweichung vom Plan:** Die ~20 Würdigungsstellen bleiben unverändert. Stattdessen gilt eine zentrale Definition („wo immer …“) plus die Regel am Auslöser. Begründung: 20 Einzeleingriffe hätten das Budget gesprengt und viele bewährte Stellen berührt; die Wirkmessung zeigt, ob das reicht.
@@ -32,7 +33,7 @@
 - neu `tests/unit/s146-spiegel-ohne-lob.spec.js` (11): Zielregel, Auslöser in allen vier Sessions DE/EN, alte Formel und Historie als Negativ, Szenarien.
 - angepasst: `eval-runner.spec.js` (44 → 45), `s144a2-pruefschaerfe.spec.js` (SYC-05 ≥ v3).
 - Golden: alle Sessions DE/EN neu festgeschrieben (Stilzeile + Urteils-Grammatik berühren jede).
-- Suite: 271 Dateien / 2835 Tests grün.
+- Suite: 271 Dateien / 2836 Tests grün (+1 Nachtrag DE-Formel).
 
 ## 5 · Wirkmessung (bei dir, nach Merge)
 

@@ -81,3 +81,12 @@ describe("S146 · Szenarien", () => {
     }
   });
 });
+
+// S146 · Nachtrag nach der S145b-Messung: auch die DE-Formel wurde geechot
+// („Wenn ich meine Perspektive zur Verfügung stellen soll …“, Haiku 4/9, Medium 2/9).
+describe("S146 · DE VORSCHLAG_ICH ohne feste Eröffnungsformel", () => {
+  it("alte Formel weg (Negativ), Formvorgabe bleibt", () => {
+    for (const n of SESS) expect(de[n], n).not.toContain("Wenn ich meine Perspektive zur Verfügung stellen soll");
+    expect(de.klaerungs).toMatch(/keine feste Eröffnungsformel/);
+  });
+});
