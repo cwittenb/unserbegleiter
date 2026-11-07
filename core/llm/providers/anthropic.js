@@ -40,6 +40,11 @@ export const anthropic = {
     // S77: Denkmodus explizit. "disabled" wird mitgesendet, "adaptiv" lässt das
     // Feld weg (dann gilt die Vorgabe des Modells).
     if (cfg.thinking === "disabled") body.thinking = { type: "disabled" };
+    /* S144 · Neuere Modelle lehnen "disabled" mit 400 ab und bieten statt dessen
+       "between_tools": Denken nur zwischen Tool-Aufrufen. Die Begleitung ruft
+       keine Tools — das ist dort also das Gegenstück zu "disabled" (S77:
+       deterministisches Budget), ohne dass das Modell es verweigert. */
+    if (cfg.thinking === "zwischen-tools") body.thinking = { type: "between_tools" };
     /* S137 · Temperatur nur bei ausdruecklicher Angabe. Achtung: Anthropic
        weist temperature ZUSAMMEN mit aktivem Thinking ab — bei "adaptiv"
        also weglassen, sonst scheitert der Aufruf. */

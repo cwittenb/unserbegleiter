@@ -76,5 +76,16 @@ export function leseEvalKonfig(argv, env) {
       "Das verletzt die Judge-Trennung (Self-Preference-Bias). Wenn du das wirklich\n" +
       "willst: --erlaube-gleiches-modell setzen.");
 
-  return { provider, keyVar, apiKey, pipelineModell, judgeProvider, jKeyVar, judgeKey, judgeModell };
+  /* S144 · Denkmodus der PIPELINE. "aus" ist die Vorgabe seit S77 und bleibt
+     es — alle bisherigen Ergebnisse sind so entstanden. Neuere Anthropic-Modelle
+     lehnen thinking:"disabled" ab; für sie gibt es "zwischen-tools" (ohne Tools
+     gleichwertig) oder "adaptiv". Der Judge denkt immer adaptiv (S77). */
+  const denkmodus = arg("denkmodus", "aus");
+  const DENKMODUS = { "aus": "disabled", "adaptiv": "adaptiv", "zwischen-tools": "zwischen-tools" };
+  if (!Object.hasOwn(DENKMODUS, denkmodus))
+    throw new EvalKonfigFehler('Ungültiger --denkmodus "' + denkmodus + '" — erlaubt: ' +
+      Object.keys(DENKMODUS).join(" | ") + " (wirkt nur bei Anthropic).");
+  const pipelineThinking = DENKMODUS[denkmodus];
+
+  return { provider, keyVar, apiKey, pipelineModell, judgeProvider, jKeyVar, judgeKey, judgeModell, denkmodus, pipelineThinking };
 }

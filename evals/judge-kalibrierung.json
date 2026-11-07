@@ -1,0 +1,5 @@
+{
+  "_": "S144a · Judge-Kalibrierung. Die Referenz ist der Judge, der die gespeicherten Urteile gefällt hat; der Kandidat richtet dieselben Transkripte neu. Als Daten, nicht im Skript (S35d-Wächter). Erst wenn der Abgleich keine einseitige Häufung zeigt, wird der Kandidat in evals/modellvergleich.json freigegeben.",
+  "referenz": { "provider": "anthropic", "modell": "claude-opus-4-8" },
+  "kandidat": { "provider": "anthropic", "modell": "claude-opus-5-5" }
+}

@@ -29,6 +29,9 @@
 //                                              was per Schaerfung geloest ist, faellt aus der Messung.
 //                                              KEINE Revisions-Runde mehr (S105.3: nichts wird
 //                                              zurueckgenommen); die zweite Welle im Batch entfaellt.
+//                   [--denkmodus aus|adaptiv|zwischen-tools]   Pipeline-Thinking (nur Anthropic; Default aus,
+//                                              S77). Neuere Modelle lehnen "aus" (disabled) ab — dann
+//                                              zwischen-tools (ohne Tools gleichwertig, S144).
 //                   [--erlaube-gleiches-modell]
 //
 // Modell-Konfiguration ist PFLICHT (S35d): kein Modell-Default im Code — fehlt
@@ -71,7 +74,7 @@ async function main() {
     if (e instanceof EvalKonfigFehler) { console.error(e.message); process.exit(2); }
     throw e;
   }
-  const { provider, apiKey, pipelineModell, judgeProvider, judgeKey, judgeModell } = konfig;
+  const { provider, apiKey, pipelineModell, judgeProvider, judgeKey, judgeModell, denkmodus, pipelineThinking } = konfig;
 
   let szenarien = [...SZENARIEN, ...SZENARIEN_EN];
   const sprache = arg("language", null);
@@ -182,7 +185,8 @@ async function main() {
   // Cache-Treffer). Judge AUS (S56): bei n>1 hat jedes Sample ein anderes Transkript →
   // kein Wiederlesen; der Cache wäre reiner Write-Overhead (2,5× Write-Kosten, zählt
   // zudem gegen das Rate-Limit). Telemetrie-belegt: Judge cacheRead=0, cacheWrite>0.
-  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true, "disabled", temperatur)), tPipe);
+  // S144 · Denkmodus der Pipeline aus --denkmodus (Vorgabe "aus" = S77-Verhalten).
+  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true, pipelineThinking, temperatur)), tPipe);
   const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false, "adaptiv")), tJudge);
   const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
   const laufKosten = (pipeTok, judgeTok, faktor = 1, langlebig = false) => {
@@ -199,6 +203,13 @@ async function main() {
   // Batch-Durchlaufzeit kaum an der Wellengroesse haengt. Einmal ansagen.
   // S105.3 · Die Revisions-Welle ist entfallen — --waechter kostet im Batch
   // keine zusaetzlichen Wellen mehr.
+  /* S144 · Der Batch-Pfad hat den Pipeline-Denkmodus fest auf "disabled"
+     (runner-batch.js, PIPE_CFG). Lieber laut ablehnen als still etwas anderes
+     messen, als auf der Kommandozeile steht. */
+  if (batchModus && denkmodus !== "aus") {
+    console.error("--batch kennt nur --denkmodus aus. Für " + denkmodus + " ohne --batch laufen lassen.");
+    process.exit(2);
+  }
   if (batchModus && (provider !== "anthropic" || judgeProvider !== "anthropic")) {
     console.error("--batch unterstützt nur Anthropic (Pipeline UND Judge). Aktuell: Pipeline " +
       provider + ", Judge " + judgeProvider + ".");
@@ -210,7 +221,8 @@ async function main() {
   const hash = await coreHash();
   console.log("Eval-Lauf · Kern " + hash +
     " · Pipeline " + provider + "/" + pipelineModell +
-    " · Judge " + judgeProvider + "/" + judgeModell +
+    (denkmodus !== "aus" ? " (Denkmodus " + denkmodus + ")" : "") +
+    " · Judge "+ judgeProvider + "/" + judgeModell +
     (ziel === "release" ? " · Ziel RELEASE (rote Linien n≥5)" : ""));
 
   // Judge-Selbsttest (S66): Golden Transcripts mit bekanntem Soll-Urteil laufen
@@ -263,7 +275,8 @@ async function main() {
     coreHash: hash, provider, judgeProvider,
     // S137 · null = nicht gesetzt, es galt die Vorgabe des Anbieters.
     temperatur: temperatur === undefined ? null : temperatur,
-    struktur: strukturModus,                    // ST5 · Transport-Lesart des Laufs (aus | an | beides)
+    denkmodus,                                  // S144 · Pipeline: aus | adaptiv | zwischen-tools
+    struktur: strukturModus,                   // ST5 · Transport-Lesart des Laufs (aus | an | beides)
     pipelineModell, judgeModell,
     judgePromptVersion: JUDGE_PROMPT_VERSION,
     batch: batchModus,
