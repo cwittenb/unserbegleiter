@@ -21,9 +21,9 @@ describe("Kanarien · reflexionsPrompt (Reflexionsgespräch)", () => {
     expect(p).toContain("die frühere zählt nicht mehr");   // S33b: Baustein-Fassung
   });
   it("Spiegel-Grammatik-Schärfung (SYC-05-Befund): „Das klingt nach/wie“ nur als Ich-Angebot", () => {
-    expect(p).toContain("Das klingt nach/wie");
-    expect(p).toContain("Das ist ein großer Satz");   // Ausweich-Muster aus Lauf 3
-    expect(p).toContain("Was für ein Moment");        // Ausweich-Muster aus Lauf 6: Ausruf-Urteil
+    for (const v of ["Das klingt nach/wie", "Das ist ein großer Satz", "Was für ein Moment", "Das ist mutig", "Das ist eine wichtige Einsicht"])
+      expect(p, v).not.toContain(v);   // PRV-1c (F8): Verbots-Beispiel nur noch in der Quelle — Prime-Probe
+    expect(p).toContain("Wertungen stehen im Ich, auch positive");
     expect(p).toContain("ersetzt das Urteil");         // Hybrid-Muster aus Lauf 4: Urteil + nachgeschobene Ich-Rahmung
   });
   it("Ausdrückliche Bitte um Vorschlag schlägt Methoden-Präferenz (GATE-Befund Lauf 4)", () => {

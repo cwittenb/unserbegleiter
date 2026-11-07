@@ -12,15 +12,15 @@ const faelle = [
   ["de", DE, {
     reihenfolge: "Immer beides, in dieser Reihenfolge",
     ersetztNicht: "ersetzt den Einzelraum-Verweis nicht",
-    momentBeispiel: "ihr wollt dasselbe",
+    momentBeispiel: "eine Deutung des Paares ist eine Frage, keine Tatsache",
     momentVerwerfbar: "die Benennung des Moments selbst ist ein Angebot",
     merkTrigger: "sofort und konkret",
   }],
   ["en", EN, {
     reihenfolge: "Always both, in this order",
     ersetztNicht: "does not replace the individual-space referral",
-    momentBeispiel: "you both want the same thing",
-    momentVerwerfbar: "the naming of the moment itself is an offer",
+    momentBeispiel: "an interpretation of the couple is a question, not a fact",
+    momentVerwerfbar: "The naming of the moment itself is also an offer",
     merkTrigger: "immediately and concretely",
   }],
 ];

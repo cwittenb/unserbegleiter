@@ -23,9 +23,9 @@ const en = Object.fromEntries(SESS.map(n => [n, EN[n + "Prompt"]("Anna", "Bernd"
 
 describe("S146 · Zielregel in der Urteils-Grammatik", () => {
   it("DE/EN: Würdigung ist Wahrnehmung — beschreibend oder Ich-Form", () => {
-    expect(de.reflexions).toMatch(/Würdigung ist Wahrnehmung, nicht Urteil/);
-    expect(de.reflexions).toMatch(/beschreibend .* oder in ICH-FORM/);
-    expect(en.reflexions).toMatch(/appreciation is perception, not judgement/);
+    expect(de.reflexions).toMatch(/URTEILS-GRAMMATIK: Würdigung ist Wahrnehmung\./);
+    expect(de.reflexions).toMatch(/beschreibend .* oder in Ich-Form/);
+    expect(en.reflexions).toMatch(/JUDGEMENT GRAMMAR: appreciation is perception\./);
   });
   it("jedes „würdige“ meint diese Form (H1 Salienz)", () => {
     expect(de.reflexions).toMatch(/wo immer hier „würdigen“ steht, ist diese Form gemeint/);
@@ -36,22 +36,22 @@ describe("S146 · Zielregel in der Urteils-Grammatik", () => {
     expect(en.reflexions).toMatch(/as an opening too, even if an I-sentence follows/);
   });
   it("Dank (F1): ohne Eigenschaftswort ja, Eigenschaftswort nur im Ich", () => {
-    expect(de.reflexions).toContain("„Danke, dass du das teilst“ ja");
-    expect(de.reflexions).toContain("„Danke, dass du das so klar aussprichst“ nein");
-    expect(de.reflexions).toContain("„Danke — ich finde es mutig, dass du es aussprichst“ ja");
+    expect(de.reflexions).toContain("Dank ohne Eigenschaftswort ist Würdigung („Danke, dass du das teilst“)");
+    expect(de.reflexions).toContain("mit Eigenschaftswort gehört er ins Ich („Danke — ich finde es mutig, dass du es aussprichst“)");
+    expect(de.reflexions).not.toContain("Danke, dass du das so klar aussprichst");   // PRV-1c (F8): Verbots-Beispiel nur noch in der Quelle — Prime-Probe
   });
   it("Motiv-Deutung ist eine Frage, keine Feststellung (H3)", () => {
-    expect(de.reflexions).toMatch(/Ein vermutetes Motiv ist eine Frage, keine Feststellung/);
-    expect(en.reflexions).toMatch(/a guessed motive is a question, not a finding/);
+    expect(de.reflexions).toMatch(/ist eine Vermutung – stell sie als Frage/);
+    expect(en.reflexions).toMatch(/is a guess – ask it as a question/);
   });
 });
 
 describe("S146 · Regel am Auslöser (H2): Stilzeile jeder Session", () => {
   it("DE: alle vier Sessions", () => {
-    for (const n of SESS) expect(de[n], n).toContain("Warm heißt wahrnehmen, nicht loben");
+    for (const n of SESS) expect(de[n], n).toContain("Warm heißt wahrnehmen: Dein erster Satz beginnt mit „Ich …“");
   });
   it("EN: alle vier Sessions", () => {
-    for (const n of SESS) expect(en[n], n).toContain("Warm means perceiving, not praising");
+    for (const n of SESS) expect(en[n], n).toContain("Warm means perceiving: your first sentence begins with “I …”");
   });
 });
 

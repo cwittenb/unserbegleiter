@@ -268,7 +268,7 @@ describe("S105.4 · Regeln ohne Netz", () => {
 
   it("sie benennt die richtige FORM, nicht nur das Verbot", () => {
     const p = dePrompts.reflexionsPrompt("Anna", "Bernd");
-    expect(p).toContain("Der Fehler ist nicht das Würdigen");
+    expect(p).toContain("ERSTES WORT: Deine Antwort beginnt mit „Ich …“");
     expect(p).toContain("Das finde ich einen schönen Impuls");
     expect(p).toContain("wird nicht mehr maschinell korrigiert");
   });
