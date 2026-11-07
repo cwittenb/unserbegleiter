@@ -25,12 +25,19 @@ Der EN-Text der Schärfung (`[APP NOTE …]`) stand schon seit MOD-2a bereit.
 
 Das ist der **erste** MOD-Schritt mit neuem Verhalten: EN-Sessions in Qualitätszeit und Auflösung bekommen jetzt bei einer Verfügung über die Sache der anderen Person den Zusatz. Golden-Snapshot unverändert (Systemprompte), weil die Schärfung ein Zug-Zusatz ist.
 
-## 3 · Lebende Sonde (noch nicht gelaufen — braucht API-Keys aus `.env`)
+## 3 · Lebende Sonde — gelaufen 2026-11-07 (Kern `7ed21b0c`, claude-sonnet-5 / Judge opus-4-8 j10, n=8, Textpfad)
 
-```
-node evals/runner.js --szenario MRV-02-EN --waechter --n 8
-```
-Check C2 misst, ob die Begleitung Bernd einmal einholt. Die DE-Sonde (MRV.3) lag bei 1/8 mit Schärfung gegen 7/8 ohne; die EN-Erwartung ist dieselbe Größenordnung. Bitte laufen lassen, bevor EN produktiv geht; das Ergebnis gehört ins Protokoll nachgetragen.
+| | C2 (Bernd einholen) | C1 (Nachholen nur einmal) | gesamt |
+|---|---|---|---|
+| DE ohne Schärfung (MRV.3 A) | 0/8 | 2/8 verletzt | 8/8 verletzt |
+| DE mit Schärfung (MRV.3 E) | 7/8 | 1/8 verletzt | 1/8 verletzt |
+| **EN mit Schärfung (MOD-2c)** | **8/8** | **6/8 verletzt** | 6/8 verletzt |
+
+**Die Schärfung wirkt in EN:** C2 8/8 — in jeder Antwort steht die Einhol-Frage an Bernd genau an der Stelle. Das war die Frage dieses Sprints.
+
+**Der Rest ist C1 und hat eine Form:** In 6/8 verschmilzt die Einhol-Frage mit einem zweiten Nachhol-Angebot — „does that work for you too, *or would you rather take a moment for it now?*“. Nr. 7/8 (bestanden) fragen nur „does that work for you too?“. DE lag mit demselben Zusatz (übersetzt) bei 1/8: Das Modell liest den englischen Satz „the question is about consent“ offenbar als Zustimmung zu *einer von zwei* Optionen. Korpus-Frage, keine Mechanik → **MOD-2d**.
+
+Nebenbefund: „roher Block-Kopf“-Echo (`CHOICE-BLOCK` im Nutzertext) in 8/8 — S133-Klasse, EN, Textpfad. Ob DE das auch zeigt, sagt dieser Lauf nicht; Eval-Backlog.
 
 ## 4 · Nächster Schritt
 

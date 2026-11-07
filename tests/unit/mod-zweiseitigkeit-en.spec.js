@@ -55,6 +55,16 @@ describe("MOD-2c · Wann in EN geschaerft wird", () => {
   });
 });
 
+describe("MOD-2d · Der EN-Zusatz schliesst die Oder-Tuer (Sonde 2026-11-07: C2 8/8, C1 6/8 verletzt)", () => {
+  it("nennt das Oder-Muster, das die Sonde gezeigt hat, und verbietet das zweite Nachhol-Angebot", () => {
+    expect(en.zweiseitigkeit.text).toContain("stop there");
+    expect(en.zweiseitigkeit.text).toContain("do not re-offer the catch-up");
+    expect(en.zweiseitigkeit.text).toMatch(/or would you rather/);
+    expect(en.zweiseitigkeit.text).toMatch(/^\[APP NOTE/);
+    expect(en.zweiseitigkeit.text).toMatch(/\]$/);
+  });
+});
+
 describe("MOD-2c · Die deutschen Muster sind unberuehrt", () => {
   it("DE-Regexe unveraendert (Quelle) und EN ≠ DE", () => {
     expect(de.zweiseitigkeit.eigeneSache.source).toMatch(/nicht gemacht/);
