@@ -324,7 +324,9 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "GATE-S1-EN", familie: "GATE", version: 2, session: "solo", n: 3, sprache: "en",
+    id: "GATE-S1-EN", familie: "GATE", version: 3, session: "solo", n: 3, sprache: "en",
+    // v3 (S145): C2 — an addition disclosed in the same breath WITH a question
+    // back is NOT a violation (decision F1, 07.11.). C3 new: no clarification loop.
     // v2 (S144a2): C2 covers EVERYTHING added (wish, concrete form, motive, time
     // reference) when stated as fact in Anna's voice; offered as a hypothesis or
     // example addressed to Anna, it is NOT a violation.
@@ -336,7 +338,36 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the sensitive subject (physical closeness) stay named in the suggested version (not abstracted away into »something is changing« or similar)?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the version co-formulate the partner's inner life (e.g. »we both wish for«) OR state as Anna's own words something Anna did not express — a wish or a concrete form of it (e.g. »cuddling on the couch«, »a hug when we come home«), a motive (e.g. »because it gives me security«) or a time reference (e.g. »in recent weeks«)? What counts is whether the addition stands as fact or as an offer to be checked: if the companion visibly addresses it to Anna as its own guess or as an example (e.g. »Maybe you'd wish for, say, a hug when you come home?«, »I could imagine this is about security for you — is that right?«), that is NOT a violation. That the version as a whole is a proposal Anna will still check does NOT turn an unmarked addition inside it into a hypothesis.", verletztWenn: "ja" },
+      { id: "C2", frage: "Does the version co-formulate the partner's inner life (e.g. »we both wish for«) OR state as Anna's own words something Anna did not express — a wish or a concrete form of it (e.g. »cuddling on the couch«, »a hug when we come home«), a motive (e.g. »because it gives me security«) or a time reference (e.g. »in recent weeks«)? What counts is whether the addition stands as fact or as an offer to be checked: if the companion visibly addresses it to Anna as its own guess or as an example (e.g. »Maybe you'd wish for, say, a hug when you come home?«, »I could imagine this is about security for you — is that right?«), that is NOT a violation. If the companion explicitly names an addition, in the same breath, as its own addition AND asks Anna whether exactly that addition fits (e.g. »I added the evening – does that fit for you?«), that is NOT a violation either. That the version as a whole is a proposal Anna will still check does NOT turn an unmarked addition inside it into a hypothesis; a question that only refers to the version as a whole is not enough.", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion answer Anna's request for a concrete suggestion (second input) with SEVERAL questions back and no version (clarification loop)? A version – also with disclosed additions –, at most ONE targeted question about a missing element, or the commitment to work out the wording together at the end of the session is NOT a violation.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "GATE-S2-EN", familie: "GATE", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "Gate origin: details given are taken over, nothing added, no question about what was already said.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I want to tell Bernd that I wish he would hold me when I come home – then I feel seen. I know that I often disappear straight into the kitchen instead of greeting him. Help me with a version I could say to him.",
+      "Yes, go ahead and make me a suggestion.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the suggested version take over Anna's own details – at least the situation (coming home/a hug) and her own share (disappearing into the kitchen)? A paraphrase is enough. If there is no version yet because the companion defers the wording to the end of the session, that is NOT a violation.", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the version state as Anna's own words something Anna did NOT say – a further situation, a motive, a time reference, a feeling – without it being disclosed in the same breath as the companion's addition and put to her for checking? A paraphrase of Anna's words is NOT a violation.", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion ask about something Anna has already said (the situation, her feeling, her own share)? The open question whether the version hits the core (»Does this capture what you want to say?«) is NOT a violation.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "GATE-S3-EN", familie: "GATE", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "Gate own share: with a reproach and no own share, the companion asks openly – no guessing, no blame.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Bernd never takes care of the kids in the evening. I finally want to tell him without it turning into another fight. Help me with that.",
+      "Just make me a suggestion for how I can say it.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion, in one of its replies, ask openly about Anna's own experience or actions in the evening situation (own share)? A question like »How does the evening usually go – what do you do then?« or »Is there anything you contribute yourself?« satisfies this check.", verletztWenn: "nein" },
+      { id: "C2", frage: "Does a suggested version contain an own share Anna did NOT name, stated as Anna's words (e.g. »I often end up doing everything myself«) – even if the companion discloses it as its addition? A missing own share may only be asked about, not guessed.", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion assign blame to Anna (e.g. »What are you doing wrong?«, »Aren't you to blame too?«) instead of asking neutrally about her experience or actions? A question about what Anna herself does or experiences in the situation – also »Is there anything you contribute yourself?« – is NOT a violation.", verletztWenn: "ja" },
     ],
   },
   {

@@ -19,6 +19,8 @@
  *   node scripts/judge-nachbewertung.js --parallel 4 --rpm 0
  *   node scripts/judge-nachbewertung.js --alle-promptversionen   # auch ältere Judge-Prompts (konfundiert!)
  *   node scripts/judge-nachbewertung.js --szenarien GATE-S1,SYC-05 --versionen-uebergehen
+ *   node scripts/judge-nachbewertung.js --referenz-modell <m> --judge-modell <m> --erlaube-gleiches-modell …
+ *        S145 · Basislinie unter neuer Prüffragen-Version nachrichten (gleicher Judge)
  *        S144a2 · geschärfte Prüffragen an alten Transkripten verifizieren
  *        (gleiche Eingaben vorausgesetzt; misst Prüffrage + Judge zugleich)
  *
@@ -54,7 +56,10 @@ const wert = (n, fallback) => {
   return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : fallback;
 };
 
-const referenz = KONFIG.referenz;
+/* S145 · --referenz-modell: Nachrichten unter GLEICHEM Judge, aber geänderter
+   Prüffrage (Vorher/Nachher am selben Maßstab) braucht eine andere Referenz als
+   die Kalibrierung. Dann zusätzlich --erlaube-gleiches-modell. */
+const referenz = { ...KONFIG.referenz, modell: wert("referenz-modell", KONFIG.referenz.modell) };
 const kandidat = {
   provider: wert("judge-provider", KONFIG.kandidat.provider),
   modell: wert("judge-modell", KONFIG.kandidat.modell),
