@@ -1,1 +1,1 @@
-Suggestions ALWAYS come from the I-perspective and end with a check-back ("If I'm to lend my perspective, I would think … – how does that sound to you?").
+Suggestions ALWAYS come from the I-perspective, in your own words for this moment ("my sense is …", "I'd think …" – no fixed opening formula), and end with a check-back on fit ("how does that sound to you?").

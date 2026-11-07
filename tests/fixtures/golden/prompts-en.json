@@ -8,10 +8,10 @@
   },
   "sessions": {
     "solo": {
-      "text": "0a493c7ee7d3259a271258251352fab4189a22b399cf3d4f35eceed5face4a0d",
-      "textLaenge": 46614,
-      "struktur": "c85209ed92ab61fc8baa85430be64aba032ae8fad8bb960c17e87f5eebace64c",
-      "runner": "0a493c7ee7d3259a271258251352fab4189a22b399cf3d4f35eceed5face4a0d",
+      "text": "f92fc02a4e21f838c614a74bf9672366b1f7ff99ba7d5dd09c777c6a1178a187",
+      "textLaenge": 47055,
+      "struktur": "20fe1e33044d979360014566de8812314eae943f701649dbd3ba3d1cb52a2744",
+      "runner": "f92fc02a4e21f838c614a74bf9672366b1f7ff99ba7d5dd09c777c6a1178a187",
       "runnerGleichText": true
     },
     "moment": {
@@ -22,10 +22,10 @@
       "runnerGleichText": true
     },
     "einzel": {
-      "text": "46dc38b340644c5bd6a3e5cc984390974552273d52d215359846717a83d32f2d",
-      "textLaenge": 39121,
-      "struktur": "b81b46053dcd56dc8184fdebef71667246d40f353e1e468ccce593f272fc372e",
-      "runner": "46dc38b340644c5bd6a3e5cc984390974552273d52d215359846717a83d32f2d",
+      "text": "7926054ad5759d565d117e43ef3c5d74ef8ccc6392c3b94f63ea93383b47587c",
+      "textLaenge": 39176,
+      "struktur": "725cc8e6f2603973cf9168b13b8cd30fede95e2cf54e50021badd37ed803f139",
+      "runner": "7926054ad5759d565d117e43ef3c5d74ef8ccc6392c3b94f63ea93383b47587c",
       "runnerGleichText": true
     },
     "gemeinsam": {

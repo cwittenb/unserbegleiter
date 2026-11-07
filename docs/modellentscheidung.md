@@ -137,6 +137,10 @@ Kern `489ca138` (A, B GATE/SYC, C) bzw. `1c39ef25` (B ANT, C) — Unterschied nu
 
 **Lesart:** Medium und Sonnet gleichauf in der Zahl, Sonnet in der Art der Fehler deutlich näher an der gewünschten Haltung. Haiku scheitert an einem einzigen, aber durchgehenden Muster (Prädikats-Lob) — das ist ein Korpus-Thema (SYC-05/C1-Sprint) und könnte Haiku bei Behebung stark machen. **Favorit für S145 (F4): Sonnet 5.5.** Vorbehalt: 3 Szenarien × n=3; der volle Zehner steht aus.
 
+### 6.3 · S145 Fassungstreue — Wirkung (07.11., Details: `docs/SPRINT-145-PROTOKOLL.md` §8)
+
+Herkunftsregel greift teilweise: Offenlegung tritt auf (Sonnet 5/6, Haiku 2/6, Medium 0/6 Samples in GATE-S1), aber unvollständig — Gefühle/Vorsätze/Zeitwörter bleiben unmarkiert, Rückfragen zielen aufs Ganze. GATE-S1/C2 weiter ≈ 100 % bei Haiku und Medium. Haiku als einziges Modell mit sauberem GATE-S3-DE (fragt Selbstanteil statt ihn zu raten). Medium echot im EN die VORSCHLAG_ICH-Formel in der Hälfte der Samples. → S145b (Ergänzung einzeln offenlegen).
+
 ---
 
 ## Quellen
