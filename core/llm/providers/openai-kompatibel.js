@@ -37,6 +37,8 @@ export function openaiCompat(baseUrl, modelKey) {
       };
       // S137 · Nur mitsenden, wenn ausdruecklich gesetzt (siehe LLM_DEFAULTS).
       if (typeof cfg.temperature === "number") body.temperature = cfg.temperature;
+      // S147 · reasoning_effort nur, wenn ausdrücklich gesetzt (sonst Modellvorgabe).
+      if (typeof cfg.reasoningEffort === "string" && cfg.reasoningEffort) body.reasoning_effort = cfg.reasoningEffort;
       return body;
     },
     streamBody(cfg, systemPrompt, messages) {

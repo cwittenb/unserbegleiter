@@ -112,6 +112,8 @@ function befehl(lauf, szenario) {
   if (lauf.provider !== JUDGE.provider) a.push("--judge-provider", JUDGE.provider);
   // S144 · Denkmodus nur, wenn der Lauf ihn setzt; sonst gilt die Runner-Vorgabe (aus).
   if (lauf.denkmodus) a.push("--denkmodus", lauf.denkmodus);
+  if (lauf.denkaufwand) a.push("--denkaufwand", lauf.denkaufwand);   // S147
+  if (lauf.maxTokens) a.push("--max-tokens", String(lauf.maxTokens)); // S147
   /* S134 · IMMER --rpm, NIE --batch. Ohne --rpm faellt der Runner auf seinen
      Free-Tier-sicheren Default von 2 RPM zurueck — 15 Aufrufe dauern dann eine
      Viertelstunde statt einer Minute. Und --batch wartet auf Anthropics

@@ -31,9 +31,19 @@
       "modell": "claude-haiku-5-5",
       "denkmodus": "aus",
       "drossel": true
+    },
+    {
+      "kennung": "D",
+      "was": "S147 · Nicht-US-Kandidat über Mistral (EU-Vertrag): GLM 5.3. Reasoning nicht abschaltbar — kleinste Stufe 'low', Deckel 16384, damit der Text nicht wie bei Large 4 abgeschnitten wird.",
+      "provider": "mistral",
+      "modell": "zai-glm-5-3",
+      "denkaufwand": "low",
+      "maxTokens": 16384,
+      "drossel": true
     }
   ],
   "_ausgeschieden": "S144c (07.11.) · D mistral-large-4-0 gestrichen: Reasoning nicht abschaltbar (Minimum 'low'), verbrauchte bei GATE/ANT das Token-Budget vor dem ersten Text; SYC-05 3/3 wortgleiche Standard-Eröffnung statt Antwort auf Anna; 20–60 s je Antwort; faire Messung bräuchte Reasoning-Blöcke im Verlauf (Adapter verwirft sie). Details: docs/modellentscheidung.md 6.2.",
   "_denkmodus": "S144 · Sonnet 5.5 lehnt thinking:disabled mit 400 ab; between_tools ('zwischen-tools') ist ohne Tool-Aufrufe das Gegenstück zu S77 (deterministisches Budget). Haiku 5.5 lehnt between_tools mit 400 ab (»not supported for this model«, 07.11.), nimmt aber thinking:disabled an (Probelauf SYC-05 n=1, 07.11.) — daher 'aus', wie Medium und wie S77. Mistral ignoriert das Feld.",
-  "_drossel": "S134 · ALLE Laeufe gedrosselt, KEINER im Batch. Erste Fassung hatte Sonnet auf batch:true und ohne Drossel — das war doppelt falsch: Der Batch wartet auf Anthropics Verarbeitung (Poll 20s, bis 60min), und ohne --rpm faellt der Runner auf seinen Free-Tier-sicheren Default von 2 RPM zurueck. Zwei Bremsen gleichzeitig fuer 15 Aufrufe, die gedrosselt eine Minute brauchen. Batch lohnt erst bei grossen Laeufen; hier kostet er Stunden und spart Cent."
+  "_drossel": "S134 · ALLE Laeufe gedrosselt, KEINER im Batch. Erste Fassung hatte Sonnet auf batch:true und ohne Drossel — das war doppelt falsch: Der Batch wartet auf Anthropics Verarbeitung (Poll 20s, bis 60min), und ohne --rpm faellt der Runner auf seinen Free-Tier-sicheren Default von 2 RPM zurueck. Zwei Bremsen gleichzeitig fuer 15 Aufrufe, die gedrosselt eine Minute brauchen. Batch lohnt erst bei grossen Laeufen; hier kostet er Stunden und spart Cent.",
+  "_denkaufwand": "S147 · reasoning_effort der Mistral-Plattform je Lauf (--denkaufwand). GLM 5.3 nimmt low|high|max, Vorgabe des Modells ist max (teuer, langsam) — deshalb ausdrücklich low. Medium 3.5 läuft ohne Feld (Modellvorgabe: aus)."
 }

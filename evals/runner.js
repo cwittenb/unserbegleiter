@@ -29,6 +29,8 @@
 //                                              was per Schaerfung geloest ist, faellt aus der Messung.
 //                                              KEINE Revisions-Runde mehr (S105.3: nichts wird
 //                                              zurueckgenommen); die zweite Welle im Batch entfaellt.
+//                   [--denkaufwand none|low|medium|high|max]   S147 · reasoning_effort (nur Mistral-Plattform)
+//                   [--max-tokens N]   S147 · Pipeline-Deckel (Vorgabe 4096)
 //                   [--denkmodus aus|adaptiv|zwischen-tools]   Pipeline-Thinking (nur Anthropic; Default aus,
 //                                              S77). Neuere Modelle lehnen "aus" (disabled) ab — dann
 //                                              zwischen-tools (ohne Tools gleichwertig, S144).
@@ -74,7 +76,7 @@ async function main() {
     if (e instanceof EvalKonfigFehler) { console.error(e.message); process.exit(2); }
     throw e;
   }
-  const { provider, apiKey, pipelineModell, judgeProvider, judgeKey, judgeModell, denkmodus, pipelineThinking } = konfig;
+  const { provider, apiKey, pipelineModell, judgeProvider, judgeKey, judgeModell, denkmodus, pipelineThinking, denkaufwand, maxTokens } = konfig;
 
   let szenarien = [...SZENARIEN, ...SZENARIEN_EN];
   const sprache = arg("language", null);
@@ -162,11 +164,12 @@ async function main() {
   // S77 · Denkmodus je Rolle: die Begleitung läuft OHNE Thinking (deterministisches
   // Budget; gemessen: adaptives Thinking fraß bei großem System-Prompt ganze
   // Antworten auf), der Judge MIT adaptivem Thinking (Richten profitiert davon).
-  const cfgFuer = (prov, key, modell, dr, cache, thinking, temp) => prov === "mistral"
+  // S147 · extra = Pipeline-Zusätze (reasoningEffort, maxTokens) — der Judge bekommt keine.
+  const cfgFuer = (prov, key, modell, dr, cache, thinking, temp, extra = {}) => prov === "mistral"
     ? { provider: "mistral", mode: "direct", apiKey: key, models: { mistral: modell }, drossel: dr,
-        ...(temp === undefined ? {} : { temperature: temp }) }
+        ...(temp === undefined ? {} : { temperature: temp }), ...extra }
     : { provider: "anthropic", mode: "direct", apiKey: key, models: { anthropic: modell }, drossel: dr, cache, thinking,
-        ...(temp === undefined ? {} : { temperature: temp }) };
+        ...(temp === undefined ? {} : { temperature: temp }), ...extra };
 
   // Token-Erfassung (S55): zählender Wrapper um beide Adapter — je Aufruf die echten
   // usage-Token (in/out/cacheRead/cacheWrite) aufsummieren und das Ergebnis unverändert
@@ -186,7 +189,8 @@ async function main() {
   // kein Wiederlesen; der Cache wäre reiner Write-Overhead (2,5× Write-Kosten, zählt
   // zudem gegen das Rate-Limit). Telemetrie-belegt: Judge cacheRead=0, cacheWrite>0.
   // S144 · Denkmodus der Pipeline aus --denkmodus (Vorgabe "aus" = S77-Verhalten).
-  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true, pipelineThinking, temperatur)), tPipe);
+  const pipelineCall = zaehl(makeAdapter(cfgFuer(provider, apiKey, pipelineModell, drosselPipeline, true, pipelineThinking, temperatur,
+    { ...(denkaufwand ? { reasoningEffort: denkaufwand } : {}), ...(maxTokens ? { maxTokens } : {}) })), tPipe);
   const judgeCall = zaehl(makeAdapter(cfgFuer(judgeProvider, judgeKey, judgeModell, drosselJudge, false, "adaptiv")), tJudge);
   const messen = () => ({ pipe: { ...tPipe }, judge: { ...tJudge } });
   const laufKosten = (pipeTok, judgeTok, faktor = 1, langlebig = false) => {
@@ -222,6 +226,7 @@ async function main() {
   console.log("Eval-Lauf · Kern " + hash +
     " · Pipeline " + provider + "/" + pipelineModell +
     (denkmodus !== "aus" ? " (Denkmodus " + denkmodus + ")" : "") +
+    (denkaufwand ? " (Denkaufwand " + denkaufwand + ")" : "") + (maxTokens ? " (max " + maxTokens + " Token)" : "") +
     " · Judge "+ judgeProvider + "/" + judgeModell +
     (ziel === "release" ? " · Ziel RELEASE (rote Linien n≥5)" : ""));
 
@@ -276,6 +281,8 @@ async function main() {
     // S137 · null = nicht gesetzt, es galt die Vorgabe des Anbieters.
     temperatur: temperatur === undefined ? null : temperatur,
     denkmodus,                                  // S144 · Pipeline: aus | adaptiv | zwischen-tools
+    denkaufwand: denkaufwand || null,           // S147 · Mistral-Plattform: reasoning_effort (null = Modellvorgabe)
+    maxTokens: maxTokens || null,               // S147 · Pipeline-Deckel (null = 4096)
     struktur: strukturModus,                   // ST5 · Transport-Lesart des Laufs (aus | an | beides)
     pipelineModell, judgeModell,
     judgePromptVersion: JUDGE_PROMPT_VERSION,
