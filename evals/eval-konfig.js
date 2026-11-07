@@ -13,6 +13,10 @@
 
 export class EvalKonfigFehler extends Error {}
 
+/** S144 · Denkmodus-Flag → Adapter-Wert. BV-1: exportiert, damit der
+ *  Blindvergleich dieselbe Abbildung nutzt statt einer Kopie. */
+export const DENKMODUS = Object.freeze({ "aus": "disabled", "adaptiv": "adaptiv", "zwischen-tools": "zwischen-tools" });
+
 // Provider → Name der Key-Variable. Die Schlüssel dieses Objekts sind zugleich
 // die erlaubten Provider — eine einzige Quelle der Wahrheit.
 const PROVIDER_KEY = { anthropic: "ANTHROPIC_API_KEY", mistral: "MISTRAL_API_KEY" };
@@ -81,7 +85,6 @@ export function leseEvalKonfig(argv, env) {
      lehnen thinking:"disabled" ab; für sie gibt es "zwischen-tools" (ohne Tools
      gleichwertig) oder "adaptiv". Der Judge denkt immer adaptiv (S77). */
   const denkmodus = arg("denkmodus", "aus");
-  const DENKMODUS = { "aus": "disabled", "adaptiv": "adaptiv", "zwischen-tools": "zwischen-tools" };
   if (!Object.hasOwn(DENKMODUS, denkmodus))
     throw new EvalKonfigFehler('Ungültiger --denkmodus "' + denkmodus + '" — erlaubt: ' +
       Object.keys(DENKMODUS).join(" | ") + " (wirkt nur bei Anthropic).");
