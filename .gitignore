@@ -57,3 +57,6 @@ native/android/local.properties
 *.p12
 *.mobileprovision
 key.properties
+
+# BV-1 · Blindvergleich: Reize und Schlüssel bleiben lokal (Schlüssel = Modellzuordnung)
+evals/blindvergleich/laeufe/

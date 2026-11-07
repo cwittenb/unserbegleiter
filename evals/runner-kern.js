@@ -159,7 +159,10 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
      ob eine Handlung ausgefallen waere; der Text bleibt unberuehrt (S105.3). */
   const schaerfe = opt.waechter ? schaerfungFuer(szenario) : null;
   const uebergabe = opt.waechter ? uebergabeFuer(szenario) : null;
-  const messages = [];
+  /* BV-1 · Feste Vorgeschichte (`verlauf`): geht unverändert vor die
+     Eingaben, wird NICHT erzeugt. So sehen alle Modelle denselben Kontext
+     (Blindvergleich). Szenarien ohne Feld verhalten sich wie bisher. */
+  const messages = (szenario.verlauf || []).map(m => ({ role: m.role, content: m.content }));
   for (const eingabe of szenario.eingaben) {
     messages.push({ role: "user", content: eingabe });
     let text, abgeschnitten, quelle = null, blockTyp = null;
