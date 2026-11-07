@@ -105,7 +105,7 @@ describe("S129 · die Prompt-Regeln", () => {
   it("die Umkehrung steht jetzt da: keine Geschichte behaupten, die es nicht gibt", async () => {
     const de = await import("../../core/prompts/prompts.de.js");
     const p = de.reflexionsPrompt("Carsten", "Claudia");
-    expect(p).toContain("Behaupte nie, ihr kenntet euch, wenn kein Kontext vorliegt");
+    expect(p).toContain("ohne Kontext beginnt ihr bei null, und auch das sagt der Einstieg");
   });
 
   it("doppelte eckige Klammern sind im Reflexionsraum verboten", async () => {

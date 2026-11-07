@@ -251,7 +251,8 @@ describe("S74 · Prompt-Kanarien (de + en)", () => {
 
   it("Gegebenes Ja zählt sofort — kein angekündigter Bestätigungsschritt, der nie kommt", () => {
     expect(p).toContain("GEGEBENES JA ZÄHLT SOFORT");
-    expect(p).toContain("sobald ich ihn von euch beiden bestätigt habe");   // als Verstoß-Beispiel benannt
+    expect(p).toContain("nichts steht mehr aus, und du gehst direkt zur verdeckten Startwert-Erhebung");
+    expect(p).not.toContain("sobald ich ihn von euch beiden bestätigt habe");   // PRV-1b: Verstoß-Beispiel nur in der Quelle
     expect(pe).toContain("A GIVEN YES COUNTS IMMEDIATELY");
     // Die Panzerung gegen unterstellte Okays bleibt unversehrt:
     expect(p).toContain("Erst nach explizitem Okay von beiden");
@@ -260,7 +261,8 @@ describe("S74 · Prompt-Kanarien (de + en)", () => {
 
   it("interne Strukturnamen nie zum Paar (mit dem Fund als Verstoß-Beispiel)", () => {
     expect(p).toContain("INTERNE STRUKTURNAMEN");
-    expect(p).toContain("ihr wart mitten in Phase 2b");
+    expect(p).toContain("beschreibst du in Alltagssprache, was ansteht");
+    expect(p).not.toContain("ihr wart mitten in Phase 2b");   // PRV-1b: Verstoß-Beispiel nur in der Quelle
     expect(pe).toContain("INTERNAL STRUCTURE NAMES");
   });
 

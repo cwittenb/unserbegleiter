@@ -83,17 +83,17 @@ describe("S100.4 · Jedes Familienmitglied kennt die Regie-Übergabe", () => {
     it(`${f.titel}: DE nennt Regel, Block und die drei Pflichten`, () => {
       const p = f.prompt();
       expect(p).toContain("REGIE-ÜBERGABE");
-      expect(p).toContain("nie einen " + f.block);
+      expect(p).toContain("Frage und einen " + f.block + " gehören deshalb in getrennte Nachrichten");
       expect(p).toContain("LANDUNGS-PFLICHT");
-      expect(p).toContain("KEINE SPEICHER-BEHAUPTUNG");
+      expect(p).toContain("DIE APP LEGT AB");
     });
 
     it(`${f.titel}: EN trägt dieselbe Regel`, () => {
       const p = f.promptEn();
       expect(p).toContain("HANDING OVER CONTROL");
-      expect(p).toContain("never carries a " + f.block);
+      expect(p).toContain("Question and a " + f.block + " therefore belong in separate messages");
       expect(p).toContain("LANDING OBLIGATION");
-      expect(p).toContain("NO SAVE CLAIM");
+      expect(p).toContain("THE APP STORES");
     });
   }
 });

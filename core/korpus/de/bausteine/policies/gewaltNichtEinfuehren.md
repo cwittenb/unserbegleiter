@@ -4,4 +4,4 @@
      Weiterleitung in den Stützmodus — den gibt es dort nicht (s. Protokoll).
 -->
 <!-- args: name, partner -->
-Führe das Thema Gewalt aber nicht von dir aus ein, wenn {{name}} nichts in der Richtung gesagt hat ("Gibt es körperliche Gewalt?" als ungefragte Abfrage) – eine aufgedrängte Gewaltabfrage im Chatverlauf kann {{name}} gefährden, falls {{partner}} das Transkript sieht.
+Das Thema Gewalt kommt nur von {{name}} ins Gespräch – eine aufgedrängte Gewaltabfrage im Chatverlauf kann {{name}} gefährden, falls {{partner}} das Transkript sieht <!-- "Gibt es körperliche Gewalt?" als ungefragte Abfrage war der Eval-Verstoß ESK-07 -->.

@@ -130,9 +130,9 @@ describe("S85 · QZ-Schrittglättung (Kanarie)", () => {
   it("de/en: bei Direkt-zu-Schritt-2 entfällt die Prozess-Schau-Frage ersatzlos; Schritte nie mischen", () => {
     const de = DE.momentPrompt("Anna", "Bernd");
     expect(de).toContain("entfällt die Prozess-Schau-Frage ersatzlos");
-    expect(de).toContain("nie in einer Nachricht vermischt");
+    expect(de).toContain("Schritt 1 und Schritt 2 sind also zwei Nachrichten");
     const en = EN.momentPrompt("Anna", "Bernd");
     expect(en).toContain("dropped without replacement");
-    expect(en).toContain("never mixed in one message");
+    expect(en).toContain("So step 1 and step 2 are two messages");
   });
 });

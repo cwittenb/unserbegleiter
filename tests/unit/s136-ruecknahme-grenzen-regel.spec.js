@@ -63,7 +63,7 @@ describe("S136 · die Regel aus S135 ist zurückgenommen", () => {
        Das Echo-Verbot steht in der gemeinsamen Auflösung (dort trat es auf),
        die Rahmungs-Form im Baustein für bedeutsame Momente. */
     const { aufloesungsPrompt } = await import("../../core/prompts/prompts.de.js");
-    expect(aufloesungsPrompt("Anna", "Bernd")).toContain("KEIN INSTRUKTIONS-ECHO");
+    expect(aufloesungsPrompt("Anna", "Bernd")).toContain("REGIE BLEIBT REGIE");
     expect(P_DE).toContain("Die Rahmung ist eine Form, kein Satz");
   });
 });

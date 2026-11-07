@@ -111,4 +111,6 @@ Kleine Entscheidungen, selbst getroffen: Serienname PRV; Begründungen bleiben a
 
 Vorbefund für PRV-0 (Quellen, nicht Prompt): `GENAU`/`EXACTLY` 4–24× je Session, `VIOLATION` 9–19× im EN-Korpus (DE: 0 — EN trägt mehr Verstoß-Rhetorik), „allein in der letzten Zeile“ 11× in einzel.
 
-Stand: PRV-0 geliefert (Basis c1f2adc, Kern 07882d74) · PRV-1a geliefert (Kern 9257b959) · nächster Schritt PRV-1b.
+Stand: PRV-0 (Kern 07882d74) · PRV-1a (Kern 9257b959) · PRV-1b (Kern 81e06158) auf `main`; Lieferung seit PRV-1b im Git-Branch-Workflow (Branch je Sprint, Merge nach `main`, Push).
+
+**F8 (offen, nach PRV-1b):** kategorien-definierende Verbots-Beispiele (Urteils-/Spiegel-Grammatik, BEDEUTSAME MOMENTE) aus dem Prompt nehmen — a) ja als PRV-1c · b) behalten · c) nach dem Artefakt-Eval von 1b entscheiden (docs/SPRINT-PRV-1B-PROTOKOLL.md §6).

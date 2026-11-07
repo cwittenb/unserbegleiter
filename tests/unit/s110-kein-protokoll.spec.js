@@ -43,7 +43,7 @@ describe("S110 · Die Regel steht in den geteilten Räumen — und nur dort", ()
     const p = momentPrompt("Anna", "Bernd");
     expect(p).toContain("um Perspektiven, nicht um Wahrheiten");
     expect(p).toContain("Beweismittel");
-    expect(p).toContain("keine Entschuldigung und keine technische Auskunft");
+    expect(p).toContain("nenne den Grund als Bauart dieses Raums");
   });
 
   it("sie grenzt den eigenen Raum ausdrücklich ab", () => {
@@ -51,13 +51,13 @@ describe("S110 · Die Regel steht in den geteilten Räumen — und nur dort", ()
     // beide Räume, und im eigenen liegt der Wortlaut.
     const p = momentPrompt("Anna", "Bernd");
     expect(p).toContain("ANDERS IM EIGENEN RAUM");
-    expect(p).toContain('nie "das wird generell nicht');
+    expect(p).toContain("die Aussage über das Speichern gilt also nur für hier");
   });
 
   it("und sie verbietet die Zeugenrolle — auch bei vorhandenem Wissen", () => {
     const p = momentPrompt("Anna", "Bernd");
-    expect(p).toContain("NIE ALS ZEUGE");
-    expect(p).toContain("auch nicht, wenn du es wüsstest");
+    expect(p).toContain("KEIN ZEUGE");
+    expect(p).toContain("auch wenn du es wüsstest");
     expect(p).toContain("nicht wer was gesagt hat");
   });
 });

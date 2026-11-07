@@ -123,8 +123,8 @@ describe("S42 · Sauberes Beenden", () => {
     expect(p).toContain("oder beendet das Paar die Sitzung erkennbar verbal");
     // S100.1 · Das Speicher-Verbot lebt jetzt im Baustein regieUebergabe und
     // gilt damit für BEIDE Abschluss-Sessions statt nur für diese.
-    expect(p).toContain("KEINE SPEICHER-BEHAUPTUNG");
-    expect(p).toContain('sei "gespeichert"');
+    expect(p).toContain("DIE APP LEGT AB");
+    expect(p).toContain("das Speichern ist ihre Sache und kommt in deinem Abschied nicht vor");
     expect(p).toContain("Gemeinsame Momente");
     expect(pe).toContain("or the couple recognizably ends the session verbally");
     expect(steuerTexte.momentAbschluss).toBe("[CLOSE MOMENT]");

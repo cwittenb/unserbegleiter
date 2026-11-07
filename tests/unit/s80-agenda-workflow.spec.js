@@ -306,7 +306,7 @@ describe("S80 · Abschluss: Persistenz, Heilung, Solo-Ende", () => {
     const p = momentPrompt("Anna", "Bernd"), pe = momentPromptEn("Anna", "Bernd");
     expect(p).toContain("ZWEI SCHRITTE");
     expect(p).toContain("warte auf ihre Antwort");
-    expect(p).toContain("kein Block");
+    expect(p).toContain("der Block gehört in Schritt 2");
     expect(pe).toContain("TWO STEPS");
     expect(pe).toContain("wait for their answer");
     expect(steuerTexte.soloAbschluss).toBe("[CLOSE SESSION]");

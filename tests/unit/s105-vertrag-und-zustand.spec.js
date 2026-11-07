@@ -280,6 +280,6 @@ describe("S105.4 · Regeln ohne Netz", () => {
 
   it("die Speicher-Behauptung bleibt verboten — jetzt ohne Netz", () => {
     for (const n of ["reflexions", "moment"])
-      expect(dePrompts[n + "Prompt"]("Anna", "Bernd"), n).toContain("KEINE SPEICHER-BEHAUPTUNG");
+      expect(dePrompts[n + "Prompt"]("Anna", "Bernd"), n).toContain("DIE APP LEGT AB");
   });
 });

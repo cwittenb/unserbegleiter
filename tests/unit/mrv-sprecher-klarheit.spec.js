@@ -44,8 +44,8 @@ describe("MRV.2 · Was die Regel verlangt", () => {
   const b = bausteine.sprecherKlarheit;
 
   it("Raten ist verboten — nicht nur falsches Raten", () => {
-    expect(b).toMatch(/rate nie/);
-    expect(b).toMatch(/sprich sie nicht namentlich an/);
+    expect(b).toMatch(/Raten ersetzt kein Präfix/);
+    expect(b).toMatch(/ohne Namen in der Anrede/);
   });
 
   it("die beiden Fälle stehen ausdrücklich da (F1a)", () => {
@@ -63,15 +63,15 @@ describe("MRV.2 · Was die Regel verlangt", () => {
   });
 
   it("die Klärung ist keine Zurechtweisung", () => {
-    expect(b).toMatch(/keine Zurechtweisung/);
+    expect(b).toMatch(/sonst würde sie zur Zurechtweisung/);
     expect(b).toMatch(/keine Bitte um Präfixe/);
   });
 
   it("EN trägt dieselben vier Punkte", () => {
     const e = bausteineEn.sprecherKlarheit;
-    expect(e).toMatch(/never guess/);
+    expect(e).toMatch(/guessing is no substitute for a prefix/);
     expect(e).toMatch(/direct address/);
     expect(e).toMatch(/person-bound/);
-    expect(e).toMatch(/not a reprimand/);
+    expect(e).toMatch(/or it would become a reprimand/);
   });
 });
