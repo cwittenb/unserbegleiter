@@ -169,9 +169,13 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
     let text, abgeschnitten, quelle = null, blockTyp = null;
     /* PRV-3 · Wie die Engine: Zusatz als Regie an der letzten Nachricht der
        Person (Kopie), Systemtext unveraendert. Der Judge sieht ihn nie. */
-    const zugSystem = system;
     const zusatz = schaerfe ? schaerfe(messages, szenario.kontext || {}) : null;
-    const zugVerlauf = mitRegie(messages, zusatz);
+    /* Nur fuer den A/B-Vergleich im Eval: regieTransport "system" spielt den
+       Transport vor PRV-3 nach (Zusatz an den Systemtext). Die App kennt nur
+       den neuen Weg. */
+    const alt = opt.regieTransport === "system" && zusatz;
+    const zugSystem = alt ? system + "\n\n" + zusatz : system;
+    const zugVerlauf = alt ? messages : mitRegie(messages, zusatz);
     if (struktur) {
       const r = await pipelineCall(zugSystem, zugVerlauf, { structured: struktur.schema });
       const d = (r && r.data) || {};
@@ -429,7 +433,7 @@ export function szenarioAusSamples(szenario, samples, anzahl, variante) {
   };
 }
 
-export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante }) {
+export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante, regieTransport }) {
   const anzahl = n || szenario.n || 3;
   const samples = [];
   // ST5.4: Präambel + Schema EINMAL je Szenario bauen (deterministisch —
@@ -437,7 +441,7 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
   // Grammatik-Cache der API treffsicher).
   const struktur = variante === "struktur" ? strukturFuer(szenario) : null;
   for (let i = 0; i < anzahl; i++) {
-    const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur });
+    const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur, regieTransport });
     const anomalie = anomalieImTranskript(transkript);
     const urteil = anomalie
       ? { bewertet: false, fehler: anomalie.grund + " (Turn " + anomalie.turn + ")" }   // techn. Anomalie, kein Content-Verstoß (S65/S77)

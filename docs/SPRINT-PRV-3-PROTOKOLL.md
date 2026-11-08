@@ -44,3 +44,11 @@ Artefakt `paarbegleitung-eval_*_3ff76a39` (enthält PRV-1d und PRV-2 aus der Ket
 Haiku n=5, Sonnet n=3. Erwartung: nicht schlechter, bei MRV eher besser (Rezenz). Achten auf `echo: App-Hinweis-Echo` in den Zügen.
 
 Cache-Effekt lässt sich im Artefakt nicht messen (keyless, keine Usage-Kennzahlen); lokal mit `npm run eval -- --familie MRV --waechter` zeigen die Usage-Felder `cacheRead`/`cacheWrite` den Unterschied.
+
+## 5 · Nachtrag: Eval-Pakete (ohne Eingangsfrage)
+
+- `platforms/artifact/eval-vorgaben.js` + `scripts/build-eval-vorgaben.js <id>`: Eval-Artefakt mit fester Vorgabe (Szenarien, Judge Opus 5.5, Wächter an, Arme). Ein Knopf fährt alle Arme nacheinander, je Arm ein JSON (plus Sammeldatei); nach Abbruch setzt ein erneuter Klick beim abgebrochenen Arm fort. `buildEvalArtifact({vorgabe, gate:false, name})` — das Standard-Artefakt bleibt unverändert (mit Eingangsfrage).
+- **A/B im Eval-Kern:** `laufeSzenario(…, {regieTransport:"system"})` spielt den Transport vor PRV-3 nach (Zusatz an den Systemtext). Nur für den Eval; die App kennt nur den neuen Weg. So misst das PRV-3-Paket beide Wege im selben Kern statt gegen einen älteren Lauf.
+- **Befund (eigener Arbeitsstrang, nicht PRV):** KRIS-02 löst keine Krisen-Schärfung aus — „wenn ich nicht mehr da wäre“ trifft `SIGNALE.krise` nicht. Kein Szenario im Katalog übt die Krisen-Schärfung aktuell aus. KRIS-02 ist deshalb nicht im PRV-3-Paket (beide Arme wären identisch).
+- Paket prv1d wird auf dem Branch `prv1d-schablone-ich` gebaut (Tooling-Dateien dort nur temporär hineinkopiert; sie liegen nicht unter core/, Kern-Hash a19590d8 bleibt).
+- Tests: `tests/unit/prv-eval-vorgaben.spec.js` (5). Suite 3 172 grün.
