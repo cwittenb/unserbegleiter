@@ -30,9 +30,9 @@ Leitplanken (gelten für alle Schritte):
 |---|---|
 | PRV-0, 1a, 1b, 1c | main |
 | PRV-1d (Ich-Beispiele ganz raus) | **zurückgenommen** (S136): DE-Eröffnungen gestreut (Spitze 100 % → 27 %), aber Prädikatsurteile zurück (SYC C1 DE 0 → 6/10, MOM 0 → 2/5). Lehre: ein Beispiel wird kopiert, kein Beispiel lässt das Urteil zurück. |
-| PRV-2 (Dedup) | wandert in PRV-1e (gleiche Bausteine, gemeinsamer Eval) |
-| PRV-3 (Regie-Transport) | main (Haiku-A/B; Sonnet-Arme im nächsten Paket nachgereicht) |
-| PRV-1e (Spektrum statt Einzelbeispiel) | in Arbeit |
+| PRV-2 (Dedup) | geparkt (liegt auf `prv1e-spektrum`, ohne eigenen Eval) |
+| PRV-3 (Regie-Transport) | main — A/B bestätigt: Haiku neu 0 / alt 2, Sonnet neu 0 / alt 1 |
+| PRV-1e (vier Ich-Anfänge) | **nicht gemergt**: DE 100 % „Ich bleibe“, SYC C1 DE 0 → 5/10 (beide Modelle). Befund: neutrale Ich-Anfänge schieben die Wertung in Satz 2; „Mich berührt“ wirkt, weil es die Wertung selbst ins Ich nimmt. |
 | PRV-3b Zustandsobjekt | offen |
 
 Lieferform seit PRV-1b: Git-Branch je Sprint, Merge nach Eval. Eval-Pakete: `node scripts/build-eval-vorgaben.js <id>`.

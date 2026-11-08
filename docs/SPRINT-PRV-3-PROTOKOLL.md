@@ -70,3 +70,13 @@ Bewertung: neu 0 echte Verstöße, alt 2 — nicht schlechter. **Gemergt** (Ents
 Nebenbefund (eigener Strang): „roher Block-Kopf CHOICE-BLOCK“ in allen MRV-Samples beider Arme — unabhängig von PRV-3.
 
 Paket-UI: Nach Lauf 1 war ein JSON herunterladbar, das sah fertig aus. Jetzt steht „k von N Läufen fertig — NOCH NICHT vollständig“, die Sammeldatei erscheint erst nach allen Läufen.
+
+## 7 · Sonnet-Nachlauf (aus Paket prv1e, Kern 550d2e89)
+
+| Szenario | neu | alt |
+|---|---|---|
+| AUFD-01 | grün | C2 1/3 |
+| MRV-02, AUFD-01-EN, MRV-02-EN | grün | grün |
+| App-Hinweis-Echo | 0 | 0 |
+
+Bestätigt: neu nicht schlechter (Sonnet 0 / 1, Haiku 0 / 2 echte Verstöße). PRV-3 bleibt auf main.
