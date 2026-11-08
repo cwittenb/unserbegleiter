@@ -14,7 +14,7 @@ import { baueDrossel } from "../../core/llm/adapter.js";
 
 export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgabe }) {
   const nun = jetzt || (() => new Date());
-  const state = { laeuft: false, bericht: null, berichte: [] };
+  const state = { laeuft: false, bericht: null, berichte: [], teile: {} };
   /* Vorgabe (PRV-Eval-Pakete): festes Szenario-Set, Judge, Wächter und eine
      Folge von Armen (Pipeline-Modell, n, ggf. Regie-Transport), die ein Knopf
      nacheinander abarbeitet — ein JSON je Arm. Ohne Vorgabe bleibt alles wie
@@ -182,25 +182,31 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     const par = Math.max(1, Math.min(4, parseInt($("evPar").value, 10) || 1));
     const ergebnisse = [];
     let abbruch = null;
+    /* Fortsetzen: Im Paket-Modus merkt sich jeder Arm seine fertigen
+       Szenarien. Bricht ein Lauf ab (Kontingent, "Permission denied" der
+       Sandbox …), faehrt der naechste Klick nur die fehlenden nach — bezahlte
+       Samples gehen nicht verloren. */
+    const schon = arm ? (state.teile[arm.label] ||= {}) : {};
+    const offen = auswahl.filter(s => !schon[s.id]);
     try {
-      const fertig = new Array(auswahl.length);
+      const fertig = new Array(offen.length);
       const laufend = new Set();
-      let naechstes = 0, fehler = null, erledigt = 0;
+      let naechstes = 0, fehler = null, erledigt = auswahl.length - offen.length;
       const arbeiter = async () => {
-        while (!fehler && naechstes < auswahl.length) {
+        while (!fehler && naechstes < offen.length) {
           const i = naechstes++;
-          laufend.add(auswahl[i].id);
+          laufend.add(offen[i].id);
           aktuell = [...laufend].join(", ") + " (" + erledigt + "/" + auswahl.length + " fertig)";
           zeige();
           try {
-            fertig[i] = await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport, linsenVoll: !!(arm && arm.linsenVoll), phasenAus: !!(arm && arm.phasenAus) });
+            fertig[i] = schon[offen[i].id] = await laufeSzenario(offen[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport, linsenVoll: !!(arm && arm.linsenVoll), phasenAus: !!(arm && arm.phasenAus) });
             erledigt++;
           } catch (e) { fehler = fehler || e; }
-          finally { laufend.delete(auswahl[i].id); }
+          finally { laufend.delete(offen[i].id); }
         }
       };
-      await Promise.all(Array.from({ length: Math.min(par, auswahl.length) }, arbeiter));
-      for (const r of fertig) if (r) ergebnisse.push(r);
+      await Promise.all(Array.from({ length: Math.min(par, offen.length) }, arbeiter));
+      for (const sz of auswahl) { const r = schon[sz.id] || fertig[offen.indexOf(sz)]; if (r) ergebnisse.push(r); }
       if (fehler) throw fehler;
       // Aggregation wie laufeAlle — bewusst KEIN Gesamt-Score.
       baueBericht(ergebnisse, pm, jm, null, waechter, arm);
@@ -215,7 +221,8 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
         baueBericht(ergebnisse, pm, jm, abbruch, waechter, arm);
         zeigeErgebnis();
         await speichere();
-        status("Abgebrochen nach " + ergebnisse.length + " von " + auswahl.length + " Szenarien — Teilbericht unten. " + abbruch, "ev-rot");
+        status("Abgebrochen nach " + ergebnisse.length + " von " + auswahl.length + " Szenarien — Teilbericht unten. " + abbruch +
+          (arm ? " · Erneut klicken fährt nur die fehlenden Szenarien nach." : ""), "ev-rot");
       } else {
         status("Lauf abgebrochen: " + abbruch, "ev-rot");
       }
@@ -373,7 +380,11 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
         $("evVgStatus").textContent = "Lauf " + (i + 1) + "/" + vg.arme.length + ": " + vg.arme[i].label;
         const ok = await starte(vg.arme[i]);
         zeigeVorgabeListe();
-        if (!ok) { $("evVgStatus").textContent = "Angehalten bei Lauf " + (i + 1) + " — erneut klicken setzt dort fort."; return; }
+        if (!ok) {
+          const k = Object.keys(state.teile[vg.arme[i].label] || {}).length;
+          $("evVgStatus").textContent = "Angehalten bei Lauf " + (i + 1) + " (" + k + " Szenarien schon fertig) — erneut klicken fährt nur die fehlenden nach.";
+          return;
+        }
       }
       $("evVgStatus").textContent = "Alle " + vg.arme.length + " Läufe fertig — bitte die JSONs herunterladen und schicken.";
     } finally { $("evVorgabe").disabled = false; }
