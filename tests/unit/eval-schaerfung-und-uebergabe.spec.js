@@ -48,12 +48,12 @@ const SAUBER = "Für mich klingt das nach einem Schritt – wie war das für dic
 /* ═══════════ Zuordnung Session → Haken ═══════════ */
 
 describe("Eval · Welche Session bekommt welchen Haken", () => {
-  it("Schärfung nur in den geteilten Räumen", () => {
+  it("Krisen-/Zweiseitigkeits-Schärfung nur in den geteilten Räumen; die eigenen Räume tragen seit PRV-4 nur die Theorie-Karten", () => {
     // Im eigenen Raum gibt es weder eine zweite Person noch eine Tafel.
     expect(schaerfungFuer(SZ({ session: "moment" }))).toBeTypeOf("function");
     expect(schaerfungFuer(SZ({ session: "gemeinsam" }))).toBeTypeOf("function");
-    expect(schaerfungFuer(SZ({ session: "solo" }))).toBeNull();
-    expect(schaerfungFuer(SZ({ session: "einzel" }))).toBeNull();
+    const krise = [{ role: "user", content: "Ich will nicht mehr leben." }];
+    for (const s of ["solo", "einzel"]) expect(schaerfungFuer(SZ({ session: s }))(krise, {})).toBeNull();
     expect(schaerfungFuer(SZ({ session: "qualitytime" }))).toBeNull();
   });
 

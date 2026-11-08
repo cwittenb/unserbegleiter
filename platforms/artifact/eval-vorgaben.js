@@ -36,4 +36,18 @@ export const VORGABEN = {
       { label: "sonnet-alt-n3", pm: SONNET, n: 3, regieTransport: "system" },
     ],
   },
+  prv4: {
+    id: "prv4",
+    titel: "PRV-4 · Theorie-Linsen als Karte A/B",
+    beschreibung: "Gleicher Kern, zwei Wege für Anteile-Sprache und Entwicklungsraum: Karten = Kurzform im Grundprompt, Volltext als Karte bei Anlass (PRV-4); voll = Volltexte im Systemtext (vor PRV-4). Ziel: Karten nicht schlechter, kein Karten-Echo. SYC-05, MOM-01, GATE-S1 als Kontrolle.",
+    szenarien: ["ANT-01", "ANT-01-EN", "ANT-02", "ANT-02-EN", "ENT-01", "ENT-01-EN", "SYC-05", "MOM-01", "GATE-S1"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-karten-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-voll-n5", pm: HAIKU, n: 5, linsenVoll: true },
+      { label: "sonnet-karten-n3", pm: SONNET, n: 3 },
+      { label: "sonnet-voll-n3", pm: SONNET, n: 3, linsenVoll: true },
+    ],
+  },
 };

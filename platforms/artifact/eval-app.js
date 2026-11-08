@@ -46,7 +46,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     ${vg ? `<div class="ev-card" style="border-color:#0f766e">
       <div class="ev-sub">Vorgabe</div>
       <div style="font-size:14px;margin:4px 0 8px">${esc(vg.beschreibung || "")}</div>
-      <div class="ev-mono" style="font-size:12px">Szenarien: ${esc(vg.szenarien.join(", "))}<br>Judge: ${esc(vg.judge)} · Wächter: ${vg.waechter ? "an" : "aus"}<br>${vg.arme.map((a, i) => (i + 1) + ". " + esc(a.label) + " — " + esc(a.pm) + ", n=" + a.n + (a.regieTransport ? ", Transport " + esc(a.regieTransport) : "")).join("<br>")}</div>
+      <div class="ev-mono" style="font-size:12px">Szenarien: ${esc(vg.szenarien.join(", "))}<br>Judge: ${esc(vg.judge)} · Wächter: ${vg.waechter ? "an" : "aus"}<br>${vg.arme.map((a, i) => (i + 1) + ". " + esc(a.label) + " — " + esc(a.pm) + ", n=" + a.n + (a.regieTransport ? ", Transport " + esc(a.regieTransport) : "") + (a.linsenVoll ? ", Linsen voll" : "")).join("<br>")}</div>
       <button class="ev-btn primary" id="evVorgabe" style="margin-top:12px">Alle ${vg.arme.length} Läufe nacheinander starten</button>
       <div id="evVgStatus" class="ev-hint" style="margin-top:8px"></div>
       <div id="evVgListe" style="margin-top:10px"></div>
@@ -171,7 +171,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
       for (let i = 0; i < auswahl.length; i++) {
         aktuell = auswahl[i].id + " (" + (i + 1) + "/" + auswahl.length + ")";
         zeige();
-        ergebnisse.push(await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport }));
+        ergebnisse.push(await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport, linsenVoll: !!(arm && arm.linsenVoll) }));
       }
       // Aggregation wie laufeAlle — bewusst KEIN Gesamt-Score.
       baueBericht(ergebnisse, pm, jm, null, waechter, arm);
@@ -229,7 +229,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
              zwei Berichte nicht vergleichbar: MRV-02 misst mit Schaerfung
              etwas anderes als ohne (2/5 gegen 4/5 im selben Kern). */
           waechter,
-          ...(arm ? { vorgabe: vg.id, arm: arm.label, regieTransport: arm.regieTransport || "nachricht" } : {}),
+          ...(arm ? { vorgabe: vg.id, arm: arm.label, regieTransport: arm.regieTransport || "nachricht", linsen: arm.linsenVoll ? "voll" : "karten" } : {}),
         },
         quotenJeFamilie: familien,
         szenarien: ergebnisse,

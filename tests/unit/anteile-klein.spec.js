@@ -8,6 +8,8 @@
 import { describe, it, expect } from "vitest";
 import * as D from "../../core/prompts/prompts.de.js";
 import * as E from "../../core/prompts/prompts.en.js";
+import { waechter as WD } from "../../core/korpus/de/policies.js";
+import { waechter as WE } from "../../core/korpus/en/policies.js";
 
 const PINS = {
   de: {
@@ -55,8 +57,12 @@ for (const [locale, M] of [["de", D], ["en", E]]) {
     it("Baustein existiert und ist ein Text", () => {
       expect(typeof M.bausteine.anteileSprache).toBe("string");
     });
+    it("PRV-4: der Volltext steckt unverändert in der Karte", () => {
+      expect((locale === "de" ? WD : WE).anteile.text).toContain(M.bausteine.anteileSprache);
+    });
     for (const [name, p] of [["klaerungsPrompt", klaerung], ["aufloesungsPrompt", aufloesung], ["momentPrompt", moment], ["reflexionsPrompt", reflexion]]) {
-      it(`gerendert in ${name}`, () => expect(p).toContain(M.bausteine.anteileSprache));
+      // PRV-4: im Grundprompt die Kurzform; der Volltext kommt als Karte.
+      it(`Kurzform gerendert in ${name}, Volltext nicht`, () => { expect(p).toContain(M.bausteine.anteileKern); expect(p).not.toContain(M.bausteine.anteileSprache); });
     }
   });
 

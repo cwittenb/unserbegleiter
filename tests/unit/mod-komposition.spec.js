@@ -98,9 +98,10 @@ describe("MOD-1 · Der Eval misst, was die App baut", () => {
     expect(einzel.endsWith(suffix)).toBe(false);
   });
   it("Schaerfung: dieselbe Zuordnung wie die Def (moment/gemeinsam ja, solo/einzel nein) und derselbe Text", () => {
-    expect(schaerfungFuer(SZ("solo"))).toBeNull();
-    expect(schaerfungFuer(SZ("einzel"))).toBeNull();
     const krise = [{ role: "user", content: "Ich will nicht mehr leben." }];
+    // PRV-4: solo/einzel haben eine Kette (nur Theorie-Karten) — keine Krisen-Schärfung.
+    expect(schaerfungFuer(SZ("solo"))(krise, {})).toBeNull();
+    expect(schaerfungFuer(SZ("einzel"))(krise, {})).toBeNull();
     for (const art of ["moment", "gemeinsam"]) {
       const runner = schaerfungFuer(SZ(art));
       const app = baueSessionDef(art).schaerfe;

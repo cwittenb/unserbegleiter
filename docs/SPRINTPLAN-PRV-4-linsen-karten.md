@@ -35,4 +35,4 @@ Arme Haiku n=5 und Sonnet n=3, je Karten vs. voll: ANT-01, ANT-02, ENT-01 (je DE
 
 ## Merge-Regel
 
-Karten nicht schlechter als voll in allen Szenarien (J8 bereinigt), kein Karten-Echo; Prompt-Maße −13 % oder mehr. Sonst Rücknahme (S136).
+Karten nicht schlechter als voll in allen Szenarien (J8 bereinigt), kein Karten-Echo; Prompt-Maße gesunken (gemessen: −11 bis −13 %, ≈ 1 400–1 500 Token je Art). Sonst Rücknahme (S136).

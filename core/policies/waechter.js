@@ -14,6 +14,7 @@
 import { baueKrisenSchaerfung } from "../engine/krisen-waechter.js";
 import { baueZweiseitigkeitsSchaerfung } from "../engine/zweiseitigkeit-waechter.js";
 import { baueAufdeckSchaerfung } from "../engine/aufdeck-waechter.js";
+import { baueKartenSchaerfung } from "../engine/karten-waechter.js";
 import { pruefeAbschlussAntwort, pruefeMetaMarke, pruefeMarkenAntwort, uebergabeKette } from "../engine/abschluss-waechter.js";
 import { findetUrteil } from "../engine/urteils-waechter.js";
 
@@ -23,6 +24,9 @@ export const SCHAERFUNGEN = Object.freeze({
   krise:          k => baueKrisenSchaerfung(() => k().waechter.krise),
   zweiseitigkeit: k => baueZweiseitigkeitsSchaerfung(() => k().waechter.zweiseitigkeit),
   aufdeck:        k => baueAufdeckSchaerfung(() => k().waechter.aufdeck),
+  // PRV-4 · Theorie-Linsen als Karte (immer die letzten Glieder der Kette).
+  anteile:        k => baueKartenSchaerfung(() => k().waechter.anteile),
+  entwicklung:    k => baueKartenSchaerfung(() => k().waechter.entwicklung),
 });
 
 /** Übergabe-Prüfungen: Art → (eintrag, k) ⇒ (text, engine) ⇒ Kennung|null. */

@@ -8,11 +8,11 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 44283,
-      "tokenSchaetzung": 13024,
-      "zeilen": 63,
-      "langeZeilen": 20,
-      "capsWoerter": 242,
+      "zeichen": 39467,
+      "tokenSchaetzung": 11608,
+      "zeilen": 65,
+      "langeZeilen": 18,
+      "capsWoerter": 215,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
@@ -21,17 +21,17 @@
         "markeLetzteZeile": 1,
         "richterposition": 8,
         "ichRahmung": 3,
-        "hypothese": 6,
+        "hypothese": 5,
         "notFrage": 1,
-        "erfinden": 6
+        "erfinden": 5
       }
     },
     "moment": {
-      "zeichen": 38532,
-      "tokenSchaetzung": 11333,
-      "zeilen": 58,
-      "langeZeilen": 21,
-      "capsWoerter": 217,
+      "zeichen": 33716,
+      "tokenSchaetzung": 9916,
+      "zeilen": 60,
+      "langeZeilen": 19,
+      "capsWoerter": 190,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
@@ -40,17 +40,17 @@
         "markeLetzteZeile": 3,
         "richterposition": 7,
         "ichRahmung": 1,
-        "hypothese": 3,
+        "hypothese": 2,
         "notFrage": 0,
-        "erfinden": 4
+        "erfinden": 3
       }
     },
     "einzel": {
-      "zeichen": 38150,
-      "tokenSchaetzung": 11221,
-      "zeilen": 72,
-      "langeZeilen": 21,
-      "capsWoerter": 117,
+      "zeichen": 33334,
+      "tokenSchaetzung": 9804,
+      "zeilen": 74,
+      "langeZeilen": 19,
+      "capsWoerter": 90,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
@@ -59,17 +59,17 @@
         "markeLetzteZeile": 11,
         "richterposition": 8,
         "ichRahmung": 2,
-        "hypothese": 7,
+        "hypothese": 6,
         "notFrage": 1,
-        "erfinden": 4
+        "erfinden": 3
       }
     },
     "gemeinsam": {
-      "zeichen": 37144,
-      "tokenSchaetzung": 10925,
-      "zeilen": 61,
-      "langeZeilen": 21,
-      "capsWoerter": 154,
+      "zeichen": 32328,
+      "tokenSchaetzung": 9508,
+      "zeilen": 63,
+      "langeZeilen": 19,
+      "capsWoerter": 127,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
@@ -78,9 +78,9 @@
         "markeLetzteZeile": 6,
         "richterposition": 8,
         "ichRahmung": 2,
-        "hypothese": 5,
+        "hypothese": 4,
         "notFrage": 0,
-        "erfinden": 5
+        "erfinden": 4
       }
     },
     "qualitytime": {

@@ -112,8 +112,9 @@ describe("MRV.3 · Wo sie hängt", () => {
     expect(baueSessionDef("moment", { backend: backendStumm() }).schaerfe(m, {})).toBeTruthy();
     expect(baueSessionDef("gemeinsam", { backend: backendStumm() }).schaerfe(m, {})).toBeTruthy();
     // Im eigenen Raum gibt es keine zweite Person, über deren Sache verfügt würde.
-    expect(baueSessionDef("solo", { backend: backendStumm() }).schaerfe).toBeUndefined();
-    expect(baueSessionDef("einzel", { backend: backendStumm() }).schaerfe).toBeUndefined();
+    // (PRV-4: dort gibt es eine Kette, aber nur mit den Theorie-Karten.)
+    expect(baueSessionDef("solo", { backend: backendStumm() }).schaerfe(m, {})).toBeNull();
+    expect(baueSessionDef("einzel", { backend: backendStumm() }).schaerfe(m, {})).toBeNull();
   });
 
   it("die Krise hat Vorrang — nie zwei Zusätze in einem Zug", () => {

@@ -9,6 +9,8 @@
 import { describe, it, expect } from "vitest";
 import * as D from "../../core/prompts/prompts.de.js";
 import * as E from "../../core/prompts/prompts.en.js";
+import { waechter as WD } from "../../core/korpus/de/policies.js";
+import { waechter as WE } from "../../core/korpus/en/policies.js";
 
 const PINS = {
   de: {
@@ -62,8 +64,12 @@ for (const [locale, M] of [["de", D], ["en", E]]) {
     it("Baustein existiert und ist ein Text", () => {
       expect(typeof M.bausteine.entwicklungsRaum).toBe("string");
     });
+    it("PRV-4: der Volltext steckt unverändert in der Karte", () => {
+      expect((locale === "de" ? WD : WE).entwicklung.text).toContain(M.bausteine.entwicklungsRaum);
+    });
     for (const [name, p] of [["klaerungsPrompt", klaerung], ["aufloesungsPrompt", aufloesung], ["momentPrompt", moment], ["reflexionsPrompt", reflexion]]) {
-      it(`gerendert in ${name}`, () => expect(p).toContain(M.bausteine.entwicklungsRaum));
+      // PRV-4: im Grundprompt die Kurzform; der Volltext kommt als Karte.
+      it(`Kurzform gerendert in ${name}, Volltext nicht`, () => { expect(p).toContain(M.bausteine.entwicklungKern); expect(p).not.toContain(M.bausteine.entwicklungsRaum); });
     }
   });
 
@@ -75,9 +81,9 @@ for (const [locale, M] of [["de", D], ["en", E]]) {
   });
 
   describe(`Entwicklungsraum-Perspektive (${locale}) · Konsistenz mit Nachbar-Linsen`, () => {
-    it("Anteile-Sprache bleibt in allen vier Räumen erhalten", () => {
+    it("Anteile-Sprache (Kurzform, PRV-4) bleibt in allen vier Räumen erhalten", () => {
       for (const p of [klaerung, aufloesung, moment, reflexion]) {
-        expect(p).toContain(M.bausteine.anteileSprache);
+        expect(p).toContain(M.bausteine.anteileKern);
       }
     });
     it("Lösungsversuch-Rahmung nicht dupliziert (SSOT im haltungsKern)", () => {

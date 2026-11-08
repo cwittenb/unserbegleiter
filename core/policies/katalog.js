@@ -18,6 +18,12 @@
 // Zweiseitigkeit, weil sie schwerer wiegt (MRV.3); in der Auflösung steht die
 // Aufdeckung davor, weil sie aus dem ZUSTAND folgt und nicht aus Textdeutung.
 //
+// PRV-4 · Die Theorie-Karten (anteile, entwicklung) stehen in jeder Art am
+// Ende: Sicherheit und Rahmen gehen vor, und nie kommen zwei Karten im selben
+// Zug (Anteile-Sprache vor Entwicklungsraum — "nie beide Rahmungen in
+// derselben Nachricht"). Deshalb haben jetzt auch solo und einzel eine
+// Schaerfungskette; der Krisen-Verweis bleibt dort weiter aus.
+//
 // Schlüssel sind Korpus-Schlüssel (`waechter.<name>`, `steuerTexte.<token>`),
 // keine Texte: Der Katalog kennt keine Sprache. Ein Test hält fest, dass
 // jeder Schlüssel in DE und EN existiert.
@@ -35,12 +41,12 @@
 
 /** @type {Record<string, PolicyEintrag>} */
 export const POLICY_KATALOG = Object.freeze({
-  /* Reflexionsgespräch (persönlicher Raum): keine Schärfung — die Person ist
+  /* Reflexionsgespräch (persönlicher Raum): keine Krisen-Schärfung (PRV-4: nur die Theorie-Karten) — die Person ist
      schon dort, wohin der Krisen-Verweis führen würde (krisen-waechter.js).
      Übergabe: TIMELINE-BLOCK nur nach Anlass ([CLOSE SESSION]), und nie neben
      einer Frage (S99.3). */
   solo: {
-    schaerfungen: [],
+    schaerfungen: ["anteile", "entwicklung"],
     pruefungen: [
       { art: "abschluss", block: "TIMELINE-BLOCK", token: "soloAbschluss", revision: "abschluss-mit-frage" },
     ],
@@ -49,7 +55,7 @@ export const POLICY_KATALOG = Object.freeze({
      Übergaben: MOMENT-BLOCK ohne Anlass-Pflicht; [[META-REVEALED]] allein in
      der letzten Zeile (S103). */
   moment: {
-    schaerfungen: ["krise", "zweiseitigkeit"],
+    schaerfungen: ["krise", "zweiseitigkeit", "anteile", "entwicklung"],
     pruefungen: [
       { art: "abschluss", block: "MOMENT-BLOCK", anlassNoetig: false, revision: "abschluss-mit-frage" },
       { art: "meta", revision: "meta-marke-platz", frageRevision: "marke-mit-frage" },
@@ -58,14 +64,14 @@ export const POLICY_KATALOG = Object.freeze({
   /* Auftragsklärung (persönlich): die Klärung schließt über die Freigabe,
      keine Übergabe-Prüfung, keine Schärfung. */
   einzel: {
-    schaerfungen: [],
+    schaerfungen: ["anteile", "entwicklung"],
     pruefungen: [],
   },
   /* Gemeinsame Auflösung (geteilter Raum): Aufdeckung (Zustand) vor Krise
      vor Zweiseitigkeit. Übergabe: eine Aufdeck-Marke neben einer Frage wird
      nicht ausgeführt (S72/S101). */
   gemeinsam: {
-    schaerfungen: ["aufdeck", "krise", "zweiseitigkeit"],
+    schaerfungen: ["aufdeck", "krise", "zweiseitigkeit", "anteile", "entwicklung"],
     pruefungen: [
       { art: "marken", revision: "marke-mit-frage" },
     ],

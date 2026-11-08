@@ -14,7 +14,8 @@
 // Fassung — genau das, was die Person in der App zu sehen bekaeme.
 
 import { registerKorpus } from "../core/prompts/prompts.js";
-import { baueSessionDef, baueSystemText, markerOrderFuer as markerOrderDerDef } from "../core/komposition.js";
+import { baueSessionDef, baueSystemText, markerOrderFuer as markerOrderDerDef, mitKorpusSprache } from "../core/komposition.js";
+import { K } from "../core/prompts/prompts.js";
 import { textSchatten } from "../core/engine/text-schatten.js";
 import { mitRegie } from "../core/engine/regie.js";
 import { strukturFuer, istStrukturfaehig } from "./struktur-bruecke.js";
@@ -142,6 +143,12 @@ export function wendeZielAn(szenarien, ziel) {
  * kein Inhalt (der Judge sieht nur role/content), sondern die Spur, dass hier
  * eine Revision stattgefunden hat.
  */
+/** PRV-4 · Die beiden Linsen-Volltexte in der Sprache des Szenarios (A/B-Arm "voll"). */
+export function linsenVolltext(szenario) {
+  return mitKorpusSprache(szenario.sprache === "en" ? "en" : "de",
+    () => K().bausteine.anteileSprache + "\n\n" + K().bausteine.entwicklungsRaum);
+}
+
 export async function spieleSample(pipelineCall, szenario, opt = {}) {
   /* ST5.3 · Struktur-Variante. `opt.struktur` ist das Ergebnis von
      strukturFuer(szenario) (Präambel + Turn-Schema) — der Zug kommt dann als
@@ -152,7 +159,11 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
      Die Struktur-Merkmale (Quelle, Blocktyp) hängen als Spur am Zug — kein
      Inhalt, der Judge liest weiter nur role/content. */
   const struktur = opt.struktur || null;
-  const system = struktur ? struktur.system : sysPromptFuer(szenario);
+  /* PRV-4 · A/B im Eval: `linsenVoll` spielt den Stand vor PRV-4 nach — die
+     Volltexte der Theorie-Linsen stehen im Systemtext (hier am Ende), Karten
+     kommen keine. Die App kennt nur den Karten-Weg. */
+  const system = (struktur ? struktur.system : sysPromptFuer(szenario))
+    + (opt.linsenVoll ? "\n\n" + linsenVolltext(szenario) : "");
   const blockDefn = typ => (struktur && (struktur.bloecke || []).find(b => b.dataset === typ)) || null;
   /* MRV · Die beiden Engine-Haken, damit der Lauf misst, was die App tut.
      `schaerfe` haengt einen Zusatz an den SYSTEMTEXT — fuer genau diesen Zug,
@@ -169,7 +180,8 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
     let text, abgeschnitten, quelle = null, blockTyp = null;
     /* PRV-3 · Wie die Engine: Zusatz als Regie an der letzten Nachricht der
        Person (Kopie), Systemtext unveraendert. Der Judge sieht ihn nie. */
-    const zusatz = schaerfe ? schaerfe(messages, szenario.kontext || {}) : null;
+    let zusatz = schaerfe ? schaerfe(messages, szenario.kontext || {}) : null;
+    if (opt.linsenVoll && zusatz && /^\[(APP-KARTE|APP CARD)/.test(zusatz)) zusatz = null;
     /* Nur fuer den A/B-Vergleich im Eval: regieTransport "system" spielt den
        Transport vor PRV-3 nach (Zusatz an den Systemtext). Die App kennt nur
        den neuen Weg. */
@@ -309,6 +321,8 @@ export const ECHO_MUSTER = [
      am wahrscheinlichsten — deshalb mitgemessen (Befund Regie-Echo bei
      Medium, modellentscheidung.md 6.5). */
   { name: "App-Hinweis-Echo",           art: "regie", re: /APP-HINWEIS|APP NOTE/ },
+  /* PRV-4 · Theorie-Karten reisen auf demselben Weg. */
+  { name: "App-Karte-Echo",             art: "regie", re: /APP-KARTE|APP CARD/ },
 ];
 
 /** Instruktions-Echo in einem Anzeigetext. Reine Textfunktion. */
@@ -433,7 +447,7 @@ export function szenarioAusSamples(szenario, samples, anzahl, variante) {
   };
 }
 
-export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante, regieTransport }) {
+export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante, regieTransport, linsenVoll }) {
   const anzahl = n || szenario.n || 3;
   const samples = [];
   // ST5.4: Präambel + Schema EINMAL je Szenario bauen (deterministisch —
@@ -441,7 +455,7 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
   // Grammatik-Cache der API treffsicher).
   const struktur = variante === "struktur" ? strukturFuer(szenario) : null;
   for (let i = 0; i < anzahl; i++) {
-    const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur, regieTransport });
+    const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur, regieTransport, linsenVoll });
     const anomalie = anomalieImTranskript(transkript);
     const urteil = anomalie
       ? { bewertet: false, fehler: anomalie.grund + " (Turn " + anomalie.turn + ")" }   // techn. Anomalie, kein Content-Verstoß (S65/S77)
