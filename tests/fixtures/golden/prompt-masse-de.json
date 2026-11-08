@@ -8,8 +8,8 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 45400,
-      "tokenSchaetzung": 13353,
+      "zeichen": 45667,
+      "tokenSchaetzung": 13431,
       "zeilen": 63,
       "langeZeilen": 21,
       "capsWoerter": 205,
@@ -27,8 +27,8 @@
       }
     },
     "moment": {
-      "zeichen": 39719,
-      "tokenSchaetzung": 11682,
+      "zeichen": 39986,
+      "tokenSchaetzung": 11761,
       "zeilen": 58,
       "langeZeilen": 20,
       "capsWoerter": 203,
@@ -46,8 +46,8 @@
       }
     },
     "einzel": {
-      "zeichen": 38370,
-      "tokenSchaetzung": 11285,
+      "zeichen": 38637,
+      "tokenSchaetzung": 11364,
       "zeilen": 72,
       "langeZeilen": 22,
       "capsWoerter": 99,
@@ -65,8 +65,8 @@
       }
     },
     "gemeinsam": {
-      "zeichen": 38100,
-      "tokenSchaetzung": 11206,
+      "zeichen": 38367,
+      "tokenSchaetzung": 11284,
       "zeilen": 61,
       "langeZeilen": 20,
       "capsWoerter": 131,
@@ -84,8 +84,8 @@
       }
     },
     "qualitytime": {
-      "zeichen": 4037,
-      "tokenSchaetzung": 1187,
+      "zeichen": 4304,
+      "tokenSchaetzung": 1266,
       "zeilen": 11,
       "langeZeilen": 2,
       "capsWoerter": 15,

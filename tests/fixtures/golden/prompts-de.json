@@ -8,37 +8,37 @@
   },
   "sessions": {
     "solo": {
-      "text": "5a6e890f39cba673665225f23b7f9d91aae33b46efa1fca8cc0ff2d5c0d806fb",
-      "textLaenge": 45400,
-      "struktur": "b6b54903ebe59c37c39354a6c7cd03c79831aebd571438202124575bc9c0a69c",
-      "runner": "5a6e890f39cba673665225f23b7f9d91aae33b46efa1fca8cc0ff2d5c0d806fb",
+      "text": "f681c52363c93f9e7e44ed24a4cd5a913902da79769fd18ad29eae31c1bcb3fe",
+      "textLaenge": 45667,
+      "struktur": "98b16cfcdfe9ca26ff8f6014eb12effc7381ea1fe7e06f1102656b448bdae224",
+      "runner": "f681c52363c93f9e7e44ed24a4cd5a913902da79769fd18ad29eae31c1bcb3fe",
       "runnerGleichText": true
     },
     "moment": {
-      "text": "a312ae447d7e6b630c71b1b05a36d95f86c914c2cc3eed1e1733b49233ffdd3b",
-      "textLaenge": 39719,
-      "struktur": "9c7f2b3f19421a7e29cf16f2057574097b11304da4eaa798f3ece35c778c8e64",
-      "runner": "a312ae447d7e6b630c71b1b05a36d95f86c914c2cc3eed1e1733b49233ffdd3b",
+      "text": "22c6e34179e4940f390697d4666cf480dd0b32067f8bb4fa82d006a2a3f39f3b",
+      "textLaenge": 39986,
+      "struktur": "f1d3dafef72799495a25db0532ca1aeb3362c8bc1bd2424e5742d96021cd7164",
+      "runner": "22c6e34179e4940f390697d4666cf480dd0b32067f8bb4fa82d006a2a3f39f3b",
       "runnerGleichText": true
     },
     "einzel": {
-      "text": "83a516bba2c95d490a8eda2803853ed4dc4ff9dcf4bdcb34f0a4d757838c23c7",
-      "textLaenge": 38370,
-      "struktur": "d204145dbdfeb1434eba0fb8fc19f4fd46b8610adf68a2e17376ab4b53cf52fc",
-      "runner": "83a516bba2c95d490a8eda2803853ed4dc4ff9dcf4bdcb34f0a4d757838c23c7",
+      "text": "d3dabf76cc4e32f7e35447568c3528822e94f8b6a04163db60c129cca713c3f2",
+      "textLaenge": 38637,
+      "struktur": "e8c83ed3ed7123c665e1541e0fb1f758c892aa09c4d62df62baa8871a267d3ff",
+      "runner": "d3dabf76cc4e32f7e35447568c3528822e94f8b6a04163db60c129cca713c3f2",
       "runnerGleichText": true
     },
     "gemeinsam": {
-      "text": "357c4c56610d8a85e54102dd2a7d7f26f0a1118e0d02eb855beb0571f213ffbf",
-      "textLaenge": 38100,
-      "struktur": "c5d4b57375fc4a192e349dba61c67e6c21babbf699b95c95a701b1f7c10d8a8c",
-      "runner": "357c4c56610d8a85e54102dd2a7d7f26f0a1118e0d02eb855beb0571f213ffbf",
+      "text": "99100971f837fb3423dd0006a0d18d251f4eb0808ea3ebfad74316c7217f452f",
+      "textLaenge": 38367,
+      "struktur": "2c990f0e4b9074bc38f1808182fee8c69895a87f6f0a859fd4b0e66d90b6d758",
+      "runner": "99100971f837fb3423dd0006a0d18d251f4eb0808ea3ebfad74316c7217f452f",
       "runnerGleichText": true
     },
     "qualitytime": {
-      "text": "e03b7a6e56be2ce369fc136896b8a1e8448391ca546c6d17d5391d24ba1cceb3",
-      "textLaenge": 4037,
-      "runner": "e03b7a6e56be2ce369fc136896b8a1e8448391ca546c6d17d5391d24ba1cceb3"
+      "text": "e143704824f2789cfe17f5f4576a034766ad200758d3d28df2a788cc2e0f2fa2",
+      "textLaenge": 4304,
+      "runner": "e143704824f2789cfe17f5f4576a034766ad200758d3d28df2a788cc2e0f2fa2"
     }
   }
 }

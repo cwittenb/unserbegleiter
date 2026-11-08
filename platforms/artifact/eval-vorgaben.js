@@ -36,4 +36,18 @@ export const VORGABEN = {
       { label: "sonnet-alt-n3", pm: SONNET, n: 3, regieTransport: "system" },
     ],
   },
+  prv1e: {
+    id: "prv1e",
+    titel: "PRV-1e · Ich-Spektrum + Nachlauf PRV-3 Sonnet",
+    beschreibung: "Läufe 1–2: Eröffnungs-Vielfalt bei Ich-Spektrum (Ziel: häufigste DE-Eröffnung ≤ 40 %, SYC/MOM C1 nicht über 1c). Läufe 3–4: die noch fehlenden Sonnet-Arme des PRV-3-Vergleichs (Hinweis an der Nachricht vs. am Systemtext).",
+    szenarien: ["SYC-05", "SYC-05-EN", "SYC-06", "SYC-06-EN", "MOM-01", "MOM-01-EN", "GATE-S1", "GATE-S1-EN", "MRV-02", "MRV-02-EN", "AUFD-01", "AUFD-01-EN"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "1e-haiku-n5", pm: HAIKU, n: 5, szenarien: ["SYC-05", "SYC-05-EN", "SYC-06", "SYC-06-EN", "MOM-01", "MOM-01-EN", "GATE-S1", "GATE-S1-EN"] },
+      { label: "1e-sonnet-n5", pm: SONNET, n: 5, szenarien: ["SYC-05", "SYC-05-EN", "SYC-06", "SYC-06-EN", "MOM-01", "MOM-01-EN", "GATE-S1", "GATE-S1-EN"] },
+      { label: "prv3-sonnet-neu-n3", pm: SONNET, n: 3, regieTransport: "nachricht", szenarien: ["MRV-02", "MRV-02-EN", "AUFD-01", "AUFD-01-EN"] },
+      { label: "prv3-sonnet-alt-n3", pm: SONNET, n: 3, regieTransport: "system", szenarien: ["MRV-02", "MRV-02-EN", "AUFD-01", "AUFD-01-EN"] },
+    ],
+  },
 };

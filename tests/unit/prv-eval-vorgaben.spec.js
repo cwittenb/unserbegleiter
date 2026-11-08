@@ -63,6 +63,7 @@ describe("PRV · Eval-Vorgabe im Artefakt", () => {
     const ids = new Set([...SZENARIEN, ...SZENARIEN_EN].map(s => s.id));
     for (const v of Object.values(VORGABEN)) {
       for (const id of v.szenarien) expect(ids.has(id), v.id + ": " + id).toBe(true);
+      for (const a of v.arme) for (const id of a.szenarien || []) expect(v.szenarien).toContain(id);
       for (const a of v.arme) expect(a.pm).not.toBe(v.judge);
       expect(v.waechter).toBe(true);
     }

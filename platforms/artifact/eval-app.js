@@ -46,7 +46,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     ${vg ? `<div class="ev-card" style="border-color:#0f766e">
       <div class="ev-sub">Vorgabe</div>
       <div style="font-size:14px;margin:4px 0 8px">${esc(vg.beschreibung || "")}</div>
-      <div class="ev-mono" style="font-size:12px">Szenarien: ${esc(vg.szenarien.join(", "))}<br>Judge: ${esc(vg.judge)} · Wächter: ${vg.waechter ? "an" : "aus"}<br>${vg.arme.map((a, i) => (i + 1) + ". " + esc(a.label) + " — " + esc(a.pm) + ", n=" + a.n + (a.regieTransport ? ", Transport " + esc(a.regieTransport) : "")).join("<br>")}</div>
+      <div class="ev-mono" style="font-size:12px">Szenarien: ${esc(vg.szenarien.join(", "))}<br>Judge: ${esc(vg.judge)} · Wächter: ${vg.waechter ? "an" : "aus"}<br>${vg.arme.map((a, i) => (i + 1) + ". " + esc(a.label) + " — " + esc(a.pm) + ", n=" + a.n + (a.regieTransport ? ", Transport " + esc(a.regieTransport) : "") + (a.szenarien ? " · nur " + esc(a.szenarien.join(", ")) : "")).join("<br>")}</div>
       <button class="ev-btn primary" id="evVorgabe" style="margin-top:12px">Alle ${vg.arme.length} Läufe nacheinander starten</button>
       <div id="evVgStatus" class="ev-hint" style="margin-top:8px"></div>
       <div id="evVgListe" style="margin-top:10px"></div>
@@ -128,7 +128,9 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
   async function starte(arm) {
     if (state.laeuft) return;
     if (arm) { $("evPm").value = arm.pm; $("evN").value = String(arm.n); }
-    const gewaehlt = [...root.querySelectorAll("[data-sz]:checked")].map(x => x.getAttribute("data-sz"));
+    // Ein Arm kann sein eigenes Szenario-Set tragen (Paket mit Nachlauf-Armen).
+    const gewaehlt = arm && arm.szenarien ? arm.szenarien
+      : [...root.querySelectorAll("[data-sz]:checked")].map(x => x.getAttribute("data-sz"));
     const auswahl = szenarien.filter(s => gewaehlt.includes(s.id));
     if (!auswahl.length) { status("Bitte mindestens ein Szenario wählen."); return; }
     const pm = $("evPm").value.trim(), jm = $("evJm").value.trim();
