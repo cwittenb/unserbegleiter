@@ -268,8 +268,8 @@ describe("S105.4 · Regeln ohne Netz", () => {
 
   it("sie benennt die richtige FORM, nicht nur das Verbot", () => {
     const p = dePrompts.reflexionsPrompt("Anna", "Bernd");
-    expect(p).toContain("ERSTES WORT: Deine Antwort beginnt mit „Ich …“");
-    expect(p).toContain("Das finde ich einen schönen Impuls");
+    expect(p).toContain("ERSTER SATZ: Er spricht von dir oder von dem, was die Person gerade tut");
+    expect(p).not.toContain("Das finde ich einen schönen Impuls");   // PRV-1d: Ich-Beispiel nur noch in der Quelle (Schablonen-Befund)
     expect(p).toContain("wird nicht mehr maschinell korrigiert");
   });
 

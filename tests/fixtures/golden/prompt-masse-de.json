@@ -8,8 +8,8 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 45425,
-      "tokenSchaetzung": 13360,
+      "zeichen": 45016,
+      "tokenSchaetzung": 13240,
       "zeilen": 63,
       "langeZeilen": 21,
       "capsWoerter": 205,
@@ -20,15 +20,15 @@
       "wiederholungen": {
         "markeLetzteZeile": 1,
         "richterposition": 1,
-        "ichRahmung": 3,
-        "hypothese": 5,
+        "ichRahmung": 2,
+        "hypothese": 6,
         "notFrage": 1,
         "erfinden": 3
       }
     },
     "moment": {
-      "zeichen": 39744,
-      "tokenSchaetzung": 11689,
+      "zeichen": 39413,
+      "tokenSchaetzung": 11592,
       "zeilen": 58,
       "langeZeilen": 20,
       "capsWoerter": 203,
@@ -46,8 +46,8 @@
       }
     },
     "einzel": {
-      "zeichen": 38639,
-      "tokenSchaetzung": 11364,
+      "zeichen": 38137,
+      "tokenSchaetzung": 11217,
       "zeilen": 72,
       "langeZeilen": 21,
       "capsWoerter": 99,
@@ -65,8 +65,8 @@
       }
     },
     "gemeinsam": {
-      "zeichen": 38369,
-      "tokenSchaetzung": 11285,
+      "zeichen": 37867,
+      "tokenSchaetzung": 11137,
       "zeilen": 61,
       "langeZeilen": 19,
       "capsWoerter": 131,
@@ -84,8 +84,8 @@
       }
     },
     "qualitytime": {
-      "zeichen": 4037,
-      "tokenSchaetzung": 1187,
+      "zeichen": 3852,
+      "tokenSchaetzung": 1133,
       "zeilen": 11,
       "langeZeilen": 2,
       "capsWoerter": 15,

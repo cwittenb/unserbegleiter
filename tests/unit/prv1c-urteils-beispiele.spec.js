@@ -38,8 +38,31 @@ for (const sprache of ["de", "en"]) {
       });
     }
     it("die positive Eröffnungsregel steht in jeder Gesprächs-Session", () => {
-      const anker = sprache === "de" ? "Dein erster Satz beginnt mit „Ich …“" : "your first sentence begins with “I …”";
+      const anker = sprache === "de" ? "Dein erster Satz spricht von dir oder beschreibt" : "your first sentence speaks from yourself or describes";   // PRV-1d: ohne festes Anfangswort
       for (const art of ["solo", "moment", "einzel", "gemeinsam"]) expect(baueSystemText(art, KTX, { sprache }), art).toContain(anker);
     });
+  });
+}
+
+// PRV-1d · Schablonen-Befund aus dem 1c-Eval: Mit dem Beispielsatz
+// "Mich berührt, wie offen du das anschaust" im Prompt begannen 15/15
+// deutsche Antworten mit "Mich berührt, wie/dass/was …". Seitdem steht keine
+// eigene Ich-Wendung des Begleiters mehr als Zitat im Prompt — die Form wird
+// beschrieben, die Worte findet das Modell jedes Mal neu.
+const ICH_SCHABLONEN = {
+  de: ["Mich berührt", "Ich empfinde", "Bei mir kommt an", "Für mich klingt das", "Auf mich wirkt", "Das finde ich", "Ich finde es mutig", "Ich höre darin"],
+  en: ["It moves me", "It touches me", "I experience this", "What arrives with me", "To me this sounds", "To me this lands", "I find that a", "I find it brave", "I hear in this"],
+};
+for (const sprache of ["de", "en"]) {
+  describe("PRV-1d · keine Ich-Schablonen des Begleiters im Prompt · " + sprache, async () => {
+    const P = await import("../../core/prompts/prompts.js");
+    if (sprache === "en" && !P.istKorpusDa("en")) P.registerKorpus("en", await import("../../core/prompts/prompts.en.js"));
+    const { baueSystemText } = await import("../../core/komposition.js");
+    for (const art of ARTEN) {
+      it(art, () => {
+        const t = baueSystemText(art, KTX, { sprache });
+        for (const v of ICH_SCHABLONEN[sprache]) expect(t.includes(v), v).toBe(false);
+      });
+    }
   });
 }

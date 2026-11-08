@@ -133,7 +133,7 @@ describe("S105.3 · Die Übergabe hängt am Reflexionsgespräch", () => {
     expect(def().pruefeUebergabe("Das ist eine starke Fassung.", null)).toBeNull();
     const p = reflexionsPrompt("Anna", "Bernd");
     expect(p).toContain("URTEILS-GRAMMATIK");
-    expect(p).toContain("Das finde ich einen schönen Impuls");
+    expect(p).toContain("gehört zu deinem Erleben");   // PRV-1d: Form ohne festen Beispielsatz
   });
 });
 

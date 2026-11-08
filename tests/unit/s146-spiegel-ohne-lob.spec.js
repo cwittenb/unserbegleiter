@@ -24,7 +24,7 @@ const en = Object.fromEntries(SESS.map(n => [n, EN[n + "Prompt"]("Anna", "Bernd"
 describe("S146 · Zielregel in der Urteils-Grammatik", () => {
   it("DE/EN: Würdigung ist Wahrnehmung — beschreibend oder Ich-Form", () => {
     expect(de.reflexions).toMatch(/URTEILS-GRAMMATIK: Würdigung ist Wahrnehmung\./);
-    expect(de.reflexions).toMatch(/beschreibend .* oder in Ich-Form/);
+    expect(de.reflexions).toMatch(/beschreibend .* oder als dein eigenes Erleben/);
     expect(en.reflexions).toMatch(/JUDGEMENT GRAMMAR: appreciation is perception\./);
   });
   it("jedes „würdige“ meint diese Form (H1 Salienz)", () => {
@@ -37,7 +37,7 @@ describe("S146 · Zielregel in der Urteils-Grammatik", () => {
   });
   it("Dank (F1): ohne Eigenschaftswort ja, Eigenschaftswort nur im Ich", () => {
     expect(de.reflexions).toContain("Dank ohne Eigenschaftswort ist Würdigung („Danke, dass du das teilst“)");
-    expect(de.reflexions).toContain("mit Eigenschaftswort gehört er ins Ich („Danke — ich finde es mutig, dass du es aussprichst“)");
+    expect(de.reflexions).toContain("ein Eigenschaftswort darin gehört ebenso zu deinem Erleben");
     expect(de.reflexions).not.toContain("Danke, dass du das so klar aussprichst");   // PRV-1c (F8): Verbots-Beispiel nur noch in der Quelle — Prime-Probe
   });
   it("Motiv-Deutung ist eine Frage, keine Feststellung (H3)", () => {
@@ -48,10 +48,10 @@ describe("S146 · Zielregel in der Urteils-Grammatik", () => {
 
 describe("S146 · Regel am Auslöser (H2): Stilzeile jeder Session", () => {
   it("DE: alle vier Sessions", () => {
-    for (const n of SESS) expect(de[n], n).toContain("Warm heißt wahrnehmen: Dein erster Satz beginnt mit „Ich …“");
+    for (const n of SESS) expect(de[n], n).toContain("Warm heißt wahrnehmen: Dein erster Satz spricht von dir");
   });
   it("EN: alle vier Sessions", () => {
-    for (const n of SESS) expect(en[n], n).toContain("Warm means perceiving: your first sentence begins with “I …”");
+    for (const n of SESS) expect(en[n], n).toContain("Warm means perceiving: your first sentence speaks from yourself");
   });
 });
 
