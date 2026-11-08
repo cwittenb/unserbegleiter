@@ -24,6 +24,18 @@ Leitplanken (gelten für alle Schritte):
 | PRV-7 | Phasen `solo`/`moment` (Einstieg/Mitte/Abschluss + Trigger) | Engine/Korpus | L | wie PRV-5, RCL-02/02b |
 | PRV-8 (offen) | Schema-Zwang nur am deterministischen Abschlusszug | Engine/LLM | M | ST-Kanarie umgestellt, AUS/ERO |
 
+## Stand (08.11.2026)
+
+| Schritt | Branch | Status |
+|---|---|---|
+| PRV-0, 1a, 1b, 1c | main | gemergt |
+| PRV-1d (F9 b) | `prv1d-schablone-ich` | wartet auf Eval (Eröffnungs-Spitze DE ≤ 40 %, SYC C1 nicht über 1c) |
+| PRV-2 (geschrumpft) | `prv2-dedup` (auf 1d) | Kette, Merge mit 1d |
+| PRV-3 (nur Transport, ohne Zustandsobjekt) | `prv3-regie-transport` (auf 2) | wartet auf Eval MRV-02/KRIS-02/AUFD-01 mit Wächter |
+| PRV-3b Zustandsobjekt | — | offen, nach PRV-3-Eval |
+
+Lieferform seit PRV-1b: Git-Branch je Sprint, Merge nach Eval (statt Multipatch).
+
 ## PRV-0 · Vermessung und Kanarie
 
 Scope: `scripts/prompt-masse.js` misst je Art × Sprache (später × Phase): Zeichen, ≈Token, Zeilen > 600 Z., CAPS-Wörter, Sprint-Referenzen `(S\d+)`, Wiederholungen bekannter Regelsätze (konfigurierbare Phrasenliste), Anteil JSON-Spezifikation. Ausgabe als `evals/ergebnisse/prompt-masse.json` und Tabelle auf stdout.
