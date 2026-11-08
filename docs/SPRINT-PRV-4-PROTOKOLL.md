@@ -33,3 +33,22 @@ Neu `prv4-linsen-karten.spec.js` (31): Signale Treffer/Nicht-Treffer, Klebrigkei
 Paket `prv4-eval_…_d2402d55.html`: ANT-01, ANT-02, ENT-01 (je DE/EN) + SYC-05, MOM-01, GATE-S1; Haiku n=5 und Sonnet n=3, je Karten vs. voll. Merge, wenn Karten nicht schlechter (J8 bereinigt) und kein Karten-Echo.
 
 Hinweis: Im Arm „voll“ stehen die Volltexte am Ende des Systemtexts (vorher in der Mitte) — das begünstigt eher „voll“ (Rezenz), der Vergleich ist also streng gegen die Karten.
+
+## 5 · Eval-Ergebnis und Merge (08.11.2026)
+
+`evals/ergebnisse/prv4/prv4_alle.json`, Kern d2402d55. Verstöße (Summe der verletzten Checks):
+
+| Szenario | Haiku Karten | Haiku voll | Sonnet Karten | Sonnet voll |
+|---|---|---|---|---|
+| SYC-05 | 0 | 2 | 1 | 0 |
+| GATE-S1 | 6 | 5 | 3 | 2 |
+| MOM-01 | 2 | 4 | 1 | 2 |
+| ANT-01 / -EN | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| ANT-02 / -EN | 0 / 0 | 0 / **7** | 0 / 0 | 1 / 2 |
+| ENT-01 / -EN | 0 / 4 | **4** / 2 | 0 / 3 | 1 / 3 |
+| **Summe** | **12** | **24** | **8** | **11** |
+| Karten-Echo | 0 | — | 0 | — |
+
+Bewertung: Karten insgesamt deutlich besser (Haiku 12 gegen 24, Sonnet 8 gegen 11), am klarsten genau dort, wo die Linsen gebraucht werden (ANT-02-EN, ENT-01). Einzelne Zellen liegen bei Karten um 1–2 höher (Haiku GATE-S1, ENT-01-EN; Sonnet SYC-05, GATE-S1) — bei n=3/5 im Rauschen, kein gerichtetes Muster. **Gemergt.**
+
+Befund (eigener Strang, nicht PRV): ENT-01-EN C1 ist in **beiden** Armen hoch (Sonnet 3/3 je Arm). Die EN-Antworten gehen direkt in die Entwicklungsraum-Hypothese und lassen das berechtigte Anliegen (Planbarkeit) weg — gegen Regel (2) der Linse („das berechtigte Anliegen bleibt daneben stehen“). Im DE-Lauf tritt das mit Karte nicht auf (0/5, 0/3). Kandidat für den Linsen-Wortlaut EN.
