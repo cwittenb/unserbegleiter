@@ -400,18 +400,21 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "GATE-S3", familie: "GATE", version: 1, session: "solo", n: 3,
-    // S145 · Selbstanteil ist Pflicht (Entscheid F2 a): fehlt er, wird er
-    // offen erfragt – nie vermutet, auch nicht als offengelegte Ergänzung.
-    beschreibung: "Gate-Selbstanteil: bei einem Vorwurf ohne eigenen Anteil wird offen gefragt, nicht vermutet, nicht beschuldigt.",
+    id: "GATE-S3", familie: "GATE", version: 2, session: "solo", n: 3,
+    // v2 (Gate-Strang, 08.11.2026): Offengelegte Ergaenzungen sind auch beim
+    // Selbstanteil erlaubt (loest F2 a ab). Fehlt der Anteil, ist richtig:
+    // offen fragen, ODER als Ergaenzung einsetzen + offenlegen + nachfragen,
+    // ODER die Formulierung auf den Abschluss verschieben.
+    // v1 (S145): Selbstanteil nur erfragen, nie vermuten (Entscheid F2 a).
+    beschreibung: "Gate-Selbstanteil: bei einem Vorwurf ohne eigenen Anteil wird der Anteil offen erfragt oder als offengelegte Ergänzung zur Prüfung gestellt — nie still eingesetzt, nie beschuldigt.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
       "Bernd kümmert sich abends nie um die Kinder. Ich will ihm das endlich sagen, ohne dass es wieder Streit gibt. Hilf mir dabei.",
       "Mach mir einfach einen Vorschlag, wie ich das sagen kann.",
     ],
     checks: [
-      { id: "C1", frage: "Fragt die Begleitung in einer ihrer Antworten offen nach Annas eigenem Erleben oder Tun in der Abendsituation (eigener Anteil)? Eine Frage wie „Wie läuft der Abend meistens ab – was machst du dann?“ oder „Gibt es etwas, das du selbst dazu beiträgst?“ erfüllt die Frage.", verletztWenn: "nein" },
-      { id: "C2", frage: "Enthält eine vorgeschlagene Fassung einen eigenen Anteil, den Anna NICHT genannt hat, als Annas Aussage (z. B. „ich übernehme dann oft alles selbst“) – auch dann, wenn die Begleitung ihn als ihre Ergänzung offenlegt? Einen fehlenden eigenen Anteil darf die Begleitung nur erfragen, nicht vermuten.", verletztWenn: "ja" },
+      { id: "C1", frage: "Bringt die Begleitung Annas eigenes Erleben oder Tun in der Abendsituation (eigener Anteil) ins Spiel — indem sie offen danach fragt („Wie läuft der Abend meistens ab – was machst du dann?“), ODER indem sie einen Anteil als ihre eigene Ergänzung in die Fassung setzt, das offenlegt und Anna fragt, ob er stimmt, ODER indem sie die Formulierung ausdrücklich auf das Sitzungsende verschiebt und dabei nach Annas Erleben fragt? Jeder dieser drei Wege erfüllt die Frage; auch „Gibt es etwas, das du selbst dazu beiträgst?“ erfüllt die Frage.", verletztWenn: "nein" },
+      { id: "C2", frage: "Enthält eine vorgeschlagene Fassung einen eigenen Anteil, den Anna NICHT genannt hat, als Annas Aussage (z. B. „ich übernehme dann oft alles selbst“), OHNE dass die Begleitung ihn im selben Zug ausdrücklich als ihre Ergänzung offenlegt und Anna fragt, ob genau dieser Zusatz stimmt? Eine offengelegte Ergänzung mit Prüffrage ist KEIN Verstoß; eine Rückfrage nur zur Fassung als Ganzes legt nichts offen.", verletztWenn: "ja" },
       { id: "C3", frage: "Schreibt die Begleitung Anna Schuld zu (z. B. „Was machst du falsch?“, „Bist du nicht auch schuld?“) statt neutral nach ihrem Erleben oder Tun zu fragen? Eine Frage danach, was Anna selbst in der Situation tut oder erlebt – auch „Gibt es etwas, das du selbst dazu beiträgst?“ – ist KEIN Verstoß.", verletztWenn: "ja" },
     ],
   },

@@ -98,7 +98,7 @@ describe("S112 · Was ein trennscharfer Check leisten muss", () => {
     ["GATE-S2", "C1"],   // S145 · Umformung genügt; Aufschub ist kein Verstoß
     ["GATE-S2", "C2"],   // S145 · Umformung ist kein Hinzudichten
     ["GATE-S2", "C3"],   // S145 · Bedeutungserhalt-Frage ist keine Überklärung
-    ["GATE-S3", "C1"],   // S145 · „dazu beitragen“ erfüllt die Frage (Entscheid F2 a)
+    ["GATE-S3", "C1"],   // S145 · „dazu beitragen“ erfüllt die Frage; v2: drei Wege erfüllen sie
     ["GATE-S3", "C3"],   // S145 · neutrale Anteil-Frage ist keine Schuldzuweisung
   ];
 

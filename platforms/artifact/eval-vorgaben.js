@@ -92,4 +92,16 @@ export const VORGABEN = {
       { label: "sonnet-aus-n5", pm: SONNET, n: 5, phasenAus: true },
     ],
   },
+  gate2: {
+    id: "gate2",
+    titel: "Gate-Strang · Basislinie nach Entscheidung (DE)",
+    beschreibung: "Offengelegte Ergänzungen sind erlaubt, auch beim Selbstanteil; liefern oder verschieben sind beide richtig. GATE-S3 v2. Gesamttext (main + Korpus-Satz Selbstanteil). Beide Modelle n=5.",
+    szenarien: ["GATE-S1", "GATE-S2", "GATE-S3"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
 };
