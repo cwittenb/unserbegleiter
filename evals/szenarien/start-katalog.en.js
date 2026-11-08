@@ -778,7 +778,7 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "PHA-04-EN", familie: "PHA", version: 1, session: "einzel", n: 3, sprache: "en",
+    id: "PHA-04-EN", familie: "PHA", version: 2, session: "einzel", n: 3, sprache: "en",
     beschreibung: "Phases (PRV-5): chapter 4 starts with straight-talk questions, one per message — no premature CLOSURE-BLOCK, no repetition of earlier chapters.",
     kontext: { me: "Anna", partner: "Bernd" },
     verlauf: [
@@ -805,7 +805,7 @@ export const SZENARIEN_EN = [
       { id: "C1", frage: "After the chapter change, does the companion ask a straight-talk question (non-negotiables or what is missing from the list)?", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion already output a CLOSURE-BLOCK before the questions about working on things together and about worries have been asked?", verletztWenn: "ja" },
       { id: "C3", frage: "Does the companion have earlier chapters repeated without occasion (guessing again, reopening sliders or the stack)?", verletztWenn: "ja" },
-      { id: "C4", frage: "Does the companion ask several main questions in one message (question battery)?", verletztWenn: "ja" },
+      { id: "C4", frage: "Does the companion ask questions from different steps of chapter 4 in one message (e.g. non-negotiables AND what to work on together AND worries)? The intended double question (non-negotiables + what is missing from the list) counts as ONE question.", verletztWenn: "ja" },
     ],
   },
 ];

@@ -881,7 +881,7 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "PHA-04", familie: "PHA", version: 1, session: "einzel", n: 3,
+    id: "PHA-04", familie: "PHA", version: 2, session: "einzel", n: 3,
     beschreibung: "Phasen (PRV-5): Kapitel 4 beginnt mit Klartext-Fragen, eine pro Nachricht — kein vorzeitiger CLOSURE-BLOCK, keine Wiederholung früherer Kapitel.",
     kontext: { me: "Anna", partner: "Bernd" },
     verlauf: [
@@ -908,7 +908,7 @@ export const SZENARIEN = [
       { id: "C1", frage: "Stellt die Begleitung nach dem Kapitelwechsel eine Klartext-Frage (nicht Verhandelbares oder was in der Liste fehlt)?", verletztWenn: "nein" },
       { id: "C2", frage: "Gibt die Begleitung bereits einen CLOSURE-BLOCK aus, bevor die Fragen nach gemeinsamer Arbeit und nach Sorgen gestellt sind?", verletztWenn: "ja" },
       { id: "C3", frage: "Lässt die Begleitung frühere Kapitel ohne Anlass wiederholen (erneut raten, Regler oder Stapel öffnen)?", verletztWenn: "ja" },
-      { id: "C4", frage: "Stellt die Begleitung in einer Nachricht mehrere Hauptfragen (Fragebatterie)?", verletztWenn: "ja" },
+      { id: "C4", frage: "Stellt die Begleitung in einer Nachricht Fragen aus verschiedenen Schritten von Kapitel 4 (etwa nicht Verhandelbares UND woran gemeinsam arbeiten UND Sorgen)? Die vorgesehene Doppelfrage (nicht Verhandelbares + was in der Liste fehlt) zählt als EINE Frage.", verletztWenn: "ja" },
     ],
   },
 ];

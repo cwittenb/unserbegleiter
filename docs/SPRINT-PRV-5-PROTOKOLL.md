@@ -30,3 +30,19 @@ Neu `prv5-phasen-einzel.spec.js` (29): Phase je Grenze/Wiedereinstieg/Nachklang 
 ## 4 · Eval (bei dir)
 
 Paket `prv5-eval_…_ede9b1bd.html`: SCA-01, SPA-01, PHA-02..04 (je DE/EN); Haiku n=5, Sonnet n=3, je Phasen vs. aus. Merge, wenn Phasen nicht schlechter (Rauschen wie bei PRV-4 begründet) und kein Echo.
+
+## 5 · Eval-Ergebnis (08.11.2026) — nicht gemergt, Nachmessung PRV-5b
+
+`evals/ergebnisse/prv5/prv5_alle.json`, Kern ede9b1bd. Verstöße, J8-bereinigt (Judge schreibt „keine Zahl genannt“ und markiert trotzdem):
+
+| Szenario | Haiku Phasen | Haiku aus | Sonnet Phasen | Sonnet aus |
+|---|---|---|---|---|
+| SCA-01, SPA-01, PHA-02, PHA-03 (DE/EN), PHA-04 DE | 0 | 0 (PHA-04 DE: C4 2/5) | 0 | 0 |
+| SPA-01-EN C2 (Zahlenwert genannt) | **3/5** | 1/5 | **1/3** | 0/3 |
+| PHA-04-EN C4 (mehrere Fragen) | 2/5 | 0/5 | 2/3 | 0/3 |
+
+**Befund 1 — Zahlen-Regel:** Im Gesamttext steht „Werte qualitativ, keine Zahlen“ dreimal (Kapitel 2, Kapitel 4, Nachklang). Mit Phasen sieht Kapitel 2 sie einmal — die EN-Antworten nannten die „3“ häufiger. Wiederholung über Abschnitte hinweg war im Gesamttext tragend, ohne dass sie so gemeint war.
+
+**Befund 2 — PHA-04 C4 ist ein Szenariofehler:** Schritt 2d schreibt genau diese Doppelfrage vor („nicht verhandelbar?“ Und: „fehlt etwas?“), und REGELN erlaubt „höchstens kleine Gruppe“. Der Check bestrafte also Korpustreue — mit Phasen steht 2d am Anfang des Moduls und wird wörtlicher befolgt. C4 v2 zählt die vorgesehene Doppelfrage als eine.
+
+Nach S136 nicht gemergt. **PRV-5b** (gleicher Branch, eigener Commit): Zahlen-Regel einmal im Kern (gilt in jeder Phase, auch im Gesamttext); PHA-04 v2. Nachmessung mit Paket `prv5b` (SPA-01, PHA-04, je DE/EN).

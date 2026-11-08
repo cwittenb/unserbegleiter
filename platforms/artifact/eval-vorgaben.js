@@ -64,4 +64,18 @@ export const VORGABEN = {
       { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
     ],
   },
+  prv5b: {
+    id: "prv5b",
+    titel: "PRV-5b · Phasen einzel, Nachmessung",
+    beschreibung: "Nachmessung nach PRV-5: Zahlen-Regel jetzt einmal im Kern (gilt in jeder Phase); PHA-04 C4 v2 (die vorgesehene Doppelfrage zählt als eine). Phasen vs. aus.",
+    szenarien: ["SPA-01", "SPA-01-EN", "PHA-04", "PHA-04-EN"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n3", pm: SONNET, n: 3 },
+      { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
+    ],
+  },
 };
