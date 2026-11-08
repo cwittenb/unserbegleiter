@@ -83,7 +83,7 @@ describe("Eval · Welche Session bekommt welchen Haken", () => {
 
 /* ═══════════ Die Schärfung im Lauf ═══════════ */
 
-describe("Eval · Die Schärfung geht in den SYSTEMTEXT, nie in den Verlauf", () => {
+describe("Eval · Die Schärfung reist als Regie an der letzten Nachricht (PRV-3), nie im Systemtext, nie im Verlauf", () => {
   const MRV = () => SZ({
     session: "moment", id: "TST-MRV",
     eingaben: [
@@ -95,8 +95,11 @@ describe("Eval · Die Schärfung geht in den SYSTEMTEXT, nie in den Verlauf", ()
   it("mit Flag: der zweite Zug trägt den Zusatz, der erste nicht", async () => {
     const pipe = pipeline([SAUBER, SAUBER]);
     const t = await spieleSample(pipe, MRV(), { waechter: true });
-    expect(pipe.calls[0].system).not.toContain("APP-HINWEIS");
-    expect(pipe.calls[1].system).toContain("keine Leitung");
+    const regie = c => (([...c.messages].reverse().find(m => m.role === "user") || {}).regie) || "";
+    expect(regie(pipe.calls[0])).toBe("");
+    expect(regie(pipe.calls[1])).toContain("keine Leitung");
+    // Invertiert seit PRV-3: Der Systemtext bleibt je Zug gleich.
+    for (const c of pipe.calls) expect(c.system).not.toContain("APP-HINWEIS");
     // Und der Verlauf bleibt sauber — der Zusatz ist kein Gesprächszug.
     expect(JSON.stringify(t)).not.toContain("APP-HINWEIS");
   });
@@ -105,6 +108,7 @@ describe("Eval · Die Schärfung geht in den SYSTEMTEXT, nie in den Verlauf", ()
     const pipe = pipeline([SAUBER, SAUBER]);
     await spieleSample(pipe, MRV(), {});
     for (const c of pipe.calls) expect(c.system).not.toContain("APP-HINWEIS");
+    for (const c of pipe.calls) for (const m of c.messages) expect(m.regie).toBeUndefined();
   });
 
   it("der Zusatz gilt je Zug — er hängt nicht am Lauf", async () => {
@@ -113,8 +117,11 @@ describe("Eval · Die Schärfung geht in den SYSTEMTEXT, nie in den Verlauf", ()
     sz.eingaben = [...sz.eingaben, "Anna: Erzähl mal, wie war deine Woche?"];
     const pipe = pipeline([SAUBER, SAUBER, SAUBER]);
     await spieleSample(pipe, sz, { waechter: true });
-    expect(pipe.calls[1].system).toContain("keine Leitung");
-    expect(pipe.calls[2].system).not.toContain("keine Leitung");
+    const regie = c => (([...c.messages].reverse().find(m => m.role === "user") || {}).regie) || "";
+    expect(regie(pipe.calls[1])).toContain("keine Leitung");
+    expect(regie(pipe.calls[2])).not.toContain("keine Leitung");
+    // Die Regie des zweiten Zugs haengt im dritten nicht an der damaligen Nachricht.
+    expect(pipe.calls[2].messages.some(m => m.regie && m !== pipe.calls[2].messages.at(-1))).toBe(false);
   });
 });
 

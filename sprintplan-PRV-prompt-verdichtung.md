@@ -24,6 +24,19 @@ Leitplanken (gelten für alle Schritte):
 | PRV-7 | Phasen `solo`/`moment` (Einstieg/Mitte/Abschluss + Trigger) | Engine/Korpus | L | wie PRV-5, RCL-02/02b |
 | PRV-8 (offen) | Schema-Zwang nur am deterministischen Abschlusszug | Engine/LLM | M | ST-Kanarie umgestellt, AUS/ERO |
 
+## Stand (08.11.2026)
+
+| Schritt | Status |
+|---|---|
+| PRV-0, 1a, 1b, 1c | main |
+| PRV-1d (Ich-Beispiele ganz raus) | **zurückgenommen** (S136): DE-Eröffnungen gestreut (Spitze 100 % → 27 %), aber Prädikatsurteile zurück (SYC C1 DE 0 → 6/10, MOM 0 → 2/5). Lehre: ein Beispiel wird kopiert, kein Beispiel lässt das Urteil zurück. |
+| PRV-2 (Dedup) | wandert in PRV-1e (gleiche Bausteine, gemeinsamer Eval) |
+| PRV-3 (Regie-Transport) | main (Haiku-A/B; Sonnet-Arme im nächsten Paket nachgereicht) |
+| PRV-1e (Spektrum statt Einzelbeispiel) | in Arbeit |
+| PRV-3b Zustandsobjekt | offen |
+
+Lieferform seit PRV-1b: Git-Branch je Sprint, Merge nach Eval. Eval-Pakete: `node scripts/build-eval-vorgaben.js <id>`.
+
 ## PRV-0 · Vermessung und Kanarie
 
 Scope: `scripts/prompt-masse.js` misst je Art × Sprache (später × Phase): Zeichen, ≈Token, Zeilen > 600 Z., CAPS-Wörter, Sprint-Referenzen `(S\d+)`, Wiederholungen bekannter Regelsätze (konfigurierbare Phrasenliste), Anteil JSON-Spezifikation. Ausgabe als `evals/ergebnisse/prompt-masse.json` und Tabelle auf stdout.

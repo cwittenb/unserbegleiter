@@ -26,4 +26,6 @@ createEvalApp({
   root: document.getElementById("app"),
   szenarien: [...SZENARIEN, ...SZENARIEN_EN],
   machAdapter,
+  // Eval-Paket (scripts/build-eval-vorgaben.js) — sonst undefiniert.
+  vorgabe: typeof window !== "undefined" ? window.__EVAL_VORGABE__ : undefined,
 });

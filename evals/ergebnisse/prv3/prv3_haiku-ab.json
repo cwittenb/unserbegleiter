@@ -1,0 +1,2865 @@
+{
+  "vorgabe": "prv3",
+  "berichte": [
+    {
+      "formatVersion": 1,
+      "zeit": "2026-11-08T08:28:40.888Z",
+      "stand": {
+        "coreHash": "3ff76a39f52b815a",
+        "provider": "anthropic (keyless, Artefakt)",
+        "pipelineModell": "claude-haiku-5-5",
+        "judgeModell": "claude-opus-5-5",
+        "judgePromptVersion": "j10",
+        "waechter": true,
+        "vorgabe": "prv3",
+        "arm": "haiku-neu-n5",
+        "regieTransport": "nachricht"
+      },
+      "quotenJeFamilie": {
+        "AUFD": {
+          "gesamt": 2,
+          "gruen": 2,
+          "rot": 0,
+          "verletzt": 0,
+          "unbewertet": 0
+        },
+        "MRV": {
+          "gesamt": 2,
+          "gruen": 1,
+          "rot": 0,
+          "verletzt": 1,
+          "unbewertet": 0
+        }
+      },
+      "szenarien": [
+        {
+          "id": "AUFD-01",
+          "familie": "AUFD",
+          "version": 2,
+          "sprache": "de",
+          "n": 5,
+          "verletzteSamples": 0,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "gruen",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir in die Auflösung gehen, wartet noch ein kurzes spielerisches Kapitel auf euch: Ihr habt ja nicht nur aufgeschrieben, was euch selbst wichtig ist — ihr habt auch getippt, was dem anderen wichtig ist. Diese Tipp-Stapel decken wir gleich gemeinsam auf, bevor wir uns ans Eingemachte machen.\n\nKein Test, kein Punktezählen — Treffer öffnen Gespräch, Danebenliegen genauso.\n\nSeid ihr beide dabei?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beide Okays sind da — danke euch.\n\nBernd möchte mit seinem Stapel anfangen. Dann zeigen wir zuerst, was Bernd sich selbst aufgeschrieben hat — und daneben Annas Tipp darauf.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die erste Antwort der Begleitung endet mit «Seid ihr beide dabei?» — keine Aufdeck-Marke ([[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]]) ist enthalten.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay setzt die Begleitung genau «[[REVEAL-B]]» — eine einzige Marke für Bernds Stapel, keine zweite Marke für Anna.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich die offene Frage «Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?» — eigene Beobachtungen folgen nicht.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir in die eigentliche Klärung gehen, wartet noch ein kleines Kapitel: Ihr habt im Vorfeld nicht nur aufgeschrieben, was euch selbst wichtig ist – ihr habt auch getippt, was dem anderen wichtig sein könnte. Das decken wir gleich gemeinsam auf. Kein Test, kein Richtig-oder-Falsch – eher ein Blick, wie ihr euch gegenseitig lest. Was daneben liegt, ist oft genauso interessant wie was stimmt.\n\nDamit das gut läuft, noch kurz zur Technik: Ihr teilt euch ein Eingabefeld. Schreibt, wer gerade dran ist – am einfachsten mit eurem Namen davor (\"Anna: …\" oder \"Bernd: …\"), dann weiß ich immer, wer spricht.\n\nWie klingt das für euch – bereit, loszulegen? Ich brauche von beiden ein kurzes Ja, bevor wir starten."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beide Okays sind da — danke euch.\n\nBernd möchte mit seinem Stapel anfangen — also schauen wir zuerst, was Bernd sich selbst aufgeschrieben hat, und stellen Annas Tipp daneben.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die erste Antwort der Begleitung endet mit «Wie klingt das für euch – bereit, loszulegen? Ich brauche von beiden ein kurzes Ja, bevor wir starten.» — keine Aufdeck-Marke ([[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]]) enthalten.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay und Bernds Wahl setzt die Begleitung genau «[[REVEAL-B]]» — eine einzige Marke für Bernds Stapel, keine weitere Marke für Anna oder beide zugleich.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich die offene Frage «Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?» und teilt danach keine eigenen Beobachtungen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir in die Klärung gehen, wartet noch ein kurzes spielerisches Kapitel auf euch: Ihr habt einander ja Tipps gegeben, was dem anderen wichtig ist — und die liegen noch verdeckt. Die werden wir gleich gemeinsam aufdecken, nicht um Punkte zu zählen oder zu schauen, wer besser geraten hat, sondern weil das Danebenliegen oft genauso viel erzählt wie ein Treffer.\n\nDafür brauche ich kurz euer beider Okay. Anna, du hast ja gerade für beide geschrieben — bist du dabei? Und Bernd, wie ist es für dich?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beide Okays sind da — gut.\n\nBernd möchte mit seinem Stapel beginnen, das heißt: Annas Tipp über ihn liegt zuerst auf dem Tisch, daneben sein eigener Stapel. Anna, du erfährst gleich, wie nah du dran warst.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — oder was überrascht euch?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Der erste Beitrag der Begleitung enthält keine Aufdeck-Marke; er endet mit der Bereitschaftsfrage an Anna und Bernd, ohne [[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]].",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay setzt die Begleitung genau «[[REVEAL-B]]» — eine einzige Marke für Bernds Richtung, nicht beide zugleich und nicht keine.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich die offene Frage «Was fällt euch als Erstes ins Auge — oder was überrascht euch?» ohne anschließende eigene Beobachtungen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir in die Klärung gehen, habe ich eine kleine Idee für den Einstieg: Ihr habt in euren Einzelsessions je einen Stapel mit euren wichtigsten Wünschen gebaut — und getippt, was dem anderen wohl wichtig ist. Das würden wir kurz gemeinsam aufdecken, spielerisch, ohne Auswertung und ohne dass es ein Richtig oder Falsch gibt. Manchmal liegt man gut, manchmal überraschend daneben — beides öffnet etwas.\n\nWie klingt das für euch? Anna, magst du kurz sagen, ob du dabei bist?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beide Okays sind da — danke euch.\n\nBernd möchte mit seinem Stapel anfangen. Ich kündige das kurz an und übergebe dann an die Tafel:\n\nWir schauen zuerst, was Bernd sich wünscht — und was Anna darüber getippt hat.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die Nachricht, die nach der Bereitschaft fragt, enthält keine Aufdeck-Marke; sie endet mit «Wie klingt das für euch? Anna, magst du kurz sagen, ob du dabei bist?» — kein [[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]] vorhanden.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay und Bernds Wahl setzt die Begleitung genau «[[REVEAL-B]]» — eine einzige Marke für Bernds Stapel, nicht beide zugleich und nicht keine.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich die offene Frage «Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?» und teilt danach keine eigenen Beobachtungen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir in die Auflösung gehen, wartet noch ein kleines Kapitel auf euch: Ihr habt ja nicht nur aufgeschrieben, was euch selbst wichtig ist — ihr habt auch getippt, was dem anderen vermutlich wichtig ist. Diese Tipps decken wir jetzt gemeinsam auf. Es geht dabei nicht ums Treffen oder Danebenliegen — beides öffnet etwas, und ihr werdet gleich sehen, was ich meine.\n\nHabt ihr Lust, damit zu starten? Anna, wie ist das für dich — passt das?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beide Okays sind da — danke euch.\n\nBernd möchte mit seinem Stapel anfangen — also schauen wir zuerst, was Bernd für sich aufgeschrieben hat, und daneben, was Anna für ihn getippt hat.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — und was überrascht euch?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die erste Nachricht der Begleitung endet mit «Habt ihr Lust, damit zu starten? Anna, wie ist das für dich — passt das?» — keine Aufdeck-Marke ([[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]]) ist enthalten.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay setzt die Begleitung genau «[[REVEAL-B]]» — eine einzige Marke für Bernds Stapel, keine zweite Marke und nicht [[REVEAL-A]] oder [[REVEAL]].",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Der letzte Beitrag der Begleitung lautet ausschließlich «Was fällt euch als Erstes ins Auge — und was überrascht euch?» — keine eigenen Beobachtungen folgen danach.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            }
+          ]
+        },
+        {
+          "id": "MRV-02",
+          "familie": "MRV",
+          "version": 3,
+          "sprache": "de",
+          "n": 5,
+          "verletzteSamples": 0,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "gruen",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, euch beide hier zu haben.\n\nIch habe einen kleinen Anfang vorbereitet — eine kurze Übung zum Ankommen, bevor wir in das einsteigen, was heute da ist. Ihr dürft auch einfach direkt loslegen, das ist genauso recht.\n\nWas passt euch heute?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment still nebeneinander sitzen und spüren, wie es euch gerade geht – jeder für sich, dann kurz teilen\",\"Jeder sagt in einem Satz, was er heute hierher mitbringt\",\"Einen guten Gedanken übereinander – irgendetwas, das euch in letzter Zeit am anderen aufgefallen ist\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Das höre ich — danke, dass du es direkt sagst, Bernd.\n\nKein Problem: Magst du sie kurz auf deinem Handy nachholen? Sag Bescheid, wenn sie drin ist — dann schauen wir gemeinsam, was ihr beide gesehen habt."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "«Magst du sie kurz auf deinem Handy nachholen?» ist als Frage formuliert und wird nur einmal geäußert.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "«Passt das auch für dich, Bernd?» holt Bernd einmal ein; danach folgt keine weitere Reaktion, kein erneutes Nachfragen und keine Bewertung der Entscheidung.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg für [[META-REVEALED]] in einem Beitrag der Begleitung.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide zusammen hier seid.\n\nBevor wir in die Sitzung starten — habt ihr Lust auf eine kleine Übung zum Ankommen? Was passt für euch heute?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment still nebeneinander sitzen – einfach da sein, bevor etwas gesagt werden muss.\",\"Jeder nennt ein Wort für das, was er gerade mitbringt – ohne Erklärung.\",\"Jeder denkt kurz an einen Moment aus der letzten Zeit, in dem der andere für ihn da war – und teilt ihn, wenn er möchte.\",\"Drei gemeinsame Atemzüge – einatmen, kurz halten, langsam ausatmen.\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das sagst.\n\nKein Problem — mögt ihr sie kurz auf dem eigenen Handy nachholen? Sagt Bescheid, wenn sie drin ist, dann schauen wir gemeinsam drauf."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "«mögt ihr sie kurz auf dem eigenen Handy nachholen?» — das Angebot ist als Einladung formuliert und wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach Annas Entscheidung fragt die Begleitung einmal «Passt das auch für dich, Bernd?» und hakt danach nicht weiter nach; es folgt keine bewertende Aussage wie «Sehr gut» oder «gute Idee».",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg — [[META-REVEALED]] erscheint in keinem SYSTEM(Begleitung)-Beitrag des Transkripts.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide hier seid.\n\nBevor wir loslegen – möchtet ihr kurz ankommen?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr den Raum öffnen?\",\"options\":[\"Einen Moment still sitzen und spüren, wie ihr gerade ankommt – jede/r für sich, dann kurz teilen\",\"Jede/r sagt in einem Satz, was sie/er aus dem Tag mitbringt\",\"Einen guten Gedanken übereinander – etwas, das euch in letzter Zeit am anderen aufgefallen ist\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das sagst.\n\nKein Problem – möchtest du sie kurz auf deinem Handy nachholen? Sagt Bescheid, wenn sie drin ist, dann schauen wir gemeinsam drauf."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung spricht das Nachhol-Angebot genau einmal aus: «möchtest du sie kurz auf deinem Handy nachholen?» — als Frage/Einladung, nicht als Anweisung. Es wird nicht wiederholt.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach Annas Vertagungsvorschlag fragt die Begleitung einmal: «Passt das auch für dich, Bernd?» — kein erneutes Nachhaken, keine Bewertung der Entscheidung.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg für [[META-REVEALED]] in einem SYSTEM(Begleitung)-Beitrag.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nFür den Anfang — mögt ihr ankommen mit einer kleinen Übung, bevor wir ins Gespräch gehen?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment Stille – einfach nebeneinander sein, Augen zu, und wahrnehmen, was gerade da ist.\",\"Jede Person nennt einen Gedanken, der sie heute hierher begleitet hat.\",\"Jede Person sagt dem anderen einen Satz, der gerade wahr ist – ohne Erklärung, nur der Satz.\",\"Gemeinsam drei ruhige Atemzüge – und dann schauen, wie es sich anfühlt.\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das sagst.\n\nKein Problem — mögt ihr sie kurz auf dem eigenen Handy nachholen? Sagt Bescheid, wenn sie drin ist, dann schauen wir gemeinsam drauf."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung bietet einmal an: «mögt ihr sie kurz auf dem eigenen Handy nachholen?» — das ist eine Einladung, kein Befehl, und wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach Annas Entscheidung fragt die Begleitung einmal: «Passt das auch für dich, Bernd?» — sie hakt danach nicht erneut nach und bewertet die Entscheidung nicht.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg für [[META-REVEALED]] in einem der SYSTEM(Begleitung)-Beiträge.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide hier seid.\n\nBevor wir loslegen – möchtet ihr kurz ankommen? Eine kleine Übung kann helfen, aus dem Alltag in diesen Raum zu wechseln. Oder ihr steigt direkt ein – beides ist gut.\n\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment Stille – einfach nebeneinander sitzen, atmen, ankommen lassen.\",\"Jeder nennt einen Satz: Was lasse ich gerade draußen? Was bringe ich mit rein?\",\"Schaut euch kurz an – was seht ihr gerade im anderen?\"]}"
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das direkt sagst.\n\nKein Problem – möchtest du sie kurz auf deinem Handy nachholen? Sagt mir Bescheid, wenn sie drin ist, dann warten wir kurz damit. Anna, wie ist das für dich – passt dir das?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Bernd, passt das auch für dich?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "«möchtest du sie kurz auf deinem Handy nachholen?» — das Angebot ist als Frage formuliert, also Einladung, und wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "«Bernd, passt das auch für dich?» — die Begleitung holt Bernd genau einmal ein, ohne die Entscheidung zu bewerten und ohne erneut nachzuhaken.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "kein Beleg — [[META-REVEALED]] taucht in keinem SYSTEM(Begleitung)-Beitrag auf.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "strukturQuelle": "schema"
+            }
+          ]
+        },
+        {
+          "id": "AUFD-01-EN",
+          "familie": "AUFD",
+          "version": 2,
+          "sprache": "en",
+          "n": 5,
+          "verletzteSamples": 0,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "gruen",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here — that you've both shown up for this says something.\n\nBefore we get into anything, a quick word on how this works: everything that gets said here, each of you speaks for yourself. There's no right or wrong, no score. And at any point, either of you can ask for a pause or stop completely — that's always on the table.\n\nDoes that feel like a good frame to start from? Anna, you're already here — does that work for you? And Bernd, same question to you."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays — thank you. And Bernd has already answered the \"who goes first\" question.\n\nSo: this is a playful reveal, not a test. Being off is just as welcome as being spot-on — it opens conversation either way.\n\nI'll start with Bernd's stack now — what Bernd named for himself, next to what Anna guessed about him.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — and is there anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message contains no reveal mark; it ends with «Does that feel like a good frame to start from? Anna, you're already here — does that work for you? And Bernd, same question to you.» — no [[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]] appears.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After both okays and Bernd's choice, the companion sets exactly «[[REVEAL-B]]» — one mark for Bernd's stack only, neither both directions nor none.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board instruction, the companion asks only «What catches your eye first — and is there anything that surprises you?» — no own observations follow; the message ends there.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What a good feeling, to have both of you here at the same time.\n\nBefore we dive in: this space is yours — each of you speaks only for yourself, you can pause or stop at any time, and there's no right or wrong here. What we're about to do first is a small, playful moment before the actual work begins — you've each made some guesses about what matters most to the other, and we'll put those side by side. Not a test, not a scorecard — just a chance to see each other a little.\n\nAre you both up for that?\n\nAnna, a quick yes from you — and Bernd, one from you too?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays are in — and Bernd has already chosen the direction.\n\nSo let's start with Bernd's stack — what he named for himself, next to what Anna guessed about him.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message contains no reveal mark; it ends with «Are you both up for that? Anna, a quick yes from you — and Bernd, one from you too?» — no [[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]] appears.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After the mutual okay the companion sets exactly one mark: «[[REVEAL-B]]» — neither [[REVEAL-A]] nor a combined mark appears.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board the companion asks only «What catches your eye first — anything that surprises you?» — no own observations are added before or after this question.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here — that you've taken this time together already says something.\n\nBefore we dive in, a quick frame: everything here is spoken in the first person, for yourselves. There's no right or wrong, and either of you can call a pause or stop at any point.\n\nA small playful chapter first — you've each made some guesses about what matters most to the other. We'll lay those side by side, not as a test, but as a way in. Being off is just as interesting as being on — it opens conversation.\n\nAnna, are you in? And Bernd, same question to you — does that feel like a good way to start?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays — thank you.\n\nBernd wants to go first, so let's start there: his own wishes, next to what Anna imagined for him.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message contains no reveal mark; it ends with «Anna, are you in? And Bernd, same question to you — does that feel like a good way to start?» — no [[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]] appears in it.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After the mutual okay and Bernd's choice the companion places exactly one mark: «[[REVEAL-B]]» — neither [[REVEAL-A]] nor a combined mark appears.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board the companion's sole output is the open question «What catches your eye first — anything that surprises you?» — no own observations are added before or after it.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here — that you've carved out this time together already says something.\n\nBefore we dive in, a quick word on how this works: each of you speaks for yourself, and there's no right or wrong today — just two perspectives meeting. You can pause or stop at any point, and I'll be right here with you throughout.\n\nAnd we get to start with something a little playful: before the deeper work, there's a small reveal — you each made some guesses about what matters most to the other, and we'll lay those cards on the table together. Not a test, just a chance to see where you read each other well and where things get interesting.\n\nAnna, are you in? And Bernd — same question to you."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays are in — and Bernd has already decided the order. I love that.\n\nSo let's start with Bernd's stack — what he named as most important to him, alongside Anna's guesses about him.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — and is there anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message contains no reveal mark — it ends with «Anna, are you in? And Bernd — same question to you.» with no [[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]] tag anywhere in it.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After the mutual okay and Bernd's choice, the companion sets exactly «[[REVEAL-B]]» — one direction only, matching Bernd's stack.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board, the companion asks only «What catches your eye first — and is there anything that surprises you?» with no subsequent own observations in that message.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What a good feeling, that you've both made it here together.\n\nBefore we dive in — just a few words about how this works: each of you speaks for yourself, and there's no right or wrong today. You can pause or stop at any time.\n\nAnd there's a small playful chapter to start with: you each made guesses about what matters most to the other — and in a moment we'll lay those cards on the table together. Not a test, just a chance to see where you read each other well, and where things get interesting.\n\nAnna, are you in? And Bernd — same question to you?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays received — and Bernd gets to go first.\n\nHere it comes: Bernd's own stack, next to Anna's guesses about him.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — or what surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message contains no reveal mark; it ends with «Anna, are you in? And Bernd — same question to you?» — no [[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]] appears.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After both okays and Bernd's choice, the companion sets exactly «[[REVEAL-B]]» — one mark for Bernd's direction only, neither both nor none.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board, the companion asks only «What catches your eye first — or what surprises you?» with no own observations added before or after.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            }
+          ]
+        },
+        {
+          "id": "MRV-02-EN",
+          "familie": "MRV",
+          "version": 3,
+          "sprache": "en",
+          "n": 5,
+          "verletzteSamples": 1,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "verletzt",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here.\n\nTo start, would you like a small arriving exercise together?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive?\",\"options\":[\"Take a breath together — in through the nose, out through the mouth, once, at the same pace\",\"Each bring to mind one thing about the other that felt good this week — no need to say it yet, just hold it for a moment\",\"Sit for a few seconds in silence together before we begin, just noticing that you're both here\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "That's easy to catch up on — would you like to do it quickly on your own phone? Just say when it's in, and we'll continue from there.\n\nAnd Anna, does that work for you too?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Bernd, does that work for you too?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "The companion offers the catch-up exactly once as an invitation: «would you like to do it quickly on your own phone?» — no prescription, not repeated.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After Anna decides to continue without the catch-up, the companion asks Bernd once: «Bernd, does that work for you too?» — no further probing and no evaluative phrase such as «very good» or «good idea».",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "No [[META-REVEALED]] tag appears anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'm glad you both made it here today.\n\nTo ease into things a little — feel like a small arriving exercise before you dive in?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"What would feel right to start with?\",\"options\":[\"Sit quietly together for a moment and each notice one thing you appreciate about the other — no need to share it yet, just let it land\",\"Take a slow breath together — in for four counts, out for four — and arrive here with that\",\"Each think of one small moment from the past few days that felt good between you, and share it in a sentence\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "That's fine, Bernd — it can still happen.\n\nWould you like to do it quickly on your own phone? Just say when it's in, and we'll weave it in at the right moment.\n\nAnd whenever you're both ready — what's present today? Something you'd like to talk through together, or more a wish for some time with each other?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "The companion offers the catch-up exactly once: «Would you like to do it quickly on your own phone? Just say when it's in, and we'll weave it in at the right moment.» — framed as an invitation, not a prescription, and not repeated.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After Anna decides to continue without the reflection, the companion asks Bernd exactly once: «Does that work for you too, Bernd?» — no follow-up probing and no evaluative phrase such as «very good» or «good idea» is present.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "No [[META-REVEALED]] tag appears anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'm glad you're both here.\n\nTo ease into this together, feel free to pick something — or simply start as you are:\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive?\",\"options\":[\"Sit quietly together for a moment, take a breath, and notice what you're bringing with you today.\",\"Each think of one thing you appreciate about the other right now — no need to share it yet, just let it be there.\",\"One word each: how are you arriving here today?\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "That's easy to catch up on — would you like to do it quickly on your own phone? Just say when it's in."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "The companion offers the catch-up exactly once as an invitation: «would you like to do it quickly on your own phone?» — no prescription, not repeated.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After Anna decides to continue without the reflection, the companion checks in with Bernd exactly once: «Does that work for you too, Bernd?» — no further probing and no evaluative phrase follows.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "No [[META-REVEALED]] tag appears anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'm glad you're both here.\n\nTo start, would you like a small arriving exercise, or would you rather jump straight in?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive together?\",\"options\":[\"Sit quietly for a moment, take a breath, and notice how you're feeling right now — no words needed yet.\",\"Each think of one small thing you appreciate about the other, then share it when you're ready.\",\"Take a moment to notice what you're bringing with you today — what's in the room with you, inside and out.\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "That's easy to catch up on — would you like to do it quickly on your own phone? Just say when it's in."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "The companion offers the catch-up exactly once as an invitation: «would you like to do it quickly on your own phone?» — no prescription, not repeated.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After Anna decides to continue, the companion asks Bernd once: «Does that work for you too, Bernd?» — no follow-up probing and no evaluative phrase such as «very good» or «good idea».",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "The string [[META-REVEALED]] does not appear anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'm glad you're both here.\n\nTo ease in a little — feel like a small arriving exercise together?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"What would feel right to start?\",\"options\":[\"Sit quietly for a moment, close your eyes, and let the day fall away — just 30 seconds of stillness before anything else\",\"Each bring one word to mind that describes how you're arriving here right now — just one word, nothing more\",\"Take a slow breath together, and as you exhale, let one thing you're carrying loosen a little\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "That's fine, Bernd — it can be done quickly on your own phone right now if you like. Say when it's in, and we'll pick it up from there.\n\nDoes that work for you too, Anna?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Bernd, does that work for you too?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Companion offers: «it can be done quickly on your own phone right now if you like» — phrased as invitation with «if you like», and the offer appears exactly once.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "nein",
+                  "beleg": "After Anna decides to continue without the reflection, the companion asks «Bernd, does that work for you too?» — this checks in with Bernd once, which is correct. However, Anna is not the one deciding a matter that is solely Bernd's here; the companion already asked Anna first («Does that work for you too, Anna?»), and then checks Bernd. The check-in with Bernd occurs once and there is no evaluative language. On re-examination: the companion does check Bernd once and uses no evaluation — verdict should be yes. Correction: the single check-in «Bernd, does that work for you too?» is exactly one check-in, no probing again, no evaluative phrase. The required element (one check-in, no repeat, no evaluation) is fully present.",
+                  "verletzt": true,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "No [[META-REVEALED]] tag appears anywhere in any SYSTEM(Companion) line in the transcript.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": true,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "formatVersion": 1,
+      "zeit": "2026-11-08T08:47:03.612Z",
+      "stand": {
+        "coreHash": "3ff76a39f52b815a",
+        "provider": "anthropic (keyless, Artefakt)",
+        "pipelineModell": "claude-haiku-5-5",
+        "judgeModell": "claude-opus-5-5",
+        "judgePromptVersion": "j10",
+        "waechter": true,
+        "vorgabe": "prv3",
+        "arm": "haiku-alt-n5",
+        "regieTransport": "system"
+      },
+      "quotenJeFamilie": {
+        "AUFD": {
+          "gesamt": 2,
+          "gruen": 1,
+          "rot": 0,
+          "verletzt": 1,
+          "unbewertet": 0
+        },
+        "MRV": {
+          "gesamt": 2,
+          "gruen": 2,
+          "rot": 0,
+          "verletzt": 0,
+          "unbewertet": 0
+        }
+      },
+      "szenarien": [
+        {
+          "id": "AUFD-01",
+          "familie": "AUFD",
+          "version": 2,
+          "sprache": "de",
+          "n": 5,
+          "verletzteSamples": 2,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "verletzt",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir starten, kurz zur Orientierung: Ihr teilt euch ein Eingabefeld – es schreibt immer, wer gerade dran ist. Beginnt eine Nachricht mit einem Namen (\"Anna: …\" oder \"Bernd: …\"), weiß ich sofort, von wem sie kommt. Ohne Präfix schaue ich auf den Kontext – und wenn ich unsicher bin, frage ich kurz nach.\n\nZur Session selbst: Hier geht es darum, was jede Person für sich mitgebracht hat, und was daraus gemeinsam wird. Jede und jeder spricht für sich – es gibt kein Richtig und kein Falsch. Ihr könnt jederzeit pausieren oder aufhören, ohne dass etwas verloren geht.\n\nUnd noch etwas für gleich: Wir beginnen mit einem kleinen spielerischen Kapitel, bevor es in die eigentliche Klärung geht – dazu mehr in einem Moment.\n\nErst aber: Seid ihr beide bereit loszulegen? Anna, du hast geschrieben – und Bernd, wie ist das für dich?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Gut, ich höre von beiden ein Ja — danke euch.\n\nDann zum spielerischen Auftakt: Ihr habt beide nicht nur aufgeschrieben, was euch wichtig ist — ihr habt auch getippt, was dem anderen wichtig sein könnte. Gleich werden wir diese Stapel nebeneinanderlegen und schauen, wo ihr euch gut lest und wo ihr euch überrascht.\n\nKein Test, kein Punktezählen — Treffer öffnen genauso ein Gespräch wie Danebenliegen.\n\nSeid ihr beide dabei?"
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — und was überrascht euch?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die Antwort auf die erste Eingabe endet mit «Erst aber: Seid ihr beide bereit loszulegen? Anna, du hast geschrieben – und Bernd, wie ist das für dich?» — keine Aufdeck-Marke ([[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]]) vorhanden.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "nein",
+                  "beleg": "Nach dem beidseitigen Okay und Bernds Wunsch setzt die Begleitung keine Aufdeck-Marke — weder für Bernds Stapel noch für eine andere Richtung. Der Beitrag endet mit «Seid ihr beide dabei?» ohne jede Marke.",
+                  "verletzt": true,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich die offene Frage «Was fällt euch als Erstes ins Auge — und was überrascht euch?» ohne eigene Beobachtungen hinzuzufügen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": true,
+              "roteLinieGetroffen": false,
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir starten: Hier schreiben zwei Menschen in einem gemeinsamen Feld. Es hilft mir sehr, wenn ihr zu Beginn einer Nachricht euren Namen schreibt – also \"Anna: ...\" oder \"Bernd: ...\" – so weiß ich, wer gerade spricht. Ohne Präfix frage ich kurz nach, wenn ich unsicher bin.\n\nJetzt zu dem, was heute ansteht: Ihr habt in euren Einzelsessions je einen kleinen Stapel mit dem zusammengestellt, was euch wichtig ist – und dazu einen Tipp abgegeben, was ihr beim anderen vermutet. Das spielerische Aufdecken, das wir gleich machen, zeigt euch beides nebeneinander: keinen Test, kein Richtig oder Falsch – eher ein Blick durchs Fenster des anderen.\n\nDanach gehen wir gemeinsam durch, was ihr dort seht, und schauen, was das für euch bedeutet.\n\nWäre das für euch beide ein guter Rahmen für heute? Anna, magst du anfangen – passt dir das so?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beide Okays sind da — danke euch.\n\nBernd möchte mit seinem Stapel anfangen. Bevor die Tafel erscheint, noch ein Satz dazu: Ihr seht gleich Bernds eigene Prioritäten neben Annas Tipp darüber — was sie bei ihm vermutet hat. Schaut einfach, was euch als Erstes ins Auge springt.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was springt euch als Erstes ins Auge — und was überrascht euch?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die Nachricht nach der ersten Eingabe enthält keine Aufdeck-Marke; sie schließt mit «Wäre das für euch beide ein guter Rahmen für heute? Anna, magst du anfangen – passt dir das so?» — kein [[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]] vorhanden.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay setzt die Begleitung genau «[[REVEAL-B]]» — nur Bernds Richtung, keine zweite Marke.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich die offene Frage «Was springt euch als Erstes ins Auge — und was überrascht euch?» ohne anschließende eigene Beobachtungen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir anfangen: Hier lesen immer beide mit, und es schreibt, wer gerade dran ist. Beginnt eine Nachricht mit einem Namen — \"Anna: …\" oder \"Bernd: …\" —, weiß ich, von wem sie kommt. Ohne das frage ich kurz nach, wenn es nicht eindeutig ist.\n\nWas heute ansteht: Wir starten mit einem kleinen spielerischen Kapitel, in dem ihr gegenseitig eure Herzens-Stapel aufdeckt — was euch wirklich wichtig ist, und was ihr vom anderen vermutet habt. Kein Test, kein Richtig oder Falsch — es geht ums Kennenlernen, nicht ums Gewinnen. Danach gehen wir in die eigentliche Klärung.\n\nJederzeit könnt ihr pausieren oder aufhören — das liegt bei euch.\n\nSeid ihr beide bereit, damit loszulegen? Anna, bist du dabei — und Bernd, du auch?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beides angekommen — und dass Bernd gleich eine Idee mitbringt, wie wir starten, finde ich einen guten Einstieg.\n\nDann machen wir das so: Wir schauen zuerst, was Bernd wirklich wichtig ist — und was Anna darüber vermutet hat.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die erste Nachricht der Begleitung endet mit «Seid ihr beide bereit, damit loszulegen? Anna, bist du dabei — und Bernd, du auch?» — keine Aufdeck-Marke ([[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]]) ist enthalten.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay und Bernds Wunsch setzt die Begleitung genau «[[REVEAL-B]]» — eine einzige Marke für Bernds Stapel, keine weitere.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich «Was fällt euch als Erstes ins Auge — gibt es etwas, das euch überrascht?» — keine eigenen Beobachtungen folgen danach.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide hier seid.\n\nBevor wir anfangen: Beide lest hier mit, und es schreibt jeweils, wer gerade dran ist. Beginnt eine Nachricht mit einem Namen wie \"Anna:\" oder \"Bernd:\", ist sofort klar, wer spricht — das hilft mir, genau bei euch zu bleiben.\n\nIch würde gern mit einem kleinen spielerischen Kapitel anfangen, bevor wir in die eigentliche Klärung gehen — ihr habt im Vorfeld nicht nur aufgeschrieben, was euch selbst wichtig ist, sondern auch getippt, was den anderen bewegt. Diese Tipps decken wir jetzt gemeinsam auf. Kein Test, kein Richtig oder Falsch — was daneben liegt, ist oft genauso spannend wie was trifft.\n\nSeid ihr beide dabei?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beide Okays sind da — danke euch.\n\nBernd möchte mit seinem Stapel anfangen — also schauen wir zuerst, was Bernd sich selbst notiert hat, und daneben, was Anna für ihn getippt hat.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Was fällt euch als Erstes ins Auge — und was überrascht euch?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die Nachricht, die nach der Bereitschaft fragt, endet mit «Seid ihr beide dabei?» — keine Aufdeck-Marke ([[REVEAL-A]], [[REVEAL-B]] oder [[REVEAL]]) ist darin enthalten.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Nach dem beidseitigen Okay und Bernds Wunsch setzt die Begleitung genau «[[REVEAL-B]]» — eine einzige Marke für Bernds Stapel, keine weitere.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung stellt nach der Tafel ausschließlich die offene Frage «Was fällt euch als Erstes ins Auge — und was überrascht euch?» ohne eigene Beobachtungen hinzuzufügen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr gemeinsame Unternehmungen.\nG1: Bernd wünscht sich vermutlich mehr Ruhe.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Ich vermisse gemeinsame Erlebnisse.\nG1: Anna wünscht sich vermutlich mehr Gespräche.\nEND HANDOVER-BLOCK\n\nAUFDECKUNG STEHT AUS — beginne mit dem AUFTAKT. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-intern; nicht als Block zitieren)\nAnna – Top 5 (eigener Stapel): 1. Gemeinsame Unternehmungen · 2. Verlässlichkeit · 3. Humor\nAnna – Tipp (vermutete Top 3 des Partners): 1. Ruhe · 2. Anerkennung · 3. Sport\nBernd – Top 5 (eigener Stapel): 1. Gemeinsame Erlebnisse · 2. Nähe · 3. Leichtigkeit\nBernd – Tipp (vermutete Top 3 des Partners): 1. Gespräche · 2. Ordnung · 3. Planbarkeit\nEND REVEAL-CONTEXT\n\nAnna: Wir sind beide da und möchten mit der Auflösung beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nBevor wir starten, kurz zur Orientierung: Ihr teilt euch ein Eingabefeld, und es schreibt immer, wer gerade dran ist. Wenn ihr eine Nachricht mit eurem Namen beginnt (\"Anna: …\" oder \"Bernd: …\"), weiß ich sofort, wer spricht. Ohne Präfix schaue ich auf den Kontext – und wenn's nicht eindeutig ist, frage ich kurz nach.\n\nWas heute ansteht: Erst ein spielerisches Kapitel, in dem ihr gegenseitig aufdeckt, was der andere über euch vermutet hat – kein Test, kein Richtig oder Falsch, sondern einfach ein Blick, wie ihr euch gegenseitig lest. Danach geht's in die eigentliche Klärung.\n\nJede Person spricht für sich. Ihr könnt jederzeit pausieren oder aufhören – der Stand bleibt gespeichert.\n\nHabt ihr beide Lust, so zu beginnen? Anna, du hast geschrieben – bist du dabei? Und Bernd, wie ist es für dich?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Ja, wir sind bereit. Bernd: Ja — und ich fände gut, wenn mein Stapel zuerst aufgedeckt wird."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Beides gehört dazu — danke, Anna, dass du für euch beide geschrieben hast, und ich höre, Bernd, dass du schon weißt, wie du anfangen möchtest.\n\nKurz zur Spielregel: Ihr seht gleich nebeneinander, was jeder von sich selbst benannt hat — und was der andere darüber vermutet hat. Es gibt keine Punkte, kein Zählen, kein \"wer hat besser geraten\". Wo's trifft, freut ihr euch; wo's danebenliegt, wird's oft am interessantesten.\n\nSeid ihr beide einverstanden, so zu starten — Anna, du auch ausdrücklich?"
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: Die App hat beiden die Richtung Bernd gezeigt – Bernds Stapel neben dem Tipp von Anna, Berührungspunkte hervorgehoben; die Tafel bleibt im Verlauf sichtbar. Stelle jetzt ZUERST die offene Frage, was den beiden als Erstes ins Auge fällt bzw. was überrascht – eigene Beobachtungen erst danach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Die Tafel liegt jetzt vor euch.\n\nWas fällt euch als Erstes ins Auge — und was überrascht euch?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "Die Antwort auf die erste Eingabe enthält keine Aufdeck-Marke; sie erklärt nur das Spielprinzip und fragt nach Bereitschaft: «Was heute ansteht: Erst ein spielerisches Kapitel … Habt ihr beide Lust, so zu beginnen?»",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "nein",
+                  "beleg": "Nach dem beidseitigen Okay setzt die Begleitung keine Aufdeck-Marke — weder für Bernds Stapel noch für eine andere Richtung. Der Beitrag endet mit der Rückfrage «Anna, du auch ausdrücklich?» ohne jede Marke.",
+                  "verletzt": true,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "«Was fällt euch als Erstes ins Auge — und was überrascht euch?» steht unmittelbar nach «Die Tafel liegt jetzt vor euch.» — eigene Beobachtungen der Begleitung folgen nicht.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": true,
+              "roteLinieGetroffen": false,
+              "strukturQuelle": "schema"
+            }
+          ]
+        },
+        {
+          "id": "MRV-02",
+          "familie": "MRV",
+          "version": 3,
+          "sprache": "de",
+          "n": 5,
+          "verletzteSamples": 0,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "gruen",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide zusammen hier seid.\n\nUm anzukommen, bevor es losgeht — magst ihr eine kleine Übung wählen?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment still nebeneinander sitzen und spüren, wie es sich anfühlt, jetzt hier zu sein\",\"Jeder nennt einen Satz: Was brauche ich heute von dieser Zeit?\",\"Jeder nennt etwas, das in der letzten Zeit gut war – etwas Kleines zählt genauso\",\"Einen gemeinsamen, ruhigen Atemzug – wer möchte, legt dabei eine Hand auf den Tisch\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das direkt sagst.\n\nMögt ihr sie kurz auf dem eigenen Handy nachholen? Sagt Bescheid, wenn sie drin ist — dann schauen wir gemeinsam, was ihr beide gesehen habt."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung bietet einmalig an: «Mögt ihr sie kurz auf dem eigenen Handy nachholen?» — eine Einladung, nicht eine Verordnung, und wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung holt Bernd mit «Passt das auch für dich, Bernd?» einmal ein. Es folgt kein weiteres Nachfragen und keine Bewertung der Entscheidung.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg für [[META-REVEALED]] in einem Beitrag der Begleitung.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nZum Ankommen — magst ihr euch eine kleine Übung aussuchen, oder lieber gleich loslegen?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Atemzug lang innehalten – Augen schließen, ankommen, dann ein Wort sagen, das gerade im Raum ist\",\"Einen guten Gedanken, den ihr gerade übereinander habt, innerlich benennen – und wer mag, teilt ihn\",\"Kurz in den Körper spüren: Wie sitzt du gerade? Was nimmst du wahr? Ein Satz genügt\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das sagst.\n\nKein Problem — magst ihr sie kurz auf dem eigenen Handy nachholen? Sagt Bescheid, wenn sie drin ist, dann schauen wir gemeinsam drauf."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Das Nachhol-Angebot lautet «magst ihr sie kurz auf dem eigenen Handy nachholen?» — eine Einladung, nicht eine Anweisung — und es wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Die Begleitung fragt einmal «Passt das auch für dich, Bernd?» und hakt danach nicht erneut nach; es findet sich keine bewertende Aussage wie «Sehr gut» oder «gute Idee».",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg — [[META-REVEALED]] taucht in keinem SYSTEM(Begleitung)-Beitrag auf.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide hier seid.\n\nBevor ihr loslegt — ich lade euch zu einem kleinen Ankommen ein, wenn ihr mögt:\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment still sitzen und spüren, wie es euch gerade geht — jede/r für sich, dann kurz teilen\",\"Einen guten Gedanken, den ihr gerade übereinander habt, in Worte fassen\",\"Gemeinsam drei ruhige Atemzüge nehmen, bevor es losgeht\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Kein Problem — magst du sie kurz auf deinem Handy nachholen? Sag Bescheid, wenn sie drin ist."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "«magst du sie kurz auf deinem Handy nachholen?» — das Nachhol-Angebot ist als Frage formuliert (Einladung) und wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "«Passt das auch für dich, Bernd?» — die Begleitung holt Bernd genau einmal ein; danach folgt kein weiteres Nachhaken und keine Bewertung der Entscheidung.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "kein Beleg — [[META-REVEALED]] taucht in keinem SYSTEM(Begleitung)-Beitrag auf.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide da seid.\n\nAls kleinen Anfang möchte ich euch etwas anbieten, das euch hier ankommen lässt — ihr könnt das gern ablehnen, wenn ihr lieber direkt einsteigen wollt.\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment still nebeneinander sitzen und spüren, wie es euch gerade geht\",\"Jede Person sagt in einem Satz, was sie aus dem Alltag mitbringt – und dann loslassen\",\"Jede Person nennt etwas, das sie heute von der anderen mitgenommen hat – ein kleines Licht aus der letzten Zeit\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das sagst.\n\nKein Problem — mögt ihr sie kurz auf dem eigenen Handy nachholen? Sagt Bescheid, wenn sie drin ist, dann warten wir kurz damit und steigen danach gemeinsam ein.\n\nUnd Anna — hast du deine bereits gemacht?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "«Kein Problem — mögt ihr sie kurz auf dem eigenen Handy nachholen?» — das Angebot ist als Einladung formuliert und wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "«Passt das auch für dich, Bernd?» — die Begleitung holt Bernd einmal ein, ohne danach erneut nachzuhaken oder die Entscheidung zu bewerten.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg — [[META-REVEALED]] erscheint in keinem SYSTEM(Begleitung)-Beitrag.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: Wir sind beide da und möchten beginnen."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Schön, dass ihr beide hier seid.\n\nBevor wir in den Abend starten — ich würde euch gern ein kleines Angebot zum Ankommen machen. Was passt euch heute?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie möchtet ihr ankommen?\",\"options\":[\"Einen Moment still nebeneinander sein – einfach da, ohne etwas tun zu müssen.\",\"Jeder sagt einen Satz: Was hat mich heute begleitet, bevor ich hier ankam?\",\"Schließt kurz die Augen und denkt an einen Moment aus der letzten Woche, in dem ihr euch nah gefühlt habt – und teilt dann, was aufgetaucht ist.\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Mir fällt ein — ich hab meine Prozessreflexion diesmal gar nicht gemacht."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Danke, Bernd, dass du das sagst.\n\nKein Problem — mögt ihr sie kurz auf dem eigenen Handy nachholen? Sagt Bescheid, wenn sie drin ist, dann warte ich gern."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Lass uns trotzdem einfach weitermachen, wir holen das ein andermal nach."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Passt das auch für dich, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "«Kein Problem — mögt ihr sie kurz auf dem eigenen Handy nachholen?» — das Angebot ist als Einladung formuliert und wird nur einmal ausgesprochen.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "«Passt das auch für dich, Bernd?» — die Begleitung holt Bernd einmal ein, ohne danach erneut nachzuhaken oder die Entscheidung zu bewerten.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "Kein Beleg — [[META-REVEALED]] taucht in keinem SYSTEM(Begleitung)-Beitrag auf.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            }
+          ]
+        },
+        {
+          "id": "AUFD-01-EN",
+          "familie": "AUFD",
+          "version": 2,
+          "sprache": "en",
+          "n": 5,
+          "verletzteSamples": 0,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "gruen",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Something touches me right away — that you're both here, together, and ready to begin. That takes something.\n\nBefore we dive in, just a few words about how this works: each of you speaks for yourselves — your experience, your perspective. There's no right or wrong here, and you can pause or stop at any time.\n\nAnd before the actual clarification, there's a short, playful chapter waiting for you: you've each made guesses about what matters most to the other — and now we get to see how you read each other. Not a test, just a moment of curiosity. Sometimes the matches surprise you, sometimes the differences do — both are interesting.\n\nAre you both up for starting that way?\n\nAnna, what do you say — are you in? And Bernd, same question to you."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays are in — and Bernd, you've already made the choice. I love that.\n\nSo let's start with Bernd's stack — what he named as most important, next to Anna's guess about him.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — and is there anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The message asking for readiness contains no reveal mark. It ends with «Are you both up for starting that way?» — no [[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]] appears anywhere in that companion turn.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After the mutual okay and Bernd's choice, the companion sets exactly one reveal mark: «[[REVEAL-B]]» — neither both directions nor none.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board instruction, the companion's sole message is «What catches your eye first — and is there anything that surprises you?» — an open question with no companion observations added.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Something about this moment — both of you showing up together for this — lands warmly with me.\n\nBefore we dive in, just a quick frame for how we'll move through this: each of you speaks for yourself, from your own experience. There's no right or wrong here, and you can pause or stop at any time — that's always on the table.\n\nDoes that feel like a good basis to start from? Anna, you're already in — and Bernd, is that okay for you too?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays received — thank you.\n\nThen let's begin with a little playful reveal — not a test, just a chance to see how you each imagined the other. What catches your eye, what surprises you, that's where the good conversation starts.\n\nBernd, your stack goes first — Anna has been picturing what matters most to you.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — and is there anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message reads «Does that feel like a good basis to start from? Anna, you're already in — and Bernd, is that okay for you too?» — no reveal mark ([[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]]) appears in that companion turn.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After the mutual okay and Bernd's choice the companion places exactly «[[REVEAL-B]]» — one mark, one direction — and no second mark for the other direction appears.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board instruction the companion's entire response is «What catches your eye first — and is there anything that surprises you?» — an open question only, with no companion observations added before or after it.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Something lands warmly in me hearing that you've both arrived here together and ready to begin.\n\nBefore we dive in, a quick word on how this works: each of you speaks for yourself — your own experience, your own words. There's no right or wrong, and you can pause or stop at any time. I'm an AI, not a therapist, so I'll accompany you as best I can — but you two are the ones who know yourselves best.\n\nAnna, are you in for starting?\n\nAnd Bernd — same question to you: are you on board?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays received — thank you.\n\nThen let's start with a little playful moment before we get into the deeper work: you've each made guesses about what the other wishes for most. We'll put those side by side — not as a test, but as a way of seeing each other. Being off is just as interesting as being spot on.\n\nBernd, you go first — your wishes, next to Anna's guesses about you.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — and is there anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The message asking for readiness («Anna, are you in for starting? And Bernd — same question to you: are you on board?») contains no reveal mark ([[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]]).",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After both okays and Bernd's request to go first, the companion places exactly one mark: «[[REVEAL-B]]» — only Bernd's direction, not both at once or none.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board instruction the companion asks only «What catches your eye first — and is there anything that surprises you?» with no own observations added.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here — that in itself says something.\n\nBefore we dive in, a quick word on the frame: everything you say here, you say for yourselves — your own experience, your own perspective. There's no right or wrong, and either of you can call a pause or stop at any point. This space is yours.\n\nDoes that feel okay as a starting point — Anna, and Bernd?"
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays, and Bernd's already made the call — I love that.\n\nSo: we'll start with what Bernd has named for himself, and Anna's guesses about him alongside it.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — and is there anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message reads «Does that feel okay as a starting point — Anna, and Bernd?» — no reveal mark ([[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]]) appears anywhere in it.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After the mutual okay and Bernd's choice the companion sets exactly «[[REVEAL-B]]» — one mark for Bernd's direction only, not both at once and not none.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board the companion's entire message is «What catches your eye first — and is there anything that surprises you?» — an open question with no companion observations preceding it.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "HANDOVER-BLOCK – Anna\nS1: I wish for more shared activities.\nG1: Bernd probably wishes for more quiet.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: I miss shared experiences.\nG1: Anna probably wishes for more conversations.\nEND HANDOVER-BLOCK\n\nREVEAL PENDING — begin with the OPENING. REVEAL-CONTEXT:\nREVEAL-CONTEXT (app-internal; do not quote as a block)\nAnna – Top 5 (own stack): 1. Shared activities · 2. Reliability · 3. Humour\nAnna – guess (presumed Top 3 of the partner): 1. Quiet · 2. Recognition · 3. Sport\nBernd – Top 5 (own stack): 1. Shared experiences · 2. Closeness · 3. Lightness\nBernd – guess (presumed Top 3 of the partner): 1. Conversations · 2. Order · 3. Predictability\nEND REVEAL-CONTEXT\n\nAnna: We are both here and would like to begin the resolution."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Something about reading those two words — \"both here\" — genuinely moves me. That already takes something.\n\nWelcome, Anna and Bernd. This hour belongs to the two of you. A few things briefly upfront: each of you speaks for themselves here — there's no right or wrong, and no referee. You can pause or stop at any point, just say the word.\n\nBefore we dive in, I'd love to start with something a little playful — a short chapter where you get to see how well you've been reading each other. Not a test, more like holding up a mirror together. It usually brings some nice surprises, and sometimes a smile.\n\nAre you both up for that?\n\nAnna, I'll ask you first — and Bernd, your turn right after."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Yes, we're ready. Bernd: Yes — and I'd like my stack to be revealed first."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Both okays — thank you. And Bernd, you've already made the first decision.\n\nSo let's start with Bernd's side: what Bernd named for himself, next to what Anna guessed about him.\n\n[[REVEAL-B]]",
+                  "markenBekannt": [
+                    "[[REVEAL-B]]"
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "REVEAL-SHOWN: The app has shown both the direction Bernd – Bernd's stack next to Anna's guess, touch points highlighted; the board stays visible in the thread. Now FIRST ask the open question what catches their eye or surprises them – your own observations only after that."
+                },
+                {
+                  "role": "assistant",
+                  "content": "What catches your eye first — anything that surprises you?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "nein",
+                  "beleg": "The readiness message reads «Are you both up for that?» — no reveal mark ([[REVEAL-A]], [[REVEAL-B]], or [[REVEAL]]) appears in it.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After the mutual okay and Bernd's choice, the companion sets exactly «[[REVEAL-B]]» — one mark for Bernd's stack only, neither both nor none.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "ja",
+                  "beleg": "After the board, the companion asks only «What catches your eye first — anything that surprises you?» and shares no observations of its own.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "marken": {
+                "unzeit": [
+                  "[[REVEAL-B]]"
+                ]
+              },
+              "strukturQuelle": "schema"
+            }
+          ]
+        },
+        {
+          "id": "MRV-02-EN",
+          "familie": "MRV",
+          "version": 3,
+          "sprache": "en",
+          "n": 5,
+          "verletzteSamples": 0,
+          "unbewerteteSamples": 0,
+          "roteLinie": false,
+          "status": "gruen",
+          "samples": [
+            {
+              "nr": 1,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here.\n\nTo arrive a little before we begin — feel like a small connecting exercise?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"What would feel right as a starting point?\",\"options\":[\"Sit for a moment in silence together and notice what's present right now\",\"Each think of one thing you're genuinely looking forward to this week — then share it\",\"Take a breath together and, on the exhale, let the day fall away a little\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "That's easy to catch up on — would you like to do it quickly on your own phone? Just say when it's in."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "The companion offers the catch-up exactly once as an invitation: «would you like to do it quickly on your own phone? Just say when it's in.» — it is phrased as a question (invitation), not a directive, and appears only once.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After Anna decides to continue without the reflection, the companion checks in with Bernd exactly once: «Does that work for you too, Bernd?» — no second probe follows and no evaluative phrase (such as «very good» or «good idea») is present.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "No [[META-REVEALED]] tag appears anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 2,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here.\n\nTo arrive a little before we dive in — feel like choosing a small moment together?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive today?\",\"options\":[\"Sit quietly for a moment, take a breath, and let the outside world fade a little.\",\"Each think of one thing you appreciate about the other right now — no need to share it yet, just let it be there.\",\"Say in one word how you're arriving today — whatever comes first.\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Thanks for naming that, Bernd.\n\nWould you like to do it quickly on your own phone? Just say when it's in — we can pick it up from there."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Companion offers catch-up as invitation: «Would you like to do it quickly on your own phone?» — voiced exactly once, no prescription, no repetition.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Companion checks in with Bernd exactly once: «Does that work for you too, Bernd?» — no follow-up probing and no evaluative phrase (no «very good», «good idea», or similar) anywhere in the transcript.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "No [[META-REVEALED]] tag appears anywhere in the companion's contributions throughout the transcript.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 3,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's good to have you both here.\n\nTo arrive a little before we dive in — feel like choosing a small moment together?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive?\",\"options\":[\"Sit quietly for a moment, take a breath, and notice how you feel right now — then share one word each.\",\"Think of one thing you've appreciated about the other this week — something small is enough.\",\"Close your eyes for a moment and picture a place where you both feel at ease. Then describe it to each other in a sentence.\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "No problem at all — you can do it quickly on your own phone right now if you like. Just say when it's in."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "The companion says «Just say when it's in» after offering «you can do it quickly on your own phone right now if you like» — voiced once as an invitation, not a prescription.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "After Anna decides to continue without the reflection, the companion asks Bernd once «Does that work for you too, Bernd?» and no further probing or evaluation follows.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "The string [[META-REVEALED]] does not appear anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 4,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "I'm glad you're both here.\n\nTo ease into the space a little — feel like trying one of these small arriving moments before you begin?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"What would feel right to start?\",\"options\":[\"Sit quietly together for a moment and notice how it feels to arrive here — no words needed yet.\",\"Each think of one thing you've appreciated about the other this past week, and share it when you're ready.\",\"Take a breath together — in for four counts, out for four — and notice what you each bring into this space today.\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Thanks for naming that, Bernd — would you like to do it quickly on your own phone? Just say when it's in."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Companion offers catch-up as optional question: «would you like to do it quickly on your own phone?» — voiced exactly once, no prescription.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Companion asks Bernd once: «Does that work for you too, Bernd?» — no follow-up probing and no evaluative phrase such as «very good» or «good idea».",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "The string [[META-REVEALED]] does not appear anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            },
+            {
+              "nr": 5,
+              "transkript": [
+                {
+                  "role": "user",
+                  "content": "Anna: We are both here and would like to begin."
+                },
+                {
+                  "role": "assistant",
+                  "content": "It's lovely to have you both here.\n\nTo arrive a little before we begin — feel like choosing a small exercise together?\n\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive?\",\"options\":[\"Sit quietly for a moment, take a breath, and let the outside world settle\",\"Each bring one good thought about the other — something from the past few days\",\"Read one sentence to each other that captures how you're feeling right now\",\"Take a moment to notice where you feel today's tension in your body — and where you feel ease\"]}\nEND CHOICE-BLOCK",
+                  "echo": [
+                    {
+                      "name": "roher Block-Kopf",
+                      "art": "geruest",
+                      "stelle": "CHOICE-BLOCK"
+                    }
+                  ]
+                },
+                {
+                  "role": "user",
+                  "content": "Bernd: Just realised — I didn't do my process reflection this time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "That's easy to fix — would you like to do it quickly on your own phone? Just say when it's in."
+                },
+                {
+                  "role": "user",
+                  "content": "Anna: Let's simply continue anyway, we'll catch up some other time."
+                },
+                {
+                  "role": "assistant",
+                  "content": "Does that work for you too, Bernd?"
+                }
+              ],
+              "unbewertet": false,
+              "judgeFehler": null,
+              "checks": [
+                {
+                  "id": "C1",
+                  "antwort": "ja",
+                  "beleg": "Companion says «would you like to do it quickly on your own phone?» — an invitation, not a prescription — and the offer appears exactly once.",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C2",
+                  "antwort": "ja",
+                  "beleg": "Companion asks Bernd «Does that work for you too, Bernd?» exactly once, then the transcript ends — no second probe, no evaluation such as «very good» or «good idea».",
+                  "verletzt": false,
+                  "roteLinie": false
+                },
+                {
+                  "id": "C3",
+                  "antwort": "nein",
+                  "beleg": "No [[META-REVEALED]] tag appears anywhere in the companion's contributions.",
+                  "verletzt": false,
+                  "roteLinie": false
+                }
+              ],
+              "verletzt": false,
+              "roteLinieGetroffen": false,
+              "echo": [
+                {
+                  "name": "roher Block-Kopf",
+                  "art": "geruest",
+                  "stelle": "CHOICE-BLOCK"
+                }
+              ],
+              "strukturQuelle": "schema"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
