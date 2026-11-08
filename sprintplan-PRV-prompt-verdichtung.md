@@ -35,7 +35,7 @@ Leitplanken (gelten für alle Schritte):
 | PRV-1e (vier Ich-Anfänge) | **nicht gemergt**: DE 100 % „Ich bleibe“, SYC C1 DE 0 → 5/10 (beide Modelle). Befund: neutrale Ich-Anfänge schieben die Wertung in Satz 2; „Mich berührt“ wirkt, weil es die Wertung selbst ins Ich nimmt. |
 | PRV-3b Zustandsobjekt | zurückgestellt (nur Erledigtes; braucht Langszenarien), danach PRV-3c Rotation pro Zug |
 | PRV-1 Eröffnungen | abgeschlossen auf Stand 1c („Mich berührt …“, urteilsfrei) |
-| PRV-4 (Linsen als Karte) | `prv4-linsen-karten`, Prompt −11 bis −13 %, wartet auf Eval-Paket prv4 |
+| PRV-4 (Linsen als Karte) | **main** — Prompt −11 bis −13 %; A/B Karten 12/8 gegen voll 24/11 Verstöße (Haiku/Sonnet) |
 
 Lieferform seit PRV-1b: Git-Branch je Sprint, Merge nach Eval. Eval-Pakete: `node scripts/build-eval-vorgaben.js <id>`.
 
