@@ -46,7 +46,7 @@ export const SESSIONS = [
   { art: "einzel",      fn: "klaerungsPrompt",   args: ["name", "partner"], teile: "klaerungsTeile" },
   { art: "gemeinsam",   fn: "aufloesungsPrompt", args: ["nameA", "nameB"] },
   { art: "moment",      fn: "momentPrompt",      args: ["nameA", "nameB"] },
-  { art: "solo",        fn: "reflexionsPrompt",  args: ["name", "partner"] },
+  { art: "solo",        fn: "reflexionsPrompt", teile: "reflexionsTeile",  args: ["name", "partner"] },
   { art: "qualitytime", fn: "qzMenuePrompt",     args: [] },
 ];
 export const SCHICHTEN = ["wissen", "policies", "format", "grundsaetze"];
@@ -330,7 +330,9 @@ export function baueSchichtQuelle(sprache, schicht, reg = ladeBausteine(sprache)
          "  aufdeck: { text: " + t("aufdeck") + " },\n" +
          /* PRV-4 · Theorie-Linsen als Karte: Signal in den Nachrichten der Person, Spur in der eigenen letzten Antwort. */
          "  anteile: { signal: SIGNALE.anteile, spur: SIGNALE.anteileSpur, text: " + t("anteile") + " },\n" +
-         "  entwicklung: { signal: SIGNALE.entwicklung, spur: SIGNALE.entwicklungSpur, text: " + t("entwicklung") + " },\n};\n";
+         "  entwicklung: { signal: SIGNALE.entwicklung, spur: SIGNALE.entwicklungSpur, text: " + t("entwicklung") + " },\n" +
+         /* PRV-7 · Anlaesse der Phasenmodule im Reflexionsgespraech (core/policies/phasen.js). */
+         "  phasen: { teilen: SIGNALE.teilen, abruf: SIGNALE.abruf, ende: SIGNALE.ende },\n};\n";
     /* Die Karten-Texte binden Wissen-Bausteine ein; ihre Importe entstehen erst
        hier, nach dem Kopf — also nachtragen. */
     const spaet = [...importe].filter(z => !q.includes(z)).sort();

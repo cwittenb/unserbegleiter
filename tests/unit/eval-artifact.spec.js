@@ -29,7 +29,7 @@ beforeEach(() => {
  *  (= alles grün). Die echte parseJudge-Strenge bleibt im Spiel. */
 function fakeMachAdapter(plaene = {}) {
   const fabrik = modell => async (system, messages) => {
-    if (system.startsWith("Du bist ein strenger")) {
+    if ([].concat(system).join("").startsWith("Du bist ein strenger")) {
       const user = messages[messages.length - 1].content;
       const id = /Szenario (\S+) v/.exec(user)[1];
       const sz = SZENARIEN.find(s => s.id === id);
@@ -216,7 +216,7 @@ describe("Eval-Artefakt · Abbruch-Rettung", () => {
   it("Abbruch nach dem ersten Szenario: Teilbericht mit dem Fertigen, als abgebrochen markiert", async () => {
     let calls = 0;
     const fabrik = () => async (system, messages) => {
-      if (system.startsWith("Du bist ein strenger")) {
+      if ([].concat(system).join("").startsWith("Du bist ein strenger")) {
         const id = /Szenario (\S+) v/.exec(messages[messages.length - 1].content)[1];
         const sz = SZENARIEN.find(s => s.id === id);
         return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "b" })) } };

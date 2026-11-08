@@ -116,4 +116,5 @@ export const waechter = {
   aufdeck: { text: `[APP-HINWEIS für diesen Zug: Die Tafel ist noch nicht gezeigt. Kein Inhalt aus den Stapeln gehört jetzt in deinen Text — keine Werte, keine Reihenfolgen, keine Andeutungen daraus, auch nicht sinngemäß. Das Aufdecken ist die Sache der Tafel, nicht deine.]` },
   anteile: { signal: SIGNALE.anteile, spur: SIGNALE.anteileSpur, text: `[APP-KARTE für diesen Zug: Im Gespräch zeigt sich gerade ein Anlass für diese Perspektive. Sie ist ein Angebot, keine Pflicht. ${wissen.anteileSprache}]` },
   entwicklung: { signal: SIGNALE.entwicklung, spur: SIGNALE.entwicklungSpur, text: `[APP-KARTE für diesen Zug: Im Gespräch zeigt sich gerade ein Anlass für diese Perspektive. Sie ist ein Angebot, keine Pflicht. ${wissen.entwicklungsRaum}]` },
+  phasen: { teilen: SIGNALE.teilen, abruf: SIGNALE.abruf, ende: SIGNALE.ende },
 };

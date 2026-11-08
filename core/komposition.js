@@ -89,7 +89,7 @@ export function baueSessionDef(art, { backend = BACKEND_ATTRAPPE, hooks = {}, sp
   if (eintrag.phasen && typeof def.sysTeile === "function") {
     const fn = PHASEN[eintrag.phasen];
     if (!fn) throw new Error("Unbekannte Phasen-Komposition im Katalog: " + eintrag.phasen);
-    def.sysBloecke = (ctx, messages) => fn(def.sysTeile(ctx), messages, K().steuerTexte);
+    def.sysBloecke = (ctx, messages) => fn(def.sysTeile(ctx), messages, K());
   }
   if (!sprache) return def;
   const binde = fn => (typeof fn === "function" ? (...a) => mitKorpusSprache(sprache, () => fn(...a)) : fn);

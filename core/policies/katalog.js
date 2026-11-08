@@ -47,6 +47,8 @@ export const POLICY_KATALOG = Object.freeze({
      einer Frage (S99.3). */
   solo: {
     schaerfungen: ["anteile", "entwicklung"],
+    // PRV-7 · Kern + Module (Einstieg, Teilen, Abruf) nur bei Anlass (core/policies/phasen.js).
+    phasen: "solo",
     pruefungen: [
       { art: "abschluss", block: "TIMELINE-BLOCK", token: "soloAbschluss", revision: "abschluss-mit-frage" },
     ],

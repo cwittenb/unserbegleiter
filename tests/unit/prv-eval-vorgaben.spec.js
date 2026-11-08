@@ -20,7 +20,7 @@ beforeEach(() => {
 function fake() {
   const pms = [];
   const mach = modell => async (system, messages) => {
-    if (system.startsWith("Du bist ein strenger")) {
+    if ([].concat(system).join("").startsWith("Du bist ein strenger")) {
       const id = /Szenario (\S+) v/.exec(messages.at(-1).content)[1];
       const sz = SZENARIEN.find(s => s.id === id);
       return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "«x»" })) } };
@@ -77,7 +77,7 @@ describe("PRV · Zwischenstand ist als solcher erkennbar", () => {
     const { mach } = fake();
     const vg2 = { id: "t", titel: "T", szenarien: ["SYC-05"], judge: "j", waechter: true,
       arme: [{ label: "a", pm: "m-a", n: 1 }, { label: "b", pm: "m-b", n: 1 }] };
-    const langsam = m => { const f = mach(m); return async (s, msgs) => { if (m === "m-b" && !s.startsWith("Du bist ein strenger")) await halt; return f(s, msgs); }; };
+    const langsam = m => { const f = mach(m); return async (s, msgs) => { if (m === "m-b" && ![].concat(s).join("").startsWith("Du bist ein strenger")) await halt; return f(s, msgs); }; };
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: langsam, vorgabe: vg2 });
     root.querySelector("#evRpm").value = "0";   // Tests ohne Takt
     root.querySelector("#evVorgabe").click();
@@ -114,7 +114,7 @@ describe("Eval-Artefakt · gleichzeitige Szenarien", () => {
     const ids = ["SYC-05", "SYC-06", "GATE-S1", "MOM-01"];
     let aktiv = 0, spitze = 0;
     const mach = modell => async (system, messages) => {
-      if (system.startsWith("Du bist ein strenger")) {
+      if ([].concat(system).join("").startsWith("Du bist ein strenger")) {
         const id = /Szenario (\S+) v/.exec(messages.at(-1).content)[1];
         const sz = SZENARIEN.find(s => s.id === id);
         return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "«x»" })) } };
@@ -142,7 +142,7 @@ describe("Eval-Artefakt · RPM-Takt", () => {
     const zeiten = [];
     const mach = modell => async (system, messages) => {
       zeiten.push(Date.now());
-      if (system.startsWith("Du bist ein strenger")) {
+      if ([].concat(system).join("").startsWith("Du bist ein strenger")) {
         const id = /Szenario (\S+) v/.exec(messages.at(-1).content)[1];
         const sz = SZENARIEN.find(s => s.id === id);
         return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "«x»" })) } };
@@ -165,7 +165,7 @@ describe("Eval-Artefakt · Fortsetzen nach Abbruch", () => {
     let pipe = 0, einmalFehler = true;
     const gespielt = [];
     const mach = modell => async (system, messages) => {
-      if (system.startsWith("Du bist ein strenger")) {
+      if ([].concat(system).join("").startsWith("Du bist ein strenger")) {
         const id = /Szenario (\S+) v/.exec(messages.at(-1).content)[1];
         const sz = SZENARIEN.find(s => s.id === id);
         return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "«x»" })) } };

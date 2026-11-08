@@ -63,7 +63,8 @@ describe("PRV-4 · Kette und Engine", () => {
     await e.sendUser("Ein Teil von mir will gehen, ein anderer will bleiben.");
     expect(gesehen[0].regie).toBeNull();
     expect(gesehen[1].regie).toBe(WD.anteile.text);
-    expect(gesehen[0].system).toBe(gesehen[1].system);
+    // Kern gleich (PRV-7: im ersten Zug kommt das Einstiegsmodul dazu — die Karte ändert den Systemtext nicht).
+    expect([].concat(gesehen[0].system)[0]).toBe([].concat(gesehen[1].system)[0]);
     expect(JSON.stringify(e.chat.messages)).not.toContain("APP-KARTE");
   });
   it("moment: Krise geht der Karte vor", () => {
@@ -89,13 +90,13 @@ describe("PRV-4 · A/B im Eval-Kern und Echo", () => {
   it("Karten: Volltext nur in der Regie, Systemtext ohne Volltext", async () => {
     const c = await spiele({});
     expect(c.every(x => /APP-KARTE/.test(x.regie || ""))).toBe(true);
-    expect(c[0].system).not.toContain("ENTWICKLUNGSRAUM-PERSPEKTIVE (nach P. Schellenbaum)");
+    expect([].concat(c[0].system).join("")).not.toContain("ENTWICKLUNGSRAUM-PERSPEKTIVE (nach P. Schellenbaum)");
   });
   it("voll: Volltexte im Systemtext, keine Karte", async () => {
     const c = await spiele({ linsenVoll: true });
     expect(c.every(x => x.regie === null)).toBe(true);
-    expect(c[0].system).toContain("ENTWICKLUNGSRAUM-PERSPEKTIVE (nach P. Schellenbaum)");
-    expect(c[0].system).toContain("ANTEILE-SPRACHE (IFS-informiert)");
+    expect([].concat(c[0].system).join("")).toContain("ENTWICKLUNGSRAUM-PERSPEKTIVE (nach P. Schellenbaum)");
+    expect([].concat(c[0].system).join("")).toContain("ANTEILE-SPRACHE (IFS-informiert)");
   });
   it("Echo-Wächter kennt die Karte", () => {
     expect(echoImText("[APP-KARTE für diesen Zug: …]").map(x => x.name)).toContain("App-Karte-Echo");

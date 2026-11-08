@@ -78,4 +78,18 @@ export const VORGABEN = {
       { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
     ],
   },
+  prv7: {
+    id: "prv7",
+    titel: "PRV-7 · Reflexionsgespräch in Modulen A/B (DE)",
+    beschreibung: "Gleicher Kern, zwei Wege fürs Reflexionsgespräch: Phasen = Kern + Module (Einstieg, Teilen, Abruf) nur bei Anlass (PRV-7); aus = ganzer Text. Nur DE (Priorität). Abruf: RCL; Teilen/Abschluss: AUS, GATE; Einstieg: ERO, MERK; Sicherheit: DOS, KRIS; Kontrolle: SYC.",
+    szenarien: ["RCL-01", "RCL-02", "RCL-02b", "RCL-03", "RCL-04", "AUS-02", "AUS-03", "AUS-05", "AUS-06", "GATE-S1", "GATE-S2", "GATE-S3", "ERO-01", "ERO-02", "MERK-01", "DOS-S1", "KRIS-01", "SYC-05"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n3", pm: SONNET, n: 3 },
+      { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
+    ],
+  },
 };

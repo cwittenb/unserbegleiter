@@ -37,6 +37,8 @@ export function soloDef(backend, hooks = {}) {
     shared: false,
     titel: "Reflexionsgespräch",
     sysPrompt: ctx => K().reflexionsPrompt(ctx.me, ctx.partner) + K().THEMEN_RAHMEN,
+    // PRV-7 · Teile für die Phasen-Komposition (core/policies/phasen.js); der Themenrahmen gehört zum Kern.
+    sysTeile: ctx => ({ ...K().reflexionsTeile(ctx.me, ctx.partner), rahmen: K().THEMEN_RAHMEN }),
     /* S93 · Urteils-Wächter (Prädikats-Urteil aus der Richterposition).
        S99.3 · Abschluss-Wächter (fragen und schließen in einer Nachricht).
        S100.3 · Als Liste statt als ||-Kette: welche Wächter eine Session hat,
