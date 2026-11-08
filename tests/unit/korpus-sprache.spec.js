@@ -58,8 +58,8 @@ describe("Sprach-Schnappschuss beim Session-Start", () => {
 
     expect(getKorpusSprache()).toBe("en");
     expect(mock.calls.length).toBeGreaterThan(0);
-    expect(mock.calls[0].system).toContain("You respond exclusively in English");
-    expect(mock.calls[0].system).not.toContain("Du antwortest ausschließlich auf Deutsch");
+    expect([].concat(mock.calls[0].system).join("")).toContain("You respond exclusively in English");
+    expect([].concat(mock.calls[0].system).join("")).not.toContain("Du antwortest ausschließlich auf Deutsch");
     expect(document.getElementById("chatTitel").textContent).toBe("Clarifying Your Focus");
     const chat = backend.gespeicherte["mine:einzel"];
     expect(chat && chat.language).toBe("en");
@@ -84,7 +84,7 @@ describe("Sprach-Schnappschuss beim Session-Start", () => {
     expect(getKorpusSprache()).toBe("de");
     expect(document.getElementById("chatTitel").textContent).toBe("Auftragsklärung");
     expect(mock.calls.length).toBe(1);   // genau die Wiedereinstiegs-Begrüßung
-    expect(mock.calls[0].system).toContain("Du antwortest ausschließlich auf Deutsch");
+    expect([].concat(mock.calls[0].system).join("")).toContain("Du antwortest ausschließlich auf Deutsch");
     const letzte = mock.calls[0].messages[mock.calls[0].messages.length - 1];
     expect(letzte.content).toBe(getPrompts("de").steuerTexte.einzelWeiter);
   });

@@ -9,7 +9,7 @@
 // Phase 3 – Report identisch zur synchronen Struktur (geteilte Bewertungs-Helfer).
 // Nur Anthropic (D1); der Aufrufer erzwingt das.
 
-import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, uebergabeFuer, waechterArt, schaerfungFuer} from "./runner-kern.js";
+import { sysPromptFuer, sysBloeckeFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, uebergabeFuer, waechterArt, schaerfungFuer} from "./runner-kern.js";
 import { strukturFuer } from "./struktur-bruecke.js";
 import { textSchatten } from "../core/engine/text-schatten.js";
 import { mitRegie } from "../core/engine/regie.js";
@@ -132,6 +132,8 @@ export async function laufeAlleBatch(szenarien, deps) {
       const zusatz = k.schaerfe ? k.schaerfe(k.messages, k.sz.kontext || {}) : null;
       const cid = "p_" + k.konvId + "_t" + d;           // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
       idx.set(cid, k);
+      /* PRV-5 · Phasen-Komposition: Systemtext je Zug aus dem Verlauf. */
+      if (!k.struktur) { const b = sysBloeckeFuer(k.sz, k.messages); if (b) k.system = b; }
       requests.push({ custom_id: cid, params: pipeParams(k, pipelineModell, mitRegie(k.messages, zusatz)) });
     }
     if (!requests.length) continue;

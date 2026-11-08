@@ -149,7 +149,7 @@ describe("Wechselwirkung mit dem Sprach-Schnappschuss (C1/C2)", () => {
     await klick(root.querySelector("#btnMyRoom"));
     await klick(root.querySelector("#btnEinzel"));
     expect(getKorpusSprache()).toBe("en");
-    expect(mock.calls[0].system).toContain("You respond exclusively in English");
+    expect([].concat(mock.calls[0].system).join("")).toContain("You respond exclusively in English");
     expect(document.getElementById("chatTitel").textContent).toBe("Clarifying Your Focus");
   });
 });

@@ -82,8 +82,8 @@ describe("MOD-3 · Importe", () => {
 
 describe("MOD-3 · Die Fassade ist die alte Oberflaeche", () => {
   const ALT = ["DOMAENEN", "DOMAINS", "KAPITEL_TITEL", "THEMEN_RAHMEN", "aufloesungsPrompt", "bausteine",
-    "klaerungsPrompt", "korpusTexte", "momentPrompt", "qzMenuePrompt", "reflexionsPrompt", "steuerTexte", "strukturTexte", "waechter"];
-  it("DE und EN exportieren genau die 14 Namen von vor MOD-3 (ohne QZ_STUFEN_TEXT, MOD-7)", () => {
+    "klaerungsPrompt", "klaerungsTeile", "korpusTexte", "momentPrompt", "qzMenuePrompt", "reflexionsPrompt", "steuerTexte", "strukturTexte", "waechter"];
+  it("DE und EN exportieren genau die 14 Namen von vor MOD-3 (ohne QZ_STUFEN_TEXT, MOD-7) + klaerungsTeile (PRV-5)", () => {
     expect(Object.keys(deFassade).sort()).toEqual(ALT);
     expect(Object.keys(enFassade).sort()).toEqual(ALT);
   });

@@ -23,6 +23,7 @@ export function textAusInhalt(inhalt) {
 }
 
 import { inhaltMitRegie } from "../regie.js";
+import { systemAlsText } from "../system.js";
 
 export function openaiCompat(baseUrl, modelKey) {
   return {
@@ -34,7 +35,7 @@ export function openaiCompat(baseUrl, modelKey) {
       const body = {
         model: cfg.models[modelKey],
         max_tokens: cfg.maxTokens,
-        messages: [{ role: "system", content: systemPrompt },
+        messages: [{ role: "system", content: systemAlsText(systemPrompt) },
                    ...messages.map(m => ({ role: m.role, content: inhaltMitRegie(m) }))],   // PRV-3
       };
       // S137 · Nur mitsenden, wenn ausdruecklich gesetzt (siehe LLM_DEFAULTS).

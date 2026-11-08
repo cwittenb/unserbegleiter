@@ -31,6 +31,7 @@ import { einzelDef, gemeinsamDef } from "./ui/kernwetten.js";
 import { K, getKorpusSprache, setKorpusSprache, getPrompts, istKorpusDa } from "./prompts/prompts.js";
 import { POLICY_KATALOG } from "./policies/katalog.js";
 import { baueSchaerfe, baueUebergabe } from "./policies/waechter.js";
+import { PHASEN } from "./policies/phasen.js";
 
 /** Die Session-Arten mit eigener Def, in der Reihenfolge des Nutzerwegs. */
 export const SESSION_ARTEN = ["einzel", "gemeinsam", "solo", "moment"];
@@ -83,6 +84,13 @@ export function baueSessionDef(art, { backend = BACKEND_ATTRAPPE, hooks = {}, sp
   if (!eintrag) throw new Error("Kein Policy-Katalog-Eintrag fuer Session-Art: " + art);
   def.schaerfe = baueSchaerfe(eintrag, K) || undefined;
   def.pruefeUebergabe = baueUebergabe(eintrag, K) || undefined;
+  /* PRV-5 · Phasen-Komposition: sysBloecke(ctx, messages) → [kern, modul].
+     sysPrompt bleibt der Gesamttext (Golden, Struktur-Bruecke, Rueckfall). */
+  if (eintrag.phasen && typeof def.sysTeile === "function") {
+    const fn = PHASEN[eintrag.phasen];
+    if (!fn) throw new Error("Unbekannte Phasen-Komposition im Katalog: " + eintrag.phasen);
+    def.sysBloecke = (ctx, messages) => fn(def.sysTeile(ctx), messages, K().steuerTexte);
+  }
   if (!sprache) return def;
   const binde = fn => (typeof fn === "function" ? (...a) => mitKorpusSprache(sprache, () => fn(...a)) : fn);
   return {
@@ -90,6 +98,7 @@ export function baueSessionDef(art, { backend = BACKEND_ATTRAPPE, hooks = {}, sp
     sysPrompt: binde(def.sysPrompt),
     schaerfe: binde(def.schaerfe),
     pruefeUebergabe: binde(def.pruefeUebergabe),
+    sysBloecke: binde(def.sysBloecke),
   };
 }
 
