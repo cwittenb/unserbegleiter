@@ -60,3 +60,6 @@ key.properties
 
 # BV-1 · Blindvergleich: Reize und Schlüssel bleiben lokal (Schlüssel = Modellzuordnung)
 evals/blindvergleich/laeufe/
+
+# Symlink-Variante ebenfalls ignorieren (PRV-1b hatte versehentlich einen node_modules-Symlink eingecheckt)
+node_modules
