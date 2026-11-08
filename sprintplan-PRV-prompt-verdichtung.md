@@ -113,4 +113,6 @@ Vorbefund für PRV-0 (Quellen, nicht Prompt): `GENAU`/`EXACTLY` 4–24× je Sess
 
 Stand: PRV-0 (Kern 07882d74) · PRV-1a (Kern 9257b959) · PRV-1b (Kern 81e06158) auf `main`; Lieferung seit PRV-1b im Git-Branch-Workflow (Branch je Sprint, Merge nach `main`, Push).
 
-**F8 (offen, nach PRV-1b):** kategorien-definierende Verbots-Beispiele (Urteils-/Spiegel-Grammatik, BEDEUTSAME MOMENTE) aus dem Prompt nehmen — a) ja als PRV-1c · b) behalten · c) nach dem Artefakt-Eval von 1b entscheiden (docs/SPRINT-PRV-1B-PROTOKOLL.md §6).
+**Stand 08.11.:** PRV-1c auf main (F8 a, Eval bestanden) · PRV-1d (F9 b, Ich-Schablone) und PRV-2 (Dedup geschrumpft, Grundgesetz gestrichen — docs/SPRINT-PRV-2-PROTOKOLL.md) als Kette auf Branches, Merge nach 1d-Eval.
+
+**F8 (erledigt):** kategorien-definierende Verbots-Beispiele (Urteils-/Spiegel-Grammatik, BEDEUTSAME MOMENTE) aus dem Prompt nehmen — a) ja als PRV-1c · b) behalten · c) nach dem Artefakt-Eval von 1b entscheiden (docs/SPRINT-PRV-1B-PROTOKOLL.md §6).
