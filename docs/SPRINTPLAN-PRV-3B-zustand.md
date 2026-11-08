@@ -36,3 +36,8 @@ Offen (siehe Fragen): Die bestehenden Szenarien sind 1–3 Züge lang; der Stand
 ## Merge-Regel
 
 Stand-an nicht schlechter als Stand-aus in allen Szenarien des Pakets, kein Stand-Echo; in den Langszenarien besser oder gleich. Sonst Rücknahme (S136).
+
+## Entscheidung Cars10 (08.11.2026)
+
+- Inhalt: **nur Erledigtes** (Kapitel + erledigte Marken/Blöcke, kein „als Nächstes“).
+- **Zurückgestellt** hinter PRV-4. Wiederaufnahme mit zwei Langszenarien (einzel über eine Kapitelgrenze, gemeinsam nach der Aufdeckung). Danach PRV-3c (Rotation der Ich-Wendung pro Zug als Zeile im Zug-Hinweis; nur wertende Wendungen, Befund 1e).
