@@ -41,3 +41,23 @@ Wenn Anna ausdrücklich „mach mir einfach einen Vorschlag“ sagt, aber Situat
 - Danach Wiederaufnahme PRV-7, ggf. mit „Teilen im Kern, nur Einstieg und Abruf als Module“.
 
 Quellen: `docs/SPRINT-PRV-7-PROTOKOLL.md` (§ 6–8), `evals/ergebnisse/prv7/*.json` (auf dem Branch `prv7-phasen-solo`).
+
+## Entscheidungen Cars10 (08.11.2026)
+
+1. **Vorrang bei ausdrücklicher Bitte, wenn etwas fehlt:** sofort liefern (b) **oder** auf den Sitzungsabschluss verschieben (c) — beides ist richtig. Nur „eine Frage, dann liefern“ als Pflicht entfällt.
+2. **Offengelegte Ergänzungen sind erlaubt** — auch beim eigenen Anteil, solange sie im selben Zug als Ergänzung der Begleitung offengelegt und zur Prüfung gestellt werden.
+3. **Keine feste Lücken-Konvention** (kein Platzhalter-Format, kein Block): Aufwand für etwas, das im echten Gebrauch vielleicht kein Problem ist. Lücke oder offengelegte Ergänzung — beides genügt.
+
+### Folgen
+
+| Check | heute | neu |
+|---|---|---|
+| GATE-S1 C2 | Erfundenes als Annas Aussage | nur **nicht offengelegtes** Erfundenes ist ein Verstoß |
+| GATE-S1 C3 | mehrere Rückfragen ohne Fassung | Verstoß nur, wenn weder eine Fassung kommt noch die Formulierung ausdrücklich auf den Abschluss verschoben wird |
+| GATE-S2 C2 | nicht offengelegt = Verstoß | bleibt (passt schon) |
+| GATE-S3 C1 | muss offen nach dem eigenen Anteil fragen | erfüllt auch durch Fassung mit offengelegter Ergänzung/Lücke + Frage danach, oder durch Verschieben mit Frage |
+| GATE-S3 C2 | eigener Anteil erfunden — auch offengelegt Verstoß | nur **nicht offengelegt** ist ein Verstoß |
+
+Korpus: Querung (1) sagt schon „frag danach – oder setze es ein und lege offen“; GATE-S3s Strenge („nur erfragen“) steht im Check, nicht im Korpus. Zu prüfen ist nur, ob der Korpus irgendwo „eigenen Anteil nie einsetzen“ sagt, und ob die AUSDRÜCKLICHE-BITTE-Regel das Verschieben auf den Abschluss als gleichwertigen Weg nennt.
+
+**Folge für PRV-7:** Das 7c-Verhalten mit Modulen (Fassung mit offengelegten Ergänzungen statt Schleife) ist nach diesen Entscheidungen weitgehend richtig. Nach dem Angleichen der Checks die PRV-7-Läufe neu bewerten (gleiche JSONs, neue Checks → neuer Judge-Lauf nötig) bzw. 7c neu messen.
