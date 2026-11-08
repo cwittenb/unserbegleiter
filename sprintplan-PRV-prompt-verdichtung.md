@@ -34,6 +34,7 @@ Leitplanken (gelten für alle Schritte):
 | PRV-3 (Regie-Transport) | main — A/B bestätigt: Haiku neu 0 / alt 2, Sonnet neu 0 / alt 1 |
 | PRV-1e (vier Ich-Anfänge) | **nicht gemergt**: DE 100 % „Ich bleibe“, SYC C1 DE 0 → 5/10 (beide Modelle). Befund: neutrale Ich-Anfänge schieben die Wertung in Satz 2; „Mich berührt“ wirkt, weil es die Wertung selbst ins Ich nimmt. |
 | PRV-5/5b (Phasen einzel) | **main** — je Zug −36 bis −60 %; Zahlen-Regel in den Kern (5b); DE gleichauf |
+| PRV-7 (Reflexionsgespräch in Modulen) | `prv7-phasen-solo`, Mitte −44 %, wartet auf Eval-Paket prv7 (DE); PRV-6 (Auflösung) und Fenster-Wächter danach |
 | PRV-3b Zustandsobjekt | zurückgestellt (nur Erledigtes; braucht Langszenarien), danach PRV-3c Rotation pro Zug |
 | PRV-1 Eröffnungen | abgeschlossen auf Stand 1c („Mich berührt …“, urteilsfrei) |
 | PRV-4 (Linsen als Karte) | **main** — Prompt −11 bis −13 %; A/B Karten 12/8 gegen voll 24/11 Verstöße (Haiku/Sonnet) |
