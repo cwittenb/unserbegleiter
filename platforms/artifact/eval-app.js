@@ -75,6 +75,8 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
           <input id="evJm" class="ev-inp" value="${vg ? esc(vg.judge) : "claude-opus-4-8"}"></div>
         <div style="max-width:110px"><label class="ev-lab" for="evN">n (leer = Standard)</label>
           <input id="evN" class="ev-inp" inputmode="numeric" placeholder="je Szenario"></div>
+        <div style="max-width:110px"><label class="ev-lab" for="evPar">gleichzeitig (1–4)</label>
+          <input id="evPar" class="ev-inp" inputmode="numeric" value="${vg ? 3 : 1}"></div>
       </div>
       <label style="display:block;font-size:13px;margin:10px 0">
         <input type="checkbox" id="evWaechter"${!vg || vg.waechter ? " checked" : ""}> Das <b>ausgelieferte System</b> messen: Schärfungen vor der Antwort (Krise, Aufdeckung, Zweiseitigkeit) und Übergabe-Prüfung danach
@@ -165,14 +167,33 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     const pipelineCall = async (...a) => { pCalls++; zeige(); return roh.p(...a); };
     const judgeCall = async (...a) => { jCalls++; zeige(); return roh.j(...a); };
 
+    /* Parallel-Lauf: bis zu `par` Szenarien gleichzeitig (Samples und Zuege
+       eines Szenarios bleiben nacheinander). Spart nur Zeit — die Zahl der
+       Aufrufe ist gleich. Ergebnisse in Auswahl-Reihenfolge; bei einem Fehler
+       starten keine neuen Szenarien mehr, laufende duerfen fertig werden. */
+    const par = Math.max(1, Math.min(4, parseInt($("evPar").value, 10) || 1));
     const ergebnisse = [];
     let abbruch = null;
     try {
-      for (let i = 0; i < auswahl.length; i++) {
-        aktuell = auswahl[i].id + " (" + (i + 1) + "/" + auswahl.length + ")";
-        zeige();
-        ergebnisse.push(await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport, linsenVoll: !!(arm && arm.linsenVoll) }));
-      }
+      const fertig = new Array(auswahl.length);
+      const laufend = new Set();
+      let naechstes = 0, fehler = null, erledigt = 0;
+      const arbeiter = async () => {
+        while (!fehler && naechstes < auswahl.length) {
+          const i = naechstes++;
+          laufend.add(auswahl[i].id);
+          aktuell = [...laufend].join(", ") + " (" + erledigt + "/" + auswahl.length + " fertig)";
+          zeige();
+          try {
+            fertig[i] = await laufeSzenario(auswahl[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport, linsenVoll: !!(arm && arm.linsenVoll), phasenAus: !!(arm && arm.phasenAus) });
+            erledigt++;
+          } catch (e) { fehler = fehler || e; }
+          finally { laufend.delete(auswahl[i].id); }
+        }
+      };
+      await Promise.all(Array.from({ length: Math.min(par, auswahl.length) }, arbeiter));
+      for (const r of fertig) if (r) ergebnisse.push(r);
+      if (fehler) throw fehler;
       // Aggregation wie laufeAlle — bewusst KEIN Gesamt-Score.
       baueBericht(ergebnisse, pm, jm, null, waechter, arm);
       zeigeErgebnis();
