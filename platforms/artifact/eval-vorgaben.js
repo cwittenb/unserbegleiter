@@ -78,4 +78,18 @@ export const VORGABEN = {
       { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
     ],
   },
+  prv6: {
+    id: "prv6",
+    titel: "PRV-6 · Auflösung in Phasen A/B (DE)",
+    beschreibung: "Gleicher Kern, zwei Wege für die gemeinsame Auflösung: Phasen = Kern + Ablauf, Auftakt/Befund/Wiedereinstieg nur bei Anlass (PRV-6); aus = ganzer Text. Nur DE, beide Modelle n=5.",
+    szenarien: ["AUFD-01", "AUF-01", "MOM-01", "NOT-01", "KRIS-02", "WDR-01", "ANT-01", "GEM-07"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n5", pm: SONNET, n: 5 },
+      { label: "sonnet-aus-n5", pm: SONNET, n: 5, phasenAus: true },
+    ],
+  },
 };

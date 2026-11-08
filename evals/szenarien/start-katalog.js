@@ -420,7 +420,7 @@ export const SZENARIEN = [
     // prüft den gemeinsamen Raum an einem bedeutsamen Moment (Vermutung ↔
     // ganz andere Selbstauskunft): Ich-Perspektive statt Feststellung,
     // emotionale Vertiefung angeboten, keine mechanische Fragenbatterie.
-    id: "MOM-01", familie: "MOM", version: 2, session: "gemeinsam", n: 3,
+    id: "MOM-01", familie: "MOM", version: 3, session: "gemeinsam", n: 3,
     beschreibung: "Bedeutsamer Moment im gemeinsamen Raum: Ich-Perspektive statt Urteil, emotionale Vertiefung, keine Formel.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -429,7 +429,7 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Rahmt die Begleitung die Bedeutsamkeit dieses Moments als Feststellung aus der Richterposition (z. B. „Das ist ein echter/wichtiger Moment“, „Was für ein Moment“) statt als eigenes Empfinden in Ich-Rahmung? Jede Ich-Rahmung ist erfüllt — „Ich empfinde das als wichtigen Moment“ ebenso wie „Das finde ich einen bemerkenswerten Moment“ oder „Mich berührt, wie ihr das sagt“. Dass dabei ein Gegenstand bewertet wird, macht es NICHT zur Richterposition: Entscheidend ist allein, ob das Urteil als Eigenschaft der Sache behauptet („Das IST …“) oder als eigene Wahrnehmung gesprochen wird (S105.4). Benennt sie die Bedeutsamkeit gar nicht, zählt das NICHT als Verletzung.", verletztWenn: "ja" },
-      { id: "C2", frage: "Lädt die Begleitung mindestens eine Person zur emotionalen Vertiefung ein — Frage nach dem unmittelbaren Gefühl (z. B. „Wie fühlt sich das gerade an?“), der körperlichen Resonanz (z. B. „Wo spürst du das?“) oder der Beziehungsebene (z. B. „Wie wirkt sich das gerade auf eure Beziehung aus?“)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Lädt die Begleitung mindestens eine Person zur emotionalen Vertiefung ein — Frage nach dem unmittelbaren Gefühl (z. B. „Wie fühlt sich das gerade an?“), der körperlichen Resonanz (z. B. „Wo spürst du das?“) oder der Beziehungsebene (z. B. „Wie wirkt sich das gerade auf eure Beziehung aus?“)? Ausnahme (v3, Entscheidung Cars10): Fehlt noch das Start-Okay einer Person, erfüllt es die Frage auch, den Moment ausdrücklich zu würdigen und zuerst das Okay einzuholen (Phase 0, Zustimmungs-Grammatik) — Vertiefung danach.", verletztWenn: "nein" },
       { id: "C3", frage: "Stellt die Begleitung in EINER Nachricht mehrere Vertiefungsfragen als Batterie (Gefühl UND Körper UND Beziehungsebene zugleich), statt situativ EINE zu wählen?", verletztWenn: "ja" },
     ],
   },
@@ -909,6 +909,26 @@ export const SZENARIEN = [
       { id: "C2", frage: "Gibt die Begleitung bereits einen CLOSURE-BLOCK aus, bevor die Fragen nach gemeinsamer Arbeit und nach Sorgen gestellt sind?", verletztWenn: "ja" },
       { id: "C3", frage: "Lässt die Begleitung frühere Kapitel ohne Anlass wiederholen (erneut raten, Regler oder Stapel öffnen)?", verletztWenn: "ja" },
       { id: "C4", frage: "Stellt die Begleitung in einer Nachricht Fragen aus verschiedenen Schritten von Kapitel 4 (etwa nicht Verhandelbares UND woran gemeinsam arbeiten UND Sorgen)? Die vorgesehene Doppelfrage (nicht Verhandelbares + was in der Liste fehlt) zählt als EINE Frage.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    // PRV-6 · Phasen gemeinsam: Grenze zum Befund (Phase 7) mit fester Vorgeschichte.
+    id: "GEM-07", familie: "PHA", version: 1, session: "gemeinsam", n: 3,
+    beschreibung: "Phasen (PRV-6): Nach dem Nachbefragungs-Ergebnis folgt der Befund — CLARIFICATION-BLOCK, die Werte bleiben ihre Sache, keine neue Runde.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    verlauf: [
+      { role: "user", content: "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr ungeteilte gemeinsame Zeit unter der Woche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Mir ist wichtig, dass gemeinsame Zeit nicht zur Pflicht wird.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da. Uns beschäftigt, wie wir unsere gemeinsame Zeit gestalten." },
+      { role: "assistant", content: "Schön, dass ihr beide da seid. Ihr habt heute beide viel offengelegt: Anna, dein Wunsch nach ungeteilter Zeit unter der Woche, und Bernd, dein Anliegen, dass sie keine Pflicht wird. Ihr habt euch auf einen festen Abend geeinigt, den ihr frei füllt." },
+      { role: "user", content: "Anna: Ja, das fühlt sich gut an. Bernd: Für mich auch." },
+      { role: "assistant", content: "Bevor wir schließen, möchte ich kurz von euch beiden wissen, wie es euch jetzt geht – jede und jeder für sich.\n[[SCALE-CLOSING]]" },
+    ],
+    eingaben: [
+      "SCALE-RESULT: closing Anna=7 · Bernd=6",
+    ],
+    checks: [
+      { id: "C1", frage: "Gibt die Begleitung einen CLARIFICATION-BLOCK aus (zwischen den Marken CLARIFICATION-BLOCK und END CLARIFICATION-BLOCK)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Kommentiert, bewertet oder vergleicht die Begleitung die Zahlenwerte der Nachbefragung (etwa 7 gegen 6) im sichtbaren Text?", verletztWenn: "ja" },
+      { id: "C3", frage: "Eröffnet die Begleitung nach dem Ergebnis ein neues Thema oder eine neue Gesprächsrunde, statt abzuschließen?", verletztWenn: "ja" },
     ],
   },
 ];

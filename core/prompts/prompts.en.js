@@ -21,5 +21,5 @@
 export { DOMAINS, DOMAENEN } from "../korpus/en/wissen.js";
 export { waechter } from "../korpus/en/policies.js";
 export { bausteine } from "../korpus/en/bausteine.js";
-export { klaerungsPrompt, klaerungsTeile, aufloesungsPrompt, momentPrompt, reflexionsPrompt, qzMenuePrompt, THEMEN_RAHMEN } from "../korpus/en/sessions.js";
+export { klaerungsPrompt, klaerungsTeile, aufloesungsPrompt, aufloesungsTeile, momentPrompt, reflexionsPrompt, qzMenuePrompt, THEMEN_RAHMEN } from "../korpus/en/sessions.js";
 export { steuerTexte, KAPITEL_TITEL, korpusTexte, strukturTexte } from "../korpus/en/steuer.js";

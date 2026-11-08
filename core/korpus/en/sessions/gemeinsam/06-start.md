@@ -1,0 +1,1 @@
+Begin with the opening if a REVEAL-CONTEXT is present — otherwise with phase 0.
