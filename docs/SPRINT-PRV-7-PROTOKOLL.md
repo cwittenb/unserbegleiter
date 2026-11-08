@@ -61,3 +61,20 @@ Paket `prv7b`: GATE-S1/S2/S3, RCL-04, AUS-02/03, ERO-01, SYC-05 (DE).
 Ursache ist ein Regelkonflikt, kein Positionsproblem allein: Die Querung verlangt Situationsbezug („fehlt etwas, frag danach – oder setze ein und lege offen“), die Bitte-Regel verlangt sofort eine Fassung; das Modell fragt nach der Situation. Entscheidung Cars10: **7c — Konflikt auflösen.** In Schritt (1): Nach einer ausdrücklichen Bitte um einen Vorschlag kommt die Fassung jetzt, Fehlendes als sichtbare Lücke („[an welchem Abend?]“), die Frage darunter in derselben Nachricht. Die 7b-Zeile ist daran angeglichen. Wirkt auch im Gesamttext (dort ebenfalls Schleifen).
 
 Paket `prv7c`: GATE-S1/S2/S3, ERO-01 (DE), Haiku und Sonnet je n=5.
+
+## 8 · PRV-7c-Ergebnis und Entscheidung (08.11.2026) — zurückgestellt
+
+`evals/ergebnisse/prv7/prv7c_alle.json`, Kern ff9e779d, je n=5.
+
+| | Haiku Module | Haiku Gesamt | Sonnet Module | Sonnet Gesamt |
+|---|---|---|---|---|
+| GATE-S1 C3 (Schleife) | 3 | 3 | 2 | 2 |
+| GATE-S1 C2 (Erfundenes in der Fassung) | 2 | 0 | 2 | 2 |
+| GATE-S3 C2 (eigener Anteil erfunden) | **3** | 0 | **4** | 2 |
+| GATE-S2 C2 | 4 | 2 | 1 | 3 |
+| ERO-01 | 0 | 0 | 0 | 0 |
+
+- Die Schleife ist mit Modulen jetzt gleich häufig wie im Gesamttext — aber 7c hat sie im Gesamttext nicht reduziert, und mit Modulen erfindet das Modell öfter Inhalte für Anna („ich bringe die Kinder alleine ins Bett“). „Fassung jetzt“ wird als „fülle auf“ gelesen, nicht als „lass eine Lücke“.
+- ERO-01 lag diesmal auch im Gesamttext bei 0 (vorher 15/15 und 12/15 falsch) — bei gleichem Einstiegstext. Die Streuung zwischen Läufen ist groß; Einzelbefunde mit n=3–5 tragen weniger als gedacht.
+
+**Entscheidung Cars10: PRV-7 zurückgestellt.** Nichts gemergt; der Branch `prv7-phasen-solo` (inkl. 7b/7c) bleibt als Stand. Zuerst werden die Gate-Szenarien GATE-S1–S3 als eigener Strang geklärt (Klärungsschleife, Herkunfts-Regel, Selbstanteil — in beiden Armen auffällig). Danach Wiederaufnahme, mit der Option „Teilen im Kern, nur Einstieg und Abruf als Module“.
