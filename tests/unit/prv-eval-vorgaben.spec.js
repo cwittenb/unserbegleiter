@@ -158,3 +158,38 @@ describe("Eval-Artefakt · RPM-Takt", () => {
     for (let i = 1; i < zeiten.length; i++) expect(zeiten[i] - zeiten[i - 1]).toBeGreaterThanOrEqual(40);
   });
 });
+
+describe("Eval-Artefakt · Fortsetzen nach Abbruch", () => {
+  it("der zweite Klick fährt nur die fehlenden Szenarien nach; Bericht vollständig", async () => {
+    const ids = ["SYC-05", "SYC-06", "GATE-S1"];
+    let pipe = 0, einmalFehler = true;
+    const gespielt = [];
+    const mach = modell => async (system, messages) => {
+      if (system.startsWith("Du bist ein strenger")) {
+        const id = /Szenario (\S+) v/.exec(messages.at(-1).content)[1];
+        const sz = SZENARIEN.find(s => s.id === id);
+        return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "«x»" })) } };
+      }
+      pipe++;
+      const erste = messages[0].content;
+      gespielt.push(erste);
+      if (einmalFehler && SZENARIEN.find(s => s.id === "GATE-S1").eingaben[0] === erste) { einmalFehler = false; throw new Error("Permission denied"); }
+      return { text: "Antwort." };
+    };
+    const vg = { id: "f", titel: "F", szenarien: ids, judge: "j", waechter: true, arme: [{ label: "a", pm: "m", n: 1 }] };
+    createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: mach, vorgabe: vg });
+    root.querySelector("#evRpm").value = "0";
+    root.querySelector("#evPar").value = "1";
+    const warte = async re => { for (let i = 0; i < 400 && !re.test(root.querySelector("#evVgStatus").textContent); i++) await new Promise(r => setTimeout(r, 5)); };
+    root.querySelector("#evVorgabe").click();
+    await warte(/Angehalten/);
+    expect(root.querySelector("#evVgStatus").textContent).toMatch(/2 Szenarien schon fertig/);
+    const vorher = gespielt.length;
+    root.querySelector("#evVorgabe").click();
+    await warte(/Alle 1 Läufe fertig/);
+    const nachgefahren = gespielt.slice(vorher);
+    const gate = SZENARIEN.find(s => s.id === "GATE-S1").eingaben[0];
+    expect(nachgefahren.every(e => e === gate)).toBe(true);
+    expect(JSON.parse(root.querySelector("#evJson").value).szenarien.map(s => s.id)).toEqual(SZENARIEN.filter(s => ids.includes(s.id)).map(s => s.id));
+  });
+});
