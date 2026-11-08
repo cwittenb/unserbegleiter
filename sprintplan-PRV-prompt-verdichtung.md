@@ -35,7 +35,7 @@ Leitplanken (gelten für alle Schritte):
 | PRV-1e (vier Ich-Anfänge) | **nicht gemergt**: DE 100 % „Ich bleibe“, SYC C1 DE 0 → 5/10 (beide Modelle). Befund: neutrale Ich-Anfänge schieben die Wertung in Satz 2; „Mich berührt“ wirkt, weil es die Wertung selbst ins Ich nimmt. |
 | PRV-5/5b (Phasen einzel) | **main** — je Zug −36 bis −60 %; Zahlen-Regel in den Kern (5b); DE gleichauf |
 | PRV-7 (Reflexionsgespräch in Modulen) | **zurückgestellt** (`prv7-phasen-solo`, 7b/7c): Module verschärfen Gate-Probleme (Schleife, erfundene Inhalte); erst Gate-Szenarien S1–S3 als eigener Strang, dann Wiederaufnahme ggf. mit „Teilen im Kern“ |
-| PRV-6 (Auflösung in Phasen) | `prv6-phasen-gemeinsam`, Mitte −23 %, wartet auf Eval-Paket prv6 (DE) |
+| PRV-6 (Auflösung in Phasen) | **main** — Mitte −23 %; Haiku 10/18, Sonnet 15/16; MOM-01 v3 „Okay zuerst“ |
 | Fenster-Wächter | offen |
 | PRV-3b Zustandsobjekt | zurückgestellt (nur Erledigtes; braucht Langszenarien), danach PRV-3c Rotation pro Zug |
 | PRV-1 Eröffnungen | abgeschlossen auf Stand 1c („Mich berührt …“, urteilsfrei) |
