@@ -32,6 +32,7 @@ import { maskiereMail } from "./mailmaske.js";   // S143
 import { makeMailer, pruefeVersand } from "./mailer.js";
 import { leseMailStat } from "./mailstat.js";   // S118
 import { pruefeMeldeweg } from "./betriebsmeldung.js";   // S120
+import { istSystemGueltig } from "../../../core/llm/system.js";
 
 const json = (data, status = 200, headers = {}) =>
   new Response(JSON.stringify(data), {
@@ -842,7 +843,8 @@ async function route(request, env) {
           Kontingent — alles OHNE Upstream-Kontakt abgewiesen. ---- */
   if (p === "/api/llm" && request.method === "POST") {
     const { system, messages, stream, structured } = await request.json();
-    if (typeof system !== "string" || !Array.isArray(messages)) return fehler("system und messages sind Pflicht", 400);
+    // PRV-5 · system darf auch [Kern, Modul] sein (Phasen-Komposition).
+    if (!istSystemGueltig(system) || !Array.isArray(messages)) return fehler("system und messages sind Pflicht", 400);
     // S76 · Strukturausgabe: der Client schickt Name + JSON-Schema, der Worker
     // übersetzt providerspezifisch (Tool-Use bzw. response_format). Grenzen:
     // vollständige Angabe erzwingen (kein Raten) und Größe deckeln — ein

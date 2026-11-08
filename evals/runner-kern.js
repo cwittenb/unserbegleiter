@@ -144,6 +144,24 @@ export function wendeZielAn(szenarien, ziel) {
  * eine Revision stattgefunden hat.
  */
 /** PRV-4 · Die beiden Linsen-Volltexte in der Sprache des Szenarios (A/B-Arm "voll"). */
+export function sysBloeckeFuer(szenario, messages) {
+  /* PRV-5 · Phasen-Komposition wie in der Engine: [Kern, Modul] je Zug aus
+     dem bisherigen Verlauf. null, wo die Art keine Phasen hat. Zusatzkontext
+     (S66) haengt wie beim Gesamttext hinten an — also ans Modul. */
+  const def = defFuer(szenario);
+  if (!def || !def.sysBloecke) return null;
+  const k = szenario.kontext || {};
+  const ctx = { me: k.me || k.name || "Anna", partner: k.partner || "Bernd", nameA: k.nameA || "Anna", nameB: k.nameB || "Bernd" };
+  const b = def.sysBloecke(ctx, messages);
+  return szenario.zusatzKontext ? [b[0], b[1] + "\n\n" + szenario.zusatzKontext] : b;
+}
+
+/** Text an einen Systemtext haengen — String oder Bloecke (dann ans letzte). */
+export function systemPlus(system, extra) {
+  if (!extra) return system;
+  return Array.isArray(system) ? [...system.slice(0, -1), system.at(-1) + extra] : system + extra;
+}
+
 export function linsenVolltext(szenario) {
   return mitKorpusSprache(szenario.sprache === "en" ? "en" : "de",
     () => K().bausteine.anteileSprache + "\n\n" + K().bausteine.entwicklungsRaum);
@@ -186,7 +204,11 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
        Transport vor PRV-3 nach (Zusatz an den Systemtext). Die App kennt nur
        den neuen Weg. */
     const alt = opt.regieTransport === "system" && zusatz;
-    const zugSystem = alt ? system + "\n\n" + zusatz : system;
+    /* PRV-5 · Phasen: Systemtext je Zug aus dem Verlauf (wie die Engine);
+       `phasenAus` misst den Gesamttext (Stand vor PRV-5). */
+    const bloecke = !struktur && !opt.phasenAus ? sysBloeckeFuer(szenario, messages) : null;
+    const basis = bloecke ? systemPlus(bloecke, opt.linsenVoll ? "\n\n" + linsenVolltext(szenario) : "") : system;
+    const zugSystem = alt ? systemPlus(basis, "\n\n" + zusatz) : basis;
     const zugVerlauf = alt ? messages : mitRegie(messages, zusatz);
     if (struktur) {
       const r = await pipelineCall(zugSystem, zugVerlauf, { structured: struktur.schema });
@@ -447,7 +469,7 @@ export function szenarioAusSamples(szenario, samples, anzahl, variante) {
   };
 }
 
-export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante, regieTransport, linsenVoll }) {
+export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante, regieTransport, linsenVoll, phasenAus }) {
   const anzahl = n || szenario.n || 3;
   const samples = [];
   // ST5.4: Präambel + Schema EINMAL je Szenario bauen (deterministisch —
@@ -455,7 +477,7 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
   // Grammatik-Cache der API treffsicher).
   const struktur = variante === "struktur" ? strukturFuer(szenario) : null;
   for (let i = 0; i < anzahl; i++) {
-    const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur, regieTransport, linsenVoll });
+    const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur, regieTransport, linsenVoll, phasenAus });
     const anomalie = anomalieImTranskript(transkript);
     const urteil = anomalie
       ? { bewertet: false, fehler: anomalie.grund + " (Turn " + anomalie.turn + ")" }   // techn. Anomalie, kein Content-Verstoß (S65/S77)

@@ -50,4 +50,32 @@ export const VORGABEN = {
       { label: "sonnet-voll-n3", pm: SONNET, n: 3, linsenVoll: true },
     ],
   },
+  prv5: {
+    id: "prv5",
+    titel: "PRV-5 · Phasen-Komposition einzel A/B",
+    beschreibung: "Gleicher Kern, zwei Wege für die Auftragsklärung: Phasen = Kern + Modul des aktuellen Kapitels (PRV-5); aus = ganzer Text wie vorher. Ziel: Phasen nicht schlechter, kein Echo. SCA-01/SPA-01 (Kapitel 1–2) und PHA-02..04 (Kapitelgrenzen 2, 3, 4).",
+    szenarien: ["SCA-01", "SCA-01-EN", "SPA-01", "SPA-01-EN", "PHA-02", "PHA-02-EN", "PHA-03", "PHA-03-EN", "PHA-04", "PHA-04-EN"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n3", pm: SONNET, n: 3 },
+      { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
+    ],
+  },
+  prv5b: {
+    id: "prv5b",
+    titel: "PRV-5b · Phasen einzel, Nachmessung",
+    beschreibung: "Nachmessung nach PRV-5: Zahlen-Regel jetzt einmal im Kern (gilt in jeder Phase); PHA-04 C4 v2 (die vorgesehene Doppelfrage zählt als eine). Phasen vs. aus.",
+    szenarien: ["SPA-01", "SPA-01-EN", "PHA-04", "PHA-04-EN"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n3", pm: SONNET, n: 3 },
+      { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
+    ],
+  },
 };

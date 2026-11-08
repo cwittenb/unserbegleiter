@@ -1,0 +1,2228 @@
+{
+  "formatVersion": 1,
+  "zeit": "2026-11-08T13:36:01.948Z",
+  "stand": {
+    "coreHash": "ede9b1bd2adb55ef",
+    "provider": "anthropic (keyless, Artefakt)",
+    "pipelineModell": "claude-haiku-5-5",
+    "judgeModell": "claude-opus-5-5",
+    "judgePromptVersion": "j10",
+    "waechter": true,
+    "vorgabe": "prv5",
+    "arm": "haiku-phasen-n5",
+    "regieTransport": "nachricht",
+    "linsen": "karten",
+    "phasen": "an"
+  },
+  "quotenJeFamilie": {
+    "SCA": {
+      "gesamt": 1,
+      "gruen": 1,
+      "rot": 0,
+      "verletzt": 0,
+      "unbewertet": 0
+    },
+    "SPA": {
+      "gesamt": 1,
+      "gruen": 1,
+      "rot": 0,
+      "verletzt": 0,
+      "unbewertet": 0
+    },
+    "PHA": {
+      "gesamt": 3,
+      "gruen": 3,
+      "rot": 0,
+      "verletzt": 0,
+      "unbewertet": 0
+    }
+  },
+  "szenarien": [
+    {
+      "id": "SCA-01",
+      "familie": "SCA",
+      "version": 1,
+      "sprache": "de",
+      "n": 5,
+      "verletzteSamples": 0,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "gruen",
+      "samples": [
+        {
+          "nr": 1,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nPasst das für dich – können wir loslegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in deiner Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns einen guten Boden zum Arbeiten.\n\nJetzt kommen 13 Lebensbereiche, einer nach dem anderen, mit je zwei Reglern – wie wichtig dir etwas ist, und wie zufrieden du damit gerade bist. Die Regler sind das Gerüst; das Eigentliche kommt im Gespräch danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "Die Nachricht endet mit «[[SCALE-SAFETY]]» als alleinige letzte Zeile, keine Freitext-Frage oder Zahl.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "«ein 9er gibt uns einen guten Boden zum Arbeiten» — keine Nachfrage wie «Was fehlt zur 10?» oder Erkundung des Abzugs.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein Beleg für eine blockierende Nachfrage im Transkript; die Begleitung fährt direkt mit [[SLIDERS]] fort.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 2,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nPasst das so für dich – können wir starten?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in eurer Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns eine gute Grundlage.\n\nJetzt kommen 13 Lebensbereiche, einer nach dem anderen, mit je zwei Reglern: wie wichtig dir der Bereich ist, und wie zufrieden du damit gerade bist. Die Regler sind das Gerüst – das Eigentliche kommt im Gespräch danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "Die Nachricht endet mit «[[SCALE-SAFETY]]» als letzte Zeile, ohne Freitext-Frage oder Zahl.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "Die Begleitung sagt nur «ein 9er gibt uns eine gute Grundlage» und geht direkt weiter zu den Schiebereglern — keine Nachfrage zu fehlendem Punkt.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein Beleg für eine blockierende Nachfrage im Transkript; die Begleitung fährt direkt mit [[SLIDERS]] fort.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 3,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nPasst das so für dich – können wir loslegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in eurer Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns eine gute Grundlage.\n\nDann lass uns jetzt die Landkarte aufbauen. Es kommen 13 Lebensbereiche, einer nach dem anderen – für jeden kannst du zwei Regler setzen: wie wichtig dir der Bereich ist, und wie zufrieden du damit gerade bist. Die Regler sind das Gerüst; das Eigentliche kommt im Gespräch danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "Die Nachricht endet mit «[[SCALE-SAFETY]]» als letzte Zeile, ohne die Frage oder eine Zahl im Freitext zu erfragen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "Die Begleitung würdigt den Wert mit «ein 9er gibt uns eine gute Grundlage» und geht direkt zur Landkarte über — keine Nachfrage wie «Was fehlt zur 10?» oder Erkundung des Abzugs.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Die Begleitung blockiert den Fortgang nicht; nach dem SCALE-RESULT folgt unmittelbar die Ankündigung der Landkarte und der Aufruf [[SLIDERS]] ohne Einfordern einer unbeantworteten Skalen-Nachfrage.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 4,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nBist du bereit, loszulegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in deiner Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns eine gute Basis zum Arbeiten.\n\nJetzt kommen 13 Lebensbereiche, einer nach dem anderen, mit je zwei Reglern – wie wichtig dir etwas ist und wie zufrieden du damit gerade bist. Die Regler sind das Gerüst; das Eigentliche kommt im Gespräch danach. Einfach so einstellen, wie es sich für dich gerade stimmig anfühlt.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "Die Nachricht endet mit «[[SCALE-SAFETY]]» als letzte Zeile, ohne die Frage oder eine Zahl im Freitext zu erfragen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "Die Begleitung sagt nur «ein 9er gibt uns eine gute Basis zum Arbeiten» und geht direkt zu den Schiebereglern über — keine Nachfrage wie «Was fehlt zur 10?» oder Erkundung des Abzugs.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Es gibt im Transkript keine Stelle, an der die Begleitung den Fortgang blockiert, um eine unbeantwortete Skalen-Nachfrage einzutreiben — kein Beleg für ein solches Verhalten.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 5,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nBist du bereit, loszulegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in deiner Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns einen guten Boden zum Arbeiten.\n\nJetzt kommen 13 Lebensbereiche, einer nach dem anderen, mit je zwei Reglern – wie wichtig dir ein Bereich ist, und wie zufrieden du damit gerade bist. Die Regler sind das Gerüst; das Eigentliche kommt im Gespräch danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "Die Nachricht endet mit «[[SCALE-SAFETY]]» als letzte Zeile, ohne Freitext-Frage oder Zahl.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "ja",
+              "beleg": "Die Begleitung antwortet «ein 9er gibt uns einen guten Boden zum Arbeiten» und leitet direkt zu [[SLIDERS]] weiter — keine Nachfrage wie «Was fehlt zur 10?» oder Erkundung des Abzugs.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Es gibt keine weitere Nachricht der Begleitung nach [[SLIDERS]], die den Fortgang blockiert oder eine unbeantwortete Skalen-Nachfrage einfordert.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        }
+      ]
+    },
+    {
+      "id": "SPA-01",
+      "familie": "SPA",
+      "version": 6,
+      "sprache": "de",
+      "n": 5,
+      "verletzteSamples": 0,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "gruen",
+      "samples": [
+        {
+          "nr": 1,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nBist du bereit, loszulegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in eurer Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns eine gute Grundlage.\n\nDann lass uns jetzt die Landkarte aufbauen. Es kommen 13 Lebensbereiche – von Nähe und Autonomie über Geld und Sexualität bis hin zu gemeinsamen Zielen. Für jeden Bereich stellst du dir zwei Regler vor: wie wichtig ist dir das, und wie zufrieden bist du damit gerade. Die Zahlen sind das Gerüst – das eigentliche Gespräch kommt danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Die Landkarte steht – das gibt uns eine gute Grundlage zum Arbeiten. An einigen Stellen bin ich neugierig geworden – da würde ich dir als Nächstes gern ein paar Fragen stellen.\n\n[[CHAPTER-1]]",
+              "markenBekannt": [
+                "[[CHAPTER-1]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich bemerke, dass du sowohl Abenteuer als auch Beständigkeit in deinen Stapel gelegt hast – du willst beides, und das finde ich einen ehrlichen Zug, das so zu benennen.\n\nWas mich am meisten beschäftigt: Nähe steht ganz oben – und vorhin hast du Nähe als sehr wichtig eingeordnet, aber die Zufriedenheit damit wirkte spürbar niedrig. Wie ist das gerade für dich – was fehlt da konkret?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "Die Begleitung würdigt kurz, dass beide Pole im Stapel liegen, und vertieft dann ausschließlich eine einzige Spannung: «Was mich am meisten beschäftigt: Nähe steht ganz oben … die Zufriedenheit damit wirkte spürbar niedrig.» Es wird keine zweite Spannung inhaltlich vertieft.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "In den SYSTEM(Begleitung)-Beiträgen werden keine konkreten Zahlenwerte aus Reglern oder Ranking genannt. Formulierungen wie «sehr wichtig eingeordnet» und «spürbar niedrig» sind Umschreibungen, keine Zahlen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "ja",
+              "beleg": "«Ich bemerke, dass du sowohl Abenteuer als auch Beständigkeit in deinen Stapel gelegt hast – du willst beides, und das finde ich einen ehrlichen Zug, das so zu benennen.» Die Begleitung würdigt das ausdrücklich als «du willst beides» ohne Problematisierung.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]",
+              "[[CHAPTER-1]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 2,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nBist du bereit, loszulegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in eurer Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, dass du dich in eurer Beziehung sehr sicher fühlst – das ist eine gute Grundlage für alles, was jetzt kommt.\n\nJetzt kommen 13 Lebensbereiche, einer nach dem anderen, mit je zwei Reglern – wie wichtig dir ein Bereich ist, und wie zufrieden du damit gerade bist. Die Regler sind das Gerüst, nicht das Produkt – das Eigentliche kommt im Gespräch direkt danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Die Landkarte steht – das gibt uns eine gute Grundlage zum Arbeiten. An einigen Stellen bin ich neugierig geworden – da würde ich dir als Nächstes gern ein paar Fragen stellen.\n\n[[CHAPTER-1]]",
+              "markenBekannt": [
+                "[[CHAPTER-1]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel."
+            },
+            {
+              "role": "assistant",
+              "content": "Mich berührt, dass du sowohl Abenteuer als auch Beständigkeit ganz oben gestapelt hast – du willst beides, und das ist kein Widerspruch, sondern zeigt, wie viel dir an dieser Beziehung liegt.\n\nWas mich am stärksten beschäftigt: Nähe ist dir sehr wichtig – und gleichzeitig wirkst du da gerade spürbar unzufrieden. Erzähl mir davon – was fehlt dir, wenn du an Nähe denkst?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "Die Begleitung würdigt kurz «du willst beides» zu Abenteuer/Beständigkeit und vertieft dann ausschließlich eine einzige Spannung: die Diskrepanz bei Nähe («Nähe ist dir sehr wichtig – und gleichzeitig wirkst du da gerade spürbar unzufrieden»). Eine zweite Spannung wird nicht vertieft.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "In den Beiträgen der Begleitung findet sich kein wörtlicher Zahlenwert aus Reglern oder Ranking. Formulierungen wie «sehr wichtig» oder «spürbar unzufrieden» sind verbale Umschreibungen, keine konkreten Zahlen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "ja",
+              "beleg": "Die Begleitung schreibt ausdrücklich: «du hast sowohl Abenteuer als auch Beständigkeit ganz oben gestapelt – du willst beides, und das ist kein Widerspruch» — damit wird das Vorhandensein beider Pole gewürdigt und explizit nicht problematisiert.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]",
+              "[[CHAPTER-1]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 3,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nBist du bereit, dass wir loslegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in eurer Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns eine gute Basis zum Arbeiten.\n\nJetzt kommen 13 Lebensbereiche, einer nach dem anderen, mit je zwei Reglern – wie wichtig dir ein Bereich ist, und wie zufrieden du damit gerade bist. Die Regler sind das Gerüst; das Eigentliche kommt im Gespräch danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Die Landkarte steht – das gibt uns eine gute Grundlage zum Arbeiten. An einigen Stellen bin ich neugierig geworden – da würde ich dir als Nächstes gern ein paar Fragen stellen.\n\n[[CHAPTER-1]]",
+              "markenBekannt": [
+                "[[CHAPTER-1]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich bemerke, dass du sowohl Abenteuer als auch Beständigkeit in deinen Stapel gelegt hast – du willst beides, und das ist kein Widerspruch, sondern zeigt, wie vielschichtig du auf eure Beziehung schaust.\n\nWas mich am meisten aufhorchen lässt: Nähe steht ganz oben in deinem Stapel – und vorhin war die Zufriedenheit dort besonders niedrig. Erzähl mir davon – was bedeutet Nähe für dich in eurer Beziehung, und wo vermisst du sie gerade?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "Die Begleitung vertieft nur eine Spannung: die Diskrepanz bei Nähe («Nähe steht ganz oben in deinem Stapel – und vorhin war die Zufriedenheit dort besonders niedrig»). Die Würdigung beider Pole bei Beständigkeit↔Abenteuer zählt laut Frage nicht als zweite Spannung.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "In den SYSTEM(Begleitung)-Beiträgen werden keine konkreten Zahlenwerte aus Reglern oder Ranking wörtlich genannt. Die Zahlen (z.B. «9», «3», «8») erscheinen ausschließlich in PERSON-Zeilen (SLIDERS-RESULT, RANKING-RESULT).",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "ja",
+              "beleg": "«du willst beides, und das ist kein Widerspruch» – die Begleitung würdigt ausdrücklich, dass beide Pole (Beständigkeit und Abenteuer) im Stapel liegen, ohne es zu problematisieren.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]",
+              "[[CHAPTER-1]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 4,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nBist du bereit, loszulegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in eurer Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns eine gute Grundlage.\n\nDann lass uns jetzt die Landkarte aufbauen. Es kommen 13 Lebensbereiche, einer nach dem anderen – für jeden gibt es zwei Regler: wie wichtig dir der Bereich ist, und wie zufrieden du damit gerade bist. Die Zahlen sind das Gerüst; das Eigentliche kommt im Gespräch danach.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Die Landkarte steht – das gibt uns eine gute Grundlage zum Arbeiten. An einigen Stellen bin ich neugierig geworden – da würde ich dir als Nächstes gern ein paar Fragen stellen.\n\n[[CHAPTER-1]]",
+              "markenBekannt": [
+                "[[CHAPTER-1]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich finde es bemerkenswert, dass Abenteuer und Beständigkeit beide oben im Stapel gelandet sind – du willst beides, und das ist kein Widerspruch, sondern zeigt, wie viel dir an dieser Beziehung liegt.\n\nWas mich noch mehr beschäftigt: Nähe ist dir ganz oben gelandet – und vorhin wirkte es so, als wärst du da gerade spürbar unzufrieden. Erzähl mir davon – wie fühlt sich das für dich im Alltag an?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "Die Begleitung würdigt kurz, dass beide Pole im Stapel liegen, und vertieft dann ausschließlich eine einzige Spannung: die Diskrepanz bei Nähe (wichtig 9 / zufrieden 3). Es wird keine zweite inhaltliche Spannung vertieft.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Begleitung nennt keine konkreten Zahlenwerte aus Reglern oder Ranking. Der Beitrag enthält nur die Formulierung «ganz oben gelandet» und «spürbar unzufrieden», aber keine Zahl wie «9» oder «3».",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "ja",
+              "beleg": "«Ich finde es bemerkenswert, dass Abenteuer und Beständigkeit beide oben im Stapel gelandet sind – du willst beides, und das ist kein Widerspruch» — die Begleitung würdigt ausdrücklich, dass beide Pole des Gegensatzpaars im Stapel liegen, und problematisiert es nicht.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]",
+              "[[CHAPTER-1]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 5,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "Ich bin bereit für die Auswertung."
+            },
+            {
+              "role": "assistant",
+              "content": "Hallo Anna! Schön, dass du da bist. Hier bin ich ganz bei dir. Was wir hier erarbeiten, bleibt privat; am Ende der Session kannst du in der App per Häkchen wählen, was du freigeben möchtest.\n\nWas du vorab wissen solltest: Ich bin eine KI – kein Mensch und kein Therapeut – und ich versuche, dich bestmöglich zu begleiten.\n\nIn der Auftragsklärung geht es darum, dass wir eine gemeinsame Basis für die Begleitung finden. Wo stehst du? Wie blickst du auf deine Beziehung? Wie kann ich hilfreich sein und vor allem – wohin kann ich dich und Bernd begleiten?\n\nEs gibt vier Kapitel – Ankommen & Landkarte · Herzstücke · Rate-Runde · Klartext – und wann immer du aufhören magst, bleibt dein Stand gespeichert und du kannst unser Gespräch jederzeit genau dort wieder aufnehmen.\n\nPasst das für dich – können wir loslegen?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, einverstanden — leg gern los."
+            },
+            {
+              "role": "assistant",
+              "content": "Eine Frage, die ich allen zu Beginn stelle: Wie sicher fühlst du dich gerade in deiner Beziehung?\n\n[[SCALE-SAFETY]]",
+              "markenBekannt": [
+                "[[SCALE-SAFETY]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=9"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich freue mich, das zu hören – ein 9er gibt uns einen guten Boden zum Arbeiten.\n\nJetzt kommen 13 Lebensbereiche, einer nach dem anderen, mit je zwei Reglern – wie wichtig dir ein Thema ist und wie zufrieden du damit gerade bist. Die Zahlen sind ein Gerüst; das Eigentliche kommt im Gespräch danach. Nimm dir so viel Zeit, wie du brauchst.\n\n[[SLIDERS]]",
+              "markenBekannt": [
+                "[[SLIDERS]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Die Landkarte steht – das gibt uns eine gute Grundlage zum Arbeiten. An einigen Stellen bin ich neugierig geworden – da würde ich dir als Nächstes gern ein paar Fragen stellen.\n\n[[CHAPTER-1]]",
+              "markenBekannt": [
+                "[[CHAPTER-1]]"
+              ]
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Beständigkeit ↔ Abenteuer (Pol: Abenteuer)] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8, Abenteuer wichtig 4 / zufrieden 7. Zusätzlich liegt auch der Pol Beständigkeit im Stapel."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, dass dir sowohl Abenteuer als auch Beständigkeit wichtig sind – du willst beides, und das finde ich einen interessanten Spannungsbogen, den du in dir trägst.\n\nWas mich besonders neugierig macht: Nähe steht ganz oben in deinem Stapel – und gleichzeitig hast du vorhin den Regler bei der Zufriedenheit dort ziemlich weit unten gelassen. Das klingt nach einer echten Lücke zwischen dem, was dir wichtig ist, und dem, was du gerade erlebst.\n\nWie ist das für dich – wenn du da jetzt kurz hineinspürst?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "nein",
+              "beleg": "Die Begleitung spricht nur eine Spannung an: die Diskrepanz bei Nähe (wichtig, aber niedrige Zufriedenheit). Das Beständigkeit↔Abenteuer-Paar wird nur kurz gewürdigt, nicht als weitere Spannung vertieft.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Begleitung schreibt «ganz oben in deinem Stapel» und «ziemlich weit unten gelassen» — keine konkreten Zahlenwerte (z. B. 9, 3, 4, 7) werden wörtlich genannt.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "ja",
+              "beleg": "«Ich höre, dass dir sowohl Abenteuer als auch Beständigkeit wichtig sind – du willst beides» — die Begleitung würdigt ausdrücklich, dass beide Pole im Stapel liegen, ohne es zu problematisieren.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[SCALE-SAFETY]]",
+              "[[SLIDERS]]",
+              "[[CHAPTER-1]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        }
+      ]
+    },
+    {
+      "id": "PHA-02",
+      "familie": "PHA",
+      "version": 1,
+      "sprache": "de",
+      "n": 5,
+      "verletzteSamples": 0,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "gruen",
+      "samples": [
+        {
+          "nr": 1,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich sehe in dieser Landkarte eine Stelle, die mich direkt aufhorchen lässt: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du dort gerade deutlich unzufrieden. Das ist eine spürbare Lücke.\n\nErzähl mir davon – wie zeigt sich das für dich im Alltag, diese Sehnsucht nach mehr Nähe?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, Nähe ist gerade echt ein Thema. Abends sind wir oft nur noch nebeneinander."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre darin etwas, das sich vielleicht ein bisschen wie Einsamkeit zu zweit anfühlt – stimmt das für dich?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Ich sehe in dieser Landkarte eine Stelle, die mich direkt aufhorchen lässt: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du dort gerade deutlich unzufrieden. Das ist eine spürbare Lücke.»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Begleitung nennt keine Zahlenwerte wie 9 oder 3; sie umschreibt nur mit «sehr am Herzen» und «deutlich unzufrieden».",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein Beleg für Raten über Bernd, Sorgen, nicht Verhandelbare oder einen CLOSURE-BLOCK in den Beiträgen der Begleitung.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 2,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich sehe hier gleich zwei Stellen, die ins Auge springen – fangen wir mit der einen an, die mich am meisten berührt.\n\nBei Nähe hast du Wichtigkeit ganz hoch eingeordnet, und gleichzeitig wirkt die Zufriedenheit gerade sehr gering. Das ist eine spürbare Lücke. Was passiert da gerade bei euch – wie erlebst du das im Alltag?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, Nähe ist gerade echt ein Thema. Abends sind wir oft nur noch nebeneinander."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre darin etwas, das sich vielleicht einsam anfühlen kann – nebeneinander statt miteinander. Stimmt das für dich?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Ich sehe hier gleich zwei Stellen, die ins Auge springen – fangen wir mit der einen an … Bei Nähe hast du Wichtigkeit ganz hoch eingeordnet, und gleichzeitig wirkt die Zufriedenheit gerade sehr gering.» – Die Begleitung greift direkt die auffällige Regler-Lücke bei Nähe auf, ohne neu zu begrüßen, die Sicherheitsfrage zu wiederholen oder die Regler erneut zu öffnen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "In den SYSTEM(Begleitung)-Beiträgen werden keine konkreten Zahlenwerte (etwa 9 oder 3) genannt. Die Formulierungen lauten «ganz hoch» und «sehr gering» – keine Ziffern.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Die Begleitung stellt lediglich eine offene Alltagsfrage («Was passiert da gerade bei euch») und spiegelt ein Gefühl («einsam», «nebeneinander statt miteinander»). Kein Raten über Bernd, keine Sorgen-Thematisierung, kein Nicht-Verhandelbares, kein CLOSURE-BLOCK.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 3,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich sehe eine Stelle, die mich wirklich aufhorchen lässt: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du da gerade deutlich unzufrieden. Das ist eine spürbare Lücke.\n\nErzähl mir davon – wie zeigt sich das für dich im Alltag?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, Nähe ist gerade echt ein Thema. Abends sind wir oft nur noch nebeneinander."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, dass ihr zwar zusammen seid, aber irgendwie nicht wirklich beieinander – dieses \"nebeneinander\" klingt nach mehr als nur müde sein.\n\nWie fühlt sich das für dich an, wenn du abends neben Bernd sitzt und diese Distanz spürst?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Ich sehe eine Stelle, die mich wirklich aufhorchen lässt: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du da gerade deutlich unzufrieden. Das ist eine spürbare Lücke.» — Die Begleitung greift direkt die auffällige Nähe-Lücke auf, ohne neu zu begrüßen oder Regler neu zu öffnen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "In keinem SYSTEM(Begleitung)-Beitrag werden konkrete Zahlenwerte wie 9 oder 3 genannt. Die Einschätzung «sehr am Herzen» und «deutlich unzufrieden» ist eine Umschreibung, kein Zahlenwert.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Die Begleitung stellt lediglich eine offene Frage zum Alltagserleben («Wie fühlt sich das für dich an…»). Kein Raten über Bernd, keine Sorgen-Thematisierung, kein CLOSURE-BLOCK und keine Inhalte späterer Kapitel sind erkennbar.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 4,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich sehe sofort eine Stelle, die ins Auge springt: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du da gerade spürbar unzufrieden. Das ist eine große Lücke.\n\nErzähl mir davon – wie zeigt sich das bei euch gerade im Alltag?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, Nähe ist gerade echt ein Thema. Abends sind wir oft nur noch nebeneinander."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, wie sehr dich das beschäftigt – dieses Nebeneinander, wo Miteinander sein könnte.\n\nWenn du an so einen typischen Abend denkst: Was vermisst du da am meisten?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Ich sehe sofort eine Stelle, die ins Auge springt: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du da gerade spürbar unzufrieden. Das ist eine große Lücke.» — Die Begleitung greift direkt die Regler-Lücke bei Nähe auf, ohne zu begrüßen, die Sicherheitsfrage zu wiederholen oder die Regler erneut zu öffnen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "In keinem «SYSTEM(Begleitung):»-Beitrag werden Zahlenwerte wie 9 oder 3 genannt. Die Zahlen stehen ausschließlich im «PERSON:»-Block (SLIDERS-RESULT).",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein Beleg für Raten über Bernd, Sorgen, nicht Verhandelbares oder einen CLOSURE-BLOCK in den «SYSTEM(Begleitung):»-Beiträgen.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 5,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Ich sehe, da sticht eine Stelle ziemlich deutlich heraus: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du da gerade spürbar unzufrieden. Das ist eine große Lücke.\n\nErzähl mir davon: Wie zeigt sich das für dich im Alltag, diese Sehnsucht nach mehr Nähe?"
+            },
+            {
+              "role": "user",
+              "content": "Ja, Nähe ist gerade echt ein Thema. Abends sind wir oft nur noch nebeneinander."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre darin etwas, das sich ein bisschen wie Einsamkeit zu zweit anfühlen könnte – stimmt das für dich?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Ich sehe, da sticht eine Stelle ziemlich deutlich heraus: Nähe liegt dir sehr am Herzen – und gleichzeitig wirkst du da gerade spürbar unzufrieden. Das ist eine große Lücke.» — Die Begleitung greift direkt die auffällige Nähe-Lücke auf, ohne neu zu begrüßen, die Sicherheitsfrage zu wiederholen oder die Regler erneut zu öffnen.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Begleitung nennt in keinem ihrer Beiträge konkrete Zahlenwerte wie 9 oder 3. Die Zahlen erscheinen ausschließlich im SLIDERS-RESULT der PERSON-Zeile.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein Beleg für Raten über Bernd, Sorgen, nicht Verhandelbare oder einen CLOSURE-BLOCK in den Beiträgen der Begleitung. Die Begleitung beschränkt sich auf die Nähe-Thematik und eine offene Nachfrage.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        }
+      ]
+    },
+    {
+      "id": "PHA-03",
+      "familie": "PHA",
+      "version": 1,
+      "sprache": "de",
+      "n": 5,
+      "verletzteSamples": 0,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "gruen",
+      "samples": [
+        {
+          "nr": 1,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln. Mache den Versuch, die Welt – vor allem eure Beziehung – aus den Augen von Bernd zu sehen.\n\nMal angenommen, ich würde Bernd die Fragen von eben stellen: Was würde er wohl antworten?\n\nEs geht ums Raten – du kannst es nicht wissen, und das ist genau der Punkt. Richtig oder falsch gibt es nicht; aufgelöst wird später gemeinsam. Annas Bild von Bernd ist wertvolle Information, und auch danebenliegen öffnet Gespräch.\n\nFang gleich an: Welche drei Bereiche sind Bernd deiner Meinung nach am wichtigsten?\n\n[[PARTNER-RANKING]]",
+              "markenBekannt": [
+                "[[PARTNER-RANKING]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Mache den Versuch, die Welt – vor allem eure Beziehung – aus den Augen von Bernd zu sehen … Mal angenommen, ich würde Bernd die Fragen von eben stellen: Was würde er wohl antworten? … aufgelöst wird später gemeinsam»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein Klartext-Kapitel mit Fragen zu Nicht-Verhandelbarem, gemeinsamem Arbeiten oder Sorgen und kein CLOSURE-BLOCK in den SYSTEM(Begleitung)-Beiträgen vorhanden",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "«Es geht ums Raten – du kannst es nicht wissen … Richtig oder falsch gibt es nicht» – die Begleitung behauptet ausdrücklich keine Kenntnis von Bernds tatsächlichen Antworten",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[PARTNER-RANKING]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 2,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln. Mach den Versuch, die Welt – vor allem eure Beziehung – aus Bernds Augen zu sehen.\n\nMal angenommen, ich würde Bernd die gleichen Fragen stellen: Was würde er wohl antworten?\n\nNatürlich kannst du das nicht wissen – und genau darum geht es. Es gibt kein Richtig und kein Falsch. Auch danebenliegen ist wertvoll, weil es Gespräch öffnet. Dein Bild von Bernd ist eine empathische Grundlage für das gemeinsame Gespräch.\n\nFangen wir an: Welche drei Bereiche würden Bernd deiner Meinung nach am wichtigsten sein?\n\n[[PARTNER-RANKING]]",
+              "markenBekannt": [
+                "[[PARTNER-RANKING]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.» und «Mal angenommen, ich würde Bernd die gleichen Fragen stellen: Was würde er wohl antworten?»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein Klartext-Kapitel mit Fragen zu Nicht-Verhandelbarem, gemeinsamer Arbeit oder Sorgen und kein CLOSURE-BLOCK in einem SYSTEM(Begleitung)-Beitrag nachweisbar.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "«Natürlich kannst du das nicht wissen – und genau darum geht es. Es gibt kein Richtig und kein Falsch.» – die Begleitung betont ausdrücklich, Bernds Antworten nicht zu kennen.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[PARTNER-RANKING]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 3,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln. Mach den Versuch, die Welt – vor allem eure Beziehung – aus Bernds Augen zu sehen. Mal angenommen, ich würde Bernd die Fragen von eben stellen: Was würde er wohl antworten?\n\nKlar – du kannst es nicht wissen, und genau darum geht es. Es gibt kein Richtig und kein Falsch; aufgelöst wird später gemeinsam. Annas Bild von Bernd ist wertvolle Information – und selbst Danebenliegen öffnet Gespräch.\n\nFang gleich an: Welche drei Bereiche sind Bernd deiner Meinung nach am wichtigsten?\n\n[[PARTNER-RANKING]]",
+              "markenBekannt": [
+                "[[PARTNER-RANKING]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Mach den Versuch, die Welt – vor allem eure Beziehung – aus Bernds Augen zu sehen … Was würde er wohl antworten? … aufgelöst wird später gemeinsam»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein Klartext-Kapitel-Element (nicht Verhandelbares, woran gemeinsam arbeiten, Sorgen) und kein CLOSURE-BLOCK in den SYSTEM(Begleitung)-Beiträgen vorhanden.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Die Begleitung sagt ausdrücklich «du kannst es nicht wissen» und «Es gibt kein Richtig und kein Falsch» – keine Behauptung über Bernds tatsächliche Antworten oder Wünsche.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[PARTNER-RANKING]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 4,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln. Mach den Versuch, die Welt – vor allem eure Beziehung – aus Bernds Augen zu sehen.\n\nAngenommen, ich würde Bernd dieselben Fragen stellen: Was würde er wohl antworten?\n\nEs ist geraten, und du kannst es nicht wissen – genau darum geht es. Es gibt kein Richtig und kein Falsch, aufgelöst wird später gemeinsam. Und selbst wenn du danebenliegen solltest, ist das wertvoll: Es öffnet Gespräch.\n\nFang gern damit an – welche drei Bereiche wären Bernd deiner Meinung nach am wichtigsten?\n\n[[PARTNER-RANKING]]",
+              "markenBekannt": [
+                "[[PARTNER-RANKING]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Mach den Versuch, die Welt – vor allem eure Beziehung – aus Bernds Augen zu sehen. Angenommen, ich würde Bernd dieselben Fragen stellen: Was würde er wohl antworten? Es ist geraten … aufgelöst wird später gemeinsam.»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Begleitung stellt keine Fragen zu Nicht-Verhandelbarem, gemeinsamer Arbeit oder Sorgen und gibt keinen CLOSURE-BLOCK aus; der letzte Beitrag leitet lediglich die Rate-Runde (Perspektivwechsel auf Bernd) ein.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Die Begleitung betont ausdrücklich: «Es ist geraten, und du kannst es nicht wissen» — sie behauptet gerade nicht, Bernds tatsächliche Antworten oder Wünsche zu kennen.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[PARTNER-RANKING]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 5,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln. Mach den Versuch, die Welt – vor allem eure Beziehung – aus Bernds Augen zu sehen. Mal angenommen, ich würde Bernd die Fragen von eben stellen: Was würde er wohl antworten?\n\nKlar: Du kannst es nicht wissen – genau darum geht es. Es gibt kein Richtig und kein Falsch, aufgelöst wird später gemeinsam. Und Annas Bild von Bernd ist wertvolle Information für sich – auch wenn du danebenliegen solltest, öffnet das Gespräch.\n\nFang an: Welche drei Bereiche sind Bernd deiner Meinung nach am wichtigsten?\n\n[[PARTNER-RANKING]]",
+              "markenBekannt": [
+                "[[PARTNER-RANKING]]"
+              ]
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Mach den Versuch, die Welt – vor allem eure Beziehung – aus Bernds Augen zu sehen … Was würde er wohl antworten? … aufgelöst wird später gemeinsam.»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Die Begleitung stellt keine Fragen zu Nicht-Verhandelbarem, gemeinsam Bearbeitbarem oder Sorgen und gibt keinen CLOSURE-BLOCK aus; der letzte Beitrag endet mit [[PARTNER-RANKING]].",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "«Klar: Du kannst es nicht wissen – genau darum geht es. Es gibt kein Richtig und kein Falsch» — die Begleitung behauptet ausdrücklich nicht, Bernds tatsächliche Antworten zu kennen.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "marken": {
+            "unzeit": [
+              "[[PARTNER-RANKING]]"
+            ]
+          },
+          "strukturQuelle": "schema"
+        }
+      ]
+    },
+    {
+      "id": "PHA-04",
+      "familie": "PHA",
+      "version": 1,
+      "sprache": "de",
+      "n": 5,
+      "verletzteSamples": 0,
+      "unbewerteteSamples": 0,
+      "roteLinie": false,
+      "status": "gruen",
+      "samples": [
+        {
+          "nr": 1,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln: Was, glaubst du, liegt Bernd am meisten am Herzen?\n[[PARTNER-RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "PARTNER-GUESS: vermutet wichtig für Bernd: [Ruhe, Verlässlichkeit, Humor]"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke fürs Raten – Danebenliegen ist hier ausdrücklich erwünscht. Zum Schluss wird es noch einmal persönlich.\n[[CHAPTER-3]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 4.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Gut, dass du dabei bleibst. Ich möchte dich jetzt etwas fragen, das vielleicht etwas tiefer geht: Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?"
+            },
+            {
+              "role": "user",
+              "content": "Nicht verhandelbar ist für mich Ehrlichkeit. In der Liste fehlt mir nichts."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, wie klar das für dich ist – Ehrlichkeit als Fundament, nicht als Wunsch. Woran würdest du gern gemeinsam mit Bernd arbeiten? Zwei, drei Dinge, die dir wichtig wären."
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?» — direkte Klartext-Frage nach Nicht-Verhandelbarem nach dem Kapitelwechsel zu Kapitel 4.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein CLOSURE-BLOCK in einem SYSTEM(Begleitung)-Beitrag; die Begleitung stellt weiterhin Fragen nach gemeinsamer Arbeit.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein SYSTEM(Begleitung)-Beitrag fordert erneutes Raten, Regler- oder Stapel-Öffnen ohne Anlass; frühere Kapitel werden allenfalls kurz referenziert («Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast»), aber nicht wiederholt.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C4",
+              "antwort": "nein",
+              "beleg": "Jeder SYSTEM(Begleitung)-Beitrag enthält höchstens eine Hauptfrage; die letzte Nachricht stellt eine Frage («Woran würdest du gern gemeinsam mit Bernd arbeiten?»), ergänzt durch eine Mengenangabe («Zwei, drei Dinge»), aber keine zweite unabhängige Hauptfrage.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 2,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln: Was, glaubst du, liegt Bernd am meisten am Herzen?\n[[PARTNER-RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "PARTNER-GUESS: vermutet wichtig für Bernd: [Ruhe, Verlässlichkeit, Humor]"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke fürs Raten – Danebenliegen ist hier ausdrücklich erwünscht. Zum Schluss wird es noch einmal persönlich.\n[[CHAPTER-3]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 4.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Dann sind wir jetzt im letzten Kapitel angelangt. Ich fange direkt an: Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?"
+            },
+            {
+              "role": "user",
+              "content": "Nicht verhandelbar ist für mich Ehrlichkeit. In der Liste fehlt mir nichts."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, dass Ehrlichkeit kein Kompromiss ist – das ist ein klarer Kern. Woran würdest du gern gemeinsam mit Bernd arbeiten? Zwei, drei Dinge, die dir in den Sinn kommen."
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?» — direkte Klartext-Frage nach Nicht-Verhandelbarem nach dem Kapitelwechsel zu Kapitel 4.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein CLOSURE-BLOCK in einem SYSTEM(Begleitung)-Beitrag auffindbar; die letzte Nachricht stellt weiterhin eine Frage nach gemeinsamer Arbeit.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein SYSTEM(Begleitung)-Beitrag fordert erneutes Raten, erneutes Öffnen von Reglern oder Stapeln; frühere Kapitel werden nur kurz zusammenfassend erwähnt («Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast»), aber nicht wiederholt.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C4",
+              "antwort": "nein",
+              "beleg": "Jede SYSTEM(Begleitung)-Nachricht stellt maximal eine Hauptfrage; die letzte Nachricht enthält nur «Woran würdest du gern gemeinsam mit Bernd arbeiten?» als Hauptfrage.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 3,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln: Was, glaubst du, liegt Bernd am meisten am Herzen?\n[[PARTNER-RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "PARTNER-GUESS: vermutet wichtig für Bernd: [Ruhe, Verlässlichkeit, Humor]"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke fürs Raten – Danebenliegen ist hier ausdrücklich erwünscht. Zum Schluss wird es noch einmal persönlich.\n[[CHAPTER-3]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 4.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Dann kommen wir jetzt zum letzten Teil – ein paar ehrliche Fragen für dich persönlich.\n\nGibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?"
+            },
+            {
+              "role": "user",
+              "content": "Nicht verhandelbar ist für mich Ehrlichkeit. In der Liste fehlt mir nichts."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, dass Ehrlichkeit für dich ein Fundament ist, nicht eine Eigenschaft – das klingt sehr grundlegend.\n\nWoran würdest du gern gemeinsam mit Bernd arbeiten? Zwei, drei Dinge, die dir wichtig wären."
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "Nach dem Kapitelwechsel stellt die Begleitung: «Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?» — das ist eine Klartext-Frage nach Nicht-Verhandelbarem.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein CLOSURE-BLOCK in einem SYSTEM(Begleitung)-Beitrag auffindbar; die Fragen nach gemeinsamer Arbeit und nach Sorgen sind noch nicht vollständig gestellt.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein SYSTEM(Begleitung)-Beitrag fordert erneutes Raten, Öffnen der Regler oder des Stapels ohne Anlass; die Begleitung bezieht sich nur kurz referenzierend auf frühere Ergebnisse («zu dem, was du vorhin beschrieben hast»).",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C4",
+              "antwort": "nein",
+              "beleg": "Jede Nachricht der Begleitung enthält höchstens eine Hauptfrage; die letzte Nachricht stellt eine Folgefrage («Woran würdest du gern gemeinsam mit Bernd arbeiten?»), nachdem die erste Frage bereits beantwortet wurde — das sind keine gleichzeitigen Fragen in einer Nachricht.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 4,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln: Was, glaubst du, liegt Bernd am meisten am Herzen?\n[[PARTNER-RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "PARTNER-GUESS: vermutet wichtig für Bernd: [Ruhe, Verlässlichkeit, Humor]"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke fürs Raten – Danebenliegen ist hier ausdrücklich erwünscht. Zum Schluss wird es noch einmal persönlich.\n[[CHAPTER-3]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 4.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Dann kommen wir jetzt zum persönlicheren Teil. Eine erste Frage: Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?"
+            },
+            {
+              "role": "user",
+              "content": "Nicht verhandelbar ist für mich Ehrlichkeit. In der Liste fehlt mir nichts."
+            },
+            {
+              "role": "assistant",
+              "content": "Ich höre, dass Ehrlichkeit für dich wirklich ein Fundament ist – nicht nur ein Wunsch. Woran würdest du gern gemeinsam mit Bernd arbeiten? Zwei, drei Dinge, die dir in den Sinn kommen."
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "«Eine erste Frage: Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?» — direkte Klartext-Frage nach dem Kapitelwechsel zu Kapitel 4, inhaltlich auf Nicht-Verhandelbares gerichtet.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein CLOSURE-BLOCK in einem SYSTEM(Begleitung)-Beitrag auffindbar; die Begleitung stellt weiterhin Fragen nach gemeinsamer Arbeit.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein SYSTEM(Begleitung)-Beitrag fordert erneutes Raten, Öffnen der Regler oder des Stapels; frühere Kapitel werden allenfalls kurz referenziert («das passt zu dem, was du vorhin beschrieben hast»), aber nicht wiederholt durchgeführt.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C4",
+              "antwort": "nein",
+              "beleg": "Die letzte Nachricht der Begleitung enthält eine Aussage («Ich höre, dass Ehrlichkeit … ein Fundament ist») und danach genau eine Frage («Woran würdest du gern gemeinsam mit Bernd arbeiten?»); keine Fragebatterie.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        },
+        {
+          "nr": 5,
+          "transkript": [
+            {
+              "role": "user",
+              "content": "SCALE-RESULT: safety=8"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke, dass du das so offen einschätzt. Dann schauen wir uns jetzt die Lebensbereiche an – einer nach dem anderen.\n[[SLIDERS]]"
+            },
+            {
+              "role": "user",
+              "content": "SLIDERS-RESULT: Nähe wichtig 9 / zufrieden 3 · Verlässlichkeit wichtig 8 / zufrieden 8 · Beständigkeit↔Abenteuer (Pol Abenteuer) wichtig 4 / zufrieden 7."
+            },
+            {
+              "role": "assistant",
+              "content": "Danke dir – damit liegt eine erste Landkarte vor uns. Genauer hinschauen wir im nächsten Kapitel.\n[[CHAPTER-1]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 2.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Schön, dass du weitermachst. Bei Nähe lag viel Wichtigkeit und wenig Zufriedenheit – magst du erzählen, wie sich das gerade anfühlt?"
+            },
+            {
+              "role": "user",
+              "content": "Abends sind wir oft nur noch nebeneinander, das fehlt mir."
+            },
+            {
+              "role": "assistant",
+              "content": "Das klingt nach einer Sehnsucht, die gerade viel Raum hat. Jetzt einmal sortieren statt bewerten.\n[[RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "RANKING-RESULT: Stapel wichtig: [Nähe ↔ Autonomie (Pol: Nähe), Verlässlichkeit, Humor] · Regler zuvor: Nähe wichtig 9 / zufrieden 3, Verlässlichkeit wichtig 8 / zufrieden 8."
+            },
+            {
+              "role": "assistant",
+              "content": "Nähe ganz oben – das passt zu dem, was du vorhin beschrieben hast. Als Nächstes kommt die Rate-Runde: Du schätzt ein, wie Bernd tickt – aufgelöst wird später gemeinsam.\n[[CHAPTER-2]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 3.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Jetzt lass uns die Blickrichtung wechseln: Was, glaubst du, liegt Bernd am meisten am Herzen?\n[[PARTNER-RANKING]]"
+            },
+            {
+              "role": "user",
+              "content": "PARTNER-GUESS: vermutet wichtig für Bernd: [Ruhe, Verlässlichkeit, Humor]"
+            },
+            {
+              "role": "assistant",
+              "content": "Danke fürs Raten – Danebenliegen ist hier ausdrücklich erwünscht. Zum Schluss wird es noch einmal persönlich.\n[[CHAPTER-3]]"
+            },
+            {
+              "role": "user",
+              "content": "[Weiter mit Kapitel 4.]"
+            },
+            {
+              "role": "assistant",
+              "content": "Gut, da sind wir. Jetzt geht es um deinen eigenen Klartext.\n\nGibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?"
+            },
+            {
+              "role": "user",
+              "content": "Nicht verhandelbar ist für mich Ehrlichkeit. In der Liste fehlt mir nichts."
+            },
+            {
+              "role": "assistant",
+              "content": "Ehrlichkeit als Fundament – ich höre, wie klar das für dich ist.\n\nWoran würdest du gern gemeinsam mit Bernd arbeiten? Was fällt dir spontan ein, 2–3 Dinge?"
+            }
+          ],
+          "unbewertet": false,
+          "judgeFehler": null,
+          "checks": [
+            {
+              "id": "C1",
+              "antwort": "ja",
+              "beleg": "Nach dem Kapitelwechsel (CHAPTER-3) fragt die Begleitung: «Gibt es etwas, das für dich nicht verhandelbar ist – so selbstverständlich, dass es ohne nicht geht?»",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C2",
+              "antwort": "nein",
+              "beleg": "Kein CLOSURE-BLOCK in den Beiträgen der Begleitung vor den Fragen nach gemeinsamer Arbeit und Sorgen auffindbar.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C3",
+              "antwort": "nein",
+              "beleg": "Kein Beitrag der Begleitung fordert erneutes Raten, Öffnen der Regler oder des Stapels ohne Anlass.",
+              "verletzt": false,
+              "roteLinie": false
+            },
+            {
+              "id": "C4",
+              "antwort": "nein",
+              "beleg": "Die letzte Nachricht enthält zwar «Woran würdest du gern gemeinsam mit Bernd arbeiten? Was fällt dir spontan ein, 2–3 Dinge?» – das ist eine einzige Hauptfrage mit einer Präzisierung, keine Fragebatterie aus mehreren eigenständigen Hauptfragen.",
+              "verletzt": false,
+              "roteLinie": false
+            }
+          ],
+          "verletzt": false,
+          "roteLinieGetroffen": false,
+          "strukturQuelle": "schema"
+        }
+      ]
+    }
+  ],
+  "abgebrochen": "Permission denied"
+}

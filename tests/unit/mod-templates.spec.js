@@ -48,7 +48,10 @@ describe("MOD-6 · Die Quellen sind Text", () => {
     expect(existsSync(path.join(ROOT, "core/korpus/de/sessions/slots.js"))).toBe(false);
   });
   it("jede Session hat ein Template; grundsaetze.js importiert nichts", () => {
-    expect(dateienUnter("core/korpus/de/sessions")).toEqual([...SESSIONS.map(s => s.art + ".md"), "themen-rahmen.md"].sort());
+    // PRV-5: Sessions mit Teilen liegen als Verzeichnis sessions/<art>/NN-<teil>.md vor.
+    expect(dateienUnter("core/korpus/de/sessions")).toEqual([...SESSIONS.filter(s => !s.teile).map(s => s.art + ".md"), "themen-rahmen.md"].sort());
+    for (const s of SESSIONS.filter(s => s.teile)) for (const l of ["de", "en"])
+      expect(readdirSync(path.join(ROOT, "core/korpus", l, "sessions", s.art)).filter(f => /^\d\d-.*\.md$/.test(f)).length, l + "/" + s.art).toBeGreaterThan(1);
     expect(readFileSync(zielPfad("de", "grundsaetze"), "utf8")).not.toMatch(/^import /m);
   });
   it("Sprint-Historie aus den .md-Kommentaren steht im Generat (S136 am Haltungskern)", () => {

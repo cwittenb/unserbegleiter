@@ -43,7 +43,7 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 export const SESSIONS = [
-  { art: "einzel",      fn: "klaerungsPrompt",   args: ["name", "partner"] },
+  { art: "einzel",      fn: "klaerungsPrompt",   args: ["name", "partner"], teile: "klaerungsTeile" },
   { art: "gemeinsam",   fn: "aufloesungsPrompt", args: ["nameA", "nameB"] },
   { art: "moment",      fn: "momentPrompt",      args: ["nameA", "nameB"] },
   { art: "solo",        fn: "reflexionsPrompt",  args: ["name", "partner"] },
@@ -351,6 +351,23 @@ export function baueSessionsQuelle(sprache, reg = ladeBausteine(sprache)) {
   const daten = name => { importe.add("import { " + name + ' } from "' + DATEN_IMPORT[name] + '";'); return name; };
   let koerper = "";
   for (const s of SESSIONS) {
+    if (s.teile) {
+      /* PRV-5 · Phasen-Komposition: die Session liegt als geordnete Teile in
+         sessions/<art>/NN-<name>.md. Der Gesamttext ist ihre Verkettung (wie
+         zuvor die eine Datei); zusaetzlich gibt es die Teile einzeln, aus
+         denen die Komposition je Phase Kern + Modul baut. */
+      const tdir = path.join(dir, s.art);
+      const dateien = readdirSync(tdir).filter(f => /^\d\d-[a-z0-9-]+\.md$/.test(f)).sort();
+      const teile = dateien.map(f => ({ name: f.replace(/^\d\d-|\.md$/g, ""),
+        k: kompiliere(readFileSync(path.join(tdir, f), "utf8"), { params: s.args, reg, wo: sprache + "/sessions/" + s.art + "/" + f, ref, daten }) }));
+      const ganz = kompiliere(dateien.map(f => readFileSync(path.join(tdir, f), "utf8")).join(""), { params: s.args, reg, wo: sprache + "/sessions/" + s.art + "/*", ref, daten });
+      if (teile.map(t => t.k).join("") !== ganz) throw new Error(sprache + "/sessions/" + s.art + ": Teile ergeben verkettet nicht den Gesamttext.");
+      koerper += "\nexport function " + s.fn + "(" + s.args.join(", ") + "){\nreturn `" + ganz + "`;\n}\n";
+      koerper += "\n/* PRV-5 · Teile von " + s.fn + " (sessions/" + s.art + "/*.md), Reihenfolge = Gesamttext. */\n" +
+                 "export function " + s.teile + "(" + s.args.join(", ") + "){\nreturn {\n" +
+                 teile.map(t => "  " + JSON.stringify(t.name) + ": `" + t.k + "`,").join("\n") + "\n};\n}\n";
+      continue;
+    }
     const md = lies(s.art + ".md");
     const k = kompiliere(md, { params: s.args, reg, wo: sprache + "/sessions/" + s.art + ".md", ref, daten });
     koerper += "\nexport function " + s.fn + "(" + s.args.join(", ") + "){\nreturn `" + k + "`;\n}\n";

@@ -7,6 +7,7 @@ import { baueAntwortExtraktor } from "../antwort-extraktor.js";
 import { anthropicSoDialekt } from "../schema-dialekt.js";
 import { strukturAuszug, extrahiereStrukturAusText, pruefeAbschnitt, markiereAbschnitt } from "../struktur.js";
 import { inhaltMitRegie } from "../regie.js";
+import { systemAlsText } from "../system.js";
 
 export const anthropic = {
   url: () => "https://api.anthropic.com/v1/messages",
@@ -21,15 +22,19 @@ export const anthropic = {
     return h;
   },
   body(cfg, systemPrompt, messages) {
-    let system = systemPrompt;
+    let system = systemAlsText(systemPrompt);
     // PRV-3 · Regie (core/llm/regie.js): ohne Cache einfach angehaengt.
     const msgs = messages.map(m => ({ role: m.role, content: cfg.cache ? m.content : inhaltMitRegie(m), regie: m.regie || null }));
     if (cfg.cache) {
       // System-Prompt als cachebarer Block (größter, je Turn identischer Teil).
       // S82: cfg.cacheTtl (z. B. "1h") für Aufrufer, deren Turns Minuten
       // auseinanderliegen (Batch-Lockstep, S65) — sonst Standard-TTL.
-      system = [{ type: "text", text: systemPrompt,
-        cache_control: { type: "ephemeral", ...(cfg.cacheTtl ? { ttl: cfg.cacheTtl } : {}) } }];
+      /* PRV-5 · Bloecke [Kern, Modul]: je ein Breakpoint. Liegt der Kern unter
+         der Cache-Mindestlaenge, ignoriert die API seinen Breakpoint; der am
+         Modul cacht dann Kern+Modul zusammen. */
+      const cc = { type: "ephemeral", ...(cfg.cacheTtl ? { ttl: cfg.cacheTtl } : {}) };
+      system = (Array.isArray(systemPrompt) ? systemPrompt : [systemPrompt])
+        .filter(t => t).map(text => ({ type: "text", text, cache_control: cc }));
       // Rolling-Cache: letzten Turn markieren → der wachsende Prefix wird
       // beim nächsten Aufruf ein Treffer
       if (msgs.length) {

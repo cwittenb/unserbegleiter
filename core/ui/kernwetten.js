@@ -74,6 +74,8 @@ export function einzelDef(backend, hooks = {}) {
     titel: "Auftragsklärung",
     wiedereinstieg: "einzelWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().klaerungsPrompt(ctx.me, ctx.partner),
+    // PRV-5 · die Teile für die Phasen-Komposition (Kern + Kapitelmodul, core/policies/phasen.js)
+    sysTeile: ctx => K().klaerungsTeile(ctx.me, ctx.partner),
     /* S105.3 · Kein Urteils-Waechter mehr: Ein Praedikats-Urteil steckt im Text
        selbst — verweigern laesst sich da nichts, und zurueckgenommen wird
        nichts. Die Regel traegt jetzt der Prompt allein (S105.4). */

@@ -47,7 +47,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     ${vg ? `<div class="ev-card" style="border-color:#0f766e">
       <div class="ev-sub">Vorgabe</div>
       <div style="font-size:14px;margin:4px 0 8px">${esc(vg.beschreibung || "")}</div>
-      <div class="ev-mono" style="font-size:12px">Szenarien: ${esc(vg.szenarien.join(", "))}<br>Judge: ${esc(vg.judge)} · Wächter: ${vg.waechter ? "an" : "aus"}<br>${vg.arme.map((a, i) => (i + 1) + ". " + esc(a.label) + " — " + esc(a.pm) + ", n=" + a.n + (a.regieTransport ? ", Transport " + esc(a.regieTransport) : "") + (a.linsenVoll ? ", Linsen voll" : "")).join("<br>")}</div>
+      <div class="ev-mono" style="font-size:12px">Szenarien: ${esc(vg.szenarien.join(", "))}<br>Judge: ${esc(vg.judge)} · Wächter: ${vg.waechter ? "an" : "aus"}<br>${vg.arme.map((a, i) => (i + 1) + ". " + esc(a.label) + " — " + esc(a.pm) + ", n=" + a.n + (a.regieTransport ? ", Transport " + esc(a.regieTransport) : "") + (a.linsenVoll ? ", Linsen voll" : "") + (a.phasenAus ? ", Phasen aus" : "")).join("<br>")}</div>
       <button class="ev-btn primary" id="evVorgabe" style="margin-top:12px">Alle ${vg.arme.length} Läufe nacheinander starten</button>
       <div id="evVgStatus" class="ev-hint" style="margin-top:8px"></div>
       <div id="evVgListe" style="margin-top:10px"></div>
@@ -265,7 +265,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
              zwei Berichte nicht vergleichbar: MRV-02 misst mit Schaerfung
              etwas anderes als ohne (2/5 gegen 4/5 im selben Kern). */
           waechter,
-          ...(arm ? { vorgabe: vg.id, arm: arm.label, regieTransport: arm.regieTransport || "nachricht", linsen: arm.linsenVoll ? "voll" : "karten" } : {}),
+          ...(arm ? { vorgabe: vg.id, arm: arm.label, regieTransport: arm.regieTransport || "nachricht", linsen: arm.linsenVoll ? "voll" : "karten", phasen: arm.phasenAus ? "aus" : "an" } : {}),
         },
         quotenJeFamilie: familien,
         szenarien: ergebnisse,

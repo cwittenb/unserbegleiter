@@ -66,6 +66,8 @@ export const POLICY_KATALOG = Object.freeze({
   einzel: {
     schaerfungen: ["anteile", "entwicklung"],
     pruefungen: [],
+    // PRV-5 · Kern + Kapitelmodul statt des ganzen Textes (core/policies/phasen.js).
+    phasen: "einzel",
   },
   /* Gemeinsame Auflösung (geteilter Raum): Aufdeckung (Zustand) vor Krise
      vor Zweiseitigkeit. Übergabe: eine Aufdeck-Marke neben einer Frage wird

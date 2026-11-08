@@ -137,7 +137,9 @@ export class Engine {
          einer Kopie der letzten Nachricht der Person (core/llm/regie.js):
          unmittelbar vor der Antwort statt hinter 12k Token Korpus, und der
          Systemtext bleibt je Zug identisch (Cache). */
-      const system = this.def.sysPrompt(this.ctx);
+      /* PRV-5 · Mit Phasen-Komposition ist der Systemtext [Kern, Modul] — die
+         Provider senden zwei Bloecke (Anthropic: Cache-Breakpoint am Modul). */
+      const system = this.def.sysBloecke ? this.def.sysBloecke(this.ctx, this.chat.messages) : this.def.sysPrompt(this.ctx);
       const zusatz = this.def.schaerfe ? this.def.schaerfe(this.chat.messages, this.ctx) : null;
       const verlauf = mitRegie(this.chat.messages, zusatz);
       if (this.strukturTurn) {
