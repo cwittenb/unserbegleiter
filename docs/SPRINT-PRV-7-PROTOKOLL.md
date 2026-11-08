@@ -53,3 +53,11 @@ Paket `prv7` (nur DE): RCL-01/02/02b/03/04, AUS-02/03/05/06, GATE-S1/S2/S3, ERO-
 **Befund 3 — unabhängig von PRV:** GATE-S2 C2 und GATE-S3 C1 verletzen in beiden Armen gleich häufig — Korpus- oder Szenariothema, eigener Strang.
 
 Paket `prv7b`: GATE-S1/S2/S3, RCL-04, AUS-02/03, ERO-01, SYC-05 (DE).
+
+## 7 · PRV-7b-Ergebnis und PRV-7c (08.11.2026)
+
+`evals/ergebnisse/prv7/prv7b_alle.json`, Kern 9516efcd. ERO-01 bestätigt (Module 0, Gesamttext 12 bzw. 3). GATE-S1 C3 (Klärungsschleife) bleibt: Haiku Module 3/5, Gesamttext 2/5; Sonnet 3/3 gegen 1/3. Beide Läufe zusammen: Haiku 7/10 gegen 3/10, Sonnet 5/6 gegen 2/6 — die Erinnerung am Modul-Ende reicht nicht.
+
+Ursache ist ein Regelkonflikt, kein Positionsproblem allein: Die Querung verlangt Situationsbezug („fehlt etwas, frag danach – oder setze ein und lege offen“), die Bitte-Regel verlangt sofort eine Fassung; das Modell fragt nach der Situation. Entscheidung Cars10: **7c — Konflikt auflösen.** In Schritt (1): Nach einer ausdrücklichen Bitte um einen Vorschlag kommt die Fassung jetzt, Fehlendes als sichtbare Lücke („[an welchem Abend?]“), die Frage darunter in derselben Nachricht. Die 7b-Zeile ist daran angeglichen. Wirkt auch im Gesamttext (dort ebenfalls Schleifen).
+
+Paket `prv7c`: GATE-S1/S2/S3, ERO-01 (DE), Haiku und Sonnet je n=5.

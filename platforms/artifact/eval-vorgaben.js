@@ -106,4 +106,18 @@ export const VORGABEN = {
       { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
     ],
   },
+  prv7c: {
+    id: "prv7c",
+    titel: "PRV-7c · Vorschlag mit Lücke, Nachmessung (DE)",
+    beschreibung: "Nach ausdrücklicher Bitte um einen Vorschlag: Fassung jetzt, Fehlendes als sichtbare Lücke, Frage darunter. Phasen vs. aus. GATE-S1/S2/S3 + ERO-01.",
+    szenarien: ["GATE-S1", "GATE-S2", "GATE-S3", "ERO-01"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n5", pm: SONNET, n: 5 },
+      { label: "sonnet-aus-n5", pm: SONNET, n: 5, phasenAus: true },
+    ],
+  },
 };

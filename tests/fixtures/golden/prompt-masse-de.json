@@ -8,11 +8,11 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 40690,
-      "tokenSchaetzung": 11968,
+      "zeichen": 40970,
+      "tokenSchaetzung": 12050,
       "zeilen": 69,
       "langeZeilen": 19,
-      "capsWoerter": 188,
+      "capsWoerter": 194,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
