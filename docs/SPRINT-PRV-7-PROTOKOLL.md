@@ -78,3 +78,9 @@ Paket `prv7c`: GATE-S1/S2/S3, ERO-01 (DE), Haiku und Sonnet je n=5.
 - ERO-01 lag diesmal auch im Gesamttext bei 0 (vorher 15/15 und 12/15 falsch) — bei gleichem Einstiegstext. Die Streuung zwischen Läufen ist groß; Einzelbefunde mit n=3–5 tragen weniger als gedacht.
 
 **Entscheidung Cars10: PRV-7 zurückgestellt.** Nichts gemergt; der Branch `prv7-phasen-solo` (inkl. 7b/7c) bleibt als Stand. Zuerst werden die Gate-Szenarien GATE-S1–S3 als eigener Strang geklärt (Klärungsschleife, Herkunfts-Regel, Selbstanteil — in beiden Armen auffällig). Danach Wiederaufnahme, mit der Option „Teilen im Kern, nur Einstieg und Abruf als Module“.
+
+## 9 · Wiederaufnahme nach der Gate-Entscheidung (08.11.2026)
+
+Gate-Strang (`docs/AUFTAKT-GATE-STRANG.md`): offengelegte Ergänzungen sind erlaubt, auch beim Selbstanteil; liefern oder verschieben sind beide richtig. Branch `gate-v2` (Korpus-Satz Selbstanteil, GATE-S3 v2) und `main` (PRV-5/6, Werkzeug) in diesen Branch gemergt; Konflikte in `phasen.js`, Fassade und Paketen als Vereinigung aufgelöst, der Selbstanteil-Satz steht jetzt im Teil `solo/03-teilen.md`. Suite 3 279 grün, Kern `8028db30`.
+
+Paket `prv7d`: GATE-S1/S2/S3, ERO-01, RCL-04, AUS-02 (DE), beide Modelle n=5 — Arm „aus“ ist zugleich die Gate-Basislinie im Gesamttext.

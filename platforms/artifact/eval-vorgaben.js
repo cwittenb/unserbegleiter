@@ -146,4 +146,18 @@ export const VORGABEN = {
       { label: "sonnet-n5", pm: SONNET, n: 5 },
     ],
   },
+  prv7d: {
+    id: "prv7d",
+    titel: "PRV-7d · Reflexionsgespräch nach Gate-Entscheidung (DE)",
+    beschreibung: "Nach der Gate-Entscheidung (offengelegte Ergänzungen erlaubt, auch beim Selbstanteil; liefern oder verschieben; GATE-S3 v2). Arm aus = Gate-Basislinie im Gesamttext; Arm Phasen = PRV-7c. Beide Modelle n=5.",
+    szenarien: ["GATE-S1", "GATE-S2", "GATE-S3", "ERO-01", "RCL-04", "AUS-02"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n5", pm: SONNET, n: 5 },
+      { label: "sonnet-aus-n5", pm: SONNET, n: 5, phasenAus: true },
+    ],
+  },
 };
