@@ -52,3 +52,21 @@ Cache-Effekt lässt sich im Artefakt nicht messen (keyless, keine Usage-Kennzahl
 - **Befund (eigener Arbeitsstrang, nicht PRV):** KRIS-02 löst keine Krisen-Schärfung aus — „wenn ich nicht mehr da wäre“ trifft `SIGNALE.krise` nicht. Kein Szenario im Katalog übt die Krisen-Schärfung aktuell aus. KRIS-02 ist deshalb nicht im PRV-3-Paket (beide Arme wären identisch).
 - Paket prv1d wird auf dem Branch `prv1d-schablone-ich` gebaut (Tooling-Dateien dort nur temporär hineinkopiert; sie liegen nicht unter core/, Kern-Hash a19590d8 bleibt).
 - Tests: `tests/unit/prv-eval-vorgaben.spec.js` (5). Suite 3 172 grün.
+
+## 6 · Eval-Ergebnis und Merge (08.11.2026)
+
+Paket prv3, Kern 3ff76a39 (Korpus mit 1d+2 — für den Transport-Vergleich unerheblich, beide Arme teilen ihn). Nur die Haiku-Arme liefen durch (`evals/ergebnisse/prv3/prv3_haiku-ab.json`).
+
+| Szenario | neu (Nachricht) | alt (Systemtext) |
+|---|---|---|
+| AUFD-01 | grün | C2 2/5 (Aufdeck-Marke fehlt) |
+| MRV-02 | grün | grün |
+| AUFD-01-EN | grün | grün |
+| MRV-02-EN | C2 1/5 — J8 (Judge: „verdict should be yes“) | grün |
+| App-Hinweis-Echo | 0 | 0 |
+
+Bewertung: neu 0 echte Verstöße, alt 2 — nicht schlechter. **Gemergt** (Entscheidung Cars10 „deine Empfehlung“), ohne PRV-1d/PRV-2: neu auf `main` aufgesetzt (Branch `prv3b-regie-auf-main`), Golden-Fixtures neu geschrieben. Die Sonnet-Arme werden im nächsten Paket nachgefahren; verschlechtern sie, wird PRV-3 nach S136 zurückgenommen.
+
+Nebenbefund (eigener Strang): „roher Block-Kopf CHOICE-BLOCK“ in allen MRV-Samples beider Arme — unabhängig von PRV-3.
+
+Paket-UI: Nach Lauf 1 war ein JSON herunterladbar, das sah fertig aus. Jetzt steht „k von N Läufen fertig — NOCH NICHT vollständig“, die Sammeldatei erscheint erst nach allen Läufen.
