@@ -28,7 +28,7 @@ const PINS = {
     emVorrang: "nie als erste Antwort auf Ehrliches Mitteilen",
     keineHerkunft: "die Einladung bleibt im Heute",
     keineDoppelrahmung: "nie beide Rahmungen in derselben Nachricht",
-    rueckzug: "kehr kommentarlos zur gewöhnlichen Spiegelung zurück",
+    rueckzug: "Bei Ablehnung gilt dasselbe wie bei der Anteile-Sprache",   // PRV-2: Wortlaut steht einmal, in anteileSprache
   },
   en: {
     hypothese: "you do not know the person's inner developmental tasks",
@@ -47,7 +47,7 @@ const PINS = {
     emVorrang: "never comes as the first response to honest sharing",
     keineHerkunft: "the invitation stays in the present",
     keineDoppelrahmung: "never both framings in the same message",
-    rueckzug: "return to ordinary mirroring without comment",
+    rueckzug: "If the person declines, the same holds as for parts language",   // PRV-2
   },
 };
 

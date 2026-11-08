@@ -8,8 +8,8 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 45456,
-      "tokenSchaetzung": 13369,
+      "zeichen": 45400,
+      "tokenSchaetzung": 13353,
       "zeilen": 63,
       "langeZeilen": 21,
       "capsWoerter": 205,
@@ -27,8 +27,8 @@
       }
     },
     "moment": {
-      "zeichen": 39775,
-      "tokenSchaetzung": 11699,
+      "zeichen": 39719,
+      "tokenSchaetzung": 11682,
       "zeilen": 58,
       "langeZeilen": 20,
       "capsWoerter": 203,
@@ -46,8 +46,8 @@
       }
     },
     "einzel": {
-      "zeichen": 38670,
-      "tokenSchaetzung": 11374,
+      "zeichen": 38370,
+      "tokenSchaetzung": 11285,
       "zeilen": 72,
       "langeZeilen": 22,
       "capsWoerter": 99,
@@ -59,14 +59,14 @@
         "markeLetzteZeile": 11,
         "richterposition": 1,
         "ichRahmung": 2,
-        "hypothese": 6,
+        "hypothese": 5,
         "notFrage": 2,
         "erfinden": 1
       }
     },
     "gemeinsam": {
-      "zeichen": 38400,
-      "tokenSchaetzung": 11294,
+      "zeichen": 38100,
+      "tokenSchaetzung": 11206,
       "zeilen": 61,
       "langeZeilen": 20,
       "capsWoerter": 131,
@@ -78,7 +78,7 @@
         "markeLetzteZeile": 6,
         "richterposition": 1,
         "ichRahmung": 2,
-        "hypothese": 4,
+        "hypothese": 3,
         "notFrage": 2,
         "erfinden": 3
       }
