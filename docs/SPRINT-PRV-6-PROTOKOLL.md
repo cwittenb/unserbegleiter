@@ -30,3 +30,21 @@ Kern ≈ 5 570 Token (über der Cache-Mindestlänge).
 ## 4 · Eval (bei dir)
 
 Paket `prv6` (DE): AUFD-01, AUF-01, MOM-01, NOT-01, KRIS-02, WDR-01, ANT-01, GEM-07 — Haiku und Sonnet je n=5, Phasen vs. aus. Merge, wenn Phasen nicht schlechter, und zwar als wiederholtes Muster, nicht als Einzelzelle.
+
+## 5 · Eval-Ergebnis und Merge (08.11.2026)
+
+`evals/ergebnisse/prv6/prv6_alle.json`, Kern a6ad86c8, beide Modelle n=5. Summe: Haiku Phasen 10 / aus 18, Sonnet 15 / 16.
+
+| | Haiku Phasen | Haiku aus | Sonnet Phasen | Sonnet aus |
+|---|---|---|---|---|
+| AUF-01, NOT-01, WDR-01, ANT-01 | 0 | 0 | 0 | 0 |
+| KRIS-02, AUFD-01 | 0 | 1 | 1 | 1 |
+| MOM-01 C2 | 2 | 2 | **4** | 0 |
+| GEM-07 (v1) | 8 | 15 | 10 | 15 |
+| App-Hinweis-/Karten-Echo | 0 | 0 | 0 | 0 |
+
+- **GEM-07 v1 war ein Szenariofehler:** Phase 6 schreibt nach dem SCALE-RESULT „Was nimmst du mit?“ je Person und „Würdet ihr so weitermachen?“ vor — erst danach kommt der Befund. Beide Arme taten genau das; v1 erwartete den Block sofort. v2 prüft das Korpus-Verhalten. Die Werte kommentierten mit Phasen weniger (C2 Haiku 2 gegen 5, Sonnet 3 gegen 5).
+- **MOM-01 Sonnet:** Mit Phasen würdigt Sonnet den Moment und holt zuerst das fehlende Start-Okay ein (Phase 0, Zustimmungs-Grammatik); ohne Phasen vertieft es zuerst. Entscheidung Cars10: **Okay zuerst ist richtig.** MOM-01 v3: Würdigung + Okay-Frage erfüllt C2, solange ein Start-Okay fehlt.
+- „Roher Block-Kopf“ in WDR-01 in allen vier Armen gleich (CHOICE-BLOCK des Wiedereinstiegs) — unabhängig von PRV.
+
+**Gemergt.**
