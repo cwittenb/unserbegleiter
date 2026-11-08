@@ -56,6 +56,7 @@ describe("PRV · Eval-Vorgabe im Artefakt", () => {
     expect(knoepfe.some(t => t.includes("a-n1"))).toBe(true);
     expect(knoepfe.some(t => t.includes("b-n1"))).toBe(true);
     expect(knoepfe.some(t => t.includes("Alle 2"))).toBe(true);
+    expect(root.querySelector("#evVgListe").textContent).toContain("Alle 2 Läufe fertig");
   });
 
   it("die PRV-Vorgaben zeigen auf existierende Szenarien und Judge ≠ Pipeline", () => {
@@ -65,6 +66,23 @@ describe("PRV · Eval-Vorgabe im Artefakt", () => {
       for (const a of v.arme) expect(a.pm).not.toBe(v.judge);
       expect(v.waechter).toBe(true);
     }
+  });
+});
+
+describe("PRV · Zwischenstand ist als solcher erkennbar", () => {
+  it("nach dem ersten von zwei Läufen: Warnung, keine Sammeldatei", async () => {
+    let freigabe; const halt = new Promise(r => (freigabe = r));
+    const { mach } = fake();
+    const vg2 = { id: "t", titel: "T", szenarien: ["SYC-05"], judge: "j", waechter: true,
+      arme: [{ label: "a", pm: "m-a", n: 1 }, { label: "b", pm: "m-b", n: 1 }] };
+    const langsam = m => { const f = mach(m); return async (s, msgs) => { if (m === "m-b" && !s.startsWith("Du bist ein strenger")) await halt; return f(s, msgs); }; };
+    createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: langsam, vorgabe: vg2 });
+    root.querySelector("#evVorgabe").click();
+    for (let i = 0; i < 200 && !root.querySelector('[data-vg-dl="0"]'); i++) await tick();
+    const t = root.querySelector("#evVgListe").textContent;
+    expect(t).toContain("1 von 2 Läufen fertig");
+    expect(root.querySelector('[data-vg-dl="alle"]')).toBeNull();
+    freigabe();
   });
 });
 

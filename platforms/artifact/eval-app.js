@@ -176,6 +176,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
       // Aggregation wie laufeAlle — bewusst KEIN Gesamt-Score.
       baueBericht(ergebnisse, pm, jm, null, waechter, arm);
       zeigeErgebnis();
+      if (arm) $("evErgebnis").style.display = "none";   // Vorgabe: Downloads nur in der Paket-Liste
       status("Fertig. " + pCalls + " Pipeline- und " + jCalls + " Judge-Aufrufe.");
       await speichere();
       return true;
@@ -317,10 +318,18 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
   }
   function zeigeVorgabeListe() {
     const l = $("evVgListe");
-    l.innerHTML = state.berichte.map((b, i) =>
-      `<div style="margin:4px 0"><button class="ev-btn" data-vg-dl="${i}">JSON ${i + 1}: ${esc(b.stand.arm)}${b.abgebrochen ? " (Teil)" : ""}</button></div>`
-    ).join("") + (state.berichte.length > 1
-      ? `<div style="margin:8px 0"><button class="ev-btn" data-vg-dl="alle">Alle ${state.berichte.length} Berichte als eine Datei</button></div>` : "");
+    const k = state.berichte.length, N = vg.arme.length;
+    /* Zwischenstände sind erkennbar Zwischenstände: Wer nach Lauf 1 eine Datei
+       herunterladen kann, soll nicht glauben, das Paket sei fertig. Die
+       Sammeldatei gibt es erst, wenn ALLE Läufe durch sind. */
+    const kopf = k < N
+      ? `<div class="ev-rot" style="font-weight:600;margin-bottom:6px">${k} von ${N} Läufen fertig — Paket NOCH NICHT vollständig.</div>`
+      : `<div class="ev-gruen" style="font-weight:600;margin-bottom:6px">Alle ${N} Läufe fertig.</div>`;
+    l.innerHTML = kopf + (k === N
+      ? `<div style="margin:8px 0"><button class="ev-btn primary" data-vg-dl="alle">Alle ${N} Berichte als eine Datei herunterladen</button></div>` : "")
+      + state.berichte.map((b, i) =>
+      `<div style="margin:4px 0"><button class="ev-btn" data-vg-dl="${i}">Einzeln: Lauf ${i + 1} · ${esc(b.stand.arm)}</button></div>`
+    ).join("");
     for (const btn of l.querySelectorAll("[data-vg-dl]")) btn.addEventListener("click", () => {
       const k = btn.getAttribute("data-vg-dl");
       if (k === "alle") ladeHerunter({ vorgabe: vg.id, berichte: state.berichte }, vg.id + "_alle.json");
