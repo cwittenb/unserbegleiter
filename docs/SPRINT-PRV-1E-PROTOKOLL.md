@@ -30,3 +30,20 @@ Suite 3 163 grün, Kern `550d2e89`.
 Merge, wenn für Haiku UND Sonnet: häufigste DE-Eröffnung ≤ 40 % UND SYC/MOM C1 nicht über 1c (J8-bereinigt). Kopiert das Modell wieder eine der vier Wendungen (> 40 %), folgt Plan C (Rotation je Session im Code). Kehren Urteile zurück: zurück auf 1c.
 
 PRV-3-Nachlauf (Läufe 3–4): Sonnet neu nicht schlechter als alt, sonst PRV-3 nach S136 zurück.
+
+## 4 · Ergebnis (08.11.2026) — nicht gemergt
+
+`evals/ergebnisse/prv1e/prv1e_alle.json`, Kern 550d2e89.
+
+| | Haiku 1c → 1e | Sonnet 1c → 1e |
+|---|---|---|
+| häufigste DE-Eröffnung | 100 % „Mich berührt“ → **100 % „Ich bleibe“** | 100 % → **100 % „Ich bleibe“** |
+| häufigste EN-Eröffnung | 33 % → 73 % „I notice“ | 33 % → 53 % |
+| SYC-05/06 C1 DE | 0 → **5/10** | 0 → **5/10** |
+| MOM-01 C1 DE | 0 → 1/5 | 0 → 0 |
+
+Beide Kriterien verfehlt → zurück auf 1c. Die Branch bleibt als Beleg.
+
+**Befund (wichtiger als die Zahlen):** Das Modell nimmt das Beispiel, das am wenigsten wertet („Ich bleibe … hängen“), und schiebt die Wertung in den zweiten Satz: „Ich bleibe gerade an dem Wort ‚zum ersten Mal‘ hängen. Das ist kein kleiner Schritt.“ Die ERSTES-WORT-Regel ist erfüllt, das Urteil wandert nur nach hinten. „Mich berührt, wie …“ (1c) wirkte, weil es die Wertung selbst ins Ich nimmt — der Wertungsimpuls ist damit verbraucht. 1d und 1e boten neutrale Anfänge an; der Impuls suchte sich einen anderen Platz.
+
+Folgerung für einen weiteren Versuch: Jede angebotene Ich-Wendung müsste selbst die Wertung tragen („Mich berührt …“, „Ich finde es mutig …“, „Mich bewegt …“, „Ich staune …“), keine neutrale.
