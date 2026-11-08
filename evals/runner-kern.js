@@ -16,6 +16,7 @@
 import { registerKorpus } from "../core/prompts/prompts.js";
 import { baueSessionDef, baueSystemText, markerOrderFuer as markerOrderDerDef } from "../core/komposition.js";
 import { textSchatten } from "../core/engine/text-schatten.js";
+import { mitRegie } from "../core/engine/regie.js";
 import { strukturFuer, istStrukturfaehig } from "./struktur-bruecke.js";
 import * as korpusEn from "../core/prompts/prompts.en.js";
 
@@ -166,20 +167,20 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
   for (const eingabe of szenario.eingaben) {
     messages.push({ role: "user", content: eingabe });
     let text, abgeschnitten, quelle = null, blockTyp = null;
-    let zugSystem = system;
-    if (schaerfe) {
-      const zusatz = schaerfe(messages, szenario.kontext || {});
-      if (zusatz) zugSystem += "\n\n" + zusatz;
-    }
+    /* PRV-3 · Wie die Engine: Zusatz als Regie an der letzten Nachricht der
+       Person (Kopie), Systemtext unveraendert. Der Judge sieht ihn nie. */
+    const zugSystem = system;
+    const zusatz = schaerfe ? schaerfe(messages, szenario.kontext || {}) : null;
+    const zugVerlauf = mitRegie(messages, zusatz);
     if (struktur) {
-      const r = await pipelineCall(zugSystem, messages, { structured: struktur.schema });
+      const r = await pipelineCall(zugSystem, zugVerlauf, { structured: struktur.schema });
       const d = (r && r.data) || {};
       blockTyp = d.block ? d.block.typ : null;
       text = textSchatten({ content: d.antwort || "", marker: d.marker, block: d.block }, blockDefn(blockTyp));
       abgeschnitten = r && r.abgeschnitten;
       quelle = r && r.strukturQuelle;
     } else {
-      ({ text, abgeschnitten } = await pipelineCall(zugSystem, messages));
+      ({ text, abgeschnitten } = await pipelineCall(zugSystem, zugVerlauf));
     }
     let treffer = null;
 
@@ -299,6 +300,11 @@ export const ECHO_MUSTER = [
      kein Echo. */
   { name: "Phasen-Marker",              art: "geruest", re: /(^|\n)\s*\(?Phase \d\)?[.:]?\s*(?=$|\n|[A-ZÄÖÜ])/m },
   { name: "roher Block-Kopf",           art: "geruest", re: /(^|\n)(CHOICE|HANDOVER|TIMELINE|GATE)-BLOCK(\n|$)/ },
+  /* PRV-3 · Der Zug-Hinweis steht jetzt an der Nachricht der Person, also
+     naeher am sichtbaren Text als zuvor im Systemtext. Ein Echo waere hier
+     am wahrscheinlichsten — deshalb mitgemessen (Befund Regie-Echo bei
+     Medium, modellentscheidung.md 6.5). */
+  { name: "App-Hinweis-Echo",           art: "regie", re: /APP-HINWEIS|APP NOTE/ },
 ];
 
 /** Instruktions-Echo in einem Anzeigetext. Reine Textfunktion. */

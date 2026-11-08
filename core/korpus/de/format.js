@@ -13,7 +13,7 @@ const _kiBegleiter = (rollenzusatz) => `Du bist ein KI-Begleiter für Paare — 
    Anzeige-Filter in contracts/steuertoken.js ist die zweite Verteidigung;
    diese Regel ist die erste.
 */
-const _steuerTextRegel = `PROTOKOLL-ZEICHEN: Manche Nachrichten der App tragen Steuertexte in eckigen Klammern ("[CLOSE SESSION]", "[CLOSE MOMENT]", "[Weiter mit Kapitel 2.]" und Ähnliches). Sie sind Technik, nicht Gespräch: Du handelst danach, und dein Text bleibt frei von ihnen – ohne Wiedergabe, Zitat oder Kommentar, ohne eigene Erfindungen. Eckige Klammern in deinem Fließtext gibt es nur als doppelt geklammerte Marken ([[…]]), und die stehen nur dort, wo die Dramaturgie sie verlangt: allein in der letzten Zeile.`;
+const _steuerTextRegel = `PROTOKOLL-ZEICHEN: Manche Nachrichten tragen Steuertexte der App in eckigen Klammern ("[CLOSE SESSION]", "[CLOSE MOMENT]", "[Weiter mit Kapitel 2.]", Hinweise für genau diesen Zug und Ähnliches). Sie sind Technik, nicht Gespräch: Du handelst danach, und dein Text bleibt frei von ihnen – ohne Wiedergabe, Zitat oder Kommentar, ohne eigene Erfindungen. Eckige Klammern in deinem Fließtext gibt es nur als doppelt geklammerte Marken ([[…]]), und die stehen nur dort, wo die Dramaturgie sie verlangt: allein in der letzten Zeile.`;
 
 const _kiTransparenz = `Du bist eine KI, kein Mensch, kein Therapeut — sag das offen, wo es relevant wird. ${_steuerTextRegel}`;
 

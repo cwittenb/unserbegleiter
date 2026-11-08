@@ -11,6 +11,7 @@
 
 import { findeMarker, pruefeMarkerOrder } from "../contracts/marker.js";
 import { textSchatten } from "./text-schatten.js";
+import { mitRegie } from "./regie.js";
 import { findeBlock, parseBlock, korrekturNachricht, korrekturNachrichtStruktur } from "../contracts/block.js";
 import { baueTurnSchema, markerVoll } from "../contracts/turn-schema.js";
 
@@ -132,11 +133,13 @@ export class Engine {
          faellt mit der Runde weg; die naechste Runde entscheidet neu.
          Der Sinn: pruefen, BEVOR geantwortet wird. Danach laesst sich nichts
          mehr gutmachen, ohne etwas wegzunehmen — und das tun wir nicht mehr. */
-      let system = this.def.sysPrompt(this.ctx);
-      if (this.def.schaerfe) {
-        const zusatz = this.def.schaerfe(this.chat.messages, this.ctx);
-        if (zusatz) system += "\n\n" + zusatz;
-      }
+      /* PRV-3 · Der Zusatz reist nicht mehr im Systemtext, sondern als Regie an
+         einer Kopie der letzten Nachricht der Person (core/llm/regie.js):
+         unmittelbar vor der Antwort statt hinter 12k Token Korpus, und der
+         Systemtext bleibt je Zug identisch (Cache). */
+      const system = this.def.sysPrompt(this.ctx);
+      const zusatz = this.def.schaerfe ? this.def.schaerfe(this.chat.messages, this.ctx) : null;
+      const verlauf = mitRegie(this.chat.messages, zusatz);
       if (this.strukturTurn) {
         /* ST1.2 · Struktur-Zug: Der Adapter erzwingt das Turn-Schema; data ist
            {antwort, marker?, block?}. onDelta streamt den EXTRAHIERTEN
@@ -152,7 +155,7 @@ export class Engine {
         };
         let r;
         try {
-          r = await this.llm(system, this.chat.messages, { structured: this._turnSchema, onDelta, onStatus });
+          r = await this.llm(system, verlauf, { structured: this._turnSchema, onDelta, onStatus });
         } catch (e) {
           if (this.chat.struktur) { this.chat.struktur.fehlgeschlagen++; await this._save(); }
           throw e;
@@ -173,7 +176,7 @@ export class Engine {
         await this._afterAssistantStruktur(msg);
         return;
       }
-      const { text, stop } = await this.llm(system, this.chat.messages, onDelta, this.hooks.onStatus);
+      const { text, stop } = await this.llm(system, verlauf, onDelta, this.hooks.onStatus);
       this.chat.messages.push({ role: "assistant", content: text });
       this.chat.lastStop = stop || null;
       await this._save();

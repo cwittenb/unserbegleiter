@@ -22,6 +22,8 @@ export function textAusInhalt(inhalt) {
     .join("");
 }
 
+import { inhaltMitRegie } from "../regie.js";
+
 export function openaiCompat(baseUrl, modelKey) {
   return {
     url: () => baseUrl,
@@ -33,7 +35,7 @@ export function openaiCompat(baseUrl, modelKey) {
         model: cfg.models[modelKey],
         max_tokens: cfg.maxTokens,
         messages: [{ role: "system", content: systemPrompt },
-                   ...messages.map(m => ({ role: m.role, content: m.content }))],
+                   ...messages.map(m => ({ role: m.role, content: inhaltMitRegie(m) }))],   // PRV-3
       };
       // S137 · Nur mitsenden, wenn ausdruecklich gesetzt (siehe LLM_DEFAULTS).
       if (typeof cfg.temperature === "number") body.temperature = cfg.temperature;

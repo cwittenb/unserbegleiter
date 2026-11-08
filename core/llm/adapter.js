@@ -227,7 +227,7 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     async function callClaude(systemPrompt, messages, drittes, viertes) {
       const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
       const streamen = typeof onDelta === "function" && cfg.stream !== false;
-      const nutz = { system: systemPrompt, messages: messages.map(m => ({ role: m.role, content: m.content })) };
+      const nutz = { system: systemPrompt, messages: messages.map(m => (m.regie ? { role: m.role, content: m.content, regie: m.regie } : { role: m.role, content: m.content })) };   // PRV-3: Regie reist zum Worker mit
       if (streamen) nutz.stream = true;
       // S76: Der Worker übersetzt die Struktur providerspezifisch — der Client
       // schickt nur Name und Schema und bekommt data in der Fassade zurück.

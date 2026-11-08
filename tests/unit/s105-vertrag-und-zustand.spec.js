@@ -112,18 +112,19 @@ describe("S105.3 · Der Vertrag kennt keine Rücknahme mehr", () => {
     expect(chat.letzteVerweigerung).toBeNull();
   });
 
-  it("die Schärfung geht in den SYSTEMTEXT, nie in den Verlauf", async () => {
+  it("die Schärfung reist als Regie an der letzten Nachricht (PRV-3), nie im Systemtext, nie im Verlauf", async () => {
     const systeme = [];
+    const regien = [];
     const chat = { messages: [], status: "running" };
     const e = new Engine({
       def: { id: "p", sysPrompt: () => "BASIS", canAct: () => true, blocks: [], schaerfe: () => "[APP-HINWEIS: X]" },
       chat, ctx: {},
-      llm: async (sys) => { systeme.push(sys); return { text: "ok", stop: "end_turn" }; },
+      llm: async (sys, msgs) => { systeme.push(sys); regien.push(msgs.at(-1).regie); return { text: "ok", stop: "end_turn" }; },
       hooks: {},
     });
     await e.sendUser("los");
-    expect(systeme[0]).toContain("BASIS");
-    expect(systeme[0]).toContain("[APP-HINWEIS: X]");
+    expect(systeme[0]).toBe("BASIS");   // invertiert seit PRV-3
+    expect(regien[0]).toBe("[APP-HINWEIS: X]");
     expect(JSON.stringify(chat.messages)).not.toContain("APP-HINWEIS");
   });
 });

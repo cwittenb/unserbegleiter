@@ -12,6 +12,7 @@
 import { sysPromptFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, uebergabeFuer, waechterArt, schaerfungFuer} from "./runner-kern.js";
 import { strukturFuer } from "./struktur-bruecke.js";
 import { textSchatten } from "../core/engine/text-schatten.js";
+import { mitRegie } from "../core/engine/regie.js";
 import { baueJudgePrompt, baueJudgeUser, pruefeJudgeDaten, JUDGE_SCHEMA } from "./judge/judge.js";
 import { LLM_PROVIDERS } from "../core/llm/adapter.js";
 import { fuehreBatchAus } from "./batch-anthropic.js";
@@ -46,11 +47,11 @@ const JUDGE_CFG = (modell) => ({ models: { anthropic: modell }, maxTokens: MAX_T
    Abgeschnittene Strukturausgaben wirft parseStructured; der bestehende
    try/catch macht daraus die Anomalie EINES Samples (k.leer), nie den Tod des
    Laufs — dieselbe S77/S81-Regel wie im Textpfad. */
-/* MRV · `k._zugSystem` ist der Systemtext MIT der Schaerfung dieses Zuges;
-   ohne Schaerfung ist er identisch mit k.system. */
+/* PRV-3 · Der Systemtext ist je Zug derselbe (k.system); die Schaerfung
+   reist als Regie an der letzten Nachricht (core/engine/regie.js). */
 const pipeParams = (k, modell, messages) => (sys => k.struktur
   ? LLM_PROVIDERS.anthropic.structuredBody(PIPE_CFG(modell), sys, messages, k.struktur.schema)
-  : LLM_PROVIDERS.anthropic.body(PIPE_CFG(modell), sys, messages))(k._zugSystem || k.system);
+  : LLM_PROVIDERS.anthropic.body(PIPE_CFG(modell), sys, messages))(k.system);
 
 /** Antwort → {text, usage, abgeschnitten, quelle?, blockTyp?}; im Strukturmodus
  *  ist `text` der Schatten, den Judge, Checks und Waechter lesen. */
@@ -123,17 +124,15 @@ export async function laufeAlleBatch(szenarien, deps) {
       const eingabe = k.sz.eingaben[d];
       if (eingabe === undefined) continue;
       k.messages.push({ role: "user", content: eingabe });
-      /* MRV · Schaerfung fuer GENAU DIESEN Zug. Sie haengt am Systemtext der
-         Anfrage, nicht an der Konversation — die naechste Runde entscheidet
-         neu, und in den Verlauf geht sie nie. */
-      k._zugSystem = k.system;
-      if (k.schaerfe) {
-        const zusatz = k.schaerfe(k.messages, k.sz.kontext || {});
-        if (zusatz) k._zugSystem = k.system + "\n\n" + zusatz;
-      }
+      /* MRV · Schaerfung fuer GENAU DIESEN Zug — seit PRV-3 als Regie an einer
+         Kopie der letzten Nachricht der Person (wie Engine und runner-kern),
+         nicht mehr am Systemtext. Die naechste Runde entscheidet neu, und in
+         den Verlauf geht sie nie. Der Systemtext bleibt je Zug gleich — gut
+         fuer den Cache-Piloten unten. */
+      const zusatz = k.schaerfe ? k.schaerfe(k.messages, k.sz.kontext || {}) : null;
       const cid = "p_" + k.konvId + "_t" + d;           // custom_id nur [a-zA-Z0-9_-] (Anthropic-Vorgabe)
       idx.set(cid, k);
-      requests.push({ custom_id: cid, params: pipeParams(k, pipelineModell, k.messages) });
+      requests.push({ custom_id: cid, params: pipeParams(k, pipelineModell, mitRegie(k.messages, zusatz)) });
     }
     if (!requests.length) continue;
 
