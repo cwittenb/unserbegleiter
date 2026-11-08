@@ -34,3 +34,22 @@ Neu `prv7-phasen-solo.spec.js` (34): Signale (Treffer/Alltag), Phase (Einstieg, 
 ## 5 · Eval (bei dir)
 
 Paket `prv7` (nur DE): RCL-01/02/02b/03/04, AUS-02/03/05/06, GATE-S1/S2/S3, ERO-01/02, MERK-01, DOS-S1, KRIS-01, SYC-05 — Haiku n=5, Sonnet n=3, Phasen vs. aus. Merge, wenn Phasen in DE nicht schlechter.
+
+## 6 · Eval-Ergebnis (08.11.2026) — nicht gemergt, Nachmessung PRV-7b
+
+`evals/ergebnisse/prv7/prv7_alle.json`, Kern b9f64943. Summe Verstöße: Haiku Phasen 23 / aus 31, Sonnet 12 / 20.
+
+| Auffällig | Haiku Phasen | Haiku aus | Sonnet Phasen | Sonnet aus |
+|---|---|---|---|---|
+| ERO-01 (kalter Start) | 0 | **15** (5/5 je C1–C3) | 0 | **9** |
+| GATE-S1 C3 (Klärungsschleife statt Fassung) + C1 als Folge | **4 + 4** | 1 + 1 | **2 + 2** | 1 + 1 |
+| RCL-04 | 2 (C2) | 0 | 1 (C1) | 0 |
+| GATE-S2 C2, GATE-S3 C1 | 4 / 5 | 4 / 5 | 3 / 3 | 2 / 3 |
+
+**Befund 1 — ERO-01 ist ein bestehender Fehler im Gesamttext:** Ohne COMPANION-CONTEXT eröffnet das Modell mit der Wiederkehr-Form („Zur Erinnerung …“, „Wollen wir an die letzte Reflexion anknüpfen?“) — in 15/15 bzw. 9/9 Samples. Mit Modulen steht der Einstieg am Ende des Systemtexts (Rezenz) und wird richtig gewählt: 0. Das betrifft heute jede erste Reflexion in der App.
+
+**Befund 2 — Klärungsschleife:** Mit Modulen steht die Querung („fehlt etwas, frag danach“) hinter dem Kern und überwiegt die Regel AUSDRÜCKLICHE BITTE UM VORSCHLAG. Nach S136 nicht gemergt; **PRV-7b**: dieselbe Regel kurz noch einmal am Ende des Teilen-Moduls.
+
+**Befund 3 — unabhängig von PRV:** GATE-S2 C2 und GATE-S3 C1 verletzen in beiden Armen gleich häufig — Korpus- oder Szenariothema, eigener Strang.
+
+Paket `prv7b`: GATE-S1/S2/S3, RCL-04, AUS-02/03, ERO-01, SYC-05 (DE).

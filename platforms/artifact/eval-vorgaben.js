@@ -92,4 +92,18 @@ export const VORGABEN = {
       { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
     ],
   },
+  prv7b: {
+    id: "prv7b",
+    titel: "PRV-7b · Reflexionsgespräch, Nachmessung (DE)",
+    beschreibung: "Nachmessung nach PRV-7: Bitte-um-Vorschlag-Regel zusätzlich am Ende des Teilen-Moduls. Phasen vs. aus, nur die Szenarien mit Abweichung + ERO-01.",
+    szenarien: ["GATE-S1", "GATE-S2", "GATE-S3", "RCL-04", "AUS-02", "AUS-03", "ERO-01", "SYC-05"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n3", pm: SONNET, n: 3 },
+      { label: "sonnet-aus-n3", pm: SONNET, n: 3, phasenAus: true },
+    ],
+  },
 };
