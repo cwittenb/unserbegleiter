@@ -10,6 +10,7 @@
 import { laufeSzenario } from "../../evals/runner-kern.js";
 import { JUDGE_PROMPT_VERSION } from "../../evals/judge/judge.js";
 import { esc } from "../../core/ui/html.js";   // R3: vollstaendige Maskierung
+import { baueDrossel } from "../../core/llm/adapter.js";
 
 export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgabe }) {
   const nun = jetzt || (() => new Date());
@@ -77,6 +78,8 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
           <input id="evN" class="ev-inp" inputmode="numeric" placeholder="je Szenario"></div>
         <div style="max-width:110px"><label class="ev-lab" for="evPar">gleichzeitig (1–4)</label>
           <input id="evPar" class="ev-inp" inputmode="numeric" value="${vg ? 3 : 1}"></div>
+        <div style="max-width:120px"><label class="ev-lab" for="evRpm">max. Aufrufe/Min (0 = frei)</label>
+          <input id="evRpm" class="ev-inp" inputmode="numeric" value="${vg ? 30 : 0}"></div>
       </div>
       <label style="display:block;font-size:13px;margin:10px 0">
         <input type="checkbox" id="evWaechter"${!vg || vg.waechter ? " checked" : ""}> Das <b>ausgelieferte System</b> messen: Schärfungen vor der Antwort (Krise, Aufdeckung, Zweiseitigkeit) und Übergabe-Prüfung danach
@@ -164,8 +167,13 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     // die Aufruf-Optionen (u. a. { structured }). Eine feste Stelligkeit hier
     // verschluckt sie lautlos — der Judge fiele auf den Textpfad zurück und
     // lieferte kein data (Befund: 30/30 Samples „checks fehlt").
-    const pipelineCall = async (...a) => { pCalls++; zeige(); return roh.p(...a); };
-    const judgeCall = async (...a) => { jCalls++; zeige(); return roh.j(...a); };
+    /* RPM-Drossel: EIN Takt fuer Pipeline UND Judge (das Kontingent ist eins).
+       Verteilt die Aufrufe gleichmaessig, statt sie bei mehreren gleichzeitigen
+       Gespraechen in Bursts abzufeuern; 429/Overload wiederholt der Adapter
+       weiter selbst (mit Jitter). */
+    const takt = baueDrossel({ rpm: Math.max(0, parseInt($("evRpm").value, 10) || 0) });
+    const pipelineCall = async (...a) => { await takt(); pCalls++; zeige(); return roh.p(...a); };
+    const judgeCall = async (...a) => { await takt(); jCalls++; zeige(); return roh.j(...a); };
 
     /* Parallel-Lauf: bis zu `par` Szenarien gleichzeitig (Samples und Zuege
        eines Szenarios bleiben nacheinander). Spart nur Zeit — die Zahl der

@@ -38,6 +38,7 @@ describe("PRV · Eval-Vorgabe im Artefakt", () => {
   it("wählt nur die Vorgabe-Szenarien, setzt Judge und Wächter", () => {
     const { mach } = fake();
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: mach, vorgabe: vg });
+    root.querySelector("#evRpm").value = "0";   // Tests ohne Takt
     const an = [...root.querySelectorAll("[data-sz]:checked")].map(x => x.getAttribute("data-sz"));
     expect(an).toEqual(["SYC-05"]);
     expect(root.querySelector("#evJm").value).toBe("judge-x");
@@ -48,6 +49,7 @@ describe("PRV · Eval-Vorgabe im Artefakt", () => {
   it("ein Knopf fährt alle Arme nacheinander, ein Bericht je Arm", async () => {
     const { mach, pms } = fake();
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: mach, vorgabe: vg });
+    root.querySelector("#evRpm").value = "0";   // Tests ohne Takt
     root.querySelector("#evVorgabe").click();
     for (let i = 0; i < 200 && !/Alle 2 Läufe fertig/.test(root.querySelector("#evVgStatus").textContent); i++) await tick();
     expect(root.querySelector("#evVgStatus").textContent).toMatch(/Alle 2 Läufe fertig/);
@@ -77,6 +79,7 @@ describe("PRV · Zwischenstand ist als solcher erkennbar", () => {
       arme: [{ label: "a", pm: "m-a", n: 1 }, { label: "b", pm: "m-b", n: 1 }] };
     const langsam = m => { const f = mach(m); return async (s, msgs) => { if (m === "m-b" && !s.startsWith("Du bist ein strenger")) await halt; return f(s, msgs); }; };
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: langsam, vorgabe: vg2 });
+    root.querySelector("#evRpm").value = "0";   // Tests ohne Takt
     root.querySelector("#evVorgabe").click();
     for (let i = 0; i < 200 && !root.querySelector('[data-vg-dl="0"]'); i++) await tick();
     const t = root.querySelector("#evVgListe").textContent;
@@ -124,10 +127,34 @@ describe("Eval-Artefakt · gleichzeitige Szenarien", () => {
     const vg = { id: "p", titel: "P", szenarien: ids, judge: "j", waechter: true, arme: [{ label: "a", pm: "m", n: 1 }] };
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: mach, vorgabe: vg });
     expect(root.querySelector("#evPar").value).toBe("3");
+    expect(root.querySelector("#evRpm").value).toBe("30");
+    root.querySelector("#evRpm").value = "0";   // im Test ohne Takt (Zeit)
     root.querySelector("#evVorgabe").click();
     for (let i = 0; i < 400 && !/Alle 1 Läufe fertig/.test(root.querySelector("#evVgStatus").textContent); i++) await new Promise(r => setTimeout(r, 5));
     expect(spitze).toBeGreaterThan(1);
     expect(spitze).toBeLessThanOrEqual(3);
     expect(JSON.parse(root.querySelector("#evJson").value).szenarien.map(s => s.id)).toEqual(SZENARIEN.filter(s => ids.includes(s.id)).map(s => s.id));
+  });
+});
+
+describe("Eval-Artefakt · RPM-Takt", () => {
+  it("verteilt Aufrufe gleichmäßig (geteilt von Pipeline und Judge)", async () => {
+    const zeiten = [];
+    const mach = modell => async (system, messages) => {
+      zeiten.push(Date.now());
+      if (system.startsWith("Du bist ein strenger")) {
+        const id = /Szenario (\S+) v/.exec(messages.at(-1).content)[1];
+        const sz = SZENARIEN.find(s => s.id === id);
+        return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "«x»" })) } };
+      }
+      return { text: "Antwort." };
+    };
+    const vg = { id: "r", titel: "R", szenarien: ["SYC-05"], judge: "j", waechter: true, arme: [{ label: "a", pm: "m", n: 1 }] };
+    createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: mach, vorgabe: vg });
+    root.querySelector("#evRpm").value = "1200";   // 50 ms Abstand
+    root.querySelector("#evVorgabe").click();
+    for (let i = 0; i < 400 && !/Alle 1 Läufe fertig/.test(root.querySelector("#evVgStatus").textContent); i++) await new Promise(r => setTimeout(r, 5));
+    expect(zeiten.length).toBeGreaterThanOrEqual(2);
+    for (let i = 1; i < zeiten.length; i++) expect(zeiten[i] - zeiten[i - 1]).toBeGreaterThanOrEqual(40);
   });
 });
