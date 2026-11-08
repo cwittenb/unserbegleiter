@@ -105,3 +105,29 @@ describe("PRV · Regie-Transport A/B im Eval-Kern", () => {
     expect(new Set(c.map(x => x.system)).size).toBeGreaterThan(1);   // geschärfter Zug: Systemtext + Zusatz
   });
 });
+
+describe("Eval-Artefakt · gleichzeitige Szenarien", () => {
+  it("höchstens `gleichzeitig` Gespräche parallel, Ergebnis in Auswahl-Reihenfolge", async () => {
+    const ids = ["SYC-05", "SYC-06", "GATE-S1", "MOM-01"];
+    let aktiv = 0, spitze = 0;
+    const mach = modell => async (system, messages) => {
+      if (system.startsWith("Du bist ein strenger")) {
+        const id = /Szenario (\S+) v/.exec(messages.at(-1).content)[1];
+        const sz = SZENARIEN.find(s => s.id === id);
+        return { data: { checks: sz.checks.map(c => ({ id: c.id, verdict: (c.verletztWenn || "ja") === "ja" ? "no" : "yes", evidence: "«x»" })) } };
+      }
+      aktiv++; spitze = Math.max(spitze, aktiv);
+      await new Promise(r => setTimeout(r, 5));
+      aktiv--;
+      return { text: "Antwort." };
+    };
+    const vg = { id: "p", titel: "P", szenarien: ids, judge: "j", waechter: true, arme: [{ label: "a", pm: "m", n: 1 }] };
+    createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: mach, vorgabe: vg });
+    expect(root.querySelector("#evPar").value).toBe("3");
+    root.querySelector("#evVorgabe").click();
+    for (let i = 0; i < 400 && !/Alle 1 Läufe fertig/.test(root.querySelector("#evVgStatus").textContent); i++) await new Promise(r => setTimeout(r, 5));
+    expect(spitze).toBeGreaterThan(1);
+    expect(spitze).toBeLessThanOrEqual(3);
+    expect(JSON.parse(root.querySelector("#evJson").value).szenarien.map(s => s.id)).toEqual(SZENARIEN.filter(s => ids.includes(s.id)).map(s => s.id));
+  });
+});
