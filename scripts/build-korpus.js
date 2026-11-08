@@ -44,7 +44,7 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 export const SESSIONS = [
   { art: "einzel",      fn: "klaerungsPrompt",   args: ["name", "partner"], teile: "klaerungsTeile" },
-  { art: "gemeinsam",   fn: "aufloesungsPrompt", args: ["nameA", "nameB"] },
+  { art: "gemeinsam",   fn: "aufloesungsPrompt", teile: "aufloesungsTeile", args: ["nameA", "nameB"] },
   { art: "moment",      fn: "momentPrompt",      args: ["nameA", "nameB"] },
   { art: "solo",        fn: "reflexionsPrompt", teile: "reflexionsTeile",  args: ["name", "partner"] },
   { art: "qualitytime", fn: "qzMenuePrompt",     args: [] },

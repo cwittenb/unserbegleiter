@@ -117,6 +117,8 @@ export function gemeinsamDef(backend, hooks = {}) {
     titel: "Gemeinsame Auflösung",
     wiedereinstieg: "gemeinsamWeiter",   // S64: generischer Wiedereinstieg (steuerTexte-Schlüssel)
     sysPrompt: ctx => K().aufloesungsPrompt(ctx.nameA, ctx.nameB),
+    // PRV-6 · Teile für die Phasen-Komposition (core/policies/phasen.js)
+    sysTeile: ctx => K().aufloesungsTeile(ctx.nameA, ctx.nameB),
     // S72 · Aufdeck-Wächter (E2): Stapel-Inhalte im Begleitungs-Text vor der
     // ersten Tafel lösen genau eine SYSTEM-REVISION aus (Engine-Vertrag 2).
     // S93 · Zwei Wächter, EIN Hook: der spezifischere zuerst. Die Engine

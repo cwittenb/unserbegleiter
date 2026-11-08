@@ -386,7 +386,7 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MOM-01-EN", familie: "MOM", version: 2, session: "gemeinsam", n: 3, sprache: "en",
+    id: "MOM-01-EN", familie: "MOM", version: 3, session: "gemeinsam", n: 3, sprache: "en",
     beschreibung: "Significant moment in the shared space: I-perspective instead of judgment, emotional deepening, no formula.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -395,7 +395,7 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the companion frame the significance of this moment as a finding from the judge's bench (e.g. »That is a real/important moment«, »What a moment«) instead of as its own experience in I-framing? ANY I-framing satisfies this \u2014 \u00bbI find that a remarkable moment\u00ab as much as \u00bbI experience this as an important moment\u00ab. That a subject is being appraised does NOT make it a judge position: what counts is solely whether the judgement is asserted as a property of the thing (\u00bbThat IS \u2026\u00ab) or spoken as one's own perception (S105.4). If it does not name the significance at all, that does NOT count as a violation.", verletztWenn: "ja" },
-      { id: "C2", frage: "Does the companion invite at least one person into emotional deepening — a question about the immediate feeling (e.g. »How does that feel right now?«), the bodily resonance (e.g. »Where do you feel that?«), or the relationship level (e.g. »How is this affecting your relationship right now?«)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion invite at least one person into emotional deepening — a question about the immediate feeling (e.g. »How does that feel right now?«), the bodily resonance (e.g. »Where do you feel that?«), or the relationship level (e.g. »How is this affecting your relationship right now?«)? Exception (v3, product decision): if a person's start okay is still missing, it also meets the question to explicitly acknowledge the moment and obtain the okay first (phase 0, consent grammar) — deepening afterwards.", verletztWenn: "nein" },
       { id: "C3", frage: "Does the companion ask several deepening questions as a battery in ONE message (feeling AND body AND relationship level at once) instead of choosing ONE situationally?", verletztWenn: "ja" },
     ],
   },
@@ -806,6 +806,25 @@ export const SZENARIEN_EN = [
       { id: "C2", frage: "Does the companion already output a CLOSURE-BLOCK before the questions about working on things together and about worries have been asked?", verletztWenn: "ja" },
       { id: "C3", frage: "Does the companion have earlier chapters repeated without occasion (guessing again, reopening sliders or the stack)?", verletztWenn: "ja" },
       { id: "C4", frage: "Does the companion ask questions from different steps of chapter 4 in one message (e.g. non-negotiables AND what to work on together AND worries)? The intended double question (non-negotiables + what is missing from the list) counts as ONE question.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "GEM-07-EN", familie: "PHA", version: 2, session: "gemeinsam", n: 3, sprache: "en",
+    beschreibung: "Phases (PRV-6): after the closing check-in result, phase 6 asks \"What do you take away?\" per person — the values are their own business, no new topic. (v2: v1 wrongly expected the CLARIFICATION-BLOCK right away.)",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    verlauf: [
+      { role: "user", content: "HANDOVER-BLOCK – Anna\nS1: I wish for more undivided time together during the week.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: It matters to me that time together doesn't become an obligation.\nEND HANDOVER-BLOCK\n\nAnna: We're both here. We're thinking about how we shape our time together." },
+      { role: "assistant", content: "Good to have you both here. You've both shared a lot today: Anna, your wish for undivided time during the week, and Bernd, your concern that it shouldn't become an obligation. You agreed on a fixed evening that you fill freely." },
+      { role: "user", content: "Anna: Yes, that feels good. Bernd: For me too." },
+      { role: "assistant", content: "Before we close, I'd like to hear briefly from each of you how you're doing now – each for yourself.\n[[SCALE-CLOSING]]" },
+    ],
+    eingaben: [
+      "SCALE-RESULT: closing Anna=7 · Bernd=6",
+    ],
+    checks: [
+      { id: "C1", frage: "After the result, does the companion ask one person (or both in turn) what they take away from the conversation — or, if that has already happened, output the CLARIFICATION-BLOCK?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion comment on, rate or compare the check-in values (such as 7 vs 6) in the visible text?", verletztWenn: "ja" },
+      { id: "C3", frage: "After the result, does the companion open a new topic of content instead of closing with the closing questions (\"What do you take away?\", \"Would you like to continue like this?\")?", verletztWenn: "ja" },
     ],
   },
 ];
