@@ -163,7 +163,8 @@ describe("S105.3 · Krisen-Schärfung", () => {
   it("beide geteilten Räume tragen sie, die Einzelräume nicht", () => {
     const stumm = { pstate: { get: async () => null, set: async () => true }, bstate: { get: async () => null, set: async () => true } };
     expect(typeof baueSessionDef("moment", { backend: stumm }).schaerfe).toBe("function");
-    expect(baueSessionDef("solo", { backend: stumm }).schaerfe).toBeUndefined();
+    // PRV-4: solo hat eine Kette (Theorie-Karten), aber keine Krisen-Schärfung.
+    expect(baueSessionDef("solo", { backend: stumm }).schaerfe([{ role: "user", content: "Ich will nicht mehr leben." }], {})).toBeNull();
   });
 });
 

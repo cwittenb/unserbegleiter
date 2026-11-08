@@ -1,0 +1,1 @@
+[APP CARD for this turn: The conversation is showing an occasion for this perspective right now. It is an offer, not an obligation. {{wissen.anteileSprache}}]

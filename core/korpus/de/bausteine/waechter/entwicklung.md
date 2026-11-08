@@ -1,0 +1,1 @@
+[APP-KARTE für diesen Zug: Im Gespräch zeigt sich gerade ein Anlass für diese Perspektive. Sie ist ein Angebot, keine Pflicht. {{wissen.entwicklungsRaum}}]

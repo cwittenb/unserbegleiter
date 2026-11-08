@@ -57,7 +57,7 @@ const FILTER = {
   count:  (expr, arg) => { if (arg != null) throw new Error("count nimmt kein Argument"); return expr + ".length"; },
   zeilen: (expr, arg) => { if (arg == null) throw new Error("zeilen braucht einen Trenner"); return expr + ".split(\"\\n\").join(" + jsString(arg) + ")"; },
 };
-const WAECHTER = ["krise", "zweiseitigkeit", "aufdeck"];
+const WAECHTER = ["krise", "zweiseitigkeit", "aufdeck", "anteile", "entwicklung"];
 
 /* ---- Hilfen ------------------------------------------------------------- */
 export function escapeTemplate(text) {
@@ -327,7 +327,14 @@ export function baueSchichtQuelle(sprache, schicht, reg = ladeBausteine(sprache)
          "  krise: { signal: SIGNALE.krise, text: " + t("krise") + " },\n" +
          "  krisenhilfe: SIGNALE.krisenhilfe,\n  einzelraum: SIGNALE.einzelraum,\n" +
          "  zweiseitigkeit: { eigeneSache: SIGNALE.eigeneSache, verfuegung: SIGNALE.verfuegung, text: " + t("zweiseitigkeit") + " },\n" +
-         "  aufdeck: { text: " + t("aufdeck") + " },\n};\n";
+         "  aufdeck: { text: " + t("aufdeck") + " },\n" +
+         /* PRV-4 · Theorie-Linsen als Karte: Signal in den Nachrichten der Person, Spur in der eigenen letzten Antwort. */
+         "  anteile: { signal: SIGNALE.anteile, spur: SIGNALE.anteileSpur, text: " + t("anteile") + " },\n" +
+         "  entwicklung: { signal: SIGNALE.entwicklung, spur: SIGNALE.entwicklungSpur, text: " + t("entwicklung") + " },\n};\n";
+    /* Die Karten-Texte binden Wissen-Bausteine ein; ihre Importe entstehen erst
+       hier, nach dem Kopf — also nachtragen. */
+    const spaet = [...importe].filter(z => !q.includes(z)).sort();
+    if (spaet.length) q = q.replace('import { SIGNALE } from "./signale.js";', ['import { SIGNALE } from "./signale.js";', ...spaet].sort().join("\n"));
   }
   return q;
 }

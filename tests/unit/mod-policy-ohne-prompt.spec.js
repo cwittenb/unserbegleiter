@@ -92,10 +92,11 @@ describe("MOD-2b · Katalog-Invarianten", () => {
     expect(PRUEFUNGEN.urteil({})("Das ist ein großer Satz.")).toBe("urteil");
   });
   it("die Zuordnung ist die bisherige (S105.3 / MRV.3 / S103)", () => {
-    expect(POLICY_KATALOG.moment.schaerfungen).toEqual(["krise", "zweiseitigkeit"]);
-    expect(POLICY_KATALOG.gemeinsam.schaerfungen).toEqual(["aufdeck", "krise", "zweiseitigkeit"]);
-    expect(POLICY_KATALOG.solo.schaerfungen).toEqual([]);
-    expect(POLICY_KATALOG.einzel).toEqual({ schaerfungen: [], pruefungen: [] });
+    // PRV-4: die Theorie-Karten hängen in jeder Art hinten an.
+    expect(POLICY_KATALOG.moment.schaerfungen).toEqual(["krise", "zweiseitigkeit", "anteile", "entwicklung"]);
+    expect(POLICY_KATALOG.gemeinsam.schaerfungen).toEqual(["aufdeck", "krise", "zweiseitigkeit", "anteile", "entwicklung"]);
+    expect(POLICY_KATALOG.solo.schaerfungen).toEqual(["anteile", "entwicklung"]);
+    expect(POLICY_KATALOG.einzel).toEqual({ schaerfungen: ["anteile", "entwicklung"], pruefungen: [] });
     expect(POLICY_KATALOG.moment.pruefungen.map(p => p.art)).toEqual(["abschluss", "meta"]);
     expect(POLICY_KATALOG.gemeinsam.pruefungen.map(p => p.art)).toEqual(["marken"]);
   });

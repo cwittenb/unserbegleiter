@@ -36,6 +36,8 @@ const ORDNUNG = [
   "bedeutsameMomente",
   "reaktionsTypen",
   "entwicklungsRaum",
+  "anteileKern",
+  "entwicklungKern",
   "regieUebergabe",
   "widerspruchsForm",
   "notFrage",
