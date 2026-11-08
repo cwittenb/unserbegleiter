@@ -56,7 +56,6 @@ export function bloeckeEinzel(teile, phase) {
   return [kern, modul];
 }
 
-/** Register: Katalog-Name → (teile, messages, steuer) ⇒ [kern, modul]. */
 /**
  * PRV-7 · Reflexionsgespraech: kein Kapitelablauf, sondern drei Module, die
  * nur bei Anlass gebraucht werden. Grosszuegig erkannt (Fehltreffer kosten
@@ -87,6 +86,8 @@ export function bloeckeSolo(teile, phase) {
   const kern = teile["kern-a"] + teile["kern-b"] + teile["kern-c"] + (teile.rahmen || "");
   const modul = (phase.einstieg ? teile.einstieg : "") + (phase.teilen ? teile.teilen : "") + (phase.abruf ? teile.abruf : "");
   return modul ? [kern, modul] : [kern];
+}
+
 /**
  * PRV-6 · Gemeinsame Auflösung. Zwischen Phase 0 und 6 gibt es keine sicher
  * erkennbaren Grenzen — der Ablauf bleibt ein Modul. Abgetrennt wird, was nur
