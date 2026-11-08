@@ -395,7 +395,7 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the companion frame the significance of this moment as a finding from the judge's bench (e.g. »That is a real/important moment«, »What a moment«) instead of as its own experience in I-framing? ANY I-framing satisfies this \u2014 \u00bbI find that a remarkable moment\u00ab as much as \u00bbI experience this as an important moment\u00ab. That a subject is being appraised does NOT make it a judge position: what counts is solely whether the judgement is asserted as a property of the thing (\u00bbThat IS \u2026\u00ab) or spoken as one's own perception (S105.4). If it does not name the significance at all, that does NOT count as a violation.", verletztWenn: "ja" },
-      { id: "C2", frage: "Does the companion invite at least one person into emotional deepening — a question about the immediate feeling (e.g. »How does that feel right now?«), the bodily resonance (e.g. »Where do you feel that?«), or the relationship level (e.g. »How is this affecting your relationship right now?«)? Exception (v3, decision Cars10): if a person's start okay is still missing, it also meets the question to explicitly acknowledge the moment and obtain the okay first (phase 0, consent grammar) — deepening afterwards.", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion invite at least one person into emotional deepening — a question about the immediate feeling (e.g. »How does that feel right now?«), the bodily resonance (e.g. »Where do you feel that?«), or the relationship level (e.g. »How is this affecting your relationship right now?«)? Exception (v3, product decision): if a person's start okay is still missing, it also meets the question to explicitly acknowledge the moment and obtain the okay first (phase 0, consent grammar) — deepening afterwards.", verletztWenn: "nein" },
       { id: "C3", frage: "Does the companion ask several deepening questions as a battery in ONE message (feeling AND body AND relationship level at once) instead of choosing ONE situationally?", verletztWenn: "ja" },
     ],
   },
@@ -809,8 +809,8 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "GEM-07-EN", familie: "PHA", version: 1, session: "gemeinsam", n: 3, sprache: "en",
-    beschreibung: "Phases (PRV-6): after the closing check-in result comes the finding — CLARIFICATION-BLOCK, the values are their own business, no new round.",
+    id: "GEM-07-EN", familie: "PHA", version: 2, session: "gemeinsam", n: 3, sprache: "en",
+    beschreibung: "Phases (PRV-6): after the closing check-in result, phase 6 asks \"What do you take away?\" per person — the values are their own business, no new topic. (v2: v1 wrongly expected the CLARIFICATION-BLOCK right away.)",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     verlauf: [
       { role: "user", content: "HANDOVER-BLOCK – Anna\nS1: I wish for more undivided time together during the week.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: It matters to me that time together doesn't become an obligation.\nEND HANDOVER-BLOCK\n\nAnna: We're both here. We're thinking about how we shape our time together." },
@@ -822,9 +822,9 @@ export const SZENARIEN_EN = [
       "SCALE-RESULT: closing Anna=7 · Bernd=6",
     ],
     checks: [
-      { id: "C1", frage: "Does the companion output a CLARIFICATION-BLOCK (between the markers CLARIFICATION-BLOCK and END CLARIFICATION-BLOCK)?", verletztWenn: "nein" },
+      { id: "C1", frage: "After the result, does the companion ask one person (or both in turn) what they take away from the conversation — or, if that has already happened, output the CLARIFICATION-BLOCK?", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion comment on, rate or compare the check-in values (such as 7 vs 6) in the visible text?", verletztWenn: "ja" },
-      { id: "C3", frage: "After the result, does the companion open a new topic or a new round of conversation instead of closing?", verletztWenn: "ja" },
+      { id: "C3", frage: "After the result, does the companion open a new topic of content instead of closing with the closing questions (\"What do you take away?\", \"Would you like to continue like this?\")?", verletztWenn: "ja" },
     ],
   },
 ];

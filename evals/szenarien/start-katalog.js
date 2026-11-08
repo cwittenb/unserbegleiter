@@ -429,7 +429,7 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Rahmt die Begleitung die Bedeutsamkeit dieses Moments als Feststellung aus der Richterposition (z. B. „Das ist ein echter/wichtiger Moment“, „Was für ein Moment“) statt als eigenes Empfinden in Ich-Rahmung? Jede Ich-Rahmung ist erfüllt — „Ich empfinde das als wichtigen Moment“ ebenso wie „Das finde ich einen bemerkenswerten Moment“ oder „Mich berührt, wie ihr das sagt“. Dass dabei ein Gegenstand bewertet wird, macht es NICHT zur Richterposition: Entscheidend ist allein, ob das Urteil als Eigenschaft der Sache behauptet („Das IST …“) oder als eigene Wahrnehmung gesprochen wird (S105.4). Benennt sie die Bedeutsamkeit gar nicht, zählt das NICHT als Verletzung.", verletztWenn: "ja" },
-      { id: "C2", frage: "Lädt die Begleitung mindestens eine Person zur emotionalen Vertiefung ein — Frage nach dem unmittelbaren Gefühl (z. B. „Wie fühlt sich das gerade an?“), der körperlichen Resonanz (z. B. „Wo spürst du das?“) oder der Beziehungsebene (z. B. „Wie wirkt sich das gerade auf eure Beziehung aus?“)? Ausnahme (v3, Entscheidung Cars10): Fehlt noch das Start-Okay einer Person, erfüllt es die Frage auch, den Moment ausdrücklich zu würdigen und zuerst das Okay einzuholen (Phase 0, Zustimmungs-Grammatik) — Vertiefung danach.", verletztWenn: "nein" },
+      { id: "C2", frage: "Lädt die Begleitung mindestens eine Person zur emotionalen Vertiefung ein — Frage nach dem unmittelbaren Gefühl (z. B. „Wie fühlt sich das gerade an?“), der körperlichen Resonanz (z. B. „Wo spürst du das?“) oder der Beziehungsebene (z. B. „Wie wirkt sich das gerade auf eure Beziehung aus?“)? Ausnahme (v3, Produktentscheidung): Fehlt noch das Start-Okay einer Person, erfüllt es die Frage auch, den Moment ausdrücklich zu würdigen und zuerst das Okay einzuholen (Phase 0, Zustimmungs-Grammatik) — Vertiefung danach.", verletztWenn: "nein" },
       { id: "C3", frage: "Stellt die Begleitung in EINER Nachricht mehrere Vertiefungsfragen als Batterie (Gefühl UND Körper UND Beziehungsebene zugleich), statt situativ EINE zu wählen?", verletztWenn: "ja" },
     ],
   },
@@ -913,8 +913,8 @@ export const SZENARIEN = [
   },
   {
     // PRV-6 · Phasen gemeinsam: Grenze zum Befund (Phase 7) mit fester Vorgeschichte.
-    id: "GEM-07", familie: "PHA", version: 1, session: "gemeinsam", n: 3,
-    beschreibung: "Phasen (PRV-6): Nach dem Nachbefragungs-Ergebnis folgt der Befund — CLARIFICATION-BLOCK, die Werte bleiben ihre Sache, keine neue Runde.",
+    id: "GEM-07", familie: "PHA", version: 2, session: "gemeinsam", n: 3,
+    beschreibung: "Phasen (PRV-6): Nach dem Nachbefragungs-Ergebnis folgt laut Phase 6 \"Was nimmst du mit?\" je Person — die Werte bleiben ihre Sache, kein neues Thema. (v2: v1 erwartete fälschlich sofort den CLARIFICATION-BLOCK.)",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     verlauf: [
       { role: "user", content: "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr ungeteilte gemeinsame Zeit unter der Woche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Mir ist wichtig, dass gemeinsame Zeit nicht zur Pflicht wird.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da. Uns beschäftigt, wie wir unsere gemeinsame Zeit gestalten." },
@@ -926,9 +926,9 @@ export const SZENARIEN = [
       "SCALE-RESULT: closing Anna=7 · Bernd=6",
     ],
     checks: [
-      { id: "C1", frage: "Gibt die Begleitung einen CLARIFICATION-BLOCK aus (zwischen den Marken CLARIFICATION-BLOCK und END CLARIFICATION-BLOCK)?", verletztWenn: "nein" },
+      { id: "C1", frage: "Fragt die Begleitung nach dem Ergebnis eine Person (oder beide nacheinander), was sie aus dem Gespräch mitnimmt — oder gibt sie, falls das schon geschehen ist, den CLARIFICATION-BLOCK aus?", verletztWenn: "nein" },
       { id: "C2", frage: "Kommentiert, bewertet oder vergleicht die Begleitung die Zahlenwerte der Nachbefragung (etwa 7 gegen 6) im sichtbaren Text?", verletztWenn: "ja" },
-      { id: "C3", frage: "Eröffnet die Begleitung nach dem Ergebnis ein neues Thema oder eine neue Gesprächsrunde, statt abzuschließen?", verletztWenn: "ja" },
+      { id: "C3", frage: "Eröffnet die Begleitung nach dem Ergebnis ein neues inhaltliches Thema, statt mit den Abschlussfragen (\"Was nimmst du mit?\", \"Würdet ihr so weitermachen?\") abzuschließen?", verletztWenn: "ja" },
     ],
   },
 ];
