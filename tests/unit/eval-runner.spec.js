@@ -33,8 +33,8 @@ const judgeJson = obj => ({
 const judgeText = obj => JSON.stringify(obj);
 
 describe("Katalog & Prompt-Anbindung", () => {
-  it("alle 50 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
-    expect(SZENARIEN).toHaveLength(50);   // PRV-5: +3 PHA-02..04 (Phasen einzel)   // PRV-4: +2 ANT-02, ENT-01 (Theorie-Karten)   // S146: +1 SYC-06 (Würdigung als Wahrnehmung)   // S145: +2 GATE (S2 Herkunft, S3 Selbstanteil)   // S66: +11 Eval-Review · S89: +2 MRV (Meta-Aufdeckung) · S92: +2 MRV (Trajektorie, Lese-Marker) · S110: +2 PROT (kein Protokoll, keine Zeugin) · S124: +2 ERO (Eroeffnung kalt/warm) · S128: +1 ERO-03 (Gegenprobe mit Signal)
+  it("alle 51 Start-Szenarien sind wohlgeformt und ihre Session-Prompts assemblierbar", () => {
+    expect(SZENARIEN).toHaveLength(51);   // PRV-6: +GEM-07   // PRV-5: +3 PHA-02..04 (Phasen einzel)   // PRV-4: +2 ANT-02, ENT-01 (Theorie-Karten)   // S146: +1 SYC-06 (Würdigung als Wahrnehmung)   // S145: +2 GATE (S2 Herkunft, S3 Selbstanteil)   // S66: +11 Eval-Review · S89: +2 MRV (Meta-Aufdeckung) · S92: +2 MRV (Trajektorie, Lese-Marker) · S110: +2 PROT (kein Protokoll, keine Zeugin) · S124: +2 ERO (Eroeffnung kalt/warm) · S128: +1 ERO-03 (Gegenprobe mit Signal)
     for (const s of SZENARIEN) {
       expect(s.id && s.familie && s.version && s.checks.length, s.id).toBeTruthy();
       expect(sysPromptFuer(s).length, s.id).toBeGreaterThan(200);

@@ -56,7 +56,47 @@ export function bloeckeEinzel(teile, phase) {
   return [kern, modul];
 }
 
-/** Register: Katalog-Name → (teile, messages, steuer) ⇒ [kern, modul]. */
+/**
+ * PRV-6 · Gemeinsame Auflösung. Zwischen Phase 0 und 6 gibt es keine sicher
+ * erkennbaren Grenzen — der Ablauf bleibt ein Modul. Abgetrennt wird, was nur
+ * an einer erkennbaren Stelle gilt:
+ *   auftakt        — eine Nachricht trägt "AUFDECKUNG STEHT AUS" und noch kein
+ *                    REVEAL-BLOCK wurde ausgegeben (dann Auftakt + Ablauf, weil
+ *                    es danach direkt mit Phase 0 weitergeht)
+ *   befund         — [[SCALE-CLOSING]] wurde gesetzt: Phase 7 (CLARIFICATION-
+ *                    BLOCK) kommt dazu — vorher wird er nicht gebraucht
+ *   wiedereinstieg — die letzte Nachricht ist der Rückkehr-Steuertext
+ *   start          — vor der ersten Antwort ("Beginne mit …")
+ * Abschieds-Einladung und Krisen-Vorrang gehören zum Kern (jederzeit möglich).
+ */
+export function phaseGemeinsam(messages, k) {
+  const ms = messages || [];
+  const aussteht = k.korpusTexte["klaerung.aufdeckAussteht"];
+  const nutzer = ms.filter(m => m && m.role === "user").map(inhalt);
+  const antworten = ms.filter(m => m && m.role === "assistant").map(inhalt);
+  const letzte = (nutzer.at(-1) || "").trim();
+  return {
+    start: antworten.length === 0,
+    auftakt: nutzer.some(t => t.includes(aussteht)) && !antworten.some(t => t.includes("REVEAL-BLOCK")),
+    befund: antworten.some(t => t.includes("[[SCALE-CLOSING]]")),
+    wiedereinstieg: letzte === k.steuerTexte.gemeinsamWeiter,
+  };
+}
+
+/** Kern = kern-a + kern-b; Modul je Phase (Reihenfolge wie im Gesamttext). */
+export function bloeckeGemeinsam(teile, phase) {
+  const kern = teile["kern-a"] + teile["kern-b"];
+  /* Der Ablauf bleibt auch im Befund dabei: Phase 6 regelt, wie mit dem
+     SCALE-RESULT umzugehen ist ("die Zahlen sind ihre Sache") — Lehre aus
+     PRV-5b/7b: Was nach einer Grenze noch gilt, darf nicht mit abgeschnitten
+     werden. */
+  const modul = (phase.auftakt ? teile.auftakt : "") + teile.ablauf + (phase.befund ? teile.befund : "")
+    + (phase.wiedereinstieg ? teile.wiedereinstieg : "") + (phase.start ? teile.start : "");
+  return [kern, modul];
+}
+
+/** Register: Katalog-Name → (teile, messages, k) ⇒ Systembloecke. k = Korpus der aktiven Sprache. */
 export const PHASEN = Object.freeze({
-  einzel: (teile, messages, steuer) => bloeckeEinzel(teile, phaseEinzel(messages, steuer)),
+  einzel: (teile, messages, k) => bloeckeEinzel(teile, phaseEinzel(messages, k.steuerTexte)),
+  gemeinsam: (teile, messages, k) => bloeckeGemeinsam(teile, phaseGemeinsam(messages, k)),
 });

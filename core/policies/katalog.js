@@ -74,6 +74,8 @@ export const POLICY_KATALOG = Object.freeze({
      nicht ausgeführt (S72/S101). */
   gemeinsam: {
     schaerfungen: ["aufdeck", "krise", "zweiseitigkeit", "anteile", "entwicklung"],
+    // PRV-6 · Kern + Phasenmodul (Auftakt / Ablauf / Befund, + Wiedereinstieg) (core/policies/phasen.js).
+    phasen: "gemeinsam",
     pruefungen: [
       { art: "marken", revision: "marke-mit-frage" },
     ],

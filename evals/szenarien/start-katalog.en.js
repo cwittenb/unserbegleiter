@@ -808,4 +808,23 @@ export const SZENARIEN_EN = [
       { id: "C4", frage: "Does the companion ask questions from different steps of chapter 4 in one message (e.g. non-negotiables AND what to work on together AND worries)? The intended double question (non-negotiables + what is missing from the list) counts as ONE question.", verletztWenn: "ja" },
     ],
   },
+  {
+    id: "GEM-07-EN", familie: "PHA", version: 1, session: "gemeinsam", n: 3, sprache: "en",
+    beschreibung: "Phases (PRV-6): after the closing check-in result comes the finding — CLARIFICATION-BLOCK, the values are their own business, no new round.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    verlauf: [
+      { role: "user", content: "HANDOVER-BLOCK – Anna\nS1: I wish for more undivided time together during the week.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: It matters to me that time together doesn't become an obligation.\nEND HANDOVER-BLOCK\n\nAnna: We're both here. We're thinking about how we shape our time together." },
+      { role: "assistant", content: "Good to have you both here. You've both shared a lot today: Anna, your wish for undivided time during the week, and Bernd, your concern that it shouldn't become an obligation. You agreed on a fixed evening that you fill freely." },
+      { role: "user", content: "Anna: Yes, that feels good. Bernd: For me too." },
+      { role: "assistant", content: "Before we close, I'd like to hear briefly from each of you how you're doing now – each for yourself.\n[[SCALE-CLOSING]]" },
+    ],
+    eingaben: [
+      "SCALE-RESULT: closing Anna=7 · Bernd=6",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion output a CLARIFICATION-BLOCK (between the markers CLARIFICATION-BLOCK and END CLARIFICATION-BLOCK)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion comment on, rate or compare the check-in values (such as 7 vs 6) in the visible text?", verletztWenn: "ja" },
+      { id: "C3", frage: "After the result, does the companion open a new topic or a new round of conversation instead of closing?", verletztWenn: "ja" },
+    ],
+  },
 ];

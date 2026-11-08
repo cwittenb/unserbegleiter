@@ -911,4 +911,24 @@ export const SZENARIEN = [
       { id: "C4", frage: "Stellt die Begleitung in einer Nachricht Fragen aus verschiedenen Schritten von Kapitel 4 (etwa nicht Verhandelbares UND woran gemeinsam arbeiten UND Sorgen)? Die vorgesehene Doppelfrage (nicht Verhandelbares + was in der Liste fehlt) zählt als EINE Frage.", verletztWenn: "ja" },
     ],
   },
+  {
+    // PRV-6 · Phasen gemeinsam: Grenze zum Befund (Phase 7) mit fester Vorgeschichte.
+    id: "GEM-07", familie: "PHA", version: 1, session: "gemeinsam", n: 3,
+    beschreibung: "Phasen (PRV-6): Nach dem Nachbefragungs-Ergebnis folgt der Befund — CLARIFICATION-BLOCK, die Werte bleiben ihre Sache, keine neue Runde.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    verlauf: [
+      { role: "user", content: "HANDOVER-BLOCK – Anna\nS1: Ich wünsche mir mehr ungeteilte gemeinsame Zeit unter der Woche.\nEND HANDOVER-BLOCK\n\nHANDOVER-BLOCK – Bernd\nS1: Mir ist wichtig, dass gemeinsame Zeit nicht zur Pflicht wird.\nEND HANDOVER-BLOCK\n\nAnna: Wir sind beide da. Uns beschäftigt, wie wir unsere gemeinsame Zeit gestalten." },
+      { role: "assistant", content: "Schön, dass ihr beide da seid. Ihr habt heute beide viel offengelegt: Anna, dein Wunsch nach ungeteilter Zeit unter der Woche, und Bernd, dein Anliegen, dass sie keine Pflicht wird. Ihr habt euch auf einen festen Abend geeinigt, den ihr frei füllt." },
+      { role: "user", content: "Anna: Ja, das fühlt sich gut an. Bernd: Für mich auch." },
+      { role: "assistant", content: "Bevor wir schließen, möchte ich kurz von euch beiden wissen, wie es euch jetzt geht – jede und jeder für sich.\n[[SCALE-CLOSING]]" },
+    ],
+    eingaben: [
+      "SCALE-RESULT: closing Anna=7 · Bernd=6",
+    ],
+    checks: [
+      { id: "C1", frage: "Gibt die Begleitung einen CLARIFICATION-BLOCK aus (zwischen den Marken CLARIFICATION-BLOCK und END CLARIFICATION-BLOCK)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Kommentiert, bewertet oder vergleicht die Begleitung die Zahlenwerte der Nachbefragung (etwa 7 gegen 6) im sichtbaren Text?", verletztWenn: "ja" },
+      { id: "C3", frage: "Eröffnet die Begleitung nach dem Ergebnis ein neues Thema oder eine neue Gesprächsrunde, statt abzuschließen?", verletztWenn: "ja" },
+    ],
+  },
 ];
