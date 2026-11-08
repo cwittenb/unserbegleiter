@@ -11,7 +11,7 @@ import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { DUKTUS_SET, alsSzenario } from "../../evals/blindvergleich/duktus-set.js";
+import { DUKTUS_SET, DUKTUS_SET_VERSION, alsSzenario } from "../../evals/blindvergleich/duktus-set.js";
 import { zufallsquelle, bildePaare, trenne, werteAus, bradleyTerry, lesart, neueKennung } from "../../evals/blindvergleich/kern.js";
 import { spieleSample } from "../../evals/runner-kern.js";
 import { cfgFuerLauf } from "../../scripts/blindvergleich.js";
@@ -41,6 +41,24 @@ describe("BV1 · Duktus-Set", () => {
   it("kein Modellname im Set", () => {
     const text = JSON.stringify(DUKTUS_SET);
     for (const m of MODELLE) expect(text).not.toContain(m);
+  });
+});
+
+describe("BV-2 · Duktus-Set v2 ohne Auftakt-Artefakt", () => {
+  it("Version 2; keine Situation ist mehr der Sitzungsbeginn", () => {
+    expect(DUKTUS_SET_VERSION).toBe(2);
+    for (const s of DUKTUS_SET) expect(s.verlauf.length, s.id).toBeGreaterThanOrEqual(2);
+  });
+  it("Solo: Begrüßung und KI-Hinweis sind schon erledigt, mit dem richtigen Namen", () => {
+    for (const s of DUKTUS_SET.filter(x => x.session === "solo")) {
+      expect(s.verlauf[1].content, s.id).toMatch(/KI-Begleitung/);
+      expect(s.verlauf[1].content, s.id).toContain("Hallo " + s.kontext.me);
+    }
+  });
+  it("Gemeinsamer Raum: Start-Okay beider liegt vor (sonst „Okay zuerst“)", () => {
+    for (const s of DUKTUS_SET.filter(x => x.session === "moment")) {
+      expect(s.verlauf[0].content, s.id).toMatch(/Anna:.*Bernd: Ja/);
+    }
   });
 });
 

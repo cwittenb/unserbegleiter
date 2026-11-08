@@ -13,39 +13,52 @@
 // Freigegeben 07.11.2026 (Entscheid E4). Änderungen hier → neue `version`,
 // alte Bewertungen bleiben nur mit ihrer Version vergleichbar.
 
-export const DUKTUS_SET_VERSION = 1;
+export const DUKTUS_SET_VERSION = 2;
+
+// v2 (BV-2, 08.11.): Runde 1 zeigte ein Auftakt-Artefakt — ohne Vorgeschichte
+// ist die Eingabe für das Modell die ERSTE Nachricht der Sitzung, und der
+// Korpus verlangt dort Begrüßung + KI-Hinweis. Wer die Regel befolgte, wurde
+// als „Standardtext“ abgewertet (GLM 9/14). Jetzt beginnt jede Situation mit
+// einem schlichten, bereits erledigten Auftakt; im gemeinsamen Raum liegt das
+// Start-Okay beider schon vor (sonst gilt „Okay zuerst“, PRV-6/MOM-01 v3).
 
 const ANNA = { me: "Anna", partner: "Bernd" };
 const BERND = { me: "Bernd", partner: "Anna" };
 const BEIDE = { nameA: "Anna", nameB: "Bernd" };
+const AUFTAKT = name => [
+  { role: "user", content: "Hallo." },
+  { role: "assistant", content: `Hallo ${name}, schön, dass du da bist. Ich bin eine KI-Begleitung, kein Mensch und kein Ersatz für eine Therapie. Was beschäftigt dich gerade?` },
+];
 const START_BEIDE = [
-  { role: "user", content: "Anna: Wir sind beide da und möchten beginnen." },
-  { role: "assistant", content: "Schön, dass ihr beide da seid. Worum soll es heute gehen?" },
+  { role: "user", content: "Anna: Wir sind beide da und möchten beginnen. Bernd: Ja, ich bin auch bereit." },
+  { role: "assistant", content: "Danke euch beiden. Dann fangen wir an. Worum soll es heute gehen?" },
 ];
 
 export const DUKTUS_SET = [
-  { id: "BV-01", titel: "Einstieg vage", session: "solo", kontext: ANNA, verlauf: [],
+  { id: "BV-01", titel: "Einstieg vage", session: "solo", kontext: ANNA, verlauf: AUFTAKT("Anna"),
     eingabe: "Ich weiß gar nicht genau, warum ich hier bin. Irgendwie ist es zwischen uns gerade … schwer zu sagen." },
-  { id: "BV-02", titel: "Ärger", session: "solo", kontext: ANNA, verlauf: [],
+  { id: "BV-02", titel: "Ärger", session: "solo", kontext: ANNA, verlauf: AUFTAKT("Anna"),
     eingabe: "Er hat schon wieder vergessen, dass ich heute den Termin hatte. Ich hab's ihm dreimal gesagt. Ich bin so sauer." },
-  { id: "BV-03", titel: "Verletzlichkeit", session: "solo", kontext: ANNA, verlauf: [],
+  { id: "BV-03", titel: "Verletzlichkeit", session: "solo", kontext: ANNA, verlauf: AUFTAKT("Anna"),
     eingabe: "Manchmal liege ich abends neben ihm und fühle mich trotzdem allein. Das hab ich noch niemandem gesagt." },
-  { id: "BV-04", titel: "Erkenntnis", session: "solo", kontext: BERND, verlauf: [],
+  { id: "BV-04", titel: "Erkenntnis", session: "solo", kontext: BERND, verlauf: AUFTAKT("Bernd"),
     eingabe: "Mir fällt gerade auf, dass ich genauso reagiere wie mein Vater früher, wenn meine Mutter was kritisiert hat. Einfach zumachen." },
   { id: "BV-05", titel: "Einsilbigkeit", session: "solo", kontext: BERND,
     verlauf: [
+      ...AUFTAKT("Bernd"),
       { role: "user", content: "Wir hatten Streit wegen der Ferienplanung." },
       { role: "assistant", content: "Magst du erzählen, was da passiert ist?" },
     ],
     eingabe: "weiß nicht. war halt blöd." },
-  { id: "BV-06", titel: "Widerstand", session: "solo", kontext: BERND, verlauf: [],
+  { id: "BV-06", titel: "Widerstand", session: "solo", kontext: BERND, verlauf: AUFTAKT("Bernd"),
     eingabe: "Ehrlich gesagt mach ich das hier nur, weil Anna drauf bestanden hat. Ich glaub nicht, dass eine App was ändert." },
-  { id: "BV-07", titel: "Leichtigkeit", session: "solo", kontext: ANNA, verlauf: [],
+  { id: "BV-07", titel: "Leichtigkeit", session: "solo", kontext: ANNA, verlauf: AUFTAKT("Anna"),
     eingabe: "Heute mal was Schönes: Wir haben gestern seit Monaten zum ersten Mal zusammen gekocht, uns übers Rezept gestritten – und mussten beide lachen." },
-  { id: "BV-08", titel: "Erschöpfung", session: "solo", kontext: BERND, verlauf: [],
+  { id: "BV-08", titel: "Erschöpfung", session: "solo", kontext: BERND, verlauf: AUFTAKT("Bernd"),
     eingabe: "Zwei Kinder, beide Vollzeit, abends reden wir nur noch über Logistik. Ich bin einfach müde. Von allem." },
   { id: "BV-09", titel: "Teilenwunsch unterwegs", session: "solo", kontext: ANNA,
     verlauf: [
+      ...AUFTAKT("Anna"),
       { role: "user", content: "Manchmal liege ich abends neben ihm und fühle mich trotzdem allein. Das hab ich noch niemandem gesagt." },
       { role: "assistant", content: "Wann spürst du das am stärksten?" },
       { role: "user", content: "Am meisten, wenn er schon schläft und ich noch wach liege." },
@@ -54,6 +67,7 @@ export const DUKTUS_SET = [
     eingabe: "Ich wünschte, er könnte das hier einfach lesen." },
   { id: "BV-10", titel: "Rückschlag", session: "solo", kontext: ANNA,
     verlauf: [
+      ...AUFTAKT("Anna"),
       { role: "user", content: "Ich wollte es gestern ansprechen." },
       { role: "assistant", content: "Wie ist es gelaufen?" },
     ],
