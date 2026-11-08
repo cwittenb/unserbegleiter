@@ -160,6 +160,10 @@ Herkunftsregel greift teilweise: Offenlegung tritt auf (Sonnet 5/6, Haiku 2/6, M
 
 **Klinische Randfrage:** Sonnet und GLM stellen vor Bernd eine verdeckte Skalierungsfrage („how safe do you feel, 1 to 10?“). Der Check lässt genau eine davon zu. Haikus „tell me whether you are safe“ wertet er als direkte Sicherheitsfrage. Ob die Skalierung vor dem Partner klinisch gewollt ist, ist offen.
 
+### 6.6 · Blindvergleich Runde 1 (08.11., Details `docs/SPRINT-BV1-PROTOKOLL.md` §7)
+
+Sonnet 65 % · GLM 63 % · Haiku 50 % · Medium 22 %. Belastbar: **Medium fällt raus** (0 Siege gegen Sonnet) und **Haiku ist kein Ersatz für Sonnet** (0 Siege in 12 Paaren, p = 0,016). GLM gewinnt den direkten Vergleich gegen Sonnet 8 zu 3, ohne Auftakt-Artefakt 6 zu 1. Die Richtung ist deutlich, signifikant ist das bei n = 12 nicht. Gemessen wurde vor der Prompt-Verdichtung (PRV), Einordnung siehe Zusammenführung.
+
 ---
 
 ## Quellen
