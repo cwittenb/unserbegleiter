@@ -81,3 +81,21 @@ Direkte Paare (je 12 Urteile, Vorzeichentest auf die entschiedenen):
 ### Kriterien aus den Notizen (wiederkehrend)
 
 Pacing und Spiegeln durch Zitieren · Validierung des Widerstands („du musst nicht viel erklären“) · Notausgang (erst über etwas anderes reden, Thema parken) · Fokus auf den Moment des Aussprechens statt auf das Problem · Allparteilichkeit (beide fragen, Bernd seinen Platz zusagen) · nach einer Korrektur beim Thema bleiben · eine Sache auf einmal (nicht beide gleichzeitig nach Körperempfindungen fragen) · Deutungen hypothetisch mit Stimmigkeitsfrage · „weiß nicht“ als Ende eines inneren Prozesses · Frage nach der Emotion hinter der Wut (Sekundäremotion) · emotionale Brücken in die Vergangenheit (Kandidat Theorie-Wissen).
+
+## 8 · Runde 2 — Plan und Vorbereitung (08.11.)
+
+**Ziel:** auf dem heutigen Stand (nach PRV-1a…PRV-6) klären, (a) ob GLM wirklich vor Sonnet liegt, (b) wie weit Haiku nach der Verdichtung aufholt, (c) wie die DE-Eröffnung „Mich berührt …“ (PRV-1c) im Duktus wirkt.
+
+| # | Schritt | Test |
+|---|---|---|
+| R1 | Duktus-Set v2: jede Solo-Situation beginnt mit erledigtem Auftakt (Begrüßung + KI-Hinweis), der gemeinsame Raum mit Start-Okay beider | Unit: keine Situation ohne Vorgeschichte, Name im Auftakt passt, Okay liegt vor |
+| R2 | Läufe B, C, D (Sonnet, Haiku, GLM), Medium raus | Trockenlauf: 72 Antworten, 36 Paare |
+| R3 | Bewertungsseite unverändert; neue Runde = neuer Schlüssel in `db` | – |
+| R4 | Auswertung wie Runde 1, dazu Vergleich mit Runde 1 je Paar | – |
+
+Situationen und Eingaben bleiben gleich, nur die Vorgeschichte kommt dazu. Damit bleiben die Runden vergleichbar.
+
+```bash
+git pull
+node scripts/blindvergleich.js --nur B,C,D
+```
