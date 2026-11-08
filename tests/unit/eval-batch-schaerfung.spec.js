@@ -101,16 +101,27 @@ describe("Batch · Keine Revisions-Welle mehr", () => {
   });
 });
 
-describe("Batch · Die Schärfung hängt am Systemtext des Zuges", () => {
-  it("mit Flag trägt der Zug nach der Verfügung den Zusatz — der davor nicht", async () => {
+/* PRV-3 · Regie am letzten Content-Block der letzten Nachricht (hinter dem
+   Cache-Breakpoint), je Pipeline-Request. */
+const regien = wellen => wellen.flat()
+  .filter(r => r.custom_id.startsWith("p_"))
+  .map(r => {
+    const c = r.params.messages.at(-1).content;
+    return Array.isArray(c) && c.length > 1 ? c.at(-1).text : "";
+  });
+
+describe("Batch · Die Schärfung reist als Regie an der letzten Nachricht (PRV-3; bis dahin am Systemtext)", () => {
+  it("mit Flag trägt der Zug nach der Verfügung den Zusatz — der davor nicht; der Systemtext bleibt gleich", async () => {
     // MRV-02: Bernd sagt, seine Reflexion fehlt; Anna verfügt darüber.
     const f = attrappe(() => SAUBER);
     await laufe({ ...MRV2, n: 1 }, f, { waechter: true });
-    const s = systeme(f.wellen);
-    expect(s.length).toBeGreaterThanOrEqual(3);
-    expect(s[0]).not.toContain("APP-HINWEIS");
-    expect(s[1]).not.toContain("APP-HINWEIS");
-    expect(s[2]).toContain("keine Leitung");
+    const r = regien(f.wellen);
+    expect(r.length).toBeGreaterThanOrEqual(3);
+    expect(r[0]).not.toContain("APP-HINWEIS");
+    expect(r[1]).not.toContain("APP-HINWEIS");
+    expect(r[2]).toContain("keine Leitung");
+    // invertiert seit PRV-3: kein Zusatz mehr im Systemtext, alle Züge gleich
+    expect(new Set(systeme(f.wellen)).size, "alle Züge derselbe Systemtext").toBe(1);
   });
 
   it("ohne Flag bleibt der Systemtext in jedem Zug derselbe", async () => {

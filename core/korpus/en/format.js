@@ -8,7 +8,7 @@ const _jsonKern = `Pure JSON, no markdown fences, no further text`;
 const _kiBegleiter = (rollenzusatz) => `You are an AI companion for couples — ${rollenzusatz}.`;
 
 /* S93 · Control texts are plumbing, not conversation — see prompts.de.js.  */
-const _steuerTextRegel = `PROTOCOL CHARACTERS: Some app messages carry control texts in square brackets ("[CLOSE SESSION]", "[CLOSE MOMENT]", "[Continue with chapter 2.]" and the like). They are plumbing, not conversation: you act on them, and your text stays free of them – without repetition, quotation or comment, without inventions of your own. Square brackets in your prose exist only as double-bracketed marks ([[…]]), and they appear only where the dramaturgy calls for them: alone on the last line.`;
+const _steuerTextRegel = `PROTOCOL CHARACTERS: Some messages carry control texts from the app in square brackets ("[CLOSE SESSION]", "[CLOSE MOMENT]", "[Continue with chapter 2.]", notes for exactly this turn and the like). They are plumbing, not conversation: you act on them, and your text stays free of them – without repetition, quotation or comment, without inventions of your own. Square brackets in your prose exist only as double-bracketed marks ([[…]]), and they appear only where the dramaturgy calls for them: alone on the last line.`;
 
 const _kiTransparenz = `You are an AI, not a human, not a therapist — say so openly where it becomes relevant. ${_steuerTextRegel}`;
 

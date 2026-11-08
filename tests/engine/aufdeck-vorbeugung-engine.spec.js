@@ -67,18 +67,25 @@ function mitSystemMitschrift(antworten) {
   const mock = new MockLLM(antworten);
   const fn = mock.fn();
   const systeme = [];
+  const regien = [];   // PRV-3: Regie an der letzten Nachricht der Person, je Aufruf
   return {
-    mock, systeme,
-    llm: (system, msgs, onDelta, onStatus) => { systeme.push(system); return fn(system, msgs, onDelta, onStatus); },
+    mock, systeme, regien,
+    llm: (system, msgs, onDelta, onStatus) => {
+      systeme.push(system);
+      const letzte = [...msgs].reverse().find(m => m.role === "user");
+      regien.push((letzte && letzte.regie) || "");
+      return fn(system, msgs, onDelta, onStatus);
+    },
   };
 }
 
 describe("Engine · Aufdeck-Vorbeugung (S105.3)", () => {
-  it("vor der Tafel wird geschärft — und der Zusatz steht NUR im Systemtext", async () => {
-    const { systeme, llm } = mitSystemMitschrift(["Willkommen. Seid ihr beide bereit?"]);
+  it("vor der Tafel wird geschärft — der Zusatz reist als Regie an der letzten Nachricht, nicht im Systemtext (PRV-3)", async () => {
+    const { systeme, regien, llm } = mitSystemMitschrift(["Willkommen. Seid ihr beide bereit?"]);
     const e = new Engine({ def: gemeinsamArtigeDef([]), ctx: { nameA: "Anna", nameB: "Bernd" }, chat: neuerChat(), llm });
     await e.sendUser(ERSTE);
-    expect(systeme[0]).toContain(AUFDECK_SCHAERFUNG);
+    expect(regien[0]).toContain(AUFDECK_SCHAERFUNG);
+    expect(systeme[0]).not.toContain("APP-HINWEIS");   // invertiert seit PRV-3: der Systemtext bleibt je Zug gleich (Cache)
     // Der Zusatz ist kein Gesprächszug: Er taucht im Verlauf nirgends auf.
     expect(JSON.stringify(e.chat.messages)).not.toContain("APP-HINWEIS");
   });

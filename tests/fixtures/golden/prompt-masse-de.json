@@ -8,8 +8,8 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 45425,
-      "tokenSchaetzung": 13360,
+      "zeichen": 45456,
+      "tokenSchaetzung": 13369,
       "zeilen": 63,
       "langeZeilen": 21,
       "capsWoerter": 205,
@@ -27,8 +27,8 @@
       }
     },
     "moment": {
-      "zeichen": 39744,
-      "tokenSchaetzung": 11689,
+      "zeichen": 39775,
+      "tokenSchaetzung": 11699,
       "zeilen": 58,
       "langeZeilen": 20,
       "capsWoerter": 203,
@@ -46,10 +46,10 @@
       }
     },
     "einzel": {
-      "zeichen": 38639,
-      "tokenSchaetzung": 11364,
+      "zeichen": 38670,
+      "tokenSchaetzung": 11374,
       "zeilen": 72,
-      "langeZeilen": 21,
+      "langeZeilen": 22,
       "capsWoerter": 99,
       "genauWoerter": 0,
       "verstossWoerter": 0,
@@ -65,10 +65,10 @@
       }
     },
     "gemeinsam": {
-      "zeichen": 38369,
-      "tokenSchaetzung": 11285,
+      "zeichen": 38400,
+      "tokenSchaetzung": 11294,
       "zeilen": 61,
-      "langeZeilen": 19,
+      "langeZeilen": 20,
       "capsWoerter": 131,
       "genauWoerter": 0,
       "verstossWoerter": 0,

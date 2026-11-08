@@ -6,6 +6,7 @@ import { sseDaten } from "../transport.js";
 import { baueAntwortExtraktor } from "../antwort-extraktor.js";
 import { anthropicSoDialekt } from "../schema-dialekt.js";
 import { strukturAuszug, extrahiereStrukturAusText, pruefeAbschnitt, markiereAbschnitt } from "../struktur.js";
+import { inhaltMitRegie } from "../regie.js";
 
 export const anthropic = {
   url: () => "https://api.anthropic.com/v1/messages",
@@ -21,7 +22,8 @@ export const anthropic = {
   },
   body(cfg, systemPrompt, messages) {
     let system = systemPrompt;
-    const msgs = messages.map(m => ({ role: m.role, content: m.content }));
+    // PRV-3 · Regie (core/llm/regie.js): ohne Cache einfach angehaengt.
+    const msgs = messages.map(m => ({ role: m.role, content: cfg.cache ? m.content : inhaltMitRegie(m), regie: m.regie || null }));
     if (cfg.cache) {
       // System-Prompt als cachebarer Block (größter, je Turn identischer Teil).
       // S82: cfg.cacheTtl (z. B. "1h") für Aufrufer, deren Turns Minuten
@@ -34,8 +36,15 @@ export const anthropic = {
         const last = msgs[msgs.length - 1];
         last.content = [{ type: "text", text: last.content,
           cache_control: { type: "ephemeral", ...(cfg.cacheTtl ? { ttl: cfg.cacheTtl } : {}) } }];
+        /* PRV-3 · Regie als eigener Block HINTER dem Breakpoint: Der Cache
+           endet beim Inhalt der Person; der Hinweis gilt nur fuer diesen Zug
+           und veraendert den Praefix nicht. */
+        if (last.regie) last.content.push({ type: "text", text: last.regie });
       }
+      // Regie an frueheren Nachrichten (nicht vorgesehen) ginge sonst verloren.
+      for (let i = 0; i < msgs.length - 1; i++) if (msgs[i].regie) msgs[i].content = inhaltMitRegie(msgs[i]);
     }
+    for (const m of msgs) delete m.regie;
     const body = { model: cfg.models.anthropic, max_tokens: cfg.maxTokens, system, messages: msgs };
     // S77: Denkmodus explizit. "disabled" wird mitgesendet, "adaptiv" lässt das
     // Feld weg (dann gilt die Vorgabe des Modells).

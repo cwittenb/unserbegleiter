@@ -3,7 +3,8 @@
 // Die Review-Leitfrage "Werden Policies unabhaengig vom Modell durchgesetzt
 // oder nur per Instruktion?" bekommt hier ihren Test: Eine Engine mit LEEREM
 // Systemtext und einer Def aus dem Policy-Katalog
-//   (a) schaerft bei Krisensignal den Zug — der Zusatz steht im Systemtext,
+//   (a) schaerft bei Krisensignal den Zug — der Zusatz reist als Regie an der
+//       letzten Nachricht (PRV-3; bis dahin im Systemtext),
 //       obwohl der Korpus-Prompt fehlt;
 //   (b) verweigert die Uebergabe "Frage + Abschluss-Block" — die Sitzung
 //       endet nicht, der Text bleibt, die Kennung steht am Chat.
@@ -28,11 +29,11 @@ import * as en from "../../core/prompts/prompts.en.js";
 const hole = (obj, pfad) => pfad.split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
 
 describe("MOD-2b · Policies greifen ohne Prompt (Engine + Mock-LLM)", () => {
-  it("(a) Schaerfung: Krisensignal → Zusatz im Systemtext, obwohl der Prompt leer ist", async () => {
+  it("(a) Schaerfung: Krisensignal → Zusatz als Regie (PRV-3), obwohl der Prompt leer ist", async () => {
     const def = baueSessionDef("moment");
     def.sysPrompt = () => "";
     const systeme = [];
-    const llm = async (system) => { systeme.push(system); return { text: "Ich bin da.", stop: "end_turn" }; };
+    const llm = async (system, msgs) => { systeme.push(msgs.at(-1).regie || ""); return { text: "Ich bin da.", stop: "end_turn" }; };
     const chat = { messages: [], status: "running" };
     const e = new Engine({ def, chat, llm, ctx: { nameA: "Anna", nameB: "Bernd" } });
     await e.sendUser("Anna: Ich will nicht mehr leben.");
