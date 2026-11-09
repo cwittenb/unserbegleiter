@@ -57,6 +57,38 @@ export function bloeckeEinzel(teile, phase) {
 }
 
 /**
+ * PRV-7 · Reflexionsgespraech: kein Kapitelablauf, sondern drei Module, die
+ * nur bei Anlass gebraucht werden. Grosszuegig erkannt (Fehltreffer kosten
+ * nur Token):
+ *   einstieg — vor der ersten Antwort (kalter Start / Wiederkehr)
+ *   teilen   — Teilenwunsch irgendwann in dieser Sitzung (klebt: die Zusage
+ *              von unterwegs wird am Abschluss eingeloest), Abschluss-Token
+ *              ([CLOSE SESSION …]) oder End-Signal in der letzten Nachricht
+ *   abruf    — Bezug auf ein frueheres Gespraech in den letzten 3 Nachrichten,
+ *              ein RECALL-RESULT, oder die eigene letzte Antwort setzte den
+ *              RECALL-BLOCK
+ * @returns {{einstieg:boolean, teilen:boolean, abruf:boolean}}
+ */
+export function phaseSolo(messages, signale) {
+  const ms = messages || [];
+  const person = ms.filter(m => m && m.role === "user").map(inhalt);
+  const letzte = person.at(-1) || "";
+  const letzteAntwort = inhalt([...ms].reverse().find(m => m && m.role === "assistant"));
+  return {
+    einstieg: !ms.some(m => m && m.role === "assistant"),
+    teilen: person.some(t => signale.teilen.test(t)) || signale.ende.test(letzte),
+    abruf: person.slice(-3).some(t => signale.abruf.test(t) || t.trim().startsWith("RECALL-RESULT")) || /RECALL-BLOCK/.test(letzteAntwort),
+  };
+}
+
+/** Kern = alles Uebrige + Themenrahmen; Modul = die aktiven Teile in Textreihenfolge. */
+export function bloeckeSolo(teile, phase) {
+  const kern = teile["kern-a"] + teile["kern-b"] + teile["kern-c"] + (teile.rahmen || "");
+  const modul = (phase.einstieg ? teile.einstieg : "") + (phase.teilen ? teile.teilen : "") + (phase.abruf ? teile.abruf : "");
+  return modul ? [kern, modul] : [kern];
+}
+
+/**
  * PRV-6 · Gemeinsame Auflösung. Zwischen Phase 0 und 6 gibt es keine sicher
  * erkennbaren Grenzen — der Ablauf bleibt ein Modul. Abgetrennt wird, was nur
  * an einer erkennbaren Stelle gilt:
@@ -98,5 +130,6 @@ export function bloeckeGemeinsam(teile, phase) {
 /** Register: Katalog-Name → (teile, messages, k) ⇒ Systembloecke. k = Korpus der aktiven Sprache. */
 export const PHASEN = Object.freeze({
   einzel: (teile, messages, k) => bloeckeEinzel(teile, phaseEinzel(messages, k.steuerTexte)),
+  solo: (teile, messages, k) => bloeckeSolo(teile, phaseSolo(messages, k.waechter.phasen)),
   gemeinsam: (teile, messages, k) => bloeckeGemeinsam(teile, phaseGemeinsam(messages, k)),
 });

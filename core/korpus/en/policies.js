@@ -91,4 +91,5 @@ export const waechter = {
   aufdeck: { text: `[APP NOTE for this turn: The board has not been revealed yet. Nothing from the stacks belongs in your text now — no values, no rankings, no hints at them, not even in substance. Revealing is the board's job, not yours.]` },
   anteile: { signal: SIGNALE.anteile, spur: SIGNALE.anteileSpur, text: `[APP CARD for this turn: The conversation is showing an occasion for this perspective right now. It is an offer, not an obligation. ${wissen.anteileSprache}]` },
   entwicklung: { signal: SIGNALE.entwicklung, spur: SIGNALE.entwicklungSpur, text: `[APP CARD for this turn: The conversation is showing an occasion for this perspective right now. It is an offer, not an obligation. ${wissen.entwicklungsRaum}]` },
+  phasen: { teilen: SIGNALE.teilen, abruf: SIGNALE.abruf, ende: SIGNALE.ende },
 };

@@ -76,7 +76,7 @@ describe("PRV-5 · Engine und Provider", () => {
     expect(gesehen[0][1]).toContain("KAPITEL 1 ·");
     expect(gesehen[1][1]).toContain("KAPITEL 2 ·");
   });
-  it("solo bleibt beim Gesamttext (String)", () => expect(baueSessionDef("solo").sysBloecke).toBeUndefined());
+  it("moment bleibt beim Gesamttext (String) — solo hat seit PRV-7 Module", () => expect(baueSessionDef("moment").sysBloecke).toBeUndefined());
   it("Anthropic mit Cache: zwei Systemblöcke, je ein Breakpoint", () => {
     const b = LLM_PROVIDERS.anthropic.body({ models: { anthropic: "m" }, maxTokens: 9, cache: true }, ["KERN", "MODUL"], [u("x")]);
     expect(b.system.map(x => x.text)).toEqual(["KERN", "MODUL"]);
