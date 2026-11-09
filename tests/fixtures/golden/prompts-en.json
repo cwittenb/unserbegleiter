@@ -8,10 +8,10 @@
   },
   "sessions": {
     "solo": {
-      "text": "3315eb0db7f8ca14c67940abb6ee149743779aa2c6603b2abb34f1338c60bb80",
-      "textLaenge": 39467,
-      "struktur": "075613c877ce9d81c298ca7baf54a20718b34378985300f1dfc49ad7a1ee0596",
-      "runner": "3315eb0db7f8ca14c67940abb6ee149743779aa2c6603b2abb34f1338c60bb80",
+      "text": "62e67d796f08d0f62222c7d7b6b2186ed4b3af566b3d7eb815d1fe17e3bf9910",
+      "textLaenge": 39549,
+      "struktur": "41ce342e1b691ed74c4e5b5e7f5c0e9546c6c2a322d12f51224469171611b8d0",
+      "runner": "62e67d796f08d0f62222c7d7b6b2186ed4b3af566b3d7eb815d1fe17e3bf9910",
       "runnerGleichText": true
     },
     "moment": {

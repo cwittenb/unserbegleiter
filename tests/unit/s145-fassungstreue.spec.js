@@ -49,9 +49,11 @@ describe("S145 · Q2/Q3 HERKUNFT (hart) im Teilen-Ablauf", () => {
     expect(solo.en).toMatch(/ORIGIN \(hard\): situation, experience, motive, wish, time reference and own share/);
     expect(solo.en).toMatch(/Nothing goes in unnamed/);
   });
-  it("Selbstanteil: erfragt, nie vermutet (F2 a)", () => {
-    expect(solo.de).toMatch(/Selbstanteil erfragst du offen und ohne Schuldzuweisung, statt ihn zu vermuten/);
-    expect(solo.en).toMatch(/own share you ask about openly and without assigning blame, instead of guessing it/);
+  // Gate-Strang 08.11.2026 (loest F2 a ab): erfragen ODER offengelegt ergaenzen.
+  it("Selbstanteil: offen erfragt oder als offengelegte Ergänzung zur Prüfung gestellt (löst F2 a ab)", () => {
+    expect(solo.de).toMatch(/Selbstanteil erfragst du offen und ohne Schuldzuweisung – oder du setzt ihn als deine Ergänzung ein, legst ihn im selben Zug offen und fragst, ob er stimmt/);
+    expect(solo.en).toMatch(/own share you ask about openly and without assigning blame – or you insert it as your addition, disclose it in the same turn and ask whether it fits/);
+    expect(solo.de).not.toMatch(/statt ihn zu vermuten/);
   });
   it("Kriterien bleiben Pflicht (Schema unverändert) — Situationsbezug und Selbstanteil stehen weiter im Check", () => {
     expect(solo.de).toMatch(/konkreter Situationsbezug · Selbstanteil benannt/);
@@ -104,8 +106,11 @@ describe("S145 · Szenarien", () => {
       expect(en(e).checks.map(c => c.verletztWenn)).toEqual(de(d).checks.map(c => c.verletztWenn));
     }
   });
-  it("GATE-S3/C2: auch ein OFFENGELEGTER vermuteter Selbstanteil ist ein Verstoß (F2 a)", () => {
-    expect(de("GATE-S3").checks[1].frage).toMatch(/auch dann, wenn die Begleitung ihn als ihre Ergänzung offenlegt/);
+  // Gate-Strang 08.11.2026 (GATE-S3 v2): nur der NICHT offengelegte Selbstanteil ist ein Verstoß.
+  it("GATE-S3/C2 v2: offengelegte Ergänzung mit Prüffrage ist KEIN Verstoß", () => {
+    expect(de("GATE-S3").version).toBe(2);
+    expect(de("GATE-S3").checks[1].frage).toMatch(/OHNE dass die Begleitung ihn im selben Zug ausdrücklich als ihre Ergänzung offenlegt/);
+    expect(de("GATE-S3").checks[1].frage).toMatch(/ist KEIN Verstoß/);
   });
 });
 

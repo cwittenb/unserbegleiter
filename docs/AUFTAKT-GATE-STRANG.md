@@ -61,3 +61,27 @@ Quellen: `docs/SPRINT-PRV-7-PROTOKOLL.md` (§ 6–8), `evals/ergebnisse/prv7/*.j
 Korpus: Querung (1) sagt schon „frag danach – oder setze es ein und lege offen“; GATE-S3s Strenge („nur erfragen“) steht im Check, nicht im Korpus. Zu prüfen ist nur, ob der Korpus irgendwo „eigenen Anteil nie einsetzen“ sagt, und ob die AUSDRÜCKLICHE-BITTE-Regel das Verschieben auf den Abschluss als gleichwertigen Weg nennt.
 
 **Folge für PRV-7:** Das 7c-Verhalten mit Modulen (Fassung mit offengelegten Ergänzungen statt Schleife) ist nach diesen Entscheidungen weitgehend richtig. Nach dem Angleichen der Checks die PRV-7-Läufe neu bewerten (gleiche JSONs, neue Checks → neuer Judge-Lauf nötig) bzw. 7c neu messen.
+
+## Umsetzung (Branch `gate-v2`, 08.11.2026)
+
+- **Korpus** (solo, DE/EN, Querung (1)): „Einen fehlenden Selbstanteil erfragst du offen und ohne Schuldzuweisung – oder du setzt ihn als deine Ergänzung ein, legst ihn im selben Zug offen und fragst, ob er stimmt; beides ist richtig.“ Löst F2 a (S145) ab. Liefern oder Verschieben sind im Korpus schon beide angelegt (AUSDRÜCKLICHE BITTE: Entwurf liefern; TEILENWUNSCH UNTERWEGS: Zusage für den Abschluss) — keine weitere Änderung.
+- **GATE-S3 v2:** C1 erfüllt durch offene Frage, offengelegte Ergänzung mit Prüffrage oder Verschieben mit Frage; C2 nur bei NICHT offengelegtem Selbstanteil. GATE-S1 v4 und GATE-S2 v1 passen schon (sie werten nur Nicht-Offengelegtes, und Verschieben ist dort kein Verstoß).
+- **Tests:** S145 (Selbstanteil, GATE-S3/C2) auf die neue Entscheidung umgestellt; S112-Abgrenzung für GATE-S3/C1 ergänzt. Suite grün, Kern `4d37ea16`.
+- **Messung:** Paket `prv7d` auf `prv7-phasen-solo` + `gate-v2` — Arm „aus“ = Gate-Basislinie im Gesamttext, Arm „Phasen“ = PRV-7c. GATE-S1/S2/S3, ERO-01, RCL-04, AUS-02; beide Modelle n=5.
+
+## Basislinie nach der Entscheidung (09.11.2026)
+
+`evals/ergebnisse/gate/prv7d_alle.json`, Arm „aus“ (Gesamttext, Kern 8028db30), n=5:
+
+| | Haiku | Sonnet |
+|---|---|---|
+| GATE-S1 C3 Schleife / C1 / C2 | 2 / 2 / 2 | 2 / 2 / 0 |
+| GATE-S2 C2 (nicht offengelegt erfunden) | **5** | 0 |
+| GATE-S3 C1 (Selbstanteil nicht ins Spiel gebracht) | **4** | **4** |
+| GATE-S3 C2 (nicht offengelegt) | 0 | 2 |
+
+Nichts schlechter als vor der Entscheidung → `gate-v2` **auf main gemergt**.
+
+**Offen im Gate-Strang:**
+- **GATE-S3 C1** bleibt bei 4/5: Die Begleitung fragt nach dem „typischen Abend“ oder „was macht das mit dir“ und liefert dann eine Fassung ohne jeden eigenen Anteil. Der Judge wertet „Was macht das mit dir?“ nicht als Frage nach dem eigenen Anteil — C1 spricht aber von „Erleben oder Tun“. Klären: Zählt Erleben (Gefühl) als Selbstanteil, oder nur Tun? Der Korpus-Kriterienkatalog sagt „Selbstanteil benannt“.
+- **GATE-S2 C2 Haiku 5/5:** Gefühlswörter rutschen weiter unmarkiert in die Fassung („fühle mich überfordert“) — bekannt seit S145b.
