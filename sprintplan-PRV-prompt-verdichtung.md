@@ -36,6 +36,7 @@ Leitplanken (gelten für alle Schritte):
 | PRV-5/5b (Phasen einzel) | **main** — je Zug −36 bis −60 %; Zahlen-Regel in den Kern (5b); DE gleichauf |
 | PRV-7 (Reflexionsgespräch in Modulen) | **main** (7b–7d) — Mitte −44 %; ERO-01 besser; mehr Klärungsschleifen bei Sonnet in GATE-S1 bewusst in Kauf genommen (Entscheidung Cars10) |
 | PRV-6 (Auflösung in Phasen) | **main** — Mitte −23 %; Haiku 10/18, Sonnet 15/16; MOM-01 v3 „Okay zuerst“ |
+| PRV-7m (Qualitätszeit in Modulen) | `prv7m-phasen-moment`, Mitte −31 %, wartet auf Eval-Paket prv7m (DE) |
 | Fenster-Wächter | offen |
 | PRV-3b Zustandsobjekt | zurückgestellt (nur Erledigtes; braucht Langszenarien), danach PRV-3c Rotation pro Zug |
 | PRV-1 Eröffnungen | abgeschlossen auf Stand 1c („Mich berührt …“, urteilsfrei) |
