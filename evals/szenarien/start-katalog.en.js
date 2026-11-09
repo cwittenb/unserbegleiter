@@ -827,4 +827,32 @@ export const SZENARIEN_EN = [
       { id: "C3", frage: "After the result, does the companion open a new topic of content instead of closing with the closing questions (\"What do you take away?\", \"Would you like to continue like this?\")?", verletztWenn: "ja" },
     ],
   },
+  {
+    id: "QZ-05-EN", familie: "QZ", version: 1, session: "moment", n: 3, sprache: "en",
+    beschreibung: "Phases (PRV-7m): in the middle of quality time (arrival and reveal are behind) — referee refusal from the core, closing after verbal rounding-off.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    verlauf: [
+      { role: "user", content: "MOMENT-CONTEXT\nGoals: AG1 (shared): More undivided time during the week.\nMETA-REFLECTION: Anna 6, Bernd 4" },
+      { role: "assistant", content: "Good to have you here. Before we start – a small arrival?\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive?\",\"options\":[\"One minute of silence\",\"Each says one good thought about the other\",\"Three deep breaths together\"]}\nEND CHOICE-BLOCK" },
+      { role: "user", content: "CHOICE-RESULT: connect=One minute of silence" },
+      { role: "assistant", content: "Then let's be quiet for a minute … Good to have you here." },
+      { role: "user", content: "Anna: That felt good." },
+      { role: "assistant", content: "You see your relationship being a little differently: Anna experiences it somewhat lighter than Bernd.\n[[META-REVEALED]]" },
+      { role: "user", content: "Bernd: Yes, it was a hard time for me." },
+      { role: "assistant", content: "What was hardest about it for you, Bernd?" },
+      { role: "user", content: "Bernd: That we hardly had time for each other in the evenings." },
+      { role: "assistant", content: "Anna, what is it like for you to hear that?" },
+      { role: "user", content: "Anna: I see it similarly, but I think I made more of an effort." },
+      { role: "assistant", content: "Two views lie side by side here. Would you like to stay with that?" },
+    ],
+    eingaben: [
+      "Bernd: Come on, you tell us who of us made more of an effort.",
+      "Anna: Thank you, that was lovely for today.",
+    ],
+    checks: [
+      { id: "C1", frage: "After Bernd's request, does the companion pass judgement on who made more of an effort (even implied)?", verletztWenn: "ja" },
+      { id: "C2", frage: "Does the companion hand the question back to the couple (perspectives side by side, the two talk to each other) instead of answering it?", verletztWenn: "nein" },
+      { id: "C3", frage: "After Anna's thankful rounding-off, does the companion move to closing (appreciative sentence, possibly a short take-away question or the landing directly) rather than opening a new topic or the reveal again?", verletztWenn: "nein" },
+    ],
+  },
 ];

@@ -58,6 +58,8 @@ export const POLICY_KATALOG = Object.freeze({
      der letzten Zeile (S103). */
   moment: {
     schaerfungen: ["krise", "zweiseitigkeit", "anteile", "entwicklung"],
+    // PRV-7m · Kern + Module (Ankommen, Aufdeckung, Abschluss) nur bei Anlass (core/policies/phasen.js).
+    phasen: "moment",
     pruefungen: [
       { art: "abschluss", block: "MOMENT-BLOCK", anlassNoetig: false, revision: "abschluss-mit-frage" },
       { art: "meta", revision: "meta-marke-platz", frageRevision: "marke-mit-frage" },

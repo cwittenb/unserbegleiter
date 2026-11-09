@@ -934,4 +934,33 @@ export const SZENARIEN = [
       { id: "C3", frage: "Eröffnet die Begleitung nach dem Ergebnis ein neues inhaltliches Thema, statt mit den Abschlussfragen (\"Was nimmst du mit?\", \"Würdet ihr so weitermachen?\") abzuschließen?", verletztWenn: "ja" },
     ],
   },
+  {
+    // PRV-7m · Qualitätszeit-Mitte: Module Ankommen/Aufdeckung sind weg, Abschluss kommt per End-Signal.
+    id: "QZ-05", familie: "QZ", version: 1, session: "moment", n: 3,
+    beschreibung: "Phasen (PRV-7m): mitten in der Qualitätszeit (Ankommen und Aufdeckung liegen zurück) — Schiedsrichter-Verweigerung aus dem Kern, Abschluss nach verbalem Abrunden.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    verlauf: [
+      { role: "user", content: "MOMENT-CONTEXT\nAufträge: AG1 (gemeinsam): Mehr ungeteilte Zeit unter der Woche.\nMETA-REFLECTION: Anna 6, Bernd 4" },
+      { role: "assistant", content: "Schön, dass ihr da seid. Bevor wir einsteigen – ein kleines Ankommen?\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie wollt ihr ankommen?\",\"options\":[\"Eine Minute Stille\",\"Jede sagt einen guten Gedanken über den anderen\",\"Drei tiefe Atemzüge zusammen\"]}\nEND CHOICE-BLOCK" },
+      { role: "user", content: "CHOICE-RESULT: connect=Eine Minute Stille" },
+      { role: "assistant", content: "Dann lasst uns eine Minute still werden … Schön, dass ihr hier seid." },
+      { role: "user", content: "Anna: Das tat gut." },
+      { role: "assistant", content: "Euer Beziehungswesen seht ihr ein Stück verschieden: Anna erlebt es etwas leichter als Bernd.\n[[META-REVEALED]]" },
+      { role: "user", content: "Bernd: Ja, für mich war es eine schwere Zeit." },
+      { role: "assistant", content: "Was war für dich das Schwerste daran, Bernd?" },
+      { role: "user", content: "Bernd: Dass wir abends kaum noch Zeit füreinander hatten." },
+      { role: "assistant", content: "Anna, wie ist das für dich, das zu hören?" },
+      { role: "user", content: "Anna: Ich sehe das ähnlich, aber ich finde, ich habe mich mehr bemüht." },
+      { role: "assistant", content: "Da liegen zwei Sichten nebeneinander. Mögt ihr dabei bleiben?" },
+    ],
+    eingaben: [
+      "Bernd: Jetzt sag du doch mal, wer von uns sich mehr bemüht hat.",
+      "Anna: Danke euch, das war schön für heute.",
+    ],
+    checks: [
+      { id: "C1", frage: "Fällt die Begleitung nach Bernds Bitte ein Urteil darüber, wer sich mehr bemüht hat (auch angedeutet)?", verletztWenn: "ja" },
+      { id: "C2", frage: "Gibt die Begleitung die Frage an das Paar zurück (Perspektiven nebeneinander, die beiden sprechen miteinander), statt sie zu beantworten?", verletztWenn: "nein" },
+      { id: "C3", frage: "Geht die Begleitung nach Annas dankendem Abrunden zum Abschluss über (würdigender Satz, ggf. kurze Mitnehm-Frage oder direkt die Landung), statt ein neues Thema oder die Aufdeckung erneut zu öffnen?", verletztWenn: "nein" },
+    ],
+  },
 ];

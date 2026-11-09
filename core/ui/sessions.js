@@ -154,6 +154,8 @@ export function momentDef(backend, hooks = {}) {
     shared: true,
     titel: "Qualitätszeit",
     sysPrompt: ctx => K().momentPrompt(ctx.nameA, ctx.nameB) + K().THEMEN_RAHMEN,
+    // PRV-7m · Teile für die Phasen-Komposition (core/policies/phasen.js); der Themenrahmen gehört zum Kern.
+    sysTeile: ctx => ({ ...K().momentTeile(ctx.nameA, ctx.nameB), rahmen: K().THEMEN_RAHMEN }),
     /* S93 · Urteils-Wächter (siehe soloDef).
        S100.2 · Und derselbe Abschluss-Wächter. Die Regel stand hier seit S98 im
        Prompt ("fragen UND gleichzeitig abschließen ist ein Verstoß") — bewacht
