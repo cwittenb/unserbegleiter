@@ -84,3 +84,19 @@ Paket `prv7c`: GATE-S1/S2/S3, ERO-01 (DE), Haiku und Sonnet je n=5.
 Gate-Strang (`docs/AUFTAKT-GATE-STRANG.md`): offengelegte Ergänzungen sind erlaubt, auch beim Selbstanteil; liefern oder verschieben sind beide richtig. Branch `gate-v2` (Korpus-Satz Selbstanteil, GATE-S3 v2) und `main` (PRV-5/6, Werkzeug) in diesen Branch gemergt; Konflikte in `phasen.js`, Fassade und Paketen als Vereinigung aufgelöst, der Selbstanteil-Satz steht jetzt im Teil `solo/03-teilen.md`. Suite 3 279 grün, Kern `8028db30`.
 
 Paket `prv7d`: GATE-S1/S2/S3, ERO-01, RCL-04, AUS-02 (DE), beide Modelle n=5 — Arm „aus“ ist zugleich die Gate-Basislinie im Gesamttext.
+
+## 10 · PRV-7d-Ergebnis und Merge (09.11.2026)
+
+`evals/ergebnisse/prv7/prv7d_alle.json`, Kern 8028db30, beide Modelle n=5. Summe: Haiku Module 23 / ganzer Text 25, Sonnet 19 / 16.
+
+| | Haiku Module | Haiku ganz | Sonnet Module | Sonnet ganz |
+|---|---|---|---|---|
+| GATE-S1 C3 (Klärungsschleife) | 3 | 2 | **4** | 2 |
+| GATE-S2 C2 | 2 | 5 | 1 | 0 |
+| GATE-S3 C1 / C2 | 5 / 2 | 4 / 0 | 3 / 2 | 4 / 2 |
+| ERO-01 (je C1–C3) | **1** | 3 | **1** | 2 |
+| RCL-04, AUS-02 | 3 / 0 | 1 / 0 | 1 / 0 | 0 / 0 |
+
+Wiederholte Muster über 7b–7d: Module → mehr Klärungsschleifen bei Sonnet in GATE-S1 (zusammen 9/13 gegen 5/13); Module → ERO-01 besser.
+
+**Entscheidung Cars10: mergen.** Die Schleifen sind vertretbar — die Begleitung erklärt plausibel, was ihr fehlt („sonst erfinde ich Situationen, die vielleicht gar nicht stimmen“); stellt es sich im echten Gebrauch als Problem heraus, wird es dann gelöst. Gemergt mit 7b/7c (Bitte-Regel am Ende des Teilen-Moduls, Lücke statt Rückfrage) und dem Gate-Korpussatz (über `gate-v2`).
