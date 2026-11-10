@@ -106,7 +106,7 @@ describe("PRV-3 · Cache-Invariante über die echte Engine", () => {
     await e.sendUser("Bernd: Wie war dein Tag?");
     expect(gesehen[0].regie).toMatch(/APP-HINWEIS/);
     expect(gesehen[1].regie).toBeNull();
-    expect(gesehen[0].system).toBe(gesehen[1].system);
+    expect(gesehen[0].system).toEqual(gesehen[1].system);   // String oder Blöcke (PRV-7m)
     expect(JSON.stringify(e.chat.messages)).not.toContain("APP-HINWEIS");
   });
 });

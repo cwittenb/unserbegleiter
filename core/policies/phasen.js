@@ -127,9 +127,42 @@ export function bloeckeGemeinsam(teile, phase) {
   return [kern, modul];
 }
 
+/**
+ * PRV-7m · Qualitaetszeit. Module nur bei Anlass (Entscheidung Cars10: der
+ * weitere Schnitt):
+ *   ankommen   — bis zur Ankommens-Wahl (CHOICE-RESULT: connect=…) und noch
+ *                in der Nachricht direkt danach (Uebung anleiten, offene Tuer)
+ *   aufdeckung — solange [[META-REVEALED]] fehlt (inkl. Nachholen) und bis
+ *                3 Nachrichten der Person nach der Marke (Frage in die
+ *                Differenz, Passung/Wirksamkeit, Trajektorie)
+ *   abschluss  — ab [CLOSE MOMENT …] oder einem End-Signal (klebt: Schritt 2
+ *                folgt auf eine Antwort ohne Signalwort)
+ */
+export const NACH_AUFDECKUNG = 3;
+export function phaseMoment(messages, signale) {
+  const ms = (messages || []).filter(Boolean);
+  const nutzer = ms.filter(m => m.role === "user").map(inhalt);
+  const iConnect = nutzer.findIndex(t => t.trim().startsWith("CHOICE-RESULT: connect"));
+  const iMarke = ms.findIndex(m => m.role === "assistant" && inhalt(m).includes("[[META-REVEALED]]"));
+  const nachMarke = iMarke < 0 ? 0 : ms.slice(iMarke + 1).filter(m => m.role === "user").length;
+  return {
+    ankommen: iConnect < 0 || nutzer.length - 1 - iConnect <= 1,
+    aufdeckung: iMarke < 0 || nachMarke <= NACH_AUFDECKUNG,
+    abschluss: nutzer.some(t => signale.ende.test(t)),
+  };
+}
+
+/** Kern = kern-a + kern-b + Themenrahmen; Modul = aktive Teile in Textreihenfolge. */
+export function bloeckeMoment(teile, phase) {
+  const kern = teile["kern-a"] + teile["kern-b"] + (teile.rahmen || "");
+  const modul = (phase.ankommen ? teile.ankommen : "") + (phase.aufdeckung ? teile.aufdeckung : "") + (phase.abschluss ? teile.abschluss : "");
+  return modul ? [kern, modul] : [kern];
+}
+
 /** Register: Katalog-Name → (teile, messages, k) ⇒ Systembloecke. k = Korpus der aktiven Sprache. */
 export const PHASEN = Object.freeze({
   einzel: (teile, messages, k) => bloeckeEinzel(teile, phaseEinzel(messages, k.steuerTexte)),
   solo: (teile, messages, k) => bloeckeSolo(teile, phaseSolo(messages, k.waechter.phasen)),
   gemeinsam: (teile, messages, k) => bloeckeGemeinsam(teile, phaseGemeinsam(messages, k)),
+  moment: (teile, messages, k) => bloeckeMoment(teile, phaseMoment(messages, k.waechter.phasen)),
 });

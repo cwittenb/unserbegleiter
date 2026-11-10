@@ -160,4 +160,18 @@ export const VORGABEN = {
       { label: "sonnet-aus-n5", pm: SONNET, n: 5, phasenAus: true },
     ],
   },
+  prv7m: {
+    id: "prv7m",
+    titel: "PRV-7m · Qualitätszeit in Modulen A/B (DE)",
+    beschreibung: "Gleicher Kern, zwei Wege für die Qualitätszeit: Phasen = Kern + Module (Ankommen, Aufdeckung, Abschluss) nur bei Anlass (PRV-7m); aus = ganzer Text. Nur DE, beide Modelle n=5.",
+    szenarien: ["PROT-01", "PROT-02", "SPR-05", "QZ-01", "QZ-05", "MRV-01", "MRV-02", "MRV-03"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-phasen-n5", pm: HAIKU, n: 5 },
+      { label: "haiku-aus-n5", pm: HAIKU, n: 5, phasenAus: true },
+      { label: "sonnet-phasen-n5", pm: SONNET, n: 5 },
+      { label: "sonnet-aus-n5", pm: SONNET, n: 5, phasenAus: true },
+    ],
+  },
 };

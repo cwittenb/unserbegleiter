@@ -100,12 +100,12 @@ describe("PRV · Regie-Transport A/B im Eval-Kern", () => {
   it("neu: Hinweis als Regie, Systemtext je Zug gleich", async () => {
     const c = await spiele(undefined);
     expect(c.some(x => x.regie)).toBe(true);
-    expect(new Set(c.map(x => x.system)).size).toBe(1);
+    expect(new Set(c.map(x => JSON.stringify(x.system))).size).toBe(1);   // String oder Blöcke (PRV-7m)
   });
   it("alt: Hinweis am Systemtext, keine Regie", async () => {
     const c = await spiele("system");
     expect(c.every(x => x.regie === null)).toBe(true);
-    expect(new Set(c.map(x => x.system)).size).toBeGreaterThan(1);   // geschärfter Zug: Systemtext + Zusatz
+    expect(new Set(c.map(x => JSON.stringify(x.system))).size).toBeGreaterThan(1);   // geschärfter Zug: Systemtext + Zusatz
   });
 });
 
