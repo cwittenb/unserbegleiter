@@ -423,6 +423,17 @@ export const en = {
   "fehler.code.mail_failed": "Sending is not possible right now. Please try again later.",
   "fehler.code.verify_rate": "Too many requests. Please try again a little later.",
   "fehler.code.email_mismatch": "The address does not match the pending confirmation. Please request a new code.",
+  // CR-2.4/2.5 · Stoerungen mit Handlung statt Rohtext; Start ohne Netz.
+  "fehler.code.netz": "No connection right now. Your text is not lost – please try again in a moment.",
+  "fehler.code.server": "The service is not responding properly right now. Your text is not lost – please try again in a moment.",
+  "fehler.code.sitzung": "Your sign-in has expired and could not be renewed. Please reload the page.",
+  "fehler.code.llm_stille": "The connection went quiet. Your message is not lost – please send it again.",
+  "fehler.code.llm_abbruch": "The reply was cut off on the way. Your message is not lost – please send it again.",
+  "fehler.code.llm_leer": "No reply came through. Your message is not lost – please send it again.",
+  "start.offlineTitel": "No connection right now",
+  "start.offlineText": "Your access is not lost. As soon as the network is back, you can continue here.",
+  "start.offlineNochmal": "Try again",
+  "wieder.keinNetz": "No connection right now – nothing was sent. Please try again in a moment.",
   // CR-1.2 · Prozessreflexion: abgewiesene Abgabe (vorher ohne jede Meldung).
   "fehler.code.mess_invalid": "Your entry did not go through. Your sliders are still set – please submit once more.",
   // R0 · Kontingent-Waechter: eigene Codes, damit eine bewusste Grenze

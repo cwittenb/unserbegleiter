@@ -16,6 +16,57 @@ import { VERLAUF_PRAEFIX } from "../../../core/ui/verlauf-ablage.js";
 const istVerlauf = f => typeof f === "string" && f.startsWith(VERLAUF_PRAEFIX);
 const verlaufId = f => encodeURIComponent(f.slice(VERLAUF_PRAEFIX.length));
 
+/* ---- CR-2.1 · Stille Neuanmeldung ------------------------------------------
+ * Die Sitzung laeuft nach 15 Minuten ohne Anfrage ab (worker/auth.js). Bis
+ * CR-2 meldete nur der Seitenstart neu an; wer laenger an einer Nachricht
+ * schrieb oder das Handy weglegte, bekam beim Senden "Keine gueltige Sitzung",
+ * und die Nachricht war weg. Das Geraet traegt aber weiter sein Credential
+ * (180 Tage) — eine abgelaufene Sitzung ist deshalb kein Zustand, den die
+ * Person sehen muss.
+ *
+ * Bei 401: EINMAL POST /api/session, dann dieselbe Anfrage noch einmal.
+ * Gleichzeitige 401 (der Kern liest beim Betreten mehrere Dinge parallel)
+ * teilen sich eine Anmeldung. Scheitert auch die, traegt der Fehler den Code
+ * "sitzung" — den einen Fall, in dem wirklich neu geladen werden muss.
+ * Die Zugangs-Routen selbst sind ausgenommen: Dort IST 401 die Antwort. */
+const OHNE_NEUANMELDUNG = /^\/api\/(session|enroll|recover|email)\b/;
+
+export function macheNeuanmelder(melde) {
+  let laufend = null;
+  return () => {
+    if (!laufend) laufend = Promise.resolve().then(melde).finally(() => { laufend = null; });
+    return laufend;
+  };
+}
+
+/** Mantel um `api(method, pfad, body)`. */
+export function mitNeuanmeldung(rohApi, neuanmelden = macheNeuanmelder(() => rohApi("POST", "/api/session"))) {
+  return async (method, pfad, body) => {
+    try { return await rohApi(method, pfad, body); }
+    catch (e) {
+      if (!e || e.status !== 401 || OHNE_NEUANMELDUNG.test(pfad)) throw e;
+      try { await neuanmelden(); }
+      catch (e2) {
+        // Netz weg waehrend der Anmeldung ist kein verlorener Zugang.
+        if (e2 && e2.status === 401) throw Object.assign(e, { code: "sitzung" });
+        throw e2;
+      }
+      return rohApi(method, pfad, body);
+    }
+  };
+}
+
+/** Mantel um `fetch` fuer den LLM-Proxy (der Adapter spricht fetch, nicht api).
+ *  Der Koerper ist ein String und laesst sich deshalb wiederholen. */
+export function fetchMitNeuanmeldung(fetchFn, neuanmelden) {
+  return async (url, init) => {
+    const r = await fetchFn(url, init);
+    if (!r || r.status !== 401) return r;
+    try { await neuanmelden(); } catch { return r; }
+    return fetchFn(url, init);
+  };
+}
+
 /**
  * @param {(method:string, pfad:string, body?:any)=>Promise<any>} api
  * @param {object} [extras]  weitere Fassadenteile (client.js reicht `llm` herein)

@@ -515,6 +515,10 @@ export function createApp({ doc, backend, root, diktat }) {
     $("btnSend").addEventListener("click", () => {
       const t2 = $("pbInput").value.trim();
       if (!t2) return;
+      /* CR-2.6 · Solange eine Antwort aussteht, wird nicht gesendet — und das
+         Feld NICHT geleert. Vorher leerte der Klick erst und fragte dann;
+         sende() stieg bei laufender Runde wortlos aus, der Text war weg. */
+      if (state.warten || (state.engine && state.engine.busy)) return;
       $("pbInput").value = "";
       sende(t2);
     });
@@ -1447,7 +1451,10 @@ export function createApp({ doc, backend, root, diktat }) {
 
     if (chat.messages.length) {
       if (!lebt()) return;
-      await state.engine.resume();
+      /* CR-2.6 · Ueber den Wartepfad: Beantwortet resume() einen offenen Zug
+         (Neuladen mitten in einer Antwort), ist das Senden so lange gesperrt
+         und die Tipp-Blase steht. Vorher lief das ohne jeden Ladezustand. */
+      await warteAntwort(() => state.engine.resume());
       if (einzelRueckkehr && zugFrei) {
         if (!lebt()) return;
         await warteAntwort(() => state.engine.submitToolResult(K().steuerTexte.einzelRueckkehr, { hidden: true }));

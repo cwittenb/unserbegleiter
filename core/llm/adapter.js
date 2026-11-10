@@ -227,6 +227,11 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
     async function callClaude(systemPrompt, messages, drittes, viertes) {
       const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
       const streamen = typeof onDelta === "function" && cfg.stream !== false;
+      /* CR-2.3 · Leere Nachrichten gehen nie an den Anbieter. Verlaeufe vor
+         CR-2 koennen eine leere Begleiter-Nachricht tragen (abgerissener
+         Strom wurde als Antwort gespeichert); mitgeschickt blockiert sie das
+         Gespraech bei Anbietern, die leere Inhalte abweisen. */
+      messages = messages.filter(m => typeof m.content !== "string" || m.content.trim());
       const nutz = { system: systemPrompt, messages: messages.map(m => (m.regie ? { role: m.role, content: m.content, regie: m.regie } : { role: m.role, content: m.content })) };   // PRV-3: Regie reist zum Worker mit
       if (streamen) nutz.stream = true;
       // S76: Der Worker übersetzt die Struktur providerspezifisch — der Client
@@ -238,7 +243,8 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
         credentials: "include",
         body: JSON.stringify(nutz),
       });
-      if (resp.status === 401) throw new Error("Sitzung abgelaufen – bitte neu anmelden.");
+      // CR-2.4 · mit Code — der Text steht im Woerterbuch (fehler.code.sitzung).
+      if (resp.status === 401) throw Object.assign(new Error("Sitzung abgelaufen – bitte neu anmelden."), { status: 401, code: "sitzung" });
       if (streamen && istEventStream(resp)) {
         let text = "";
         for await (const d of sseDaten(resp)) {
@@ -251,11 +257,20 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
             return ev.done;   // Fassadenform vom Worker
           }
         }
-        // Strom riss ohne done ab → das bereits Empfangene ist die beste Antwort
+        /* CR-2.3 · Strom riss ohne done ab. Bis CR-2 galt das Empfangene als
+           Antwort — auch wenn es leer war oder mitten im Satz endete. Eine
+           halbe Antwort kann ihre Marke oder ihren Block verloren haben; als
+           fertig gespeichert stuende das Gespraech (kein Panel, kein
+           Abschluss). Deshalb: Fehler, der Zug bleibt offen, "Erneut senden"
+           holt die ganze Antwort. */
         callClaude.kontingent = null;
-        return { text: text.trim(), stop: null, usage: null };
+        throw Object.assign(new Error("Die Antwort ist unterwegs abgerissen."), { code: "llm_abbruch", teil: text.length });
       }
-      const data = await resp.json();
+      // CR-2.4 · Eine HTML-Fehlerseite (Gateway, Wartung) ist kein JSON —
+      // statt "Unexpected token '<'" traegt der Fehler die Klasse "server".
+      let data;
+      try { data = await resp.json(); }
+      catch { throw Object.assign(new Error("Unlesbare Antwort vom Server."), { status: resp.status, code: "server" }); }
       if (data.error) wirfProxyFehler(data.error, data.code);
       callClaude.kontingent = data.kontingent || null;   // Hinweis für die UI
       return data;   // {text, stop, usage[, kontingent]} — Fassadenform vom Worker
@@ -288,6 +303,8 @@ export function makeAdapter(cfgIn = {}, fetchFn = globalThis.fetch) {
 
   return function callClaude(systemPrompt, messages, drittes, viertes) {
     const { onDelta, onStatus, structured } = leseAufrufOptionen(drittes, viertes);
+    // CR-2.3 · wie im Proxy-Modus: leere Nachrichten gehen nie an den Anbieter.
+    messages = messages.filter(m => typeof m.content !== "string" || m.content.trim());
     /* ST3 · Der R3-Waechter (ST1.5) ist GEFALLEN: output_config ist laut Doku
        MIT Thinking kompatibel — die Grammatik greift nicht in Thinking-Tags,
        der Grammatik-Zustand setzt sich vor der finalen Ausgabe zurueck. Der
