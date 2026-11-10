@@ -77,7 +77,7 @@ export function redigiereMessungenFuerRolle(mr, role) {
  *  S91: Auf servergeführten Plattformen delegiert die Fassade an den Worker
  *  (Merge mit VOLLER Sicht dort; der Client sieht redigiert und dürfte nie
  *  read-modify-write schreiben — der direkte PUT ist serverseitig gesperrt). */
-export async function trageMessbeitragEin(backend, role, beitrag /* {naehe, zweit, fit:{AGx:n}} */) {
+export async function trageMessbeitragEin(backend, role, beitrag /* {wesen, fit:{AGx:n}, wirksamkeit:{AGx:n}} */) {
   if (backend.mess && backend.mess.beitrag) return backend.mess.beitrag(beitrag);
   const mr = (await backend.bstate.get("measurements")) || { items: [] };
   let runde = mr.items.find(r => r.status === "open");
@@ -91,6 +91,13 @@ export async function trageMessbeitragEin(backend, role, beitrag /* {naehe, zwei
   return runde;
 }
 
+/** CR-1.1 · Wesen-Wert eines Beitrags. Runden vor S107 tragen ihn unter dem
+ *  Alt-Namen `closeness`; ohne diese Abbildung stuende im Kontext "undefined". */
+export function wesenVon(beitrag) {
+  if (!beitrag) return undefined;
+  return beitrag.wesen !== undefined ? beitrag.wesen : beitrag.closeness;
+}
+
 export function bereiteRunde(mr) {
   return ((mr && mr.items) || []).find(r => r.status === "ready") || null;
 }
@@ -102,7 +109,7 @@ export function formatiereMessrunde(runde, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const a = runde.values.A, b = runde.values.B;
   const zeilen = [
-    fuelle(KT("mess.wesen"), { nameA, a: a.wesen, nameB, b: b.wesen, diff: Math.abs(a.wesen - b.wesen) }),
+    fuelle(KT("mess.wesen"), { nameA, a: wesenVon(a), nameB, b: wesenVon(b), diff: Math.abs(wesenVon(a) - wesenVon(b)) }),
   ];
   const pk = Object.keys(a.fit || {});
   if (pk.length)
@@ -150,8 +157,8 @@ export function formatiereVerlauf(mr, nameA, nameB, k = 3) {
   if (!runden.length) return null;
   const zeilen = runden.map(r => fuelle(KT("mess.verlaufZeile"), {
     datum: (r.revealedAt || r.startAt || "").slice(0, 10),
-    nameA, nameB, a: r.values.A.wesen, b: r.values.B.wesen,
-    diff: Math.abs((r.values.A.wesen ?? 0) - (r.values.B.wesen ?? 0)),
+    nameA, nameB, a: wesenVon(r.values.A), b: wesenVon(r.values.B),
+    diff: Math.abs((wesenVon(r.values.A) ?? 0) - (wesenVon(r.values.B) ?? 0)),
   }));
   return KT("mk.prozessVerlauf") + "\n" + zeilen.map(z => "- " + z).join("\n");
 }

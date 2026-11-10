@@ -58,15 +58,18 @@ beforeEach(async () => {
   await bernd.call("POST", "/api/enroll", { token: data.links.B });
 });
 
-const BEITRAG_A = { closeness: 4, guess: 7, fit: { AG1: 6 } };
-const BEITRAG_B = { closeness: 8, guess: 5, fit: { AG1: 3 } };
+// CR-1.1 · Die Nutzlast ist die der Oberflaeche seit S107 (Beziehungswesen,
+// Passung, Wirksamkeit) — bis CR-1 stand hier die Form davor (closeness/guess),
+// und der Test hielt eine Route gruen, die die App nicht mehr bedienen konnte.
+const BEITRAG_A = { wesen: 4, fit: { AG1: 6 }, wirksamkeit: { AG1: 7 } };
+const BEITRAG_B = { wesen: 8, fit: { AG1: 3 }, wirksamkeit: { AG1: 5 } };
 
 describe("BLIND-2 · I12 serverseitig", () => {
   it("A gibt ab → B sieht NICHTS (auch keine Existenz der Runde); A sieht nur sich", async () => {
     const r = await anna.call("POST", "/api/mess/beitrag", BEITRAG_A);
     expect(r.status).toBe(200);
     expect(r.data.runde.status).toBe("open");
-    expect(r.data.runde.values.A.closeness).toBe(4);
+    expect(r.data.runde.values.A.wesen).toBe(4);
     expect(r.data.runde.values.B).toBeNull();
 
     const sichtB = (await bernd.call("GET", "/api/bstate/measurements")).data.value;
@@ -74,7 +77,7 @@ describe("BLIND-2 · I12 serverseitig", () => {
 
     const sichtA = (await anna.call("GET", "/api/bstate/measurements")).data.value;
     expect(sichtA.items.length).toBe(1);
-    expect(sichtA.items[0].values.A.guess).toBe(7);
+    expect(sichtA.items[0].values.A.wirksamkeit.AG1).toBe(7);
     expect(sichtA.items[0].values.B).toBeNull();
   });
 
@@ -86,8 +89,8 @@ describe("BLIND-2 · I12 serverseitig", () => {
       const sicht = (await wer.call("GET", "/api/bstate/measurements")).data.value;
       expect(sicht.items.length).toBe(1);
       expect(sicht.items[0].status).toBe("ready");
-      expect(sicht.items[0].values.A.closeness).toBe(4);
-      expect(sicht.items[0].values.B.closeness).toBe(8);
+      expect(sicht.items[0].values.A.wesen).toBe(4);
+      expect(sicht.items[0].values.B.wesen).toBe(8);
     }
   });
 
@@ -124,11 +127,19 @@ describe("BLIND-2 · I12 serverseitig", () => {
   });
 
   it("unvollständige oder unplausible Beiträge werden abgewiesen (400 mess_invalid)", async () => {
-    for (const kaputt of [{}, { closeness: 4 }, { closeness: 0, guess: 5 }, { closeness: 4, guess: 11 }, { closeness: 4, guess: 5, fit: { AG1: "x" } }]) {
+    for (const kaputt of [{}, { fit: { AG1: 5 } }, { wesen: 0 }, { wesen: 11 }, { wesen: 4, fit: { AG1: "x" } },
+                          { wesen: 4, wirksamkeit: { AG1: 0 } }]) {
       const r = await anna.call("POST", "/api/mess/beitrag", kaputt);
       expect(r.status).toBe(400);
       expect(r.data.code).toBe("mess_invalid");
     }
+  });
+
+  it("CR-1.1 · Alt-Name closeness wird als wesen gelesen; guess wird nicht gespeichert", async () => {
+    const r = await anna.call("POST", "/api/mess/beitrag", { closeness: 6, guess: 3, fit: {} });
+    expect(r.status).toBe(200);
+    expect(r.data.runde.values.A.wesen).toBe(6);
+    expect(r.data.runde.values.A.guess).toBeUndefined();
   });
 
   it("ohne Session: Mess-Routen sind dicht (401)", async () => {

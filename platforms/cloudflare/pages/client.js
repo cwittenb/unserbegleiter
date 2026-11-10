@@ -5,6 +5,7 @@
 import { CORE_VERSION, APP_NAME } from "../../../core/index.js";
 import { makeAdapter } from "../../../core/llm/adapter.js";
 import { createApp } from "../../../core/ui/app.js";
+import { baueRemoteBackend } from "./remote-backend.js";
 import { applyDesign } from "../../../core/ui/design.js";
 import { setKorpusLader } from "../../../core/prompts/prompts.js";   // R5
 import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../../core/i18n/index.js";
@@ -38,64 +39,9 @@ export async function api(method, pfad, body) {
   return data;
 }
 
+/* CR-1 · Die Fassade selbst lebt in remote-backend.js (ohne Browser pruefbar). */
 export function remoteBackend() {
-  return {
-    info: () => api("GET", "/api/me"),
-    language: {
-      // Bugfix (S66): der Parameter hieß `ziel`, der Body referenzierte die
-      // NICHT existierende Variable `target` → ReferenceError bei jedem
-      // Sprachwechsel-Antrag. Der Worker erwartet { target } (S30·C3).
-      request: target => api("POST", "/api/language", { target }),
-      withdraw: () => api("DELETE", "/api/language"),
-    },
-    bstate: {
-      get: f => api("GET", "/api/bstate/" + f).then(r => r.value),
-      set: (f, v) => api("PUT", "/api/bstate/" + f, { value: v }),
-    },
-    // S91 · I12: Messungen sind servergeführt — Abgabe und Aufdeckung laufen
-    // über eigene Routen (Rolle aus der Session); trageMessbeitragEin/
-    // markiereAufgedeckt im Kern delegieren hierher, wenn vorhanden.
-    mess: {
-      beitrag: b => api("POST", "/api/mess/beitrag", b).then(r => r.runde),
-      aufgedeckt: rundeId => api("POST", "/api/mess/aufgedeckt", { rundeId }),
-    },
-    // S95.3 · Regal servergeführt: Ablage, Lesestand, Hebung und Rücknahme
-    // laufen über eigene Routen; PUT auf /api/bstate/shelf ist gesperrt.
-    // S95.3b · Regal UND Agenda servergeführt: Ablage, Lesestand, Hebung,
-    // Vormerkung, Abräumen und Rücknahme laufen über eigene Routen; PUT auf
-    // /api/bstate/shelf und /api/bstate/agenda ist gesperrt.
-    regal: {
-      freigabe: entwurf => api("POST", "/api/regal/freigabe", entwurf),
-      gelesen: itemId => api("POST", "/api/regal/gelesen", { itemId }),
-      gehoben: (itemId, opts) => api("POST", "/api/regal/gehoben", { itemId, alsZiel: !!(opts && opts.alsZiel) }),
-      ruecknahme: freigabe => api("POST", "/api/regal/ruecknahme", { freigabe }).then(() => true, () => false),
-      vormerkung: itemId => api("POST", "/api/agenda/vormerkung", { itemId }),
-      abraeumen: (itemId, wie) => api("POST", "/api/agenda/abraeumen", { itemId, wie }),
-    },
-    pstate: {
-      get: f => api("GET", "/api/pstate/" + f).then(r => r.value),
-      set: (f, v) => {
-        if (f === "language") { try { localStorage.setItem("pb.sprache", v); } catch { /* z. B. Safari privat */ } }
-        // D12-2d · Spiegel der Ansicht: beim naechsten Start steht die Farbe,
-        // bevor der Server geantwortet hat — sonst blitzt es kurz hell auf.
-        if (f === "theme") { try { localStorage.setItem("pb.ansicht", v); } catch { /* dito */ } }
-        return api("PUT", "/api/pstate/" + f, { value: v });
-      },
-    },
-    chat: {
-      load: (art, id) => api("GET", "/api/chat/" + art + "/" + id).then(r => r.value),
-      save: (art, id, chat) => api("PUT", "/api/chat/" + art + "/" + id, { value: chat }),
-    },
-    handover: {
-      post: d => api("POST", "/api/handover", d),
-      get: r => api("GET", "/api/handover/" + r).then(x => x.value),
-    },
-    recovery: {
-      beginVerify: email => api("POST", "/api/email", { email }),
-      confirm: (pin, email) => api("POST", "/api/email/confirm", { pin, email }),
-    },
-    llm: makeAdapter({ mode: "proxy" }),
-  };
+  return baueRemoteBackend(api, { llm: makeAdapter({ mode: "proxy" }) });
 }
 
 export async function boot() {

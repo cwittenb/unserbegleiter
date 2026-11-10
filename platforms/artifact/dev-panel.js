@@ -274,7 +274,7 @@ export function baueMockdaten(meta = MOCK_META) {
     ]},
     measurements: { items: [
       { id: "MR1", startAt: vor(10), status: "revealed", revealedAt: vor(8),
-        values: { A: { closeness: 5, guess: 6, fit: { AG1: 6 } }, B: { closeness: 6, guess: 5, fit: { AG1: 7 } } } },
+        values: { A: { wesen: 5, fit: { AG1: 6 }, wirksamkeit: { AG1: 6 } }, B: { wesen: 6, fit: { AG1: 7 }, wirksamkeit: { AG1: 5 } } } },
     ]},
     momentLog: { entries: [
       { at: vor(8), summary: "Über den gemeinsamen Abend gesprochen; beide wollen ihn schützen.", topics: ["gemeinsame Zeit"], gentleInvitation: "Ein Spaziergang unter der Woche." },
@@ -470,7 +470,7 @@ export const SZENEN = [
       const bk = key(m.meta, "bstate");
       m.shared[bk].measurements.items.push({
         id: "MR2", startAt: vor(1), status: "ready",
-        values: { A: { closeness: 4, guess: 7, fit: { AG1: 6 } }, B: { closeness: 8, guess: 5, fit: { AG1: 9 } } },
+        values: { A: { wesen: 4, fit: { AG1: 6 }, wirksamkeit: { AG1: 7 } }, B: { wesen: 8, fit: { AG1: 9 }, wirksamkeit: { AG1: 5 } } },
       });
       await setzeZustand(store, m);
     },

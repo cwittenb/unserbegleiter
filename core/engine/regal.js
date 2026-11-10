@@ -71,10 +71,11 @@ export function redigiereRegalFuerRolle(regal, role, jetzt = Date.now()) {
  * (ein mitgeschicktes visibleFrom wird ignoriert, sonst wäre die Karenz
  * clientseitig abwählbar).
  *
- * Karenz NUR für Ausschnitte: Die Selbstmitteilung ist durch die Redaktion
- * gegangen, inklusive Bedeutungsrückfrage; ein Nachlauf widerspräche dort
- * „gegebenes Ja zählt sofort". Der Ausschnitt kennt keine Redaktion (D1) und
- * ist nach Sichtbarwerden endgültig — er braucht das Fenster.
+ * Karenz für JEDES Item — Ausschnitt wie Selbstmitteilung (S95.3b, siehe
+ * Dateikopf: "JEDE Querung"). CR-1.6: Hier stand bis CR-1 noch der Stand von
+ * S95.3 ("Karenz NUR für Ausschnitte"); der Code darunter und der Test
+ * tests/worker/regal-karenz.spec.js ("auch eine Selbstmitteilung liegt in der
+ * Karenz") sagen seit S95.3b das Gegenteil.
  */
 export function legeRegalItemAb(regal, entwurf, jetzt = Date.now()) {
   const r = regal && Array.isArray(regal.items) ? regal : { items: [] };
