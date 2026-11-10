@@ -182,6 +182,8 @@ GLM 54 % · Haiku 48 % · Sonnet 48 %, fast die Hälfte der Urteile „gleich“
 | Datenweg | USA (EU über Bedrock möglich) | Mistral-Vertrag EU, **Region für GLM ungeklärt** | USA | EU |
 | Korpus darauf abgestimmt | ja (Hauptentwicklung) | **nein** | teilweise (PRV-Evals) | teilweise |
 
+**Einschränkung (Rückfrage Cars10, 10.11.):** Der Abstand GLM vor Sonnet ist zum Teil ein Korpus-Artefakt. Sonnet befolgt die Regel „bei bedeutsamen Momenten immer eine Erlebensfrage“ am genauesten (Körperfrage 19/24) und wirkt dadurch schematisch. In Runde 2 gewinnt Sonnet mit Körperfrage kein Paar gegen GLM (0–6–4). Allein erklärt das die Lücke aber nicht: In Runde 1 verlor Sonnet auch ohne Körperfrage 4 von 4 Paaren gegen GLM. Umgekehrt kostete der Auftakt-Artefakt GLM in Runde 1 drei Paare gegen Haiku. Bereinigt steht Haiku gegen GLM 5 zu 5. **Gemessen wird „Modell × heutiger Korpus“, nicht das Modell allein.** Die Entscheidung GLM gegen Sonnet fällt deshalb erst nach der Heuristik Interventionswahl und einer Runde 3.
+
 **Empfehlung:** GLM 5.3 über Mistral als Hauptkandidat, Sonnet als Referenz und Rückfallebene. Haiku nicht für das Begleitgespräch; allenfalls für Nebenaufgaben. Bedingungen vor einer Umstellung:
 
 1. Region und Auftragsverarbeitung für GLM bei Mistral schriftlich klären.
