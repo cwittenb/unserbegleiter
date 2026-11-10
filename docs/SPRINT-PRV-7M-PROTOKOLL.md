@@ -30,3 +30,11 @@ Hinweis: Die übrigen Qualitätszeit-Szenarien spielen am Anfang (Ankommen und A
 ## 4 · Eval (bei dir)
 
 Paket `prv7m` (DE): PROT-01/02, SPR-05, QZ-01, QZ-05, MRV-01/02/03 — beide Modelle n=5, Phasen vs. aus.
+
+## 5 · Eval-Ergebnis und Merge (10.11.2026)
+
+`evals/ergebnisse/prv7m/prv7m_alle.json`, Kern 3f79edb1, beide Modelle n=5. Summe Verstöße: Haiku Module 2 / ganzer Text 1, Sonnet 1 / 0. PROT-01/02, SPR-05, MRV-01/02, QZ-05 in allen Armen 0; QZ-01 C2 Haiku Module 2/5 (Einzelzelle), MRV-03 C1 je einmal verstreut. Kein App-Hinweis-/Karten-Echo.
+
+„Roher Block-Kopf“ (CHOICE-BLOCK des Ankommens im sichtbaren Text) in fast allen Samples beider Arme (Module 70/70, ganzer Text 61/70) — bekannt seit PRV-3/PRV-6, unabhängig von PRV; eigener Strang (Runner bzw. Block-Ausgabe im ersten Zug). QZ-05 (Mitte, ohne Ankommen) ohne Echo.
+
+**Gemergt.** Damit laufen alle vier Arten mit Phasen-Komposition.
