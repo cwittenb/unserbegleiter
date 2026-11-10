@@ -99,3 +99,25 @@ Situationen und Eingaben bleiben gleich, nur die Vorgeschichte kommt dazu. Damit
 git pull
 node scripts/blindvergleich.js --nur B,C,D
 ```
+
+## 9 · Ergebnis Runde 2 (10.11.2026, 36 Urteile, Kern `3f79edb1` = nach PRV-7/7m)
+
+| Modell | Gewinnquote | S–G–N | Bradley-Terry |
+|---|---|---|---|
+| GLM 5.3 | **54 %** | 6–14–4 | 1,11 |
+| Haiku 5.5 | 48 % | 7–9–8 | 0,94 |
+| Sonnet 5.5 | 48 % | 6–11–7 | 0,94 |
+
+| Paar | Runde 1 | Runde 2 | zusammen (S–N, ohne Gleich) |
+|---|---|---|---|
+| GLM – Sonnet | 8–1–3 | **4–8–0** | 12–3 für GLM (Vorzeichentest p ≈ 0,035) |
+| Sonnet – Haiku | 7–5–0 | 6–3–3 | 13–3 für Sonnet (p ≈ 0,02) |
+| Haiku – GLM | 4–5–3 | 4–6–2 | 8–5 (n. s.) |
+
+**Lesart:** 17 von 36 Urteilen „gleich“ (Runde 1: 24 von 72). Die Modelle rücken nach der Prompt-Verdichtung zusammen; Bewerter-Eindruck: „insgesamt gefühlt eine viel höhere Qualität“. Merkmale wurden in Runde 2 bewusst seltener vergeben („immer das gleiche: warm, auf Augenhöhe, neugierig“).
+
+**Körperfrage je Modell (24 Antworten):** Sonnet 19, Haiku 6, GLM 1. Erlebensfrage insgesamt: Sonnet 22, Haiku 14, GLM 12. Die Monotonie aus Cars10s Beobachtung ist vor allem Sonnets genaue Befolgung der Korpusregel → Heuristik Interventionswahl.
+
+**Länge (Median Wörter):** Sonnet 63, GLM 53, Haiku 43.
+
+**Kosten dieser Runde je Antwort:** Sonnet 0,0087 $, GLM 0,0105 $, Haiku 0,0004 $ (kurze Verläufe; echte Sitzungen liegen höher).
