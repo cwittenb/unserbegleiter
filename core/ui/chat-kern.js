@@ -18,7 +18,7 @@
 // bleibt bestehen, aber er ist an EINER Stelle sichtbar — im
 // Kompositionswurzelpunkt in app.js — statt über drei Module verteilt.
 
-import { t, fuelle, fehlerText } from "../i18n/index.js";
+import { t, fuelle, fehlerText, istWiederholbar } from "../i18n/index.js";
 import { esc, mdRender, IKON } from "./html.js";
 import { schneideStreamText } from "./stream-anzeige.js";
 import { cleanDisplay, findeBlock } from "../contracts/block.js";
@@ -335,7 +335,13 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     const k = el("button", "pb-btn");
     k.id = "btnErneutSenden";
     k.textContent = t("chat.erneutSenden");
-    k.addEventListener("click", () => { err(""); warteAntwort(() => state.engine.resume(), true); });
+    /* CR-2.2 · Erst speichern, dann fortsetzen: War es das SPEICHERN, das
+       scheiterte (Panel-Antwort oder fertige Begleiter-Antwort nur im
+       Speicher des Geraets), holt der Knopf genau das nach. */
+    k.addEventListener("click", () => {
+      err("");
+      warteAntwort(async () => { await state.engine._save(); await state.engine.resume(); }, true);
+    });
     b.appendChild(k);
   }
 
@@ -357,7 +363,15 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
          andere Fehler zeigte e.message roh, also den serverseitigen deutschen
          Klartext, unuebersetzt. fehlerText faellt selbst auf e.message
          zurueck; der zentrale Weg ist damit ausnahmslos der richtige. */
-      else { err(fehlerText(e)); if (istUeberlastet(e)) zeigeErneutSenden(); }   // S70/R0
+      /* CR-2.4 · "Erneut senden" stand nur bei Auslastung. Netz weg, Stille,
+         abgerissene oder leere Antwort, Serverfehler sind genauso
+         wiederholbar — und waren Sackgassen. Ausnahme: Die Nachricht wurde
+         gar nicht gesendet (nichtGesendet); dann liegt der Text wieder im
+         Feld, und der Sende-Knopf IST das Wiederholen. */
+      else {
+        err(fehlerText(e));
+        if (!(e && e.nichtGesendet) && (istUeberlastet(e) || istWiederholbar(e))) zeigeErneutSenden();
+      }
     }
     finally {
       /* S87: Ein Nachzügler darf die NEUE Session nicht aus dem Warten kippen
@@ -405,13 +419,34 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
 
   /** Zentraler Sendeweg: User-Text SOFORT zeigen, Ladezustand, dann Antwort. */
   async function sende(text) {
-    if (!text || !state.engine || state.warten) return;
+    if (!text || !state.engine || state.warten) return false;
     await pruefeMessNachtrag();                   // S89b: Nachzügler VOR der Nutzernachricht
     const laeuft = state.engine.sendUser(text);   // pusht die Nachricht synchron …
+    /* CR-2.2 · Der Text ist erst weg, wenn er gespeichert ist. Zwei Wege, auf
+       denen er bisher verschwand: das Speichern scheitert (Engine nimmt die
+       Nachricht zurueck und meldet nichtGesendet), oder die Engine lehnt ab
+       (false — eine Runde laeuft noch). In beiden Faellen liegt er danach
+       wieder im Eingabefeld. */
+    let zurueck = false;
     await warteAntwort(async () => {              // … die Blase zeigt sie sofort
-      await laeuft;
+      let ok;
+      try { ok = await laeuft; }
+      catch (e) { if (e && e.nichtGesendet) zurueck = true; throw e; }
+      if (ok === false) zurueck = true;
       hint(backend.llm && backend.llm.kontingent ? backend.llm.kontingent.hinweis : null);
     }, true);                                     // eigenes Senden nimmt das Mitlaufen wieder auf (S62)
+    if (zurueck) legeZurueck(text);
+    return !zurueck;
+  }
+
+  /** CR-2.2 · Nicht gesendeten Text zurueck ins Feld — vor das, was die Person
+   *  inzwischen vielleicht schon weitergetippt hat. */
+  function legeZurueck(text) {
+    const f = $("pbInput");
+    if (!f) return;
+    const schon = f.value.trim();
+    f.value = schon ? text + "\n" + schon : text;
+    if (hooks && hooks.onEntwurf) hooks.onEntwurf();
   }
   /** Zweite Stufe der Verdrahtung: die Gegenrichtung des Kreises nachtragen.
    *  MUSS vor dem ersten Rendern gerufen werden — app.js tut das unmittelbar

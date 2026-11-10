@@ -5,7 +5,7 @@
 import { CORE_VERSION, APP_NAME } from "../../../core/index.js";
 import { makeAdapter } from "../../../core/llm/adapter.js";
 import { createApp } from "../../../core/ui/app.js";
-import { baueRemoteBackend } from "./remote-backend.js";
+import { baueRemoteBackend, mitNeuanmeldung, fetchMitNeuanmeldung, macheNeuanmelder } from "./remote-backend.js";
 import { applyDesign } from "../../../core/ui/design.js";
 import { setKorpusLader } from "../../../core/prompts/prompts.js";   // R5
 import { t, fehlerText, setLocale, getLocale, vorSessionSprache } from "../../../core/i18n/index.js";
@@ -24,7 +24,9 @@ import { RECOVER_MINUTEN } from "../../../core/zugang-fristen.js";
 const doc = document;
 const app = doc.getElementById("app");
 
-export async function api(method, pfad, body) {
+/* CR-2.1 · rohApi ist die nackte Anfrage; `api` (darunter) meldet bei 401
+   einmal still neu an und wiederholt. */
+async function rohApi(method, pfad, body) {
   const r = await fetch(apiBasis() + pfad, {
     method,
     credentials: "include",
@@ -39,9 +41,48 @@ export async function api(method, pfad, body) {
   return data;
 }
 
-/* CR-1 · Die Fassade selbst lebt in remote-backend.js (ohne Browser pruefbar). */
+const neuanmelden = macheNeuanmelder(() => rohApi("POST", "/api/session"));
+export const api = mitNeuanmeldung(rohApi, neuanmelden);
+
+/* CR-1 · Die Fassade selbst lebt in remote-backend.js (ohne Browser pruefbar).
+   CR-2.1 · Der LLM-Proxy bekommt denselben Neuanmelder wie die Routen — eine
+   abgelaufene Sitzung beim Senden loest genau EINE Anmeldung aus. */
 export function remoteBackend() {
-  return baueRemoteBackend(api, { llm: makeAdapter({ mode: "proxy" }) });
+  const proxyFetch = fetchMitNeuanmeldung(
+    (url, init) => fetch(/^https?:/.test(url) ? url : apiBasis() + url, init), neuanmelden);
+  return baueRemoteBackend(api, { llm: makeAdapter({ mode: "proxy" }, proxyFetch) });
+}
+
+/** CR-2.5 · Start ohne Verbindung: sagen, was ist, und den einen Weg anbieten.
+ *  Bewusst KEIN Adressfeld — der Zugang ist nicht verloren. */
+export function zeigeKeineVerbindung() {
+  /* Dieselbe Huelle wie der Wiedereinstieg (Papier oben, Tiefgruen unten) —
+     es ist dieselbe Lage "vor dem Zugang", nur mit anderem Grund. Die
+     Bedien-Ecke fuehrt ohne Sitzung ins Leere und wird wie dort ausgeblendet. */
+  doc.documentElement.setAttribute("data-vorzugang", "1");
+  app.innerHTML =
+    '<div class="rz-split" id="scrOffline">' +
+      '<div class="rz-half rz-papier rz-vor-papier">' +
+        '<div class="rz-vor-kopf"><span class="rz-marke-vor">' + APP_NAME + "</span></div>" +
+        '<div class="rz-vor-mitte">' +
+          '<h1 class="rz-h1">' + t("start.offlineTitel") + "</h1>" +
+          '<p class="rz-vor-intro">' + t("start.offlineText") + "</p>" +
+          '<div class="rz-eintrag">' +
+            '<button type="button" id="btnNochmal">' + t("start.offlineNochmal") + " \u2192</button>" +
+          "</div>" +
+        "</div>" +
+      "</div>" +
+      '<div class="rz-half rz-tiefgruen rz-naht-anker rz-vor-tief">' +
+        '<div class="rz-kulisse-naht rz-kulisse-vor" aria-hidden="true">' + baueKulisse(5, "vor") + "</div>" +
+        rechtsFuss() +
+      "</div>" +
+    "</div>";
+  verdrahteRechtsFuss(app);
+  const knopf = doc.getElementById("btnNochmal");
+  knopf.addEventListener("click", () => {
+    knopf.disabled = true;
+    boot().catch(() => zeigeKeineVerbindung());
+  });
 }
 
 export async function boot() {
@@ -98,13 +139,17 @@ export async function boot() {
     }
   } else {
     // Kein Token: bestehende Session prüfen, sonst über Credential neu anmelden
+    /* CR-2.5 · Nur "kein gueltiger Zugang" (401) fuehrt in den Wiedereinstieg.
+       Bis CR-2 tat das JEDER Fehler — auch Netz weg oder Server gestoert: Wer
+       im Zug kein Netz hatte, sah "Zugangslink fuer dein Konto", gab seine
+       Adresse ein und las "Gesendet". Es war nichts gesendet, und der Zugang
+       war nie weg. (`api` meldet bei 401 selbst einmal ueber /api/session neu
+       an; kommt hier noch 401 an, ist das Credential wirklich fort.) */
     try { await api("GET", "/api/me"); }
-    catch {
-      try { await api("POST", "/api/session"); }
-      catch {
-        zeigeWiedereinstieg();
-        return;
-      }
+    catch (e) {
+      if (e && e.status === 401) zeigeWiedereinstieg();
+      else zeigeKeineVerbindung();
+      return;
     }
   }
   /* Ab hier gibt es eine Sitzung — die Bedien-Ecke fuehrt wieder irgendwohin. */
@@ -258,10 +303,19 @@ export function zeigeWiedereinstieg(enrollFehler) {
     const email = feld.value.trim();
     if (!email) { hinweis.textContent = t("wieder.bitte"); return; }
     if (!SIEHT_AUS_WIE_MAIL.test(email)) { hinweis.textContent = t("wieder.format"); return; }
-    /* Der Ausgang ist bewusst OHNE Verzweigung: Erfolg, 429 und Netzfehler
-       fuehren zur selben Quittung. Jede Unterscheidung waere eine Auskunft
-       darueber, ob die Adresse hinterlegt ist. */
-    try { await api("POST", "/api/recover", { email }); } catch { /* still, mit Absicht */ }
+    /* Der Ausgang ist bewusst OHNE Verzweigung nach der ANTWORT: Erfolg, 429
+       und 5xx fuehren zur selben Quittung. Jede Unterscheidung waere eine
+       Auskunft darueber, ob die Adresse hinterlegt ist. */
+    /* CR-2.5 · Still bleibt es bei jeder ANTWORT des Servers (keine Auskunft,
+       ob die Adresse bekannt ist). Kam gar keine Antwort — die Anfrage hat das
+       Geraet nie verlassen —, waere "Gesendet" schlicht falsch. */
+    try { await api("POST", "/api/recover", { email }); }
+    catch (e) {
+      if (!e || typeof e.status !== "number") {
+        hinweis.textContent = t("wieder.keinNetz");
+        return;
+      }
+    }
     quittiere(email);
   }
 

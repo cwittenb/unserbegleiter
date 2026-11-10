@@ -462,6 +462,17 @@ export const de = {
   "fehler.code.mail_failed": "Der Versand ist gerade nicht möglich. Bitte versuche es später erneut.",
   "fehler.code.verify_rate": "Zu viele Anfragen. Bitte etwas später erneut.",
   "fehler.code.email_mismatch": "Die Adresse passt nicht zur offenen Bestätigung. Bitte fordere einen neuen Code an.",
+  // CR-2.4/2.5 · Stoerungen mit Handlung statt Rohtext; Start ohne Netz.
+  "fehler.code.netz": "Gerade keine Verbindung. Dein Text ist nicht verloren – bitte versuche es gleich noch einmal.",
+  "fehler.code.server": "Der Dienst antwortet gerade nicht richtig. Dein Text ist nicht verloren – bitte versuche es gleich noch einmal.",
+  "fehler.code.sitzung": "Deine Anmeldung ist abgelaufen und ließ sich nicht erneuern. Bitte lade die Seite neu.",
+  "fehler.code.llm_stille": "Die Verbindung ist still geworden. Deine Nachricht ist nicht verloren – bitte sende sie noch einmal.",
+  "fehler.code.llm_abbruch": "Die Antwort ist unterwegs abgerissen. Deine Nachricht ist nicht verloren – bitte sende sie noch einmal.",
+  "fehler.code.llm_leer": "Es kam keine Antwort an. Deine Nachricht ist nicht verloren – bitte sende sie noch einmal.",
+  "start.offlineTitel": "Gerade keine Verbindung",
+  "start.offlineText": "Dein Zugang ist nicht verloren. Sobald das Netz wieder da ist, geht es hier weiter.",
+  "start.offlineNochmal": "Erneut versuchen",
+  "wieder.keinNetz": "Gerade keine Verbindung – es wurde nichts gesendet. Bitte versuche es gleich noch einmal.",
   // CR-1.2 · Prozessreflexion: abgewiesene Abgabe (vorher ohne jede Meldung).
   "fehler.code.mess_invalid": "Die Abgabe ist nicht angekommen. Deine Regler stehen noch – bitte gib noch einmal ab.",
   // R0 · Kontingent-Waechter: eigene Codes, damit eine bewusste Grenze

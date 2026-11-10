@@ -231,11 +231,18 @@ describe("L3.5 · Die zwei Sonderlagen", () => {
 /* ---------- L3.7 · Die Invarianten ---------- */
 
 describe("L3.7 · Was nicht kaputtgehen darf (§5)", () => {
-  it("keine Enumeration: die Quittung ist bei JEDEM Ausgang dieselbe", async () => {
+  /* CR-2.5 · "Bei JEDEM Ausgang" hiess bis CR-2 auch: bei Netzfehler. Das
+     schuetzte nichts — eine Anfrage, die das Geraet nie verlassen hat, sagt
+     nichts ueber die Adresse — und log die Person an: "Gesendet", obwohl
+     nichts gesendet war (Code-Review C8). Die Invariante gilt jetzt fuer jede
+     ANTWORT des Servers; ohne Antwort steht der Hinweis, und die Zeile bleibt
+     bedienbar. */
+  it("keine Enumeration: die Quittung ist bei JEDER Antwort des Servers dieselbe", async () => {
     const ausgaenge = [
       async () => ({ ok: true, status: 200, json: async () => ({}) }),          // Erfolg
       async () => ({ ok: false, status: 429, json: async () => ({ code: "rate" }) }), // Rate-Limit
-      async () => { throw new Error("offline"); },                               // Netzfehler
+      async () => ({ ok: false, status: 500, json: async () => ({ error: "kaputt" }) }), // Serverfehler
+      async () => ({ ok: false, status: 404, json: async () => ({}) }),          // unbekannt
     ];
     const gesehen = new Set();
     for (const f of ausgaenge) {
@@ -245,14 +252,31 @@ describe("L3.7 · Was nicht kaputtgehen darf (§5)", () => {
       app.querySelector("#recGo").click();
       await new Promise(r => setTimeout(r, 5));
       gesehen.add(app.querySelector(".rz-eintrag").textContent.trim());
+      expect(app.querySelector(".rz-quittung")).toBeTruthy();
     }
     expect(gesehen.size, `unterschiedliche Quittungen: ${[...gesehen].join(" | ")}`).toBe(1);
   });
 
-  it("das 429 wird verschluckt — auch das waere eine Auskunft", () => {
-    // Der leere catch ist Absicht und traegt eine Begruendung im Code.
-    expect(SCREEN).toMatch(/catch \{ \/\* still, mit Absicht \*\/ \}/);
-    expect(SCREEN, "Verzweigung nach Status").not.toMatch(/status\s*===/);
+  it("CR-2.5 · ohne Netz: KEINE Quittung, Hinweis sagt es, Zeile bleibt bedienbar", async () => {
+    const app = await rendere();
+    globalThis.fetch = vi.fn(async () => { throw new TypeError("Failed to fetch"); });
+    app.querySelector("input").value = "a@b.de";
+    app.querySelector("#recGo").click();
+    await new Promise(r => setTimeout(r, 5));
+    expect(app.querySelector(".rz-quittung")).toBeNull();
+    expect(app.querySelector("#recHinweis").textContent).toBe(de["wieder.keinNetz"]);
+    expect(app.querySelector("#recMail").value).toBe("a@b.de");
+    // zweiter Versuch mit Netz quittiert
+    globalThis.fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({}) }));
+    app.querySelector("#recGo").click();
+    await new Promise(r => setTimeout(r, 5));
+    expect(app.querySelector(".rz-quittung")).toBeTruthy();
+  });
+
+  it("nach dem HTTP-Status wird nicht verzweigt — auch das waere eine Auskunft", () => {
+    // Einzige Unterscheidung: OB ueberhaupt eine Antwort kam (typeof status).
+    expect(SCREEN, "Verzweigung nach Status").not.toMatch(/status\s*===\s*\d/);
+    expect(SCREEN).toMatch(/typeof e\.status !== "number"/);
   });
 
   it("der Sprachwechsel baut neu UND nimmt den Fehler-Vorspann mit", async () => {

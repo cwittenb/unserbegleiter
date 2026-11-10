@@ -163,11 +163,43 @@ describe("Adapter · Streaming Proxy (Cloudflare-Client)", () => {
     expect(r.text).toBe("alt");
   });
 
-  it("Strom-Abriss ohne done → Deltas werden als beste Antwort geliefert", async () => {
+  /* CR-2.3 · Bis CR-2 galt das Empfangene als "beste Antwort". Eine halbe
+     Antwort kann ihre Marke oder ihren Block verloren haben — als fertig
+     gespeichert stand das Gespraech; eine LEERE wurde als leere Nachricht
+     gespeichert und blockierte Folgezuege. Jetzt: Fehler mit Code, der Zug
+     bleibt offen und laesst sich wiederholen. Die Deltas liefen trotzdem
+     (die Person sah den Text entstehen). */
+  it("Strom-Abriss ohne done → Fehler llm_abbruch, nichts wird als Antwort geliefert", async () => {
     const f = fangFetch(() => sseResponse(['data: {"delta":"halbe "}\n\n', 'data: {"delta":"Antwort"}\n\n']));
     const call = makeAdapter({ mode: "proxy" }, f);
-    const r = await call("S", [], () => {});
-    expect(r).toEqual({ text: "halbe Antwort", stop: null, usage: null });
+    const deltas = [];
+    await expect(call("S", [], d => deltas.push(d))).rejects.toMatchObject({ code: "llm_abbruch" });
+    expect(deltas.join("")).toBe("halbe Antwort");
+  });
+
+  it("Strom-Abriss vor dem ersten Zeichen → derselbe Fehler (keine leere Antwort)", async () => {
+    const f = fangFetch(() => sseResponse([]));
+    const call = makeAdapter({ mode: "proxy" }, f);
+    await expect(call("S", [], () => {})).rejects.toMatchObject({ code: "llm_abbruch" });
+  });
+
+  it("CR-2.3 · leere Nachrichten im Verlauf gehen nicht an den Proxy", async () => {
+    const f = fangFetch(() => ({ status: 200, json: async () => ({ text: "ok", stop: "end_turn" }) }));
+    const call = makeAdapter({ mode: "proxy" }, f);
+    await call("S", [{ role: "user", content: "Hallo" }, { role: "assistant", content: "" }, { role: "assistant", content: "  " }, { role: "user", content: "Noch da?" }]);
+    expect(JSON.parse(f.calls[0].init.body).messages.map(m => m.content)).toEqual(["Hallo", "Noch da?"]);
+  });
+
+  it("CR-2.4 · HTML-Fehlerseite statt JSON → Klasse server, kein Parser-Text", async () => {
+    const f = fangFetch(() => ({ status: 502, json: async () => { throw new SyntaxError("Unexpected token '<'"); } }));
+    const call = makeAdapter({ mode: "proxy" }, f);
+    await expect(call("S", [{ role: "user", content: "x" }])).rejects.toMatchObject({ code: "server", status: 502 });
+  });
+
+  it("CR-2.4 · 401 trägt den Code sitzung", async () => {
+    const f = fangFetch(() => ({ status: 401, json: async () => ({}) }));
+    const call = makeAdapter({ mode: "proxy" }, f);
+    await expect(call("S", [{ role: "user", content: "x" }])).rejects.toMatchObject({ code: "sitzung" });
   });
 });
 

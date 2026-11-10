@@ -67,8 +67,19 @@ export class Engine {
       this._personError("Diese Session ist abgeschlossen.");
       return false;
     }
-    this.chat.messages.push({ role: "user", content: text.trim() });
-    await this._save();
+    const msg = { role: "user", content: text.trim() };
+    this.chat.messages.push(msg);
+    /* CR-2.2 · Scheitert das Speichern, ist die Nachricht NICHT gesendet — sie
+       darf dann auch nicht im Verlauf stehen bleiben (sichtbar, aber nirgends
+       gespeichert: nach dem Neuladen weg). Sie wird zurueckgenommen, und der
+       Fehler sagt es dem Aufrufer (nichtGesendet), damit die Oberflaeche den
+       Text zurueck ins Feld legt. */
+    try { await this._save(); }
+    catch (e) {
+      const i = this.chat.messages.lastIndexOf(msg);
+      if (i >= 0) this.chat.messages.splice(i, 1);
+      throw Object.assign(e instanceof Error ? e : new Error(String(e)), { nichtGesendet: true });
+    }
     await this.requestAssistant();
     return true;
   }
@@ -164,6 +175,12 @@ export class Engine {
         }
         const d = (r && r.data && typeof r.data === "object") ? r.data : {};
         const msg = { role: "assistant", content: typeof d.antwort === "string" ? d.antwort : String(r.text || "").trim() };
+        // CR-2.3 · wie im Textpfad: nichts Leeres speichern (ein Zug ohne
+        // Antworttext, ohne Marke und ohne Block traegt nichts).
+        if (!msg.content.trim() && !(typeof d.marker === "string" && d.marker) && !(d.block && typeof d.block === "object")) {
+          if (this.chat.struktur) { this.chat.struktur.fehlgeschlagen++; }
+          throw Object.assign(new Error("Leere Antwort vom Modell."), { code: "llm_leer" });
+        }
         if (typeof d.marker === "string" && d.marker) msg.marker = d.marker;
         if (d.block && typeof d.block === "object") msg.block = d.block;
         if (r.strukturQuelle) msg.strukturQuelle = r.strukturQuelle;
@@ -179,6 +196,13 @@ export class Engine {
         return;
       }
       const { text, stop } = await this.llm(system, verlauf, onDelta, this.hooks.onStatus);
+      /* CR-2.3 · Eine leere Antwort ist keine Antwort. Gespeichert stuende sie
+         als leere Begleiter-Nachricht im Verlauf — und jeder Folgezug schickte
+         sie mit; mehrere Anbieter weisen leere Nachrichten ab, das Gespraech
+         waere dauerhaft blockiert. Der offene Zug bleibt offen (die Nachricht
+         der Person ist gespeichert), "Erneut senden" holt die Antwort nach. */
+      if (typeof text !== "string" || !text.trim())
+        throw Object.assign(new Error("Leere Antwort vom Modell."), { code: "llm_leer" });
       this.chat.messages.push({ role: "assistant", content: text });
       this.chat.lastStop = stop || null;
       await this._save();
