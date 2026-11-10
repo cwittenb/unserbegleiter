@@ -14,7 +14,7 @@
 // Sie hier mitzunehmen hieße, Zuständigkeit nach Aufrufhäufigkeit zu verteilen
 // statt nach Zugehörigkeit.
 
-import { t, fuelle } from "../i18n/index.js";
+import { t, fuelle, fehlerText } from "../i18n/index.js";
 import { esc } from "./html.js";
 import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, inKarenz } from "../engine/regal.js";
 import { markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
@@ -37,7 +37,7 @@ import { holeVerlauf } from "./verlauf-ablage.js";   // S95.7c
  */
 export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                                        zeitleistenEintrag, zeigePaarsprache,
-                                       oeffneLeseansicht }) {
+                                       oeffneLeseansicht, err = () => {} }) {
   async function zeigeZeitleiste() {
     const zl = (await backend.pstate.get("timeline")) || { entries: [] };
     zeigeNur("boxZeitleiste");
@@ -271,15 +271,30 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
         `<label class="rz-fein-block">${t("mess.wirksam", { text: esc(a.text) })}<br><input data-wirk="${esc(a.id)}" type="range" min="1" max="10" value="5" class="rz-voll"></label>`
       ).join("") +
       `<button class="pb-btn primary" id="msOk">${t("mess.abgeben")}</button>`;
-    box.querySelector("#msOk").addEventListener("click", async () => {
+    /* CR-1.2 · Der Klick hatte keinen Fehlerpfad: Wies der Server die Abgabe
+       ab, verschwand der Wurf in einer unbehandelten Ablehnung und der Knopf
+       wirkte tot. Jetzt steht die Meldung in der Fehlerzeile, der Knopf bleibt
+       bedienbar, und waehrend der Abgabe ist er gesperrt (kein Doppelklick). */
+    const knopf = box.querySelector("#msOk");
+    knopf.addEventListener("click", async () => {
       const fit = {}, wirksamkeit = {};
       for (const inp of box.querySelectorAll("[data-pass]")) fit[inp.getAttribute("data-pass")] = +inp.value;
       for (const inp of box.querySelectorAll("[data-wirk]")) wirksamkeit[inp.getAttribute("data-wirk")] = +inp.value;
-      const runde = await trageMessbeitragEin(backend, state.info.role, {
-        wesen: +box.querySelector("#msWesen").value,
-        fit, wirksamkeit,
-      });
-      await zeitleistenEintrag(t("zeitleiste.tpMess"), t("zeitleiste.eintragMess"));
+      knopf.disabled = true;
+      let runde;
+      try {
+        runde = await trageMessbeitragEin(backend, state.info.role, {
+          wesen: +box.querySelector("#msWesen").value,
+          fit, wirksamkeit,
+        });
+      } catch (e) {
+        knopf.disabled = false;
+        err(fehlerText(e));
+        return;
+      }
+      err("");
+      // Der Chronik-Eintrag ist Komfort — er darf die Quittung nicht kippen.
+      try { await zeitleistenEintrag(t("zeitleiste.tpMess"), t("zeitleiste.eintragMess")); } catch { /* Abgabe steht */ }
       box.innerHTML = `<div class="pb-sub">${t("mess.titel")}</div><p class="rz-klein">${t("mess.danke")}` +
         (runde.status === "ready" ? t("mess.bereit") : "") + `</p>`;
     });

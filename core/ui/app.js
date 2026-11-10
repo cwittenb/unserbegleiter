@@ -1730,7 +1730,7 @@ export function createApp({ doc, backend, root, diktat }) {
   const { zeigeZeitleiste, zeigeRegal, zeigeAgenda, zeigeMess, zeigeMomente } =
     macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                            zeitleistenEintrag, zeigePaarsprache,
-                           oeffneLeseansicht });
+                           oeffneLeseansicht, err });
 
   // S71 · Verlässt jemand den Chat, stempeln wir den Pausenbeginn auf die
   // laufende Session — so bleibt eine kurze Rückkehr (< 5 Min) nahtlos, während

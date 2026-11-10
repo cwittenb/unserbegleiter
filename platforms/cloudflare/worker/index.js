@@ -61,7 +61,10 @@ const BSTATE_FELDER = new Set(Bstate.FIELDS);
 // laut falsch: gegen die Wiederholung steht jetzt eine Kanarie.
 // "leseMarker" ist seit S109 ohne Aufrufer und bleibt vorerst stehen — ein
 // Feld aus der Whitelist zu nehmen ist eine eigene Entscheidung (Alt-Daten).
-const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "language", "leseMarker", "theme", "kulisse", "verlaufInfoGezeigt"]);
+// CR-1.3 · "verlaufAufbewahren" (S95.7a, Einstellung "immer" | "fragen") fehlte —
+// der Kern reicht den Namen als Konstante (EINST_VERLAUF), und die Kanarie
+// S119.1 griff bis CR-1 nur Stringliterale.
+const PSTATE_FELDER = new Set(["timeline", "selfDisclosures", "merkposten", "language", "leseMarker", "theme", "kulisse", "verlaufInfoGezeigt", "verlaufAufbewahren"]);
 
 /* ---- Web Push (M7a): Abo-Ablage & inhaltsfreier Freigabe-Hinweis ----
  *  KV: push/<code>/<Rolle> → Array von Browser-Subscriptions (max. 5, dedupliziert
@@ -651,10 +654,21 @@ async function route(request, env) {
   if (p === "/api/mess/beitrag" && request.method === "POST") {
     const b = await request.json().catch(() => ({}));
     const z = n => Number.isFinite(+n) && +n >= 1 && +n <= 10;
-    if (!z(b.closeness) || !z(b.guess)) return fehler("Beitrag unvollständig.", 400, "mess_invalid");
-    const fit = {};
-    for (const [k, v] of Object.entries(b.fit || {})) { if (!z(v)) return fehler("Beitrag unvollständig.", 400, "mess_invalid"); fit[k] = +v; }
-    const runde = await trageMessbeitragEin({ bstate }, session.role, { closeness: +b.closeness, guess: +b.guess, fit });
+    /* CR-1.1 · Die Oberflaeche sendet seit S107 das Beziehungswesen
+       ({wesen, fit, wirksamkeit}); hier standen noch die Felder davor
+       (closeness/guess), und jede Abgabe scheiterte mit mess_invalid.
+       `closeness` bleibt als Alt-Name von `wesen` lesbar (Alt-Daten,
+       Werkzeuge); `guess` hat seit S107 keinen Verbraucher und entfaellt. */
+    const wesen = b.wesen !== undefined ? b.wesen : b.closeness;
+    if (!z(wesen)) return fehler("Beitrag unvollständig.", 400, "mess_invalid");
+    const skala = roh => {
+      const aus = {};
+      for (const [k, v] of Object.entries(roh || {})) { if (!z(v)) return null; aus[k] = +v; }
+      return aus;
+    };
+    const fit = skala(b.fit), wirksamkeit = skala(b.wirksamkeit);
+    if (!fit || !wirksamkeit) return fehler("Beitrag unvollständig.", 400, "mess_invalid");
+    const runde = await trageMessbeitragEin({ bstate }, session.role, { wesen: +wesen, fit, wirksamkeit });
     // Antwort in der SICHT der abgebenden Rolle: offen ⇒ nur eigener Beitrag.
     return json({ runde: redigiereMessungenFuerRolle({ items: [runde] }, session.role).items[0] || null });
   }
@@ -790,6 +804,31 @@ async function route(request, env) {
       const ok = await pstate.set(session.role, m[1], value);
       return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);
     }
+  }
+
+  /* ---- CR-1.3 · Aufbewahrte Verlaeufe: EIN Schluessel je Verlauf, privat je
+   *  Rolle (aus der Session). Der Kern legte sie seit S95.7a unter dem
+   *  Pstate-Namen "verlauf:<id>" ab — das Pstate-Muster ([a-zA-Z]+) kennt
+   *  weder Doppelpunkt noch Ziffern, jeder Aufruf lief ins 404, und beide
+   *  Aufrufer schluckten ihn. Auf Cloudflare wurde nie ein Verlauf aufbewahrt.
+   *  Eigener Schluessel statt Pstate-Feld: Das Pstate-Buendel wird bei jedem
+   *  Zugriff ganz gelesen; Transkripte darin liessen es unbegrenzt wachsen.
+   *  Der Schluessel folgt dem Repo-Format — der Betreiber-Export (Praefix-
+   *  Liste) erfasst ihn ohne Aenderung. ---- */
+  m = p.match(/^\/api\/verlauf\/([0-9a-z-]{1,64})$/);
+  if (m) {
+    const teil = "verlauf:" + session.role + ":" + m[1];
+    if (request.method === "GET") return json({ value: await repo.get(teil, false) });
+    if (request.method === "PUT") {
+      const { value } = await request.json();
+      // null loescht (so ruft loescheVerlauf im Kern) — kein Leerwert im Speicher.
+      if (value === null || value === undefined) { await repo.del(teil, false); return json({ ok: true }); }
+      if (typeof value !== "object" || !Array.isArray(value.messages))
+        return fehler("Verlauf braucht messages.", 400, "verlauf_invalid");
+      const ok = await repo.set(teil, value, false);
+      return ok ? json({ ok: true }) : fehler("Speichern fehlgeschlagen", 500);
+    }
+    if (request.method === "DELETE") { await repo.del(teil, false); return json({ ok: true }); }
   }
 
   /* ---- Chats: privat je Rolle (aus Session) oder geteilt ---- */

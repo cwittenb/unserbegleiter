@@ -95,8 +95,9 @@ describe("Dev-Panel · Szenen", () => {
     const mr = await bstate.get("measurements");
     const bereit = mr.items.filter(r => r.status === "ready");
     expect(bereit).toHaveLength(1);
-    expect(bereit[0].values.A.closeness).toBe(4);
-    expect(bereit[0].values.B.guess).toBe(5);
+    // CR-1.1 · Die Szene traegt die Felder, die die Oberflaeche seit S107 abgibt.
+    expect(bereit[0].values.A.wesen).toBe(4);
+    expect(bereit[0].values.B.wirksamkeit.AG1).toBe(5);
   });
 
   it("qz-stufe2: die echte Leiter-Logik ergibt Stufe 2; betrieb ergibt Stufe 1", async () => {

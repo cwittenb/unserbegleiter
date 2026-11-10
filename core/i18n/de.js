@@ -462,6 +462,8 @@ export const de = {
   "fehler.code.mail_failed": "Der Versand ist gerade nicht möglich. Bitte versuche es später erneut.",
   "fehler.code.verify_rate": "Zu viele Anfragen. Bitte etwas später erneut.",
   "fehler.code.email_mismatch": "Die Adresse passt nicht zur offenen Bestätigung. Bitte fordere einen neuen Code an.",
+  // CR-1.2 · Prozessreflexion: abgewiesene Abgabe (vorher ohne jede Meldung).
+  "fehler.code.mess_invalid": "Die Abgabe ist nicht angekommen. Deine Regler stehen noch – bitte gib noch einmal ab.",
   // R0 · Kontingent-Waechter: eigene Codes, damit eine bewusste Grenze
   // nicht als Stoerung erscheint (und kein Wiederholen angeboten wird).
   "fehler.code.quota_limit": "In den letzten Tagen ist hier viel Raum genutzt worden — mehr, als der Begleitung guttut. Das Kontingent füllt sich von selbst wieder auf; vielleicht ist bis dahin auch ein guter Moment, etwas davon ins echte Gespräch zu tragen.",

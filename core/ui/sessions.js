@@ -181,8 +181,15 @@ export function momentDef(backend, hooks = {}) {
     // übergibt das Modell der App die Regie VOR der Tafel; hier meldet es
     // DANACH zurück, ohne Tafel, ohne Zahlen). Erst daran hängt das
     // Verbrauchen der Runde; MOMENT-BLOCK allein verbrennt nichts mehr.
-    markerOrder: ["[[CHOICE-CONNECT]]", "[[META-REVEALED]]"],
+    /* CR-1.4 · [[BASELINE]]: Der Prompt der Qualitaetszeit (AUFTRAGS-PFLEGE)
+       verlangt die Marke fuer die verdeckten Startwerte eines NEUEN
+       gemeinsamen Auftrags — registriert war sie nur in der Gemeinsamen
+       Aufloesung. Hier lief sie ins Leere: kein Panel, und die Anzeige
+       entfernte sie als fremde Marke; das Gespraech stand. Dasselbe Panel wie
+       dort (onStartwerte), es antwortet mit einem BASELINE-RESULT. */
+    markerOrder: ["[[CHOICE-CONNECT]]", "[[META-REVEALED]]", "[[BASELINE]]"],
     markers: {
+      "[[BASELINE]]": e => hooks.onStartwerte && hooks.onStartwerte(e),
       "[[CHOICE-CONNECT]]": e => hooks.onChoice && hooks.onChoice("connect", e),
       "[[META-REVEALED]]": e => hooks.onMetaAufgedeckt && hooks.onMetaAufgedeckt(e),
     },

@@ -33,7 +33,8 @@ describe("Turn-Schema", () => {
   it("moment: marker-Enum sind NACKTE Namen aus der markerOrder", () => {
     const t = baueTurnSchema(momentDef(backend));
     const en = t.schema.properties.marker.anyOf[0].enum;
-    expect(en).toEqual(["CHOICE-CONNECT", "META-REVEALED"]);
+    // CR-1.4 · [[BASELINE]] gehoert seit CR-1 zur Qualitaetszeit (AUFTRAGS-PFLEGE).
+    expect(en).toEqual(["CHOICE-CONNECT", "META-REVEALED", "BASELINE"]);
     expect(t.schema.required).toEqual(["antwort", "marker", "block"]);
   });
 

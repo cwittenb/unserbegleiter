@@ -423,6 +423,8 @@ export const en = {
   "fehler.code.mail_failed": "Sending is not possible right now. Please try again later.",
   "fehler.code.verify_rate": "Too many requests. Please try again a little later.",
   "fehler.code.email_mismatch": "The address does not match the pending confirmation. Please request a new code.",
+  // CR-1.2 · Prozessreflexion: abgewiesene Abgabe (vorher ohne jede Meldung).
+  "fehler.code.mess_invalid": "Your entry did not go through. Your sliders are still set – please submit once more.",
   // R0 · Kontingent-Waechter: eigene Codes, damit eine bewusste Grenze
   // nicht als Stoerung erscheint (und kein Wiederholen angeboten wird).
   "fehler.code.quota_limit": "A lot of room has been used here over the past few days — more than the accompaniment is good for. The allowance refills on its own; until then, this might also be a good moment to carry some of it into the actual conversation.",

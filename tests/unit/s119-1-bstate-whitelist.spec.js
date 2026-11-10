@@ -20,6 +20,7 @@ import { join } from "node:path";
 import { Repo } from "../../core/store/repo.js";
 import { Bstate } from "../../core/store/bundles.js";
 import { MemoryStore } from "../../core/store/store.js";
+import { EINST_VERLAUF } from "../../core/ui/verlauf-ablage.js";
 
 const WURZEL = new URL("../../", import.meta.url).pathname;
 
@@ -36,14 +37,46 @@ function jsDateien(verzeichnis) {
 
 /**
  * Feldnamen aus `…bstate.get("x")` / `…bstate.set("x", …)` (bzw. pstate).
- * Nur Stringliterale — ein berechneter Schluessel waere ohnehin nicht
- * statisch pruefbar und ist im Kern nirgends im Gebrauch.
+ * Nur Stringliterale.
+ *
+ * CR-1.5 · Hier stand bis CR-1: "ein berechneter Schluessel … ist im Kern
+ * nirgends im Gebrauch". Das stimmte nicht — verlauf-ablage.js reicht eine
+ * Konstante (EINST_VERLAUF) und einen zusammengesetzten Schluessel
+ * (VERLAUF_PRAEFIX + id), und beide liefen an diesem Waechter vorbei ins 404.
+ * Nicht-literale Schluessel greift jetzt `berechneteSchluessel` (unten); jeder
+ * muss dort ausdruecklich eingeordnet sein.
  */
 export function benutzteFelder(quelltext, buendel) {
   const re = new RegExp("\\b" + buendel + "\\.(?:get|set)\\(\\s*\"([^\"]+)\"", "g");
   const aus = new Set();
   for (const treffer of quelltext.matchAll(re)) aus.add(treffer[1]);
   return aus;
+}
+
+/** Kommentare entfernen — sonst zaehlt ein Beispiel im Fliesstext als Aufruf. */
+function ohneKommentare(quelltext) {
+  return quelltext.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/.*$/gm, "$1");
+}
+
+/**
+ * Erste Argumente von bstate/pstate.get|set, die KEIN Stringliteral sind —
+ * also Konstanten, Variablen, zusammengesetzte Ausdruecke.
+ */
+export function berechneteSchluessel(quelltext, buendel) {
+  const re = new RegExp("\\b" + buendel + "\\.(?:get|set)\\(\\s*([^\"\\s),][^,)]*)", "g");
+  const aus = new Set();
+  for (const treffer of ohneKommentare(quelltext).matchAll(re)) aus.add(treffer[1].trim());
+  return aus;
+}
+
+function berechnetImKern(buendel) {
+  const alle = new Set();
+  for (const datei of jsDateien(join(WURZEL, "core"))) {
+    // Die Buendel selbst reichen den Feldnamen durch (get(feld) / set(feld, …)).
+    if (datei.endsWith("core/store/bundles.js")) continue;
+    for (const f of berechneteSchluessel(readFileSync(datei, "utf8"), buendel)) alle.add(f);
+  }
+  return alle;
 }
 
 function imKernBenutzt(buendel) {
@@ -77,6 +110,42 @@ describe("S119.1 · Kanarie: keine Whitelist-Drift", () => {
   it("jedes Feld in Bstate.FIELDS hat einen Default (sonst liefert get() undefined)", () => {
     const ohne = Bstate.FIELDS.filter(f => !(f in Bstate.DEFAULTS));
     expect(ohne, "Felder ohne Eintrag in Bstate.DEFAULTS").toEqual([]);
+  });
+
+  /* CR-1.5 · Jeder nicht-literale Schluessel ist hier EINGEORDNET: entweder
+     als Konstante mit Whitelist-Eintrag oder als Schluesselfamilie mit eigener
+     Route. Ein neuer berechneter Schluessel laesst diesen Test rot werden —
+     und zwingt die Frage, die bei "verlauf:<id>" niemand gestellt hat: Kennt
+     der Worker das? */
+  it("CR-1.5 · berechnete pstate-Schlüssel: Konstanten stehen in der Whitelist, Familien haben eine Route", () => {
+    const erlaubt = pstateWhitelist();
+    const worker = readFileSync(join(WURZEL, "platforms/cloudflare/worker/index.js"), "utf8");
+    const fassade = readFileSync(join(WURZEL, "platforms/cloudflare/pages/remote-backend.js"), "utf8");
+    const EINORDNUNG = {
+      // Konstante → ihr Wert muss in PSTATE_FELDER stehen.
+      "EINST_VERLAUF": () => expect(erlaubt.has(EINST_VERLAUF), "EINST_VERLAUF fehlt in PSTATE_FELDER").toBe(true),
+      // Familie → eigene Route im Worker UND Abbildung in der Fassade.
+      "VERLAUF_PRAEFIX + id": () => {
+        expect(worker, "Route /api/verlauf fehlt im Worker").toMatch(/\/api\\\/verlauf\\\//);
+        expect(fassade, "Fassade bildet verlauf:<id> nicht ab").toContain("/api/verlauf/");
+        expect(fassade).toContain("VERLAUF_PRAEFIX");
+      },
+    };
+    const gefunden = [...berechnetImKern("pstate")];
+    const uneingeordnet = gefunden.filter(f => !EINORDNUNG[f]);
+    expect(uneingeordnet, "berechnete pstate-Schlüssel ohne Einordnung").toEqual([]);
+    for (const f of gefunden) EINORDNUNG[f]();
+    // Die Einordnung selbst darf nicht verwaisen (sonst prueft sie nichts mehr).
+    expect(Object.keys(EINORDNUNG).filter(k => !gefunden.includes(k)), "verwaiste Einordnung").toEqual([]);
+  });
+
+  it("CR-1.5 · berechnete bstate-Schlüssel gibt es im Kern nicht", () => {
+    expect([...berechnetImKern("bstate")]).toEqual([]);
+  });
+
+  it("CR-1.5 · der Greifer für berechnete Schlüssel greift — und übersieht Kommentare", () => {
+    const probe = `// pstate.get(session.role, x)\nawait backend.pstate.set(PRAEFIX + id, v);\nbackend.pstate.get(KONST);\nbackend.pstate.get("fest");`;
+    expect([...berechneteSchluessel(probe, "pstate")].sort()).toEqual(["KONST", "PRAEFIX + id"]);
   });
 
   // Test des Tests: Der Greifer muss ueberhaupt greifen koennen.
