@@ -16,7 +16,7 @@
 import { t, fuelle } from "../i18n/index.js";
 import { esc } from "./html.js";
 import { K } from "../prompts/prompts.js";
-import { WEGE_FUER } from "../engine/regal.js";
+import { WEGE_FUER, KARENZ_MS } from "../engine/regal.js";
 import { quereGate } from "./sessions.js";
 import { beruehrungen, baueAufdeckung } from "./kernwetten.js";
 
@@ -52,6 +52,8 @@ export function machePanels({ $, el, state, backend, err, renderMsgs, warteAntwo
       `<p class="rz-teilen-text">${esc(data.selbstmitteilung)}</p></div>` +
       (data.wish ? `<p class="rz-sub">${t("gate.wish")}${esc(data.wish)}</p>` : "") +
       wege.map(w => `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"> ${esc(wegName[w])}</label>`).join("") +
+      // UX-1/U9 · Die Karenz gilt fuer jeden Weg zu {partner} (S95.3b).
+      (wege.some(w => w !== "self") ? `<p class="rz-sub" id="gateKarenz">${esc(t("gate.karenz", { partner: state.info.partner, minuten: KARENZ_MS / 60000 }))}</p>` : "") +
       `<button class="rz-zeile rz-knopf-flach rz-gedimmt" id="btnGateOk" disabled><span>${t("allg.freigeben")}</span><span class="rz-pfeil">→</span></button>` +
       `<button class="rz-zeile rz-knopf-flach" id="btnGateNein"><span>${t("allg.nochNicht")}</span><span class="rz-pfeil">→</span></button>`;
     // S93 · Eine Entscheidung statt zwei. Bis S93 stand „Freigeben“ auch ohne

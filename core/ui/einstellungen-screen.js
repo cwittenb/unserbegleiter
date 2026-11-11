@@ -77,8 +77,8 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
       // 3.4 · Zwei Hinweise zu einem: was die Begleitung spricht UND wie weit
       // die eigene Wahl reicht.
       gruppe(t("einst.sprache"),
-        wahl("ui", "de", t("paarspr.name.de"), ui === "de") +
-        wahl("ui", "en", t("paarspr.name.en"), ui === "en") +
+        wahl("ui", "de", t("sprache.eigen.de"), ui === "de") +
+        wahl("ui", "en", t("sprache.eigen.en"), ui === "en") +
         hinweis(t("einst.spracheHinweis", { sprache: sprachName(paar) }))) +
       /* S95.7b · Vorgabe ist "aufbewahren" (F0) — deshalb keine Empfehlung und
          keine Aussage darueber, was andere tun. Der Hinweis sagt, was
@@ -241,7 +241,8 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
      Die Karte ist reine Ansicht auf den Backend-Zustand — die Invariante
      (Wechsel nur bei zwei gleichlautenden Anträgen verschiedener Rollen)
      erzwingt der Worker bzw. das lokale Backend, nie die UI. ---- */
-  function sprachName(l) { return t("paarspr.name." + (l === "en" ? "en" : "de")); }
+  // UX-1 · als Literale (die Kanarie S113 sucht Schluessel woertlich).
+  function sprachName(l) { return l === "en" ? t("paarspr.name.en") : t("paarspr.name.de"); }
   function zeigePaarsprache(meldung) {
     // D12-2d · Die Karte lebt jetzt in der Agenda unter den Absprachen. Kein
     // Aufklapp-Link mehr: wer die Agenda offen hat, sieht den Stand sofort.

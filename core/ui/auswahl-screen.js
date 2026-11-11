@@ -20,7 +20,7 @@ import { K } from "../prompts/prompts.js";
 import { esc } from "./html.js";
 import { paarWaehlbar, paarGrund, waehleUm, fuelleSpanne, ueberRichtwert, baueAusschnitt,
          paareAusVerlauf, hatStilleLuecken } from "../engine/ausschnitt.js";
-import { WEGE_FUER } from "../engine/regal.js";
+import { WEGE_FUER, KARENZ_MS } from "../engine/regal.js";
 import { quereGate } from "./sessions.js";
 
 /**
@@ -258,6 +258,11 @@ export function macheAuswahlScreen({ $, el, state, backend, err, renderMsgs, war
     wahl.innerHTML = WEGE_FUER("excerpt").map(w =>
       `<label class="rz-wahl"><input type="checkbox" data-weg="${w}"><span>${esc(wegName[w])}</span></label>`).join("");
     unten.appendChild(wahl);
+    // UX-1/U9 · wie im Freigabe-Panel: die Karenz steht am Entscheidungspunkt.
+    const karenz = el("p", "rz-sub");
+    karenz.id = "auswKarenz";
+    karenz.textContent = t("gate.karenz", { partner: state.info.partner, minuten: KARENZ_MS / 60000 });
+    unten.appendChild(karenz);
 
     const frei = el("button", "rz-zeile rz-knopf-flach rz-gedimmt");
     frei.id = "btnAuswFreigeben"; frei.disabled = true;

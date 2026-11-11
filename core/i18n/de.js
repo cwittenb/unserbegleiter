@@ -222,6 +222,8 @@ export const de = {
   "ausschnitt.rahmenPlatzhalter": "Ein Satz dazu, wenn du magst",
   "ausschnitt.entfernen": "Aus dem Ausschnitt nehmen",
   "gate.weg.selbst": "Ich sage es selbst — bleibt hier",
+  // UX-1/U9 · Die Karenz steht am Entscheidungspunkt, nicht erst im Regal.
+  "gate.karenz": "{partner} sieht es erst in {minuten} Minuten. Bis dahin kannst du es zurückziehen.",
   "gate.weg.regal": "{partner} kann es lesen, wenn es passt",
   "gate.weg.moment": "Kommt beim nächsten gemeinsamen Gespräch zur Sprache",
 
@@ -263,6 +265,8 @@ export const de = {
   "weg.messOffen": "Eine Prozessreflexions-Runde in deinem Raum wartet auf deinen verdeckten Beitrag.",
   "weg.momentOffen": "Eure Qualitätszeit im gemeinsamen Raum ist offen — ihr könnt genau dort weitermachen.",
   "weg.aufloesungOffen": "Eure Gemeinsame Auflösung ist offen — ihr könnt genau dort weitermachen.",
+  // UX-1/U11 · "erster Schritt" nur, solange es wirklich der erste ist.
+  "weg.soloOffen": "Dein Reflexionsgespräch ist offen — du kannst dort weitermachen.",
   "weg.soloErster": "Ein guter erster Schritt: ein Reflexionsgespräch — dein privater Raum zum Sortieren.",
   "weg.startAuftrag": "Ein guter erster Schritt: Starte direkt mit deiner Auftragsklärung in deinem Raum — wir schauen, wo du dir Entwicklung wünschst und wie ich dich begleiten kann.",
   "weg.startSolo": "Deinen Raum kannst du auch erstmal für ein Reflexionsgespräch nutzen.",
@@ -297,6 +301,9 @@ export const de = {
   "paarspr.zurueckziehen": "Zurückziehen",
   "paarspr.gewechselt": "Von euch beiden bestätigt — die Begleitungssprache ist jetzt {sprache}.",
   "paarspr.hinweisLaufend": "Laufende Gespräche behalten ihre Sprache; neue starten in der neuen.",
+  // UX-1/U18 · Sprachen in der Sprachwahl heissen, wie sie sich selbst nennen.
+  "sprache.eigen.de": "Deutsch",
+  "sprache.eigen.en": "English",
   "paarspr.name.de": "Deutsch",
   "paarspr.name.en": "Englisch",
 
@@ -332,10 +339,10 @@ export const de = {
      Geratener). Siehe docs/designnotiz-beziehungswesen.md. */
   "mess.wesen": "Wie geht es eurem Beziehungswesen {zeitraum}? (1–10)",
   "mess.wesenHilfe": "Angenommen, eure Beziehung wäre ein eigenständiges Wesen mit eigenen Bedürfnissen und Gefühlen — wie ergeht es ihm in der letzten Zeit?",
-  "mess.fit": "Wie genau trifft das Thema „{text}\" euren aktuellen Entwicklungsfokus? (1–10)",
+  "mess.fit": "Wie genau trifft das Thema „{text}“ euren aktuellen Entwicklungsfokus? (1–10)",
   // S107 · Wirksamkeit: individuell erlebt. Ein Unterschied zwischen euch beim
   // SELBEN Thema ist ein Gesprächsanlass für sich.
-  "mess.wirksam": "Wie wirksam fühlst du dich beim Thema „{text}\"? (1–10)",
+  "mess.wirksam": "Wie wirksam fühlst du dich beim Thema „{text}“? (1–10)",
   "mess.abgeben": "Verdeckt abgeben",
   "mess.danke": "Danke — verdeckt abgelegt.",
   "mess.bereit": " Ihr seid beide dran gewesen: Die Aufdeckung wartet in eurer nächsten Qualitätszeit.",
@@ -505,9 +512,11 @@ export const de = {
   "einst.vorschlagen": "Sprachwechsel vorschlagen ({sprache})",
   "einst.antragOffen": "Ein Wechsel zu {sprache} steht in der Agenda.",
   // U7 · Der Screen trennt nach REICHWEITE, nicht nach Thema: oben, was nur
-  // auf diesem Gerät gilt; unten, was Folgen hat. Deshalb stehen Sprachwahl
+  // fuer die eigene Person gilt; unten, was Folgen hat. (UX-1/U12: Hier stand
+  // "nur auf diesem Geraet" — Ansicht, Sprache und Verlaufs-Einstellung liegen
+  // aber im Konto und gelten auf jedem Geraet.) Deshalb stehen Sprachwahl
   // und Sprachvorschlag in verschiedenen Zonen.
-  "einst.zoneGeraet": "Nur auf diesem Gerät.",
+  "einst.zoneGeraet": "Für dich.",
   "einst.zoneFolgen": "Gerät und Zugang.",
   "einst.gruppeGemeinsam": "Gemeinsam ändern",
   "einst.gruppeGeraet": "Dieses Gerät",
@@ -518,7 +527,7 @@ export const de = {
   "recht.datenschutz": "Datenschutz",
   // 3.4 · Zwei Hinweise zu einem: was die Begleitung spricht UND wie weit
   // die eigene Wahl reicht.
-  "einst.spracheHinweis": "Die Begleitung spricht {sprache}. Deine Wahl hier gilt nur auf diesem Gerät.",
+  "einst.spracheHinweis": "Die Begleitung spricht {sprache}. Deine Wahl hier gilt für dich, auf allen deinen Geräten.",
   // 3.3 · Der Hinweis steht direkt an der Zeile, auf die er sich bezieht.
   "einst.sprachvorschlagHinweis": "Der Vorschlag landet in der Agenda im gemeinsamen Raum — {partner} stimmt dort zu.",
   // 3.7 · Statt System-Rückfrage: die Zeile klappt auf und nennt die Zahl.

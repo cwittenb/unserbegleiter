@@ -791,7 +791,11 @@ export function createApp({ doc, backend, root, diktat }) {
       zeile(1, "mein", lage.einzelKapitel && t("weg.einzelPause", { n: lage.einzelKapitel }));
       zeile(2, "mein", !lage.einzelBegonnen && t("weg.optAuftragEuch"));
       zeile(3, "mein", lage.messOffen && t("weg.messOffen"));
-      zeile(4, "mein", t("weg.soloErster"));
+      /* UX-1/U11 · "Ein guter erster Schritt" stand hier IMMER — auch ueber der
+         Zeile "Reflexionsgespraech fortsetzen" und nach zwanzig Gespraechen.
+         Jetzt: offen → Hinweis aufs Weitermachen; "erster Schritt" nur, solange
+         die Zeitleiste leer ist; sonst traegt die Rueckblick-Zeile darunter. */
+      zeile(4, "mein", lage.soloOffen ? t("weg.soloOffen") : (lage.zeitleisteLeer && t("weg.soloErster")));
       zeile(4, "mein", lage.zeitleisteLeer ? t("weg.optRueckblickSpaeter") : t("weg.optRueckblick"));
     }
     if (screenId === "scrShared") {

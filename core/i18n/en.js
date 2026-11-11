@@ -208,6 +208,7 @@ export const en = {
   "ausschnitt.rahmenPlatzhalter": "A sentence about it, if you like",
   "ausschnitt.entfernen": "Remove from the excerpt",
   "gate.weg.selbst": "I’ll say it myself — stays here",
+  "gate.karenz": "{partner} will only see it in {minuten} minutes. Until then you can withdraw it.",
   "gate.weg.regal": "{partner} can read it if they like",
   "gate.weg.moment": "Comes up at the next conversation together",
 
@@ -249,6 +250,7 @@ export const en = {
   "weg.messOffen": "A process-reflection round in your own space is waiting for your concealed contribution.",
   "weg.momentOffen": "Your quality time in the shared space is open — you can continue right where you left off.",
   "weg.aufloesungOffen": "Your Shared Resolution is open — you can continue right where you left off.",
+  "weg.soloOffen": "Your reflection session is open — you can pick up where you left off.",
   "weg.soloErster": "A good first step: a reflection session — your private space for sorting.",
   "weg.startAuftrag": "A good first step: start right away with your mandate clarification in your own space — we\u2019ll look at where you want to grow and how I can accompany you.",
   "weg.startSolo": "You can also use your space for a reflection conversation first.",
@@ -277,6 +279,8 @@ export const en = {
   "paarspr.zurueckziehen": "Withdraw",
   "paarspr.gewechselt": "Confirmed by both of you — the companion language is now {sprache}.",
   "paarspr.hinweisLaufend": "Ongoing conversations keep their language; new ones start in the new one.",
+  "sprache.eigen.de": "Deutsch",
+  "sprache.eigen.en": "English",
   "paarspr.name.de": "German",
   "paarspr.name.en": "English",
 
@@ -313,7 +317,7 @@ export const en = {
   "mess.fit": "How closely does the theme \u201c{text}\u201d match your current development focus? (1–10)",
   // S107 · Efficacy: felt individually. A difference between the two on the
   // SAME topic is a conversation opener in itself.
-  "mess.wirksam": "How effective do you feel on the topic \"{text}\"? (1\u201310)",
+  "mess.wirksam": "How effective do you feel on the topic \u201c{text}\u201d? (1\u201310)",
   "mess.abgeben": "Submit Face Down",
   "mess.danke": "Thank you — placed face down.",
   "mess.bereit": " You have both taken your turn: the reveal awaits in your next quality time.",
@@ -462,7 +466,7 @@ export const en = {
   "einst.sprache": "Interface language",
   "einst.vorschlagen": "Propose a language change ({sprache})",
   "einst.antragOffen": "A change to {sprache} is on the agenda.",
-  "einst.zoneGeraet": "On this device only.",
+  "einst.zoneGeraet": "For you.",
   "einst.zoneFolgen": "Device and access.",
   "einst.gruppeGemeinsam": "Change together",
   "einst.gruppeGeraet": "This device",
@@ -473,7 +477,7 @@ export const en = {
   "recht.gruppe": "Legal",
   "recht.impressum": "Legal notice",
   "recht.datenschutz": "Privacy",
-  "einst.spracheHinweis": "The companion speaks {sprache}. Your choice here applies on this device only.",
+  "einst.spracheHinweis": "The companion speaks {sprache}. Your choice here applies to you, on all your devices.",
   "einst.sprachvorschlagHinweis": "The suggestion lands in the agenda in the shared room — {partner} agrees to it there.",
   "verlauf.loeschAnzahl": "{n} kept conversations are in your room. This cannot be undone.",
   "verlauf.loeschKeine": "There are no kept conversations in your room.",
