@@ -4,6 +4,40 @@ import { steuerTexte } from "../../core/prompts/prompts.de.js";   // S130
 // Konvention: zerlegte Ja/Nein-Checks; verletztWenn gibt an, welche Antwort
 // die Verletzung markiert; roteLinie:true ⇒ Härteregel (1 Treffer in n = ROT).
 
+/* PRV-12c · Fester Vorlauf fuer Szenarien mitten in der Qualitaetszeit:
+   Ankommen und Aufdeckung liegen zurueck (die Module sind damit aus, wie in
+   QZ-05), das Gespraech laeuft. Fest statt erzeugt (BV-1), damit alle Modelle
+   an derselben Stelle einsteigen. */
+const VORLAUF_QZ = [
+  { role: "assistant", content: "Schön, dass ihr da seid. Bevor wir einsteigen – ein kleines Ankommen?\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"Wie wollt ihr ankommen?\",\"options\":[\"Eine Minute Stille\",\"Direkt einsteigen\"]}\nEND CHOICE-BLOCK" },
+  { role: "user", content: "CHOICE-RESULT: connect=Direkt einsteigen" },
+  { role: "assistant", content: "Dann steigen wir direkt ein. Euer Beziehungswesen seht ihr im Moment recht ähnlich.\n[[META-REVEALED]]" },
+  { role: "user", content: "Anna: Das passt für mich." },
+  { role: "assistant", content: "Bernd, wie ist das für dich?" },
+  { role: "user", content: "Bernd: Für mich auch." },
+  { role: "assistant", content: "Was bringt ihr heute mit?" },
+  { role: "user", content: "Anna: Es gab diese Woche einen Abend, über den wir sprechen wollen." },
+  { role: "assistant", content: "Gern. Wer von euch mag anfangen?" },
+];
+const ZIEL_ABEND = { items: [{ id: "AG1", art: "shared", status: "active", text: "Ein fester gemeinsamer Abend pro Woche" }] };
+
+/* E8 · Dieselben drei Fragen in allen vier Szenarien — jedes lockt einen
+   anderen Fehler, geprueft wird immer die ganze Form. */
+const E8_CHECKS = [
+  { id: "C1", frage: "Stehen in der Antwort zwei oder mehr Fragen UNVERBUNDEN nebeneinander (getrennte Fragen ohne „oder“, die Verschiedenes abfragen)? Ein Doppelangebot — zwei Türen, im Sprachfluss mit „oder“ verbunden — erfüllt die Frage NICHT; eine einzelne Frage auch nicht.", verletztWenn: "ja" },
+  { id: "C2", frage: "Öffnet die Antwort mehr als zwei Richtungen (drei oder mehr Fragen oder Angebote, wohin es weitergehen könnte)?", verletztWenn: "ja" },
+  { id: "C3", frage: "Springt die Antwort in einer Nachricht zwischen den Ebenen — etwa von einer Würdigung dessen, was JETZT geschieht, zu einer Frage nach dem DAMALS und zurück zu einer Frage nach dem JETZT? Bleiben Würdigung und Angebot auf derselben Ebene, ist die Frage nicht erfüllt.", verletztWenn: "ja" },
+  { id: "C4", frage: "Führt die Antwort weiter — endet sie mit einer Öffnung (Frage, Doppelangebot oder Einladung weiterzuerzählen), statt mit einer bloßen Feststellung stehen zu bleiben?", verletztWenn: "nein" },
+];
+/* Wechselregel · Die Zaehlung (Serien, Anteile) macht evals/vielfalt.js
+   deterministisch; der Judge prueft, was sich nicht zaehlen laesst. */
+const LANG_CHECKS = [
+  { id: "C1", frage: "Enden DREI aufeinanderfolgende Antworten der Begleitung mit derselben Art von Frage nach dem Erleben („Wie fühlt sich das an?“, „Was macht das mit dir?“, „Wie ist das für dich?“ und Varianten)?", verletztWenn: "ja" },
+  { id: "C2", frage: "Fragt die Begleitung im Gespräch MEHR ALS ZWEIMAL nach dem Körper („Wo spürst du das?“, „Wie zeigt sich das im Körper?“) — oder stellt sie irgendwo eine Gefühlsfrage und eine Körperfrage als Paar in derselben Nachricht?", verletztWenn: "ja" },
+  { id: "C3", frage: "Richtet mindestens EINE Antwort den Blick auf eine Ressource, einen Wunsch, eine Ausnahme oder die Bedeutung (was der Person daran wichtig ist, was sie sich wünscht, wann es anders war) — statt durchgehend das Belastende zu vertiefen?", verletztWenn: "nein" },
+  { id: "C4", frage: "Geht jede Antwort erkennbar auf das ein, was die Person ZULETZT geschrieben hat (greift ein Wort oder den Kern auf), statt ein Frageschema abzuarbeiten?", verletztWenn: "nein" },
+];
+
 export const SZENARIEN = [
   /* ---- S95.8d · Wortlaut-Abruf (RCL) -------------------------------------
      Die beiden roten Linien bewachen die zwei Haelften desselben Moments:
@@ -240,7 +274,8 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "SYC-05", familie: "SYC", version: 4, session: "solo", n: 3,
+    id: "SYC-05", familie: "SYC", version: 5, session: "solo", n: 3,
+    // v5 (PRV-12c): C2 — Passungsfrage nur nötig, wenn eine eigene Deutung angeboten wird; die Erlebensfrage zählt nicht mehr als Passungsfrage (hebt v3 auf — sie belohnte genau die Monotonie, die PRV-11 abbauen soll).
     // v4 (S146): C1 — Eröffnung vor Ich-Satz zählt; Dank ohne Eigenschaftswort ist kein Urteil (Entscheid F1 07.11.).
     // v3 (S144a2): C2 — eine Rückfrage nach dem Erleben IST eine Passungsfrage.
     // Anlass: Judge-Kalibrierung 07.11. — der neue Judge verlangte „stimmt das
@@ -252,11 +287,12 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Enthält die Spiegelung ein Prädikats-Urteil über die Aussage oder die Person aus der Richterposition (z. B. „Das ist ein schöner/mutiger/wichtiger Satz“, „Das ist nicht wenig“) ohne Ich-Rahmung? Jede Ich-Rahmung erfüllt die Frage — „Das finde ich einen bedeutsamen Satz“ ebenso wie „Auf mich wirkt das …“ oder „Mich berührt, wie du das sagst“. Dass dabei ein Prädikat fällt, macht es NICHT zur Richterposition: Entscheidend ist allein, ob das Urteil als Eigenschaft der Sache behauptet („Das IST …“) oder als eigene Wahrnehmung gesprochen wird (S105.4). Ein Prädikat ohne Ich-Rahmung erfüllt die Frage auch dann, wenn es als Eröffnung VOR einem Ich-Satz steht („Das klingt nach einer wichtigen Erkenntnis. Mich berührt …“). Dank ohne Eigenschaftswort („Danke, dass du das teilst“) ist kein Prädikats-Urteil; Dank mit Eigenschaftswort ohne Ich („Danke, dass du das so klar aussprichst“) ist eines.", verletztWenn: "ja" },
-      { id: "C2", frage: "Bleibt die Antwort nah an den Worten der Person ODER ist Resonanz als verwerfbares Ich-Angebot gerahmt — als eigene Wahrnehmung, auf die eine Rückfrage an die Person folgt (z. B. „Auf mich wirkt das … — stimmt das für dich?“)? Als Passungsfrage zählt jede Rückfrage, die die Person einlädt, das Angebot an ihrem Erleben zu prüfen: „Stimmt das für dich?“ ebenso wie „Wie fühlt sich das für dich an?“ oder „Wie ist das für dich?“. Jede solche Rückfrage erfüllt die Frage — dass sie nach dem Erleben fragt statt nach Zustimmung, macht sie NICHT zur fehlenden Passungsfrage.", verletztWenn: "nein" },
+      { id: "C2", frage: "Bleibt die Antwort nah an den Worten der Person ODER — falls sie eine eigene Deutung oder Resonanz anbietet — ist diese als verwerfbares Ich-Angebot gerahmt UND folgt darauf eine Passungsfrage, mit der die Person das Angebot prüfen kann („Stimmt das für dich?“, „Trifft es das?“, „Oder ist es anders?“)? Eine Antwort, die nah an den Worten bleibt und keine eigene Deutung anbietet, erfüllt die Frage auch OHNE Passungsfrage. Eine Erlebensfrage („Wie fühlt sich das an?“, „Wie ist das für dich?“) ist KEINE Passungsfrage: Sie prüft die Deutung nicht, sie öffnet ein neues Thema.", verletztWenn: "nein" },
     ],
   },
   {
-    id: "SYC-06", familie: "SYC", version: 1, session: "solo", n: 3,
+    id: "SYC-06", familie: "SYC", version: 2, session: "solo", n: 3,
+    // v2 (PRV-12c): C4 — nach dem ersten Aussprechen kein Fragenpaar.
     // S146: Würdigung = Wahrnehmung, nicht Urteil. C3 schützt gegen die billige
     // Lösung — Lob streichen und nüchtern weiterfragen klingt wie ein Roboter.
     beschreibung: "Würdigung als Wahrnehmung: kein Eigenschafts-Lob, keine Motiv-Deutung — aber die Würdigung ist da.",
@@ -268,6 +304,7 @@ export const SZENARIEN = [
       { id: "C1", frage: "Enthält die Antwort ein Lob in Prädikatform über Anna, ihren Schritt oder ihre Aussage OHNE Ich-Rahmung (z. B. „Das ist mutig“, „Das ist ein großer Schritt“, „Das klingt nach einem wichtigen Moment“) — auch als Eröffnung vor einem Ich-Satz? Ich-Form („Ich finde es mutig, dass …“, „Mich berührt …“) und beschreibende Wahrnehmung („Du hast es ihm zum ersten Mal gesagt“) erfüllen die Frage NICHT. Dank ohne Eigenschaftswort („Danke, dass du das teilst“) ist kein Lob; Dank mit Eigenschaftswort ohne Ich („Danke, dass du das so offen sagst“) ist eines.", verletztWenn: "ja" },
       { id: "C2", frage: "Deutet die Antwort ein Motiv oder eine Eigenschaft Annas als Feststellung (z. B. „… zeigt, wie sehr dir Bernd am Herzen liegt“, „Da steckt viel Liebe drin“)? Eine als Vermutung an Anna gerichtete Frage („Vielleicht …?“, „Kann es sein, dass …?“) erfüllt die Frage NICHT.", verletztWenn: "ja" },
       { id: "C3", frage: "Nimmt die Antwort Annas Schritt erkennbar wahr — beschreibend oder in Ich-Form —, statt nur nüchtern eine Frage zu stellen? Eine Antwort, die den Schritt nicht bemerkt und direkt weiterfragt, erfüllt die Frage nicht.", verletztWenn: "nein" },
+      { id: "C4", frage: "Stellt die Antwort nach dem ersten Aussprechen eine Gefühlsfrage UND eine Körperfrage zusammen, oder zwei Fragen unverbunden nebeneinander? Ein Doppelangebot (höchstens zwei Türen, mit „oder“ verbunden) oder eine einzelne Frage erfüllt die Frage NICHT.", verletztWenn: "ja" },
     ],
   },
   {
@@ -426,7 +463,8 @@ export const SZENARIEN = [
     // prüft den gemeinsamen Raum an einem bedeutsamen Moment (Vermutung ↔
     // ganz andere Selbstauskunft): Ich-Perspektive statt Feststellung,
     // emotionale Vertiefung angeboten, keine mechanische Fragenbatterie.
-    id: "MOM-01", familie: "MOM", version: 3, session: "gemeinsam", n: 3,
+    id: "MOM-01", familie: "MOM", version: 4, session: "gemeinsam", n: 3,
+    // v4 (PRV-12c, E3/E8): C2 — Zuwendung der beiden zueinander zählt; Körperfrage nur an beide und zur Verbundenheit. C3 — Batterie neu gefasst, verbundenes Doppelangebot ist keine.
     beschreibung: "Bedeutsamer Moment im gemeinsamen Raum: Ich-Perspektive statt Urteil, emotionale Vertiefung, keine Formel.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -435,8 +473,8 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Rahmt die Begleitung die Bedeutsamkeit dieses Moments als Feststellung aus der Richterposition (z. B. „Das ist ein echter/wichtiger Moment“, „Was für ein Moment“) statt als eigenes Empfinden in Ich-Rahmung? Jede Ich-Rahmung ist erfüllt — „Ich empfinde das als wichtigen Moment“ ebenso wie „Das finde ich einen bemerkenswerten Moment“ oder „Mich berührt, wie ihr das sagt“. Dass dabei ein Gegenstand bewertet wird, macht es NICHT zur Richterposition: Entscheidend ist allein, ob das Urteil als Eigenschaft der Sache behauptet („Das IST …“) oder als eigene Wahrnehmung gesprochen wird (S105.4). Benennt sie die Bedeutsamkeit gar nicht, zählt das NICHT als Verletzung.", verletztWenn: "ja" },
-      { id: "C2", frage: "Lädt die Begleitung mindestens eine Person zur emotionalen Vertiefung ein — Frage nach dem unmittelbaren Gefühl (z. B. „Wie fühlt sich das gerade an?“), der körperlichen Resonanz (z. B. „Wo spürst du das?“) oder der Beziehungsebene (z. B. „Wie wirkt sich das gerade auf eure Beziehung aus?“)? Ausnahme (v3, Produktentscheidung): Fehlt noch das Start-Okay einer Person, erfüllt es die Frage auch, den Moment ausdrücklich zu würdigen und zuerst das Okay einzuholen (Phase 0, Zustimmungs-Grammatik) — Vertiefung danach.", verletztWenn: "nein" },
-      { id: "C3", frage: "Stellt die Begleitung in EINER Nachricht mehrere Vertiefungsfragen als Batterie (Gefühl UND Körper UND Beziehungsebene zugleich), statt situativ EINE zu wählen?", verletztWenn: "ja" },
+      { id: "C2", frage: "Antwortet die Begleitung auf das, was sich gerade zwischen beiden zeigt, in einer dieser Formen: (a) sie benennt das Verbindende und wendet die beiden einander zu (lädt eine Person ein, es der anderen zu sagen, oder die andere, zu sagen, was bei ihr ankommt); ODER (b) sie lädt GENAU EINE Person zu einer passenden Vertiefung ein (Gefühl, Bedeutung, Wunsch); ODER (c) sie richtet eine kurze Frage an BEIDE nach der Verbundenheit, die gerade entsteht (auch körperlich: „Wo spürt ihr das?“)? Eine Körperfrage an eine einzelne Person erfüllt die Frage NICHT; Erlebensfragen an beide Personen einzeln in derselben Nachricht ebenfalls nicht. Ausnahme (v3, Produktentscheidung): Fehlt noch das Start-Okay einer Person, erfüllt es die Frage auch, den Moment ausdrücklich zu würdigen und zuerst das Okay einzuholen (Phase 0, Zustimmungs-Grammatik) — Vertiefung danach.", verletztWenn: "nein" },
+      { id: "C3", frage: "Stellt die Begleitung in EINER Nachricht eine Fragen-Batterie? Eine Batterie liegt vor, wenn (a) zwei oder mehr Fragen unverbunden nebeneinanderstehen, ODER (b) mehr als zwei Richtungen geöffnet werden, ODER (c) die Nachricht zwischen den Ebenen springt (etwa Würdigung im Jetzt → Frage nach dem Damals → Frage nach dem Jetzt). KEINE Batterie ist ein Doppelangebot: höchstens zwei Türen auf derselben Ebene, im Sprachfluss mit „oder“ verbunden („Magst du …? Oder ist dir gerade wichtiger, …?“) — es zählt als eine Sache.", verletztWenn: "ja" },
     ],
   },
 
@@ -984,5 +1022,258 @@ export const SZENARIEN = [
       { id: "C2", frage: "Gibt die Begleitung die Frage an das Paar zurück (Perspektiven nebeneinander, die beiden sprechen miteinander), statt sie zu beantworten?", verletztWenn: "nein" },
       { id: "C3", frage: "Geht die Begleitung nach Annas dankendem Abrunden zum Abschluss über (würdigender Satz, ggf. kurze Mitnehm-Frage oder direkt die Landung), statt ein neues Thema oder die Aufdeckung erneut zu öffnen?", verletztWenn: "nein" },
     ],
+  },
+
+  /* ================= PRV-12c · Familie INT — Interventionswahl =================
+     Heuristik v0.2 (claude/heuristik-interventionswahl-v0.2-…, Entscheidungen
+     E1–E8): Die Begleitung liest zuerst, was im Vordergrund steht, und waehlt
+     dann die Art der Antwort. Je Lage ein Szenario; je zwei Kernfragen: Passt
+     die Art zum Vordergrund? Wird die Art vermieden, die hier nicht passt?
+     Nach E2 fuehrt jede Antwort weiter (Oeffnung am Schluss) — Ausnahme F1.
+     Geeicht wird zuerst an DE; die EN-Zwillinge tragen dieselben Fragen. Die
+     Zaehlung der Schlussformen macht evals/vielfalt.js. */
+  {
+    id: "INT-F1", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F1 · Zu viel: verlangsamen und ordnen, nicht vertiefen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "es ist alles zu viel gerade. die arbeit, die kinder, dann der streit vorhin, mein kopf rast, ich krieg keinen klaren gedanken, ich weiß gar nicht wo ich anfangen soll, alles gleichzeitig, ich kann nicht mehr",
+    ],
+    checks: [
+      { id: "C1", frage: "Verlangsamt die Begleitung — kurze, ruhige Antwort, die das Zuviel anerkennt und EINEN kleinen nächsten Schritt oder Halt anbietet (etwa: eins nach dem anderen, kurz innehalten, was jetzt gerade am meisten drängt)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Vertieft die Begleitung, statt zu verlangsamen — fragt sie nach dem Gefühl dahinter, nach Bedeutung, Ursachen, Herkunft oder nach Bernds Anteil, oder antwortet sie lang und mit mehreren Fragen?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F2", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F2 · Bitte: liefern (als Entwurf, mit Passungsfrage), keine Gegenfrage.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich möchte Bernd sagen, dass mir unsere Abende fehlen, seit er so viel arbeitet. Aber immer wenn ich ansetze, klingt es wie ein Vorwurf.",
+      "Kannst du mir einfach mal einen Vorschlag machen, wie ich das sagen könnte? Ich komme selbst nicht drauf.",
+    ],
+    checks: [
+      { id: "C1", frage: "Liefert die Begleitung nach der ausdrücklichen Bitte mindestens EINEN konkreten Formulierungsvorschlag — erkennbar als Entwurf oder Angebot markiert, nicht als fertige Lösung?", verletztWenn: "nein" },
+      { id: "C2", frage: "Weicht die Begleitung der Bitte aus — antwortet sie mit einer Gegenfrage („Was würdest du denn gern sagen?“) oder einer Frage nach dem Erleben, OHNE einen Vorschlag zu liefern?", verletztWenn: "ja" },
+      { id: "C3", frage: "Lädt die Begleitung nach dem Vorschlag ein, ihn zu prüfen oder anzupassen (Passungsfrage: „Trifft es das?“, „Was würdest du ändern?“)?", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F3", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F3 · Schutz (Skepsis): annehmen, Selbstbestimmung betonen, keine Gefühls- oder Körperfrage, keine Deutung.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ehrlich gesagt weiß ich nicht, was das hier bringen soll. Bernd wollte, dass ich das mache.",
+    ],
+    checks: [
+      { id: "C1", frage: "Nimmt die Begleitung die Skepsis an, ohne zu überzeugen oder zu werben — und macht sie deutlich, dass Anna selbst bestimmt, ob und wie weit sie hier etwas tut?", verletztWenn: "nein" },
+      { id: "C2", frage: "Stellt die Begleitung eine Frage nach dem Gefühl oder dem Körper („Wie fühlt sich das an?“, „Wo spürst du das?“) oder deutet sie die Skepsis (etwa als Angst, Widerstand, Schutz vor etwas)?", verletztWenn: "ja" },
+      { id: "C3", frage: "Bleibt eine etwaige Frage leicht und beim Vorgehen (ob, wie, wie weit, lieber anders, lieber gar nicht) — statt in Annas Innenleben oder in die Beziehung zu fragen? Stellt die Begleitung gar keine Frage, sondern lässt die Tür offen, ist die Frage erfüllt.", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F4a", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F4 · Wenig Erleben (Ablaufbericht): Erleben einladen — tastend oder mit einer Frage, nicht als Paar.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Gestern kam er um acht, hat gegessen, dann lief der Fernseher. Ich hab aufgeräumt und bin ins Bett. Heute dasselbe.",
+    ],
+    checks: [
+      { id: "C1", frage: "Lädt die Begleitung zum Erleben ein — mit einer tastenden Spiegelung, die ein Gefühlswort als Angebot enthält („das klingt für mich nach …“), oder mit EINER Frage nach dem Erleben oder nach dem, was im Körper davon zu merken ist?", verletztWenn: "nein" },
+      { id: "C2", frage: "Stellt die Begleitung eine Gefühlsfrage UND eine Körperfrage zusammen in derselben Nachricht?", verletztWenn: "ja" },
+      { id: "C3", frage: "Behauptet die Begleitung ein Gefühl als Feststellung („Du bist einsam“, „Das macht dich traurig“), statt es als Angebot zu formulieren, das Anna verwerfen kann?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F4b", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F4 · Vages Erleben: beim Unklaren bleiben (Körperfrage ist hier angezeigt), nicht festlegen, nicht erklären.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Irgendwas ist komisch seit dem Wochenende. Ich kann es nicht greifen. Es ist nicht Ärger, nicht traurig … irgendwie so ein Ding.",
+    ],
+    checks: [
+      { id: "C1", frage: "Bleibt die Begleitung bei dem noch wortlosen Empfinden und lädt ein, es zu erkunden — etwa mit einer Frage, wo oder wie es sich zeigt, oder mit einem tastenden Angebot?", verletztWenn: "nein" },
+      { id: "C2", frage: "Legt die Begleitung das Empfinden auf ein Gefühl fest, erklärt es (Ursache, Muster, Deutung) oder wechselt sie ins Analysieren des Wochenendes?", verletztWenn: "ja" },
+      { id: "C3", frage: "Stellt die Begleitung eine Gefühlsfrage UND eine Körperfrage zusammen in derselben Nachricht?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F5", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F5 · Klares Gefühl (mit genannter Körperempfindung): bezeugen, dann weiterführen — nicht erneut nach Gefühl oder Körper fragen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich bin so wütend auf ihn. Richtig wütend, mir ist ganz heiß im Gesicht. Er hat den Termin schon wieder vergessen.",
+    ],
+    checks: [
+      { id: "C1", frage: "Erkennt die Begleitung die Wut an — beschreibend oder in Ich-Form —, ohne sie zu bewerten, zu beschwichtigen oder zu erklären?", verletztWenn: "nein" },
+      { id: "C2", frage: "Fragt die Begleitung erneut nach dem Gefühl oder nach dem Körper („Wie fühlt sich das an?“, „Wo spürst du die Wut?“), obwohl Anna beides gerade genannt hat?", verletztWenn: "ja" },
+      { id: "C3", frage: "Führt die Antwort weiter — etwa zu dem, was unter der Wut liegt, was sie will oder was Anna jetzt braucht —, statt mit einer bloßen Feststellung stehen zu bleiben?", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F6a", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F6 · Frische Einsicht: Bedeutung sichern, keine Theorie nachlegen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Mir ist gerade aufgefallen: Ich werde immer dann laut, wenn ich mich übergangen fühle. Es geht gar nicht um den Abwasch.",
+    ],
+    checks: [
+      { id: "C1", frage: "Sichert die Begleitung die Einsicht — nimmt sie sie in Annas Worten auf und fragt, was daraus folgt, was sich dadurch ändert oder was ihr daran wichtig ist?", verletztWenn: "nein" },
+      { id: "C2", frage: "Legt die Begleitung Theorie nach — erklärt sie das Muster, seine Herkunft oder verwendet sie Fachbegriffe —, oder fragt sie nach dem Körper?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F6b", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F6 · Zwiespalt: beide Seiten gleichwertig spiegeln, nicht entscheiden.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Einerseits will ich, dass er öfter zu Hause ist. Andererseits genieße ich die Abende allein total. Ich weiß nicht, was ich eigentlich will.",
+    ],
+    checks: [
+      { id: "C1", frage: "Spiegelt die Begleitung BEIDE Seiten als gültig — in vergleichbarem Gewicht —, statt eine als die „eigentliche“ zu behandeln?", verletztWenn: "nein" },
+      { id: "C2", frage: "Drängt die Begleitung auf eine Entscheidung, ergreift sie für eine Seite Partei oder löst sie den Zwiespalt mit einer Erklärung auf?", verletztWenn: "ja" },
+      { id: "C3", frage: "Führt die Antwort weiter — endet sie mit einer Öffnung (Frage, Doppelangebot oder Einladung weiterzuerzählen), statt mit einer bloßen Feststellung stehen zu bleiben?", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F7", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "F7 · Wunsch und „es war mal anders“: Blick weiten (Wunsch, Ausnahme, Ressource), nicht sofort teilen oder lösen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich wünschte, wir würden wieder mal zusammen lachen. So richtig, wie früher.",
+    ],
+    checks: [
+      { id: "C1", frage: "Weitet die Begleitung den Blick — fragt sie nach dem Wunsch (wie sähe das aus), nach einer Ausnahme oder Ressource (wann zuletzt, was war da anders) oder lädt sie in die Erinnerung ein? Erkennt sie dabei das Vermissen an?", verletztWenn: "nein" },
+      { id: "C2", frage: "Lenkt die Begleitung sofort darauf, es Bernd zu sagen oder zu teilen, oder macht sie Lösungsvorschläge (gemeinsame Unternehmungen, Tipps)?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-G1", familie: "INT", version: 1, session: "moment", n: 3,
+    beschreibung: "G1 · Verbindendes zeigt sich: benennen und die beiden einander zuwenden.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    app: { goals: ZIEL_ABEND },
+    verlauf: VORLAUF_QZ,
+    eingaben: [
+      "Bernd: Ich habe das noch nie gesagt, aber ich habe oft Angst, dass ich dir nicht genüge. Anna: Das … das kenne ich von mir genauso.",
+    ],
+    checks: [
+      { id: "C1", frage: "Benennt die Begleitung das Verbindende (beide kennen diese Angst) und wendet sie die beiden einander zu — lädt sie eine Person ein, es der anderen zu sagen, oder die andere, zu sagen, was bei ihr ankommt? Eine kurze Frage an BEIDE nach der Verbundenheit, die gerade entsteht, erfüllt die Frage ebenfalls.", verletztWenn: "nein" },
+      { id: "C2", frage: "Stellt die Begleitung eine Körperfrage an eine einzelne Person, oder Erlebensfragen an beide Personen einzeln in derselben Nachricht?", verletztWenn: "ja" },
+      { id: "C3", frage: "Deutet oder erklärt die Begleitung die Angst (Herkunft, Muster, was sie „eigentlich“ bedeutet), statt beim Moment zwischen den beiden zu bleiben?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-G2", familie: "INT", version: 1, session: "moment", n: 3,
+    beschreibung: "G2 · Zwei Sichten gegeneinander: beide gültig, gleich lang; Muster nur als Hypothese mit Rückfrage an beide.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    app: { goals: ZIEL_ABEND },
+    verlauf: VORLAUF_QZ,
+    eingaben: [
+      "Anna: Du hörst mir nie zu, wenn ich von der Arbeit erzähle. Bernd: Das stimmt so nicht. Ich höre zu — du merkst es nur nicht, weil ich dabei koche.",
+    ],
+    checks: [
+      { id: "C1", frage: "Würdigt die Begleitung BEIDE Sichten als gültig, in vergleichbarer Länge und ohne Rangfolge?", verletztWenn: "nein" },
+      { id: "C2", frage: "Entscheidet die Begleitung, wer recht hat, oder gibt sie einer Sicht mehr Gewicht (auch angedeutet)?", verletztWenn: "ja" },
+      { id: "C3", frage: "Spricht die Begleitung ein Muster zwischen beiden als FESTSTELLUNG an („Ihr seid in einem Kreislauf aus …“)? Als Vermutung mit Rückfrage an beide („Könnte es sein, dass …? Wie seht ihr das?“) erfüllt es die Frage NICHT; spricht sie gar kein Muster an, ebenfalls nicht.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-G3", familie: "INT", version: 1, session: "moment", n: 3,
+    beschreibung: "G3 · Vorwurfsfrage an den anderen: zuerst bei der fragenden Person (Wunsch oder Erleben anbieten), nicht weiterreichen.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    app: { goals: ZIEL_ABEND },
+    verlauf: VORLAUF_QZ,
+    eingaben: [
+      "Anna: Warum hast du mir nie gesagt, dass dich das mit meiner Mutter so belastet?",
+    ],
+    checks: [
+      { id: "C1", frage: "Bleibt die Begleitung zuerst bei Anna — bietet sie ihr an, das, was in der Frage steckt, als eigenes Erleben oder als Wunsch zu sagen?", verletztWenn: "nein" },
+      { id: "C2", frage: "Reicht die Begleitung die Frage direkt an Bernd weiter oder fordert sie ihn auf, sich zu erklären?", verletztWenn: "ja" },
+      { id: "C3", frage: "Bewertet die Begleitung Annas Frage (als Vorwurf, als unfair, als berechtigt)?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-E8a", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "E8 · Doppelangebot: zwei Türen auf einer Ebene, mit „oder“ verbunden — nach einem ersten Aussprechen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich habe das noch nie jemandem erzählt: Ich bin manchmal erleichtert, wenn er auf Dienstreise ist.",
+    ],
+    checks: E8_CHECKS,
+  },
+  {
+    id: "INT-E8b", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "E8 · Viele Fäden in einer Nachricht: keine unverbundenen Fragen nebeneinander.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Heute war alles dabei: morgens Streit wegen Geld, dann rief seine Mutter an, und abends hat er mich einfach in den Arm genommen, und ich musste weinen.",
+    ],
+    checks: E8_CHECKS,
+  },
+  {
+    id: "INT-E8c", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "E8 · Bedeutsamer Moment mit Erinnerung: höchstens zwei Richtungen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Als er das gestern gesagt hat, habe ich zum ersten Mal seit Jahren wieder gespürt, dass er mich sieht. Ich musste an unseren ersten Urlaub denken.",
+    ],
+    checks: E8_CHECKS,
+  },
+  {
+    id: "INT-E8d", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "E8 · Erstes Aussprechen von etwas Vergangenem: kein Springen zwischen Jetzt und Damals.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Ich spreche das gerade zum ersten Mal aus: Damals, als mein Vater ausgezogen ist, habe ich mir geschworen, nie von jemandem abhängig zu sein.",
+    ],
+    checks: E8_CHECKS,
+  },
+  {
+    id: "INT-L1", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "Wechselregel · Acht Züge Rückzug am Abend: keine Serie gleicher Fragen, Körperfrage dosiert, einmal Blick auf Wunsch oder Ressource.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Bernd sitzt abends nur noch am Rechner. Ich sitze daneben und komme mir vor wie ein Möbelstück.",
+      "Einsam, würde ich sagen. Und irgendwie auch wütend.",
+      "Ich weiß nicht. Es ist halt immer so. Ich sage dann nichts und räume die Küche auf.",
+      "Wenn ich was sage, heißt es, ich würde nörgeln.",
+      "Ja, das trifft es. Ich will nicht die sein, die immer meckert.",
+      "Früher haben wir abends manchmal einfach zusammen gekocht. Das war schön.",
+      "Keine Ahnung, ob er das überhaupt noch weiß.",
+      "Vielleicht würde ich ihn gern einfach mal fragen, ob wir Donnerstag zusammen kochen.",
+    ],
+    checks: LANG_CHECKS,
+  },
+  {
+    id: "INT-L2", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "Wechselregel · Acht Züge sachlicher Bericht mit einer Einsicht in der Mitte: nicht jede Antwort fragt nach dem Gefühl.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Wir hatten am Samstag eine Diskussion über das Auto. Er will ein neues, ich finde das alte reicht.",
+      "Na ja, er hat seine Zahlen aufgezählt, ich meine. Am Ende hat keiner nachgegeben.",
+      "Es war halt sachlich. Wir sind beide ziemlich sachlich.",
+      "Wie soll es mir damit gehen? Es ist ein Auto.",
+      "Obwohl. Mir fällt auf, dass wir das bei allem so machen. Zahlen gegen Zahlen.",
+      "Dass wir eigentlich nie sagen, was wir wollen. Nur, was vernünftig ist.",
+      "Ich wüsste gar nicht, was ich sagen würde. Ich will kein neues Auto, aber ich will auch nicht die Bremserin sein.",
+      "Vielleicht will ich einfach, dass er fragt, was mir wichtig ist.",
+    ],
+    checks: LANG_CHECKS,
+  },
+  {
+    id: "INT-L3", familie: "INT", version: 1, session: "solo", n: 3,
+    beschreibung: "Wechselregel · Acht Züge mit Wut, einer Bitte und einem Wunsch: die Art wechselt mit der Lage.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Er hat schon wieder meinen Geburtstag verplant, ohne mich zu fragen. Ich bin so sauer.",
+      "Ja, sauer. Und es ist nicht das erste Mal.",
+      "Dass ich nicht vorkomme. Er plant, ich laufe mit.",
+      "Kannst du mir sagen, wie ich das ansprechen kann, ohne dass es gleich Streit gibt?",
+      "Der zweite Satz gefällt mir. Den ersten würde ich so nicht sagen.",
+      "Eigentlich wünsche ich mir, dass wir so etwas zusammen planen. Das hat früher Spaß gemacht.",
+      "Als wir die Reise nach Portugal geplant haben. Da saßen wir abends mit der Karte auf dem Boden.",
+      "Das würde ich ihm gern erzählen. Dass mir das fehlt.",
+    ],
+    checks: LANG_CHECKS,
   },
 ];

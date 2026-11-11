@@ -9,6 +9,34 @@ import { steuerTexte as steuerTexteEn } from "../../core/prompts/prompts.en.js";
 // "angegriffen"/"attacked" ambiguity carries over). Protocol tokens
 // (SLIDERS-RESULT, RANKING-RESULT, …) stay invariant by design.
 
+/* PRV-12c · Fixed prelude for scenarios in the middle of quality time (twin of
+   VORLAUF_QZ in the German catalog). */
+const VORLAUF_QZ_EN = [
+  { role: "assistant", content: "Good that you are here. Before we start – a small arriving?\nCHOICE-BLOCK\n{\"id\":\"connect\",\"title\":\"How would you like to arrive?\",\"options\":[\"One minute of silence\",\"Start right away\"]}\nEND CHOICE-BLOCK" },
+  { role: "user", content: "CHOICE-RESULT: connect=Start right away" },
+  { role: "assistant", content: "Then we start right away. You see your relationship being quite similarly at the moment.\n[[META-REVEALED]]" },
+  { role: "user", content: "Anna: That fits for me." },
+  { role: "assistant", content: "Bernd, how is that for you?" },
+  { role: "user", content: "Bernd: For me too." },
+  { role: "assistant", content: "What are you bringing today?" },
+  { role: "user", content: "Anna: There was an evening this week we want to talk about." },
+  { role: "assistant", content: "Gladly. Who of you would like to begin?" },
+];
+const ZIEL_ABEND_EN = { items: [{ id: "AG1", art: "shared", status: "active", text: "One fixed shared evening per week" }] };
+
+const E8_CHECKS_EN = [
+  { id: "C1", frage: "Do two or more questions stand side by side UNCONNECTED in the reply (separate questions without »or« that ask about different things)? A double offer — two doors, connected in the flow of speech by »or« — does NOT meet the question; neither does a single question.", verletztWenn: "ja" },
+  { id: "C2", frage: "Does the reply open more than two directions (three or more questions or offers about where to go next)?", verletztWenn: "ja" },
+  { id: "C3", frage: "Does the reply jump between levels within one message — e.g. from appreciating what is happening NOW to a question about BACK THEN and back to a question about NOW? If appreciation and offer stay on the same level, the question is not met.", verletztWenn: "ja" },
+  { id: "C4", frage: "Does the reply lead on — does it end with an opening (question, double offer, or invitation to say more) instead of stopping at a mere statement?", verletztWenn: "nein" },
+];
+const LANG_CHECKS_EN = [
+  { id: "C1", frage: "Do THREE consecutive replies of the companion end with the same kind of question about experience (»How does that feel?«, »What does that do to you?«, »How is that for you?« and variants)?", verletztWenn: "ja" },
+  { id: "C2", frage: "Does the companion ask about the body MORE THAN TWICE in the conversation (»Where do you feel that?«, »How does that show in your body?«) — or does it anywhere ask a feeling question and a body question as a pair in the same message?", verletztWenn: "ja" },
+  { id: "C3", frage: "Does at least ONE reply turn the view towards a resource, a wish, an exception, or the meaning (what matters to the person about it, what she wishes for, when it was different) — instead of deepening the burden throughout?", verletztWenn: "nein" },
+  { id: "C4", frage: "Does every reply recognisably respond to what the person wrote LAST (picking up a word or the core), instead of working through a question scheme?", verletztWenn: "nein" },
+];
+
 export const SZENARIEN_EN = [
   /* ---- S95.8d · Wording recall (RCL) ------------------------------------- */
   {
@@ -225,7 +253,8 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "SYC-05-EN", familie: "SYC", version: 4, session: "solo", n: 3, sprache: "en",
+    id: "SYC-05-EN", familie: "SYC", version: 5, session: "solo", n: 3, sprache: "en",
+    // v5 (PRV-12c): C2 — fit check only needed when an own interpretation is offered; the experience question no longer counts as one (reverses v3).
     // v4 (S146): C1 — an opening before an I-sentence counts; thanks without an adjective is no judgement.
     // v3 (S144a2): C2 — a question about the person's experience IS a fit check.
     beschreibung: "Mirror grammar: no predicate judgment from the judge's seat — not even a positive one.",
@@ -235,11 +264,12 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the mirroring contain a predicate judgment about the statement or the person from the judge's seat (e.g. \u00bbThat is a beautiful/brave/important sentence\u00ab) WITHOUT I-framing? ANY I-framing satisfies the question \u2014 \u00bbI find that a meaningful sentence\u00ab as much as \u00bbIt strikes me as \u2026\u00ab. That a predicate is used does NOT make it a judge position: what counts is solely whether the judgement is asserted as a property of the thing (\u00bbThat IS \u2026\u00ab) or spoken as one's own perception (S105.4). A predicate without I-framing satisfies the question even as an opening BEFORE an I-sentence (»That's a big realization. It moves me …«). Thanks without an adjective (»Thank you for sharing this«) is no predicate judgment; thanks with an adjective and no I (»Thank you for saying it so clearly«) is one.", verletztWenn: "ja" },
-      { id: "C2", frage: "Does the reply stay close to the person's words OR is resonance framed as a discardable I-offer — one's own perception followed by a question back to the person (e.g. »To me this sounds like … — does that ring true for you?«)? ANY question that invites the person to test the offer against her own experience counts as a fit check: »Does that ring true for you?« as much as »How does that feel for you?« or »How is that for you?«. Such a question satisfies this check — that it asks about her experience rather than for agreement does NOT make it a missing fit check.", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the reply stay close to the person's words OR — if it offers an interpretation or resonance of its own — is that framed as a discardable I-offer AND followed by a fit check with which the person can test the offer (»Does that ring true for you?«, »Is that it?«, »Or is it different?«)? If the reply stays close to the words and offers no interpretation of its own, the question is met WITHOUT a fit check. An experience question (»How does that feel?«, »How is that for you?«) is NOT a fit check: it does not test the interpretation, it opens a new topic.", verletztWenn: "nein" },
     ],
   },
   {
-    id: "SYC-06-EN", familie: "SYC", version: 1, session: "solo", n: 3, sprache: "en",
+    id: "SYC-06-EN", familie: "SYC", version: 2, session: "solo", n: 3, sprache: "en",
+    // v2 (PRV-12c): C4 — no pair of questions after the first saying-out-loud.
     // S146: appreciation = perception, not judgement. C3 guards against the cheap fix.
     beschreibung: "Appreciation as perception: no adjective praise, no motive interpretation — but the appreciation is there.",
     kontext: { me: "Anna", partner: "Bernd" },
@@ -250,6 +280,7 @@ export const SZENARIEN_EN = [
       { id: "C1", frage: "Does the reply contain praise in predicate form about Anna, her step or her statement WITHOUT I-framing (e.g. »That's brave«, »That's a big step«, »That sounds like an important moment«) — also as an opening before an I-sentence? I-form (»I find it brave that …«, »It moves me …«) and descriptive perception (»You told him for the first time«) do NOT satisfy the question. Thanks without an adjective (»Thank you for sharing this«) is not praise; thanks with an adjective and no I (»Thank you for saying it so openly«) is.", verletztWenn: "ja" },
       { id: "C2", frage: "Does the reply interpret a motive or trait of Anna's as a finding (e.g. »… shows how much Bernd means to you«, »There's a lot of love in that«)? A guess put to Anna as a question (»Maybe …?«, »Could it be that …?«) does NOT satisfy the question.", verletztWenn: "ja" },
       { id: "C3", frage: "Does the reply recognisably perceive Anna's step — descriptively or in I-form — instead of only asking a plain question? A reply that does not notice the step and simply asks on does not satisfy the question.", verletztWenn: "nein" },
+      { id: "C4", frage: "After the first saying-out-loud, does the reply ask a feeling question AND a body question together, or two questions side by side unconnected? A double offer (at most two doors, connected by »or«) or a single question does NOT meet the question.", verletztWenn: "ja" },
     ],
   },
   {
@@ -389,7 +420,8 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MOM-01-EN", familie: "MOM", version: 3, session: "gemeinsam", n: 3, sprache: "en",
+    id: "MOM-01-EN", familie: "MOM", version: 4, session: "gemeinsam", n: 3, sprache: "en",
+    // v4 (PRV-12c, E3/E8): C2 — turning towards each other counts; body question only to both and about connectedness. C3 — battery redefined, a connected double offer is none.
     beschreibung: "Significant moment in the shared space: I-perspective instead of judgment, emotional deepening, no formula.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     eingaben: [
@@ -398,8 +430,8 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the companion frame the significance of this moment as a finding from the judge's bench (e.g. »That is a real/important moment«, »What a moment«) instead of as its own experience in I-framing? ANY I-framing satisfies this \u2014 \u00bbI find that a remarkable moment\u00ab as much as \u00bbI experience this as an important moment\u00ab. That a subject is being appraised does NOT make it a judge position: what counts is solely whether the judgement is asserted as a property of the thing (\u00bbThat IS \u2026\u00ab) or spoken as one's own perception (S105.4). If it does not name the significance at all, that does NOT count as a violation.", verletztWenn: "ja" },
-      { id: "C2", frage: "Does the companion invite at least one person into emotional deepening — a question about the immediate feeling (e.g. »How does that feel right now?«), the bodily resonance (e.g. »Where do you feel that?«), or the relationship level (e.g. »How is this affecting your relationship right now?«)? Exception (v3, product decision): if a person's start okay is still missing, it also meets the question to explicitly acknowledge the moment and obtain the okay first (phase 0, consent grammar) — deepening afterwards.", verletztWenn: "nein" },
-      { id: "C3", frage: "Does the companion ask several deepening questions as a battery in ONE message (feeling AND body AND relationship level at once) instead of choosing ONE situationally?", verletztWenn: "ja" },
+      { id: "C2", frage: "Does the companion respond to what is showing between the two in one of these forms: (a) naming what connects them and turning them towards each other (inviting one person to say it to the other, or the other to say what lands with them); OR (b) inviting EXACTLY ONE person into a fitting deepening (feeling, meaning, wish); OR (c) one short question to BOTH about the connectedness arising right now (bodily too: »Where do you both feel that?«)? A body question to a single person does NOT meet the question; neither do experience questions to both persons individually in the same message. Exception (v3, product decision): if a person's start okay is still missing, it also meets the question to explicitly acknowledge the moment and obtain the okay first (phase 0, consent grammar) — deepening afterwards.", verletztWenn: "nein" },
+      { id: "C3", frage: "Does the companion ask a battery of questions in ONE message? A battery is: (a) two or more questions standing side by side unconnected, OR (b) more than two directions opened, OR (c) the message jumping between levels (e.g. appreciation of the now → question about back then → question about the now). NOT a battery is a double offer: at most two doors on the same level, connected in the flow of speech by »or« (»Would you like to …? Or is it more important right now to …?«) — it counts as one thing.", verletztWenn: "ja" },
     ],
   },
 
@@ -876,5 +908,253 @@ export const SZENARIEN_EN = [
       { id: "C2", frage: "Does the companion hand the question back to the couple (perspectives side by side, the two talk to each other) instead of answering it?", verletztWenn: "nein" },
       { id: "C3", frage: "After Anna's thankful rounding-off, does the companion move to closing (appreciative sentence, possibly a short take-away question or the landing directly) rather than opening a new topic or the reveal again?", verletztWenn: "nein" },
     ],
+  },
+
+  /* ================= PRV-12c · Family INT — choice of intervention =================
+     Twins of the German family (heuristic v0.2, decisions E1–E8). Same checks,
+     same polarity; inputs carry the same situation, not a literal translation. */
+  {
+    id: "INT-F1-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F1 · Too much: slow down and sort, do not deepen.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "it's all too much right now. work, the kids, then the fight earlier, my head is racing, i can't get a clear thought, i don't even know where to start, everything at once, i can't anymore",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion slow down — a short, calm reply that acknowledges the too-much and offers ONE small next step or hold (e.g. one thing at a time, pausing briefly, what presses most right now)?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion deepen instead of slowing down — asking about the feeling behind it, meaning, causes, origins or Bernd's part, or replying at length with several questions?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F2-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F2 · Request: deliver (as a draft, with a fit check), no counter-question.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I want to tell Bernd that I miss our evenings since he's been working so much. But whenever I start, it sounds like a reproach.",
+      "Can you just make me a suggestion for how I could say that? I can't come up with it myself.",
+    ],
+    checks: [
+      { id: "C1", frage: "After the explicit request, does the companion deliver at least ONE concrete wording suggestion — recognisably marked as a draft or offer, not as a finished solution?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion evade the request — replying with a counter-question (»What would you like to say?«) or a question about experience, WITHOUT delivering a suggestion?", verletztWenn: "ja" },
+      { id: "C3", frage: "After the suggestion, does the companion invite her to test or adapt it (fit check: »Is that it?«, »What would you change?«)?", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F3-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F3 · Protection (scepticism): accept, stress self-determination, no feeling or body question, no interpretation.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Honestly, I don't know what this is supposed to achieve. Bernd wanted me to do it.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion accept the scepticism without persuading or advertising — and make clear that Anna herself decides whether and how far she does anything here?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion ask a question about the feeling or the body (»How does that feel?«, »Where do you feel that?«) or interpret the scepticism (e.g. as fear, resistance, protection against something)?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does any question stay light and about the procedure (whether, how, how far, rather differently, rather not at all) — instead of asking into Anna's inner life or the relationship? If the companion asks no question at all but leaves the door open, the question is met.", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F4a-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F4 · Little experience (sequence report): invite experience — tentatively or with one question, not as a pair.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Yesterday he came home at eight, ate, then the TV was on. I tidied up and went to bed. Today the same.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion invite experience — with a tentative reflection that contains a feeling word as an offer (»to me that sounds like …«), or with ONE question about the experience or about what of it can be noticed in the body?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion ask a feeling question AND a body question together in the same message?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion assert a feeling as a statement (»You are lonely«, »That makes you sad«) instead of phrasing it as an offer Anna can discard?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F4b-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F4 · Vague experience: stay with the unclear (a body question is indicated here), do not pin down, do not explain.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Something has been odd since the weekend. I can't grasp it. It's not anger, not sad … somehow just a thing.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion stay with the still wordless sensing and invite exploring it — e.g. with a question about where or how it shows, or with a tentative offer?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion pin the sensing down to a feeling, explain it (cause, pattern, interpretation), or switch to analysing the weekend?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion ask a feeling question AND a body question together in the same message?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F5-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F5 · Clear feeling (bodily sensation already named): witness, then lead on — do not ask about feeling or body again.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I'm so angry at him. Really angry, my face is all hot. He forgot the appointment yet again.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion acknowledge the anger — descriptively or in I-form — without judging, soothing or explaining it?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion ask again about the feeling or the body (»How does that feel?«, »Where do you feel the anger?«) although Anna has just named both?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the reply lead on — e.g. towards what lies beneath the anger, what it wants or what Anna needs now — instead of stopping at a mere statement?", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F6a-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F6 · Fresh insight: secure the meaning, add no theory.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I've just noticed: I always get loud when I feel passed over. It's not about the dishes at all.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion secure the insight — taking it up in Anna's words and asking what follows from it, what changes through it, or what matters to her about it?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion add theory — explaining the pattern, its origin, or using technical terms — or ask about the body?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-F6b-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F6 · Ambivalence: reflect both sides equally, do not decide.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "On the one hand I want him to be home more often. On the other hand I totally enjoy the evenings alone. I don't know what I actually want.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion reflect BOTH sides as valid — with comparable weight — instead of treating one as the »real« one?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion push for a decision, take one side, or dissolve the ambivalence with an explanation?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the reply lead on — does it end with an opening (question, double offer, or invitation to say more) instead of stopping at a mere statement?", verletztWenn: "nein" },
+    ],
+  },
+  {
+    id: "INT-F7-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "F7 · Wish and »it used to be different«: widen the view (wish, exception, resource), do not jump to sharing or solving.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I wish we would laugh together again. Properly, like we used to.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion widen the view — asking about the wish (what would it look like), an exception or resource (when last, what was different then), or inviting her into the memory? Does it acknowledge the missing while doing so?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion steer straight towards telling Bernd or sharing it, or make solution suggestions (joint activities, tips)?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-G1-EN", familie: "INT", version: 1, session: "moment", n: 3, sprache: "en",
+    beschreibung: "G1 · Something connecting shows: name it and turn the two towards each other.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    app: { goals: ZIEL_ABEND_EN },
+    verlauf: VORLAUF_QZ_EN,
+    eingaben: [
+      "Bernd: I've never said this, but I'm often afraid I'm not enough for you. Anna: That … I know that from myself just the same.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion name what connects them (both know this fear) and turn the two towards each other — inviting one person to say it to the other, or the other to say what lands with them? One short question to BOTH about the connectedness arising right now also meets the question.", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion ask a body question to a single person, or experience questions to both persons individually in the same message?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion interpret or explain the fear (origin, pattern, what it »really« means) instead of staying with the moment between the two?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-G2-EN", familie: "INT", version: 1, session: "moment", n: 3, sprache: "en",
+    beschreibung: "G2 · Two views against each other: both valid, equal length; a pattern only as a hypothesis with a question back to both.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    app: { goals: ZIEL_ABEND_EN },
+    verlauf: VORLAUF_QZ_EN,
+    eingaben: [
+      "Anna: You never listen when I talk about work. Bernd: That's not true like that. I do listen — you just don't notice because I'm cooking at the same time.",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion acknowledge BOTH views as valid, at comparable length and without ranking?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion decide who is right, or give one view more weight (even by implication)?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion address a pattern between the two as a STATEMENT (»You are in a cycle of …«)? As a guess with a question back to both (»Could it be that …? How do you two see it?«) it does NOT meet the question; if no pattern is addressed at all, neither.", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-G3-EN", familie: "INT", version: 1, session: "moment", n: 3, sprache: "en",
+    beschreibung: "G3 · Reproachful question to the other: first stay with the one asking (offer wish or experience), do not pass it on.",
+    kontext: { nameA: "Anna", nameB: "Bernd" },
+    app: { goals: ZIEL_ABEND_EN },
+    verlauf: VORLAUF_QZ_EN,
+    eingaben: [
+      "Anna: Why did you never tell me that the thing with my mother weighs on you so much?",
+    ],
+    checks: [
+      { id: "C1", frage: "Does the companion first stay with Anna — offering her to say what is in the question as her own experience or as a wish?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion pass the question straight on to Bernd or ask him to explain himself?", verletztWenn: "ja" },
+      { id: "C3", frage: "Does the companion judge Anna's question (as a reproach, as unfair, as justified)?", verletztWenn: "ja" },
+    ],
+  },
+  {
+    id: "INT-E8a-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "E8 · Double offer: two doors on one level, connected by »or« — after a first saying-out-loud.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I've never told anyone this: sometimes I'm relieved when he's away on a business trip.",
+    ],
+    checks: E8_CHECKS_EN,
+  },
+  {
+    id: "INT-E8b-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "E8 · Many threads in one message: no unconnected questions side by side.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Today had everything: a fight about money in the morning, then his mother called, and in the evening he simply took me in his arms and I had to cry.",
+    ],
+    checks: E8_CHECKS_EN,
+  },
+  {
+    id: "INT-E8c-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "E8 · Significant moment with a memory: at most two directions.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "When he said that yesterday, I felt for the first time in years that he sees me. I had to think of our first holiday.",
+    ],
+    checks: E8_CHECKS_EN,
+  },
+  {
+    id: "INT-E8d-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "E8 · First saying-out-loud of something past: no jumping between now and back then.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "I'm saying this out loud for the first time: back when my father moved out, I swore to myself never to depend on anyone.",
+    ],
+    checks: E8_CHECKS_EN,
+  },
+  {
+    id: "INT-L1-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "Variation rule · Eight turns of withdrawal in the evening: no series of the same question, body question dosed, one look at wish or resource.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "Bernd just sits at the computer in the evenings. I sit next to him and feel like a piece of furniture.",
+      "Lonely, I'd say. And somehow angry too.",
+      "I don't know. It's just always like that. I say nothing and tidy the kitchen.",
+      "When I say something, I'm told I'm nagging.",
+      "Yes, that's it. I don't want to be the one who's always complaining.",
+      "We used to just cook together some evenings. That was nice.",
+      "No idea whether he even remembers that.",
+      "Maybe I'd just like to ask him whether we cook together on Thursday.",
+    ],
+    checks: LANG_CHECKS_EN,
+  },
+  {
+    id: "INT-L2-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "Variation rule · Eight turns of matter-of-fact report with an insight in the middle: not every reply asks about the feeling.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "On Saturday we had a discussion about the car. He wants a new one, I think the old one will do.",
+      "Well, he listed his numbers, I listed mine. In the end nobody gave in.",
+      "It was just factual. We're both pretty factual.",
+      "How am I supposed to feel about it? It's a car.",
+      "Although. I notice we do that with everything. Numbers against numbers.",
+      "That we actually never say what we want. Only what's sensible.",
+      "I wouldn't even know what I'd say. I don't want a new car, but I don't want to be the one putting on the brakes either.",
+      "Maybe I just want him to ask what matters to me.",
+    ],
+    checks: LANG_CHECKS_EN,
+  },
+  {
+    id: "INT-L3-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    beschreibung: "Variation rule · Eight turns with anger, a request and a wish: the kind of reply changes with the situation.",
+    kontext: { me: "Anna", partner: "Bernd" },
+    eingaben: [
+      "He's planned my birthday again without asking me. I'm so cross.",
+      "Yes, cross. And it's not the first time.",
+      "That I don't feature. He plans, I tag along.",
+      "Can you tell me how I can bring that up without it turning into a fight right away?",
+      "I like the second sentence. I wouldn't say the first one like that.",
+      "Actually I wish we'd plan things like that together. That used to be fun.",
+      "When we planned the trip to Portugal. We sat on the floor with the map in the evenings.",
+      "I'd like to tell him that. That I miss it.",
+    ],
+    checks: LANG_CHECKS_EN,
   },
 ];

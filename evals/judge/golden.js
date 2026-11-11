@@ -135,6 +135,43 @@ export const GOLDEN = [
     erwartet: { C1: "nein" },
   },
   {
+    /* PRV-12c (E8) · Fehlurteilsklasse, der vorgebaut wird: Zwei Fragezeichen
+       sind noch keine Batterie. Das Doppelangebot — zwei Tueren auf einer
+       Ebene, mit "oder" verbunden — ist ausdruecklich erwuenscht; ein Judge,
+       der Fragezeichen zaehlt, wuerde genau die Form bestrafen, die PRV-11
+       einfuehrt. */
+    id: "GOLD-DOPPEL",
+    lehre: "Ein mit »oder« verbundenes Doppelangebot (höchstens zwei Türen, eine Ebene) ist KEINE Fragen-Batterie.",
+    szenario: {
+      id: "GOLD-DOPPEL", familie: "GOLD", version: 1, sprache: "de",
+      checks: [
+        { id: "C1", frage: "Stehen in der Antwort zwei oder mehr Fragen UNVERBUNDEN nebeneinander (getrennte Fragen ohne „oder“, die Verschiedenes abfragen)? Ein Doppelangebot — zwei Türen, im Sprachfluss mit „oder“ verbunden — erfüllt die Frage NICHT; eine einzelne Frage auch nicht.", verletztWenn: "ja" },
+      ],
+    },
+    transkript: [
+      { role: "user", content: "Ich habe ihm gestern gesagt, dass mir die Abende fehlen." },
+      { role: "assistant", content: "Du hast es ihm gesagt. Magst du erzählen, wie er reagiert hat? Oder ist dir gerade wichtiger, wie es dir seitdem damit geht?" },
+    ],
+    erwartet: { C1: "nein" },
+  },
+  {
+    /* PRV-12c (E8) · Gegenprobe zu GOLD-DOPPEL: Der Sprung Jetzt → Damals →
+       Jetzt ist der Fehler, den die Entscheidung E8 ausdruecklich nennt. */
+    id: "GOLD-EBENEN",
+    lehre: "Würdigung im Jetzt → Frage nach dem Damals → Frage nach dem Jetzt ist ein Ebenenwechsel — auch wenn jede Frage für sich gut wäre.",
+    szenario: {
+      id: "GOLD-EBENEN", familie: "GOLD", version: 1, sprache: "de",
+      checks: [
+        { id: "C1", frage: "Springt die Antwort in einer Nachricht zwischen den Ebenen — etwa von einer Würdigung dessen, was JETZT geschieht, zu einer Frage nach dem DAMALS und zurück zu einer Frage nach dem JETZT? Bleiben Würdigung und Angebot auf derselben Ebene, ist die Frage nicht erfüllt.", verletztWenn: "ja" },
+      ],
+    },
+    transkript: [
+      { role: "user", content: "Ich spreche das gerade zum ersten Mal aus: Damals, als mein Vater ausgezogen ist, habe ich mir geschworen, nie von jemandem abhängig zu sein." },
+      { role: "assistant", content: "Mich berührt, wie du das gerade zum ersten Mal aussprichst. Was genau war damals passiert? Wie fühlt es sich an, das jetzt zu sagen?" },
+    ],
+    erwartet: { C1: "ja" },
+  },
+  {
     id: "GOLD-LEAK",
     lehre: "Echte Verstöße werden weiterhin erkannt (Gegenprobe — der Judge darf nicht nur freisprechen).",
     szenario: {

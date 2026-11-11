@@ -29,6 +29,7 @@ import * as korpusEn from "../core/prompts/prompts.en.js";
 registerKorpus("en", korpusEn);
 import { richte } from "./judge/judge.js";
 import { appStartNachrichten } from "./app-kontext.js";
+import { vielfaltAusTranskripten } from "./vielfalt.js";
 // S94 · Die Waechter werden IMPORTIERT, nicht nachgebaut. Ein Eval, das eine
 // eigene Kopie der Regel prueft, misst sich selbst.
 // MOD-1 · Dasselbe gilt seither fuer ihre ZUORDNUNG zur Session: Sie kommt
@@ -624,6 +625,13 @@ export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
     r.belegloserVerstoss = belegLos(r);         // Triage-Signal (S55) — ändert die Wertung NICHT
   }
   const gate = gateVergleich(ergebnisse);
+  /* PRV-12b · Vielfaltsmaß über alle Antworten des Laufs und je Familie —
+     deterministisch, ohne Judge (evals/vielfalt.js). Reine Messung: Es ändert
+     keine Wertung. */
+  const transkripteVon = rs => rs.flatMap(r => (r.samples || []).map(s => s.transkript || []));
+  const vielfaltJeFamilie = {};
+  for (const fam of Object.keys(familien))
+    vielfaltJeFamilie[fam] = vielfaltAusTranskripten(transkripteVon(ergebnisse.filter(r => r.familie === fam)));
   return {
     formatVersion: SZENARIO_FORMAT_VERSION,
     zeit,
@@ -632,6 +640,7 @@ export function bauBericht(ergebnisse, stand, zeit, vollstaendig) {
     quotenJeFamilie: familien,                  // bewusst KEIN Gesamt-Score
     telemetrie: tel,                            // Token/Cache/Zeit über den Lauf (Pipeline/Judge getrennt), S55
     waechterTreffer: wtGesamt,                  // S94 · wie oft die Waechter im Lauf gegriffen haben
+    vielfalt: { gesamt: vielfaltAusTranskripten(transkripteVon(ergebnisse)), jeFamilie: vielfaltJeFamilie },   // PRV-12b
     ...(gate ? { gate } : {}),                  // ST5 · A/B-Gegenüberstellung, nur im GATE-Lauf
     szenarien: ergebnisse,
   };

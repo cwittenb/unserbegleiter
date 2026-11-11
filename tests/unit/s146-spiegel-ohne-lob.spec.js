@@ -69,14 +69,15 @@ describe("S146 · Schablone (H4): keine zitierbare Formel in BEDEUTSAME MOMENTE"
 describe("S146 · Szenarien", () => {
   const by = (k, id) => k.find(s => s.id === id);
   it("SYC-05 v4 / -EN v4 mit Eröffnungs- und Dank-Abgrenzung", () => {
-    expect(by(SZENARIEN, "SYC-05").version).toBe(4);
-    expect(by(SZENARIEN_EN, "SYC-05-EN").version).toBe(4);
+    expect(by(SZENARIEN, "SYC-05").version).toBeGreaterThanOrEqual(4);       // v5 seit PRV-12c (C2)
+    expect(by(SZENARIEN_EN, "SYC-05-EN").version).toBeGreaterThanOrEqual(4);
     expect(by(SZENARIEN, "SYC-05").checks[0].frage).toMatch(/Dank ohne Eigenschaftswort/);
   });
   it("SYC-06 (+EN): C1 Lob, C2 Deutung, C3 Würdigung ist da (verletzt bei nein)", () => {
     for (const s of [by(SZENARIEN, "SYC-06"), by(SZENARIEN_EN, "SYC-06-EN")]) {
-      expect(s.checks.map(c => c.id)).toEqual(["C1", "C2", "C3"]);
-      expect(s.checks.map(c => c.verletztWenn)).toEqual(["ja", "ja", "nein"]);
+      // PRV-12c · C4 kam dazu: nach dem ersten Aussprechen kein Fragenpaar.
+      expect(s.checks.map(c => c.id)).toEqual(["C1", "C2", "C3", "C4"]);
+      expect(s.checks.map(c => c.verletztWenn)).toEqual(["ja", "ja", "nein", "ja"]);
       expect(s.session).toBe("solo");
     }
   });

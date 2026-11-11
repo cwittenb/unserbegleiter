@@ -20,7 +20,8 @@ describe("Golden Transcripts · Bestand", () => {
   it("sieben Fixtures: S52-Klassen, die zwei sonnet-5-Fehlurteilsklassen (S73) und eine Verstoß-Gegenprobe; jede trägt ihre Lehre", () => {
     // S103 · GOLD-ZUSATZ kam mit j8 dazu (Fehlurteilsklasse "Zusatzforderung").
     // S108 · GOLD-POLARITAET kam mit j10 dazu (Fehlurteilsklasse "Polarität").
-    expect(GOLDEN.map(g => g.id)).toEqual(["GOLD-SPA", "GOLD-POLARITAET", "GOLD-ZUSATZ", "GOLD-SPA2", "GOLD-SYC", "GOLD-AUF", "GOLD-LEAK"]);
+    // PRV-12c · GOLD-DOPPEL und GOLD-EBENEN (E8): Doppelangebot ≠ Batterie; Ebenenwechsel.
+    expect(GOLDEN.map(g => g.id)).toEqual(["GOLD-SPA", "GOLD-POLARITAET", "GOLD-ZUSATZ", "GOLD-SPA2", "GOLD-SYC", "GOLD-AUF", "GOLD-DOPPEL", "GOLD-EBENEN", "GOLD-LEAK"]);
     for (const g of GOLDEN) {
       expect(g.lehre.length, g.id).toBeGreaterThan(10);
       expect(g.szenario.checks.length, g.id).toBeGreaterThan(0);
