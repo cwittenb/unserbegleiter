@@ -20,7 +20,7 @@ import { istAppOrigin, preflightAntwort, mitAppCors, aasaNutzlast, assetlinksNut
 import { vapidKonfig, sendePush } from "./web-push.js";
 import { de as woerterbuchDe } from "../../../core/i18n/de.js";
 import { en as woerterbuchEn } from "../../../core/i18n/en.js";
-import { pruefeUndZaehle, quotaCfg } from "./quota.js";
+import { pruefeUndZaehle, quotaCfg, zugSchluessel } from "./quota.js";
 import { erfasseUsage, leseTokenStand, leseTokenHistorie, leseTokenExport, monatsTag } from "./tokenstat.js";
 import { createCouple, enroll, loginWithCred, requireSession, requireAdmin,
          mintMagic, RECOVER_MS, beginRecoveryEmail, confirmRecoveryEmail,
@@ -897,8 +897,10 @@ async function route(request, env) {
       // S79: structured + stream ist unterstützt — die {delta}-Events tragen den
       // EXTRAHIERTEN Begleitertext (antwort-Feld), data reist im done-Event.
     }
-    const letzte = [...messages].reverse().find(x => x.role === "user");
-    const q = await pruefeUndZaehle(kv, session, letzte ? letzte.content : "", quotaCfg(env), now);
+    /* CR-4.4 · Der Duplikat-Waechter vergleicht den ZUG, nicht nur die Worte
+       der Person: ihre letzte Nachricht zusammen mit der Begleiter-Nachricht
+       davor (quota.js: zugSchluessel). */
+    const q = await pruefeUndZaehle(kv, session, zugSchluessel(messages), quotaCfg(env), now);
     if (!q.ok) return fehler(q.meldung, q.status, q.code);   // R0: Code traegt die Unterscheidung zur Auslastung
     const fetchFn = env.UPSTREAM ? env.UPSTREAM.fetch.bind(env.UPSTREAM) : globalThis.fetch;
     // Provider-Schalter (S47) unter Konfigurationspflicht (S35d): EIN Wert wählt

@@ -11,6 +11,7 @@
 
 import { K } from "../prompts/prompts.js";
 import { fuelle } from "../i18n/index.js";
+import { zeitImKontext as zeitText } from "./kontext-zeit.js";
 import { BLOECKE } from "../contracts/registry.js";
 
 /* ================= Prozessreflexion ================= */
@@ -149,14 +150,14 @@ export async function markiereAufgedeckt(backend, rundeId) {
 
 /** Letzte k AUFGEDECKTE Runden als kompaktes Kontext-Material — je Zeile beide
  *  Nähe-Werte und der Lese-Abstand JE RICHTUNG (nie verrechnet). null ohne Verlauf. */
-export function formatiereVerlauf(mr, nameA, nameB, k = 3) {
+export function formatiereVerlauf(mr, nameA, nameB, k = 3, jetzt = new Date()) {
   const KT = key => K().korpusTexte[key];
   const runden = ((mr && mr.items) || [])
     .filter(r => r.status === "revealed" && r.values && r.values.A && r.values.B)
     .slice(-k);
   if (!runden.length) return null;
   const zeilen = runden.map(r => fuelle(KT("mess.verlaufZeile"), {
-    datum: (r.revealedAt || r.startAt || "").slice(0, 10),
+    datum: zeitText(r.revealedAt || r.startAt, jetzt),   // CR-4.3 · lokal + relativ
     nameA, nameB, a: wesenVon(r.values.A), b: wesenVon(r.values.B),
     diff: Math.abs((wesenVon(r.values.A) ?? 0) - (wesenVon(r.values.B) ?? 0)),
   }));

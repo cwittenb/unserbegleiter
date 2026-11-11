@@ -1,7 +1,10 @@
 // Corpus EN · SIGNALE (MOD-6) — the watchers' regexes (code, not prompt text). Mirror of de/signale.js.
 
+// CR-4.1 · Dieselbe Union wie im deutschen Korpus (MOD-2a) — EINE Quelle.
+import { KRISE_MUSTER } from "../de/signale.js";
+
 export const SIGNALE = {
-  krise: /\bsuizid|\bselbstmord|\bumbringen|nicht mehr leben|nicht mehr weiterleben|sterben will|\britz(e|t|en|est)\b|\bselbst ?verletz|weg sein wollen|keinen sinn mehr|am ende sein|self-harm|\bsuicid|kill myself|end it all/i,
+  krise: KRISE_MUSTER,   // CR-4.1 · siehe oben
   krisenhilfe: /0800\s*111\s*0\s*111|Telefonseelsorge|Krisendienst|crisis line|helpline/i,
   einzelraum: /eigene[nrms]?\s+Raum|eigenen\s+Raum|Einzelraum|dein\s+Raum|deinem\s+Raum|individual\s+space|own\s+space|your\s+own\s+room/i,
   eigeneSache: /\b(i|my|mine)\b[^.!?]{0,60}\b(didn'?t (do|get to|manage|finish|fill|hand|make)|did not (do|get to|manage|finish)|haven'?t (done|finished|gotten to|got to)|forgot|isn'?t (done|finished|ready)|not (done|finished|ready)|no time|never got (to|around))|\b(i )?(haven'?t|didn'?t|did not)( done| do)? (it|that|this|mine)\b/i,

@@ -63,6 +63,9 @@ export function sprecherVon(inhalt) {
  *
  * @param {{eigeneSache:RegExp, verfuegung:RegExp, text:string}|function} inhalt
  */
+/** CR-4.2 · So viele Züge vor der Verfügung darf der Anlass zurückliegen. */
+export const FENSTER = 3;
+
 export function baueZweiseitigkeitsSchaerfung(inhalt) {
   return (messages, ctx = {}) => {
     const { eigeneSache, verfuegung, text } = liesInhalt(inhalt);
@@ -75,12 +78,27 @@ export function baueZweiseitigkeitsSchaerfung(inhalt) {
 
     // Wer hat etwas als seine Sache markiert — und war das jemand anderes?
     const verfueger = sprecherVon(nachricht);
-    for (let i = zuege.length - 2; i >= 0; i--) {
+    /* CR-4.2 · FENSTER und "einmal je Anlass".
+       Bis CR-4 lief die Suche ueber ALLE frueheren Nachrichten: Sagte Bernd
+       frueh "ich hab's nicht gemacht", bekam Annas "Wir machen sonntags oft
+       einen Spaziergang" zehn Zuege spaeter wieder den Hinweis, Bernd
+       einzuholen (Code-Review C18).
+         · Fenster: Der Anlass muss in den FENSTER Zuegen vor der Verfuegung
+           stehen — danach ist er Gespraechsgeschichte, nicht mehr die Sache,
+           ueber die gerade verfuegt wird.
+         · Einmal: Stand zwischen Anlass und jetzt schon eine Verfuegung,
+           wurde zu diesem Anlass bereits eingeholt. Aus dem Verlauf gelesen,
+           nicht am Chat vermerkt — so rechnen App und Eval gleich. */
+    const ab = Math.max(0, zuege.length - 1 - FENSTER);
+    for (let i = zuege.length - 2; i >= ab; i--) {
       const frueher = String(zuege[i].content || "");
       if (!eigeneSache.test(frueher)) continue;
       const betroffen = sprecherVon(frueher);
       // Beide erkennbar UND dieselbe Person → sie verfügt über sich selbst.
       if (betroffen && verfueger && betroffen === verfueger) return null;
+      // Schon eingeholt? (eine frühere Verfügung NACH dem Anlass)
+      for (let j = i + 1; j < zuege.length - 1; j++)
+        if (verfuegung.test(String(zuege[j].content || ""))) return null;
       return ctx.text || text;
     }
     return null;

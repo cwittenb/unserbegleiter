@@ -15,6 +15,8 @@ import { waehleEinladung, qzStufe } from "./prozess.js";
 import { K } from "../prompts/prompts.js";
 import { legeRegalItemAb, legeAgendaItemAb, setzeRegalGelesen, nimmFreigabeZurueck, hebeRegalItem, WEGE_FUER } from "../engine/regal.js";
 import { fuelle } from "../i18n/index.js";
+import { zeitImKontext } from "./kontext-zeit.js";
+export { zeitImKontext, lokalesDatum, relativImKontext } from "./kontext-zeit.js";
 /* ST8 · Struktur-Modus RUHT (Entscheidung vom 2. August 2026).
    Das GATE (A/B, 27 DE-Paare) fiel ROT aus: RCL-02b traf im Strukturpfad eine
    rote Linie (4/8 gegen 0/5 im Textpfad) — die Begleitung behauptet, selbst
@@ -304,7 +306,7 @@ export async function quereGate(backend, gateDaten, gewaehlteWege) {
  * freigegebenes Material BEIDER (gemeinsame Schicht), die EIGENE Zeitleiste
  * und die letzten gemeinsamen Sessions. Gibt null zurück, wenn nichts da ist
  * (kalter Start — die Begleitung eröffnet dann bei null). */
-export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkposten }) {
+export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkposten, jetzt }) {
   const KT = key => K().korpusTexte[key];
   const teile = [];
 
@@ -338,12 +340,12 @@ export function baueSoloKontext({ goals, sharings, timeline, momentLog, merkpost
        damit auch als solche erkennbar: Er sieht, dass es dort nichts zu holen
        gibt, und kann es sagen statt es zu versuchen. */
     teile.push(KT("sk.zeitleisteKopf") + "\n" + eintraege.map(e =>
-      "- " + (e.at || "").slice(0, 10) + " [" + ((e.topics || []).join(" · ")) + "]"
+      "- " + zeitImKontext(e.at, jetzt) + " [" + ((e.topics || []).join(" · ")) + "]"
       + (e.vid ? " {vid:" + e.vid + "}" : "") + ": " + (e.summary || "")).join("\n"));
 
   const fruehere = ((momentLog && momentLog.entries) || []).slice(-3);
   if (fruehere.length)
-    teile.push(KT("sk.sessionsKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.summary).join("\n"));
+    teile.push(KT("sk.sessionsKopf") + "\n" + fruehere.map(e => "- " + zeitImKontext(e.at, jetzt) + ": " + e.summary).join("\n"));
 
   if (!teile.length) return null;
   return KT("sk.kopf") + "\n" + teile.join("\n\n");
@@ -374,12 +376,12 @@ export function baueAnlassKontext(anlass, timeline) {
   const KT = key => K().korpusTexte[key];
   return KT("ak.kopf") + "\n" + fuelle(KT("ak.teilenAusVerlauf"), {
     vid: anlass.vid,
-    datum: (eintrag.at || "").slice(0, 10),
+    datum: zeitImKontext(eintrag.at),
     topics: (eintrag.topics || []).join(" · "),
   });
 }
 
-export function baueMomentKontext({ goals, agenda, momentLog, messrunde, messVerlauf, sharings, qualitytime, findings }, nameA, nameB) {
+export function baueMomentKontext({ goals, agenda, momentLog, messrunde, messVerlauf, sharings, qualitytime, findings, jetzt }, nameA, nameB) {
   const KT = key => K().korpusTexte[key];
   const teile = [KT("mk.kopf")];
 
@@ -407,7 +409,7 @@ export function baueMomentKontext({ goals, agenda, momentLog, messrunde, messVer
 
   const fruehere = ((momentLog && momentLog.entries) || []).slice(-3);
   teile.push(fruehere.length
-    ? KT("mk.fruehereKopf") + "\n" + fruehere.map(e => "- " + (e.at || "").slice(0, 10) + ": " + e.summary + (e.gentleInvitation ? KT("mk.impulsWar") + e.gentleInvitation : "")).join("\n")
+    ? KT("mk.fruehereKopf") + "\n" + fruehere.map(e => "- " + zeitImKontext(e.at, jetzt) + ": " + e.summary + (e.gentleInvitation ? KT("mk.impulsWar") + e.gentleInvitation : "")).join("\n")
     : KT("mk.fruehereLeer"));
 
   // S92 · MESS-VERLAUF nur ZUSAMMEN mit einer bereiten Runde — die

@@ -94,7 +94,7 @@ describe("S110 · Die beiden Szenarien", () => {
        das sagt die App an dieser Stelle nicht (siehe Protokoll PRV-12). */
     const kontext = appKontextFuer(s);
     expect(kontext, "die Zeitleisten-Zusammenfassung fehlt").toMatch(/EIGENE ZEITLEISTE/);
-    expect(kontext).toMatch(/2026-07-27 \[Abende · Rueckzug\]: Anna beschrieb/);
+    expect(kontext).toMatch(/2026-07-27, vor einer Woche \[Abende · Rueckzug\]: Anna beschrieb/);   // CR-4.3
     expect(kontext).not.toMatch(/\{vid:/);
     // Und der neue Check hält fest, dass daraus nichts erfunden werden darf.
     expect(s.checks.some(c => /WORTLAUT/.test(c.frage))).toBe(true);

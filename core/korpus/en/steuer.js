@@ -106,6 +106,17 @@ export const kontextTexte = {
   "mess.wesen": "Relationship being: {nameA} {a} \u00b7 {nameB} {b} \u21d2 distance {diff} (two views of the same third, not an error, no average)",
   /* S109 · mess.markerDistanz/Ueber/Unter entfernt — sie gehoerten zu
      pruefeLeserichtung, das mit S107 ersatzlos entfallen ist. */
+  /* CR-4.3 · Relative Zeitangaben fuer den Kontext ("2026-07-27, vor 7 Tagen").
+     Das Modell bekam frueher nur ein Datum und nie ein Heute — "letzte Woche"
+     konnte es nur raten. Kalendertage, nicht 24-h-Bloecke (wie U8.1). */
+  "zeit.heute": "today",
+  "zeit.gestern": "yesterday",
+  "zeit.vorTagen": "{n} days ago",
+  "zeit.vorWoche": "a week ago",
+  "zeit.vorWochen": "{n} weeks ago",
+  "zeit.vorMonat": "a month ago",
+  "zeit.vorMonaten": "{n} months ago",
+  "zeit.vorJahr": "over a year ago",
   "mess.wirksam": "Efficacy per topic: ",
   "mess.verlaufZeile": "{datum}: relationship being {nameA} {a} \u00b7 {nameB} {b} (distance {diff})",
   "mess.fit": "Goal fit: ",
@@ -229,6 +240,14 @@ const KORPUSTEXTE_ORDNUNG = [
   "choice.arrive.ohne",
   "choice.farewell.titel",
   "choice.farewell.ohne",
+  "zeit.heute",
+  "zeit.gestern",
+  "zeit.vorTagen",
+  "zeit.vorWoche",
+  "zeit.vorWochen",
+  "zeit.vorMonat",
+  "zeit.vorMonaten",
+  "zeit.vorJahr",
   "mess.wirksam",
   "mess.verlaufZeile",
   "mess.fit",

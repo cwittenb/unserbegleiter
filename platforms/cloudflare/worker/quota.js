@@ -52,6 +52,25 @@ export function normalisiere(text) {
   return String(text || "").toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+/* CR-4.4 · Woran ein wiederholter Zug erkannt wird.
+   Bis CR-4 war es die letzte Nachricht der Person allein. Wer auf drei
+   verschiedene Fragen dreimal "Ja" antwortete, wurde beim dritten Mal
+   abgewiesen ("formuliere sie bitte leicht anders") — mitten in einem
+   Gespraech, das voellig in Ordnung war (Code-Review C16).
+   Gemeint war immer etwas anderes: derselbe ZUG, mehrfach gesendet (haengende
+   Schleife, Doppelklick, Wiederholung nach Fehler). Den erkennt man an der
+   Nachricht ZUSAMMEN mit dem, worauf sie antwortet. */
+export function zugSchluessel(messages) {
+  const ms = Array.isArray(messages) ? messages : [];
+  let i = ms.length - 1;
+  while (i >= 0 && !(ms[i] && ms[i].role === "user")) i--;
+  if (i < 0) return "";
+  let j = i - 1;
+  while (j >= 0 && !(ms[j] && ms[j].role === "assistant")) j--;
+  const davor = j >= 0 ? String(ms[j].content || "") : "";
+  return davor + "\n\u241e\n" + String(ms[i].content || "");
+}
+
 /**
  * Alle drei Schichten prüfen und (bei Freigabe) zählen.
  * @returns {{ok:true, hinweis:string|null, rest:number} |

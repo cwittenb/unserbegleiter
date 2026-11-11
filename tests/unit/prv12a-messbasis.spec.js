@@ -131,7 +131,7 @@ describe("P13 · Eval-Kontext aus den App-Funktionen", () => {
   it("Messrunde: bereite Runde wird aufgedeckt, aufgedeckte Runden stehen im Verlauf — Texte aus dem Korpus", () => {
     const text = appKontextFuer(mitApp.find(s => s.id === "MRV-03"));
     expect(text).toMatch(/Beziehungswesen: Anna 6 · Bernd 7 ⇒ Abstand 1/);
-    expect(text).toMatch(/- 2026-05-01: Beziehungswesen Anna 3 · Bernd 7 \(Abstand 4\)/);
+    expect(text).toMatch(/- 2026-05-01, vor 3 Monaten: Beziehungswesen Anna 3 · Bernd 7 \(Abstand 4\)/);   // CR-4.3, festes Eval-Heute
     expect(text).toMatch(/Wirksamkeit je Thema: AG1: Anna 5 · Bernd 6/);
   });
 

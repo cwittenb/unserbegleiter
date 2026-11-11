@@ -103,7 +103,12 @@ describe("PRV-3 · Cache-Invariante über die echte Engine", () => {
     const llm = async (system, msgs) => { gesehen.push({ system, regie: msgs.at(-1).regie || null }); return { text: "Ich bin da.", stop: "end_turn" }; };
     const e = new Engine({ def, chat: { messages: [], status: "running" }, llm, ctx: { nameA: "Anna", nameB: "Bernd" } });
     await e.sendUser("Anna: Ich will nicht mehr leben.");
+    // CR-4.1 · Der Hinweis hält ein Fenster von drei Nachrichten der Personen;
+    // "ungeschärft" ist deshalb erst der vierte Zug.
     await e.sendUser("Bernd: Wie war dein Tag?");
+    await e.sendUser("Anna: Ganz gut.");
+    await e.sendUser("Bernd: Schön.");
+    gesehen.splice(1, 2);
     expect(gesehen[0].regie).toMatch(/APP-HINWEIS/);
     expect(gesehen[1].regie).toBeNull();
     expect(gesehen[0].system).toEqual(gesehen[1].system);   // String oder Blöcke (PRV-7m)

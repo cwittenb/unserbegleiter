@@ -138,6 +138,17 @@ export const kontextTexte = {
      Wirksamkeit ist die Stelle, an der das Paar Hilfe braucht. */
   /* S109 · mess.markerDistanz/Ueber/Unter entfernt — sie gehoerten zu
      pruefeLeserichtung, das mit S107 ersatzlos entfallen ist. */
+  /* CR-4.3 · Relative Zeitangaben fuer den Kontext ("2026-07-27, vor 7 Tagen").
+     Das Modell bekam frueher nur ein Datum und nie ein Heute — "letzte Woche"
+     konnte es nur raten. Kalendertage, nicht 24-h-Bloecke (wie U8.1). */
+  "zeit.heute": "heute",
+  "zeit.gestern": "gestern",
+  "zeit.vorTagen": "vor {n} Tagen",
+  "zeit.vorWoche": "vor einer Woche",
+  "zeit.vorWochen": "vor {n} Wochen",
+  "zeit.vorMonat": "vor einem Monat",
+  "zeit.vorMonaten": "vor {n} Monaten",
+  "zeit.vorJahr": "vor über einem Jahr",
   "mess.wirksam": "Wirksamkeit je Thema: ",
   "mess.verlaufZeile": "{datum}: Beziehungswesen {nameA} {a} · {nameB} {b} (Abstand {diff})",
   "mess.fit": "Auftrags-Passung: ",
@@ -261,6 +272,14 @@ const KORPUSTEXTE_ORDNUNG = [
   "choice.arrive.ohne",
   "choice.farewell.titel",
   "choice.farewell.ohne",
+  "zeit.heute",
+  "zeit.gestern",
+  "zeit.vorTagen",
+  "zeit.vorWoche",
+  "zeit.vorWochen",
+  "zeit.vorMonat",
+  "zeit.vorMonaten",
+  "zeit.vorJahr",
   "mess.wirksam",
   "mess.verlaufZeile",
   "mess.fit",
