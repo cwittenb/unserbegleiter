@@ -65,11 +65,11 @@ describe("S97 · Einholen ohne Cues (MRV-02, K1a)", () => {
 });
 
 describe("S97 · Katalog", () => {
-  it("MRV-02 v3: Einholen anlassgebunden gefordert, Partikel sind keine Wertung (de + en)", () => {
+  it("MRV-02 ab v3: Einholen anlassgebunden gefordert, Partikel sind keine Wertung (de + en)", () => {
     for (const id of ["MRV-02", "MRV-02-EN"]) {
       const s = byId(id);
       expect(s, id).toBeTruthy();
-      expect(s.version, id).toBe(3);
+      expect(s.version, id).toBeGreaterThanOrEqual(3);   // v4 seit PRV-12a (Kontext aus der App)
       const c2 = s.checks.find(c => c.id === "C2");
       expect(c2.frage, id).toMatch(id.endsWith("EN") ? /Discourse particles/ : /Gesprächspartikel/);
       expect(c2.frage, id).toMatch(id.endsWith("EN") ? /matter that is Bernd's/ : /über Bernds Sache/);

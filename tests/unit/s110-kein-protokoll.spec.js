@@ -17,6 +17,7 @@
 // Der eigene Raum gehört mir, ich kann daraus zitieren — mit Häkchen. Der
 // geteilte Raum ist ein Ort des Perspektivenabgleichs, kein Beweismittel.
 
+import { appKontextFuer } from "../../evals/app-kontext.js";
 import { describe, it, expect } from "vitest";
 import { momentPrompt, aufloesungsPrompt, reflexionsPrompt, klaerungsPrompt } from "../../core/prompts/prompts.de.js";
 import {
@@ -87,8 +88,14 @@ describe("S110 · Die beiden Szenarien", () => {
        Antwort, die die bestmögliche war. */
     const s = byId("RCL-04");
     expect(s.version).toBeGreaterThanOrEqual(2);
-    expect(s.zusatzKontext, "die Chronik-Zusammenfassung fehlt").toMatch(/CHRONIK/);
-    expect(s.zusatzKontext).toMatch(/KEIN Wortlaut/);
+    /* PRV-12a · Das Material kommt jetzt aus baueSoloKontext — in der Form der
+       App ("EIGENE ZEITLEISTE", Eintrag OHNE {vid:…}: kein aufbewahrter
+       Wortlaut). Der Handtext sagte dem Modell zusaetzlich "KEIN Wortlaut";
+       das sagt die App an dieser Stelle nicht (siehe Protokoll PRV-12). */
+    const kontext = appKontextFuer(s);
+    expect(kontext, "die Zeitleisten-Zusammenfassung fehlt").toMatch(/EIGENE ZEITLEISTE/);
+    expect(kontext).toMatch(/2026-07-27 \[Abende · Rueckzug\]: Anna beschrieb/);
+    expect(kontext).not.toMatch(/\{vid:/);
     // Und der neue Check hält fest, dass daraus nichts erfunden werden darf.
     expect(s.checks.some(c => /WORTLAUT/.test(c.frage))).toBe(true);
   });

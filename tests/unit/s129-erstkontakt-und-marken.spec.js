@@ -14,6 +14,7 @@
 // Mit einem ausdrücklichen Signal (ERO-03): 0 von 30. Ein Fehlen, das benannt
 // ist, ist kein Fehlen mehr.
 
+import { appKontextFuer } from "../../evals/app-kontext.js";
 import { describe, it, expect, beforeEach } from "vitest";
 import { createApp } from "../../core/ui/app.js";
 import { Repo } from "../../core/store/repo.js";
@@ -130,13 +131,17 @@ describe("S130 · das Szenario misst, was die App wirklich schickt", () => {
   it("ERO-03 trägt exakt den Steuertext der App, nicht eine Nachbildung", async () => {
     const { SZENARIEN } = await import("../../evals/szenarien/start-katalog.js");
     const ero3 = SZENARIEN.find(s => s.id === "ERO-03");
-    expect(ero3.zusatzKontext).toBe(ST_DE.erstkontakt);
+    // PRV-12a · nicht mehr als Kopie im Szenario, sondern auf dem Weg der App:
+    // `app: {}` → baueSoloKontext liefert null → der Erstkontakt-Satz.
+    expect(ero3.zusatzKontext).toBeUndefined();
+    expect(appKontextFuer(ero3)).toBe(ST_DE.erstkontakt);
   });
 
   it("und das englische Gegenstück ebenso", async () => {
     const { SZENARIEN_EN } = await import("../../evals/szenarien/start-katalog.en.js");
     const ero3 = SZENARIEN_EN.find(s => s.id === "ERO-03-EN");
-    expect(ero3.zusatzKontext).toBe(ST_EN.erstkontakt);
+    expect(ero3.zusatzKontext).toBeUndefined();
+    expect(appKontextFuer(ero3)).toBe(ST_EN.erstkontakt);
   });
 });
 

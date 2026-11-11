@@ -48,6 +48,7 @@ import { makeAdapter, baueDrossel } from "../core/llm/adapter.js";
 import { leseEvalKonfig, EvalKonfigFehler } from "./eval-konfig.js";
 import { liesEnvDatei, mischeMitEnv } from "./env-datei.js";
 import { laufeAlle, wendeZielAn, varianten } from "./runner-kern.js";
+import { vielfaltTabelle } from "./vielfalt.js";
 import { laufeAlleBatch } from "./runner-batch.js";
 import { pruefeJudge } from "./judge/golden.js";
 import { kostenFuer, cacheQuote } from "./preise.js";
@@ -354,6 +355,11 @@ async function main() {
   // S94 · Lesart und Waechter-Treffer sichtbar machen — ohne sie ist nicht
   // erkennbar, ob ein gruener Lauf dem Korpus oder dem Waechter zu verdanken ist.
   const WT = bericht.waechterTreffer || { aufdeck: 0, urteil: 0 };
+  if (bericht.vielfalt && bericht.vielfalt.gesamt.antworten) {
+    console.log("\n──── " + vielfaltTabelle(bericht.vielfalt.gesamt, "Vielfalt (alle Antworten)"));
+    const int = bericht.vielfalt.jeFamilie.INT;
+    if (int && int.antworten) console.log(vielfaltTabelle(int, "Vielfalt (Familie INT)"));
+  }
   console.log("Lesart: " + (waechter ? "mit Waechter (ausgeliefertes System)" : "ohne Waechter (Korpus allein)") +
     (waechter ? "  ·  Treffer: Aufdeck " + WT.aufdeck + ", Urteil " + WT.urteil : ""));
   if (waechter)

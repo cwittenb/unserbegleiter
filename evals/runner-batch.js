@@ -10,6 +10,7 @@
 // Nur Anthropic (D1); der Aufrufer erzwingt das.
 
 import { sysPromptFuer, sysBloeckeFuer, szenarioSprache, sampleAusUrteil, szenarioAusSamples, bauBericht, uebergabeFuer, waechterArt, schaerfungFuer} from "./runner-kern.js";
+import { appStartNachrichten } from "./app-kontext.js";
 import { strukturFuer } from "./struktur-bruecke.js";
 import { textSchatten } from "../core/engine/text-schatten.js";
 import { mitRegie } from "../core/engine/regie.js";
@@ -105,7 +106,7 @@ export async function laufeAlleBatch(szenarien, deps) {
     for (let i = 0; i < anzahl; i++)
       konvs.push({ konvId: sz.id + "_" + kuerzel + "_" + (i + 1), sz, variante, struktur, nr: i + 1,
         system: struktur ? struktur.system : sysPromptFuer(sz),
-        messages: [], pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null,
+        messages: appStartNachrichten(sz), pipe: leerTok(), judge: leerTok(), fehler: null, leer: null, urteil: null,
         /* MRV · Dieselben zwei Haken wie im synchronen Pfad — einmal je
            Konversation. Bis hierher stand hier ein Revisions-Validator im
            Stand von S94; damit mass auch der Batch-Pfad einen Vertrag, den es

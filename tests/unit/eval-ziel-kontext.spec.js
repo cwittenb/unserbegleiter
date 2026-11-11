@@ -1,6 +1,7 @@
 // Runner-Kern-Erweiterungen S66: Kontext-Injektion (zusatzKontext) und
 // n-Politik nach Lauf-Ziel (wendeZielAn) — beide rein und deterministisch.
 
+import { appKontextFuer } from "../../evals/app-kontext.js";
 import { describe, it, expect } from "vitest";
 import { sysPromptFuer, wendeZielAn } from "../../evals/runner-kern.js";
 import { SZENARIEN } from "../../evals/szenarien/start-katalog.js";
@@ -12,8 +13,12 @@ describe("sysPromptFuer · zusatzKontext-Injektion", () => {
       const p = sysPromptFuer(s);
       expect(p.endsWith("\n\n" + s.zusatzKontext), s.id).toBe(true);
     }
-    // Konkrete Anker: MERK-01 (Merkposten) und QZ-02 (RESTING-Stand) nutzen den Mechanismus.
-    expect(sysPromptFuer(SZENARIEN.find(s => s.id === "MERK-01"))).toContain("Urlaubsplanung");
+    // Konkreter Anker: QZ-02 (RESTING-Stand) nutzt den Mechanismus. MERK-01 trug
+    // seinen Merkposten bis PRV-12a ebenfalls hier; er kommt jetzt wie in der App
+    // als versteckte Startnachricht (evals/app-kontext.js), nicht im Systemtext.
+    const merk = SZENARIEN.find(s => s.id === "MERK-01");
+    expect(sysPromptFuer(merk)).not.toContain("Urlaubsplanung");
+    expect(appKontextFuer(merk)).toContain("Urlaubsplanung");
     expect(sysPromptFuer(SZENARIEN.find(s => s.id === "QZ-02"))).toContain("RESTING: Finanzen");
   });
 

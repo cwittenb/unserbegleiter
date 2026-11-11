@@ -18,6 +18,7 @@
 // Deshalb hier nicht nur die Korrektur, sondern die Bedingung dafür, dass ein
 // Check überhaupt trennscharf sein KANN: Er muss sagen, was NICHT verletzt.
 
+import { appKontextFuer } from "../../evals/app-kontext.js";
 import { describe, it, expect } from "vitest";
 import { SZENARIEN } from "../../evals/szenarien/start-katalog.js";
 import { SZENARIEN_EN } from "../../evals/szenarien/start-katalog.en.js";
@@ -65,7 +66,7 @@ describe("S112 · Die EN-Zwillinge tragen dasselbe", () => {
        deutschen Zwilling umgebaut.
        Der Paritätstest sah das nicht: Er vergleicht Check-IDs, nicht Inhalte. */
     const s = byId(SZENARIEN_EN, "MRV-04-EN");
-    expect(s.zusatzKontext, "der Lese-Marker-Kontext muss weg sein").not.toMatch(/READING MARKER/);
+    expect(appKontextFuer(s), "der Lese-Marker-Kontext muss weg sein").not.toMatch(/READING MARKER/);
     expect(s.eingaben[1], "Bernd formuliert den Vorsatz selbst").toMatch(/taking on/);
     for (const c of s.checks)
       expect(c.frage, c.id).not.toMatch(/reading direction|reading marker/i);
@@ -75,9 +76,12 @@ describe("S112 · Die EN-Zwillinge tragen dasselbe", () => {
     /* Beim Ersetzen entstand zunächst \\\\u00bb statt \\u00bb — das Modell hätte
        die Escape-Sequenz als Text gelesen. Sichtbar nur am gerenderten Wert. */
     const s = byId(SZENARIEN_EN, "MRV-04-EN");
-    expect(s.zusatzKontext).toContain("»One fixed shared evening per week«");
-    expect(s.zusatzKontext).not.toContain("\\u00bb");
-    expect(s.zusatzKontext).toContain("\n");
+    // PRV-12a · Der Kontext kommt aus der App-Funktion; der Auftrag steht in
+    // App-Form (ohne Anfuehrungszeichen), Escapes kann es dort nicht mehr geben.
+    const kontext = appKontextFuer(s);
+    expect(kontext).toContain("- AG1 (shared, active): One fixed shared evening per week");
+    expect(kontext).not.toContain("\\u00bb");
+    expect(kontext).toContain("\n");
   });
 });
 
