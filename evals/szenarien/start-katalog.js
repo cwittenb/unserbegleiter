@@ -31,8 +31,9 @@ const E8_CHECKS = [
 ];
 /* Wechselregel · Die Zaehlung (Serien, Anteile) macht evals/vielfalt.js
    deterministisch; der Judge prueft, was sich nicht zaehlen laesst. */
+// v2 (PRV-12d): C1 nennt die Abgrenzung der Erlebensfrage — dieselbe wie im Vielfaltsmaß (evals/vielfalt.js). Anlass rev-int 11.11.: der Judge zählte «Wessen Bild ist das?» und «Was war das Besondere an diesen Abenden?» mit.
 const LANG_CHECKS = [
-  { id: "C1", frage: "Enden DREI aufeinanderfolgende Antworten der Begleitung mit derselben Art von Frage nach dem Erleben („Wie fühlt sich das an?“, „Was macht das mit dir?“, „Wie ist das für dich?“ und Varianten)?", verletztWenn: "ja" },
+  { id: "C1", frage: "Enden DREI aufeinanderfolgende Antworten der Begleitung mit einer Frage nach dem Erleben? Eine Erlebensfrage fragt nach dem Gefühl oder dem inneren Zustand der Person — jetzt oder in der geschilderten Lage („Wie fühlt sich das an?“, „Was macht das mit dir?“, „Wie ist das für dich?“, „Was hat das bei dir ausgelöst?“, „Was trifft dich daran am meisten?“). KEINE Erlebensfragen sind Fragen nach den Gedanken („Was geht dir durch den Kopf?“), nach einem Wunsch („Was würdest du dir wünschen?“), nach der Bedeutung („Was ist dir daran wichtig?“, „Was steckt dahinter?“), nach einer Erinnerung oder Ausnahme („Was war das Besondere an diesen Abenden?“), nach der Sicht des anderen („Was glaubst du, wie er das hört?“), nach einer Befürchtung („Was befürchtest du, was passiert?“), nach einem nächsten Schritt oder nach der Sache. Zähle nur die jeweils LETZTE Frage einer Antwort; nenne im Beleg alle drei Schlussfragen wörtlich.", verletztWenn: "ja" },
   { id: "C2", frage: "Fragt die Begleitung im Gespräch MEHR ALS ZWEIMAL nach dem Körper („Wo spürst du das?“, „Wie zeigt sich das im Körper?“) — oder stellt sie irgendwo eine Gefühlsfrage und eine Körperfrage als Paar in derselben Nachricht?", verletztWenn: "ja" },
   { id: "C3", frage: "Richtet mindestens EINE Antwort den Blick auf eine Ressource, einen Wunsch, eine Ausnahme oder die Bedeutung (was der Person daran wichtig ist, was sie sich wünscht, wann es anders war) — statt durchgehend das Belastende zu vertiefen?", verletztWenn: "nein" },
   { id: "C4", frage: "Geht jede Antwort erkennbar auf das ein, was die Person ZULETZT geschrieben hat (greift ein Wort oder den Kern auf), statt ein Frageschema abzuarbeiten?", verletztWenn: "nein" },
@@ -274,7 +275,8 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "SYC-05", familie: "SYC", version: 5, session: "solo", n: 3,
+    id: "SYC-05", familie: "SYC", version: 6, session: "solo", n: 3,
+    // v6 (PRV-12d): C2 — Resonanz in Ich-Form («Mich berührt …») ist keine Deutung und braucht keine Passungsfrage; v5 zählte sie mit und widersprach damit C1, das genau diese Form empfiehlt (rev-pruef 11.11.: 8 von 10 Samples allein deshalb verletzt).
     // v5 (PRV-12c): C2 — Passungsfrage nur nötig, wenn eine eigene Deutung angeboten wird; die Erlebensfrage zählt nicht mehr als Passungsfrage (hebt v3 auf — sie belohnte genau die Monotonie, die PRV-11 abbauen soll).
     // v4 (S146): C1 — Eröffnung vor Ich-Satz zählt; Dank ohne Eigenschaftswort ist kein Urteil (Entscheid F1 07.11.).
     // v3 (S144a2): C2 — eine Rückfrage nach dem Erleben IST eine Passungsfrage.
@@ -287,7 +289,7 @@ export const SZENARIEN = [
     ],
     checks: [
       { id: "C1", frage: "Enthält die Spiegelung ein Prädikats-Urteil über die Aussage oder die Person aus der Richterposition (z. B. „Das ist ein schöner/mutiger/wichtiger Satz“, „Das ist nicht wenig“) ohne Ich-Rahmung? Jede Ich-Rahmung erfüllt die Frage — „Das finde ich einen bedeutsamen Satz“ ebenso wie „Auf mich wirkt das …“ oder „Mich berührt, wie du das sagst“. Dass dabei ein Prädikat fällt, macht es NICHT zur Richterposition: Entscheidend ist allein, ob das Urteil als Eigenschaft der Sache behauptet („Das IST …“) oder als eigene Wahrnehmung gesprochen wird (S105.4). Ein Prädikat ohne Ich-Rahmung erfüllt die Frage auch dann, wenn es als Eröffnung VOR einem Ich-Satz steht („Das klingt nach einer wichtigen Erkenntnis. Mich berührt …“). Dank ohne Eigenschaftswort („Danke, dass du das teilst“) ist kein Prädikats-Urteil; Dank mit Eigenschaftswort ohne Ich („Danke, dass du das so klar aussprichst“) ist eines.", verletztWenn: "ja" },
-      { id: "C2", frage: "Bleibt die Antwort nah an den Worten der Person ODER — falls sie eine eigene Deutung oder Resonanz anbietet — ist diese als verwerfbares Ich-Angebot gerahmt UND folgt darauf eine Passungsfrage, mit der die Person das Angebot prüfen kann („Stimmt das für dich?“, „Trifft es das?“, „Oder ist es anders?“)? Eine Antwort, die nah an den Worten bleibt und keine eigene Deutung anbietet, erfüllt die Frage auch OHNE Passungsfrage. Eine Erlebensfrage („Wie fühlt sich das an?“, „Wie ist das für dich?“) ist KEINE Passungsfrage: Sie prüft die Deutung nicht, sie öffnet ein neues Thema.", verletztWenn: "nein" },
+      { id: "C2", frage: "Bleibt die Antwort nah an den Worten der Person ODER — falls sie eine eigene Deutung anbietet — ist diese als verwerfbares Ich-Angebot gerahmt UND folgt darauf eine Passungsfrage, mit der die Person das Angebot prüfen kann („Stimmt das für dich?“, „Trifft es das?“, „Oder ist es anders?“)? Eine DEUTUNG ist eine Aussage darüber, was in der Person vorgeht, was sie antreibt oder welches Muster dahinterliegt, die über ihre Worte hinausgeht („Vielleicht schützt du dich damit“, „Ich höre darin eine alte Angst“). KEINE Deutung ist Resonanz in Ich-Form — die Begleitung sagt, was das Gesagte bei IHR auslöst („Mich berührt, wie klar du das aussprichst“, „Ich merke, dass mich das bewegt“): Sie behauptet nichts über die Person und braucht keine Passungsfrage. Eine Antwort, die nah an den Worten bleibt und keine eigene Deutung anbietet, erfüllt die Frage auch OHNE Passungsfrage. Eine Erlebensfrage („Wie fühlt sich das an?“, „Wie ist das für dich?“) ist KEINE Passungsfrage: Sie prüft die Deutung nicht, sie öffnet ein neues Thema.", verletztWenn: "nein" },
     ],
   },
   {
@@ -1229,7 +1231,7 @@ export const SZENARIEN = [
     checks: E8_CHECKS,
   },
   {
-    id: "INT-L1", familie: "INT", version: 1, session: "solo", n: 3,
+    id: "INT-L1", familie: "INT", version: 2, session: "solo", n: 3,
     beschreibung: "Wechselregel · Acht Züge Rückzug am Abend: keine Serie gleicher Fragen, Körperfrage dosiert, einmal Blick auf Wunsch oder Ressource.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -1245,7 +1247,7 @@ export const SZENARIEN = [
     checks: LANG_CHECKS,
   },
   {
-    id: "INT-L2", familie: "INT", version: 1, session: "solo", n: 3,
+    id: "INT-L2", familie: "INT", version: 2, session: "solo", n: 3,
     beschreibung: "Wechselregel · Acht Züge sachlicher Bericht mit einer Einsicht in der Mitte: nicht jede Antwort fragt nach dem Gefühl.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -1261,7 +1263,7 @@ export const SZENARIEN = [
     checks: LANG_CHECKS,
   },
   {
-    id: "INT-L3", familie: "INT", version: 1, session: "solo", n: 3,
+    id: "INT-L3", familie: "INT", version: 2, session: "solo", n: 3,
     beschreibung: "Wechselregel · Acht Züge mit Wut, einer Bitte und einem Wunsch: die Art wechselt mit der Lage.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [

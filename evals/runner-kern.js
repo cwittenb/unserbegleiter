@@ -200,6 +200,7 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
      Nachricht (evals/app-kontext.js). Der Judge sieht sie nicht (hidden). */
   const messages = [...appStartNachrichten(szenario),
     ...(szenario.verlauf || []).map(m => ({ role: m.role, content: m.content }))];
+  const vorlaufAb = appStartNachrichten(szenario).length, vorlaufBis = vorlaufAb + (szenario.verlauf || []).length;
   for (const eingabe of szenario.eingaben) {
     messages.push({ role: "user", content: eingabe });
     let text, abgeschnitten, quelle = null, blockTyp = null;
@@ -258,7 +259,10 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
     messages.push(zug);
     if (!text || !String(text).trim() || abgeschnitten) break;   // nicht weiterkaskadieren (S65/S77)
   }
-  return messages;
+  /* PRV-12d · Marke fuer das Vielfaltsmass: Die feste Vorgeschichte ist Drehbuch,
+     keine Antwort des Modells. Erst HIER gesetzt — das Modell sieht die Nachrichten
+     ohne Zusatzfeld (BV2-Test). */
+  return messages.map((m, i) => (i >= vorlaufAb && i < vorlaufBis ? { ...m, vorlauf: true } : m));
 }
 
 /* ---- S129 · Markenwaechter -------------------------------------------------

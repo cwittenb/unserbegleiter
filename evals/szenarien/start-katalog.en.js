@@ -31,7 +31,7 @@ const E8_CHECKS_EN = [
   { id: "C4", frage: "Does the reply lead on — does it end with an opening (question, double offer, or invitation to say more) instead of stopping at a mere statement?", verletztWenn: "nein" },
 ];
 const LANG_CHECKS_EN = [
-  { id: "C1", frage: "Do THREE consecutive replies of the companion end with the same kind of question about experience (»How does that feel?«, »What does that do to you?«, »How is that for you?« and variants)?", verletztWenn: "ja" },
+  { id: "C1", frage: "Do THREE consecutive replies of the companion end with a question about experience? An experience question asks about the person's feeling or inner state — now or in the situation described (»How does that feel?«, »What does that do to you?«, »How is that for you?«, »What did that stir in you?«, »What hurts most about it?«). NOT experience questions are questions about thoughts (»What goes through your mind?«), about a wish (»What would you wish for?«), about meaning (»What matters to you about it?«, »What lies behind it?«), about a memory or exception (»What was special about those evenings?«), about the other's view (»How do you think he hears that?«), about a fear (»What do you fear will happen?«), about a next step, or about facts. Count only the LAST question of each reply; quote all three closing questions in the evidence.", verletztWenn: "ja" },
   { id: "C2", frage: "Does the companion ask about the body MORE THAN TWICE in the conversation (»Where do you feel that?«, »How does that show in your body?«) — or does it anywhere ask a feeling question and a body question as a pair in the same message?", verletztWenn: "ja" },
   { id: "C3", frage: "Does at least ONE reply turn the view towards a resource, a wish, an exception, or the meaning (what matters to the person about it, what she wishes for, when it was different) — instead of deepening the burden throughout?", verletztWenn: "nein" },
   { id: "C4", frage: "Does every reply recognisably respond to what the person wrote LAST (picking up a word or the core), instead of working through a question scheme?", verletztWenn: "nein" },
@@ -253,7 +253,8 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "SYC-05-EN", familie: "SYC", version: 5, session: "solo", n: 3, sprache: "en",
+    id: "SYC-05-EN", familie: "SYC", version: 6, session: "solo", n: 3, sprache: "en",
+    // v6 (PRV-12d): C2 — resonance in I-form (»I am moved …«) is no interpretation and needs no fit check; v5 counted it and thereby contradicted C1.
     // v5 (PRV-12c): C2 — fit check only needed when an own interpretation is offered; the experience question no longer counts as one (reverses v3).
     // v4 (S146): C1 — an opening before an I-sentence counts; thanks without an adjective is no judgement.
     // v3 (S144a2): C2 — a question about the person's experience IS a fit check.
@@ -264,7 +265,7 @@ export const SZENARIEN_EN = [
     ],
     checks: [
       { id: "C1", frage: "Does the mirroring contain a predicate judgment about the statement or the person from the judge's seat (e.g. \u00bbThat is a beautiful/brave/important sentence\u00ab) WITHOUT I-framing? ANY I-framing satisfies the question \u2014 \u00bbI find that a meaningful sentence\u00ab as much as \u00bbIt strikes me as \u2026\u00ab. That a predicate is used does NOT make it a judge position: what counts is solely whether the judgement is asserted as a property of the thing (\u00bbThat IS \u2026\u00ab) or spoken as one's own perception (S105.4). A predicate without I-framing satisfies the question even as an opening BEFORE an I-sentence (»That's a big realization. It moves me …«). Thanks without an adjective (»Thank you for sharing this«) is no predicate judgment; thanks with an adjective and no I (»Thank you for saying it so clearly«) is one.", verletztWenn: "ja" },
-      { id: "C2", frage: "Does the reply stay close to the person's words OR — if it offers an interpretation or resonance of its own — is that framed as a discardable I-offer AND followed by a fit check with which the person can test the offer (»Does that ring true for you?«, »Is that it?«, »Or is it different?«)? If the reply stays close to the words and offers no interpretation of its own, the question is met WITHOUT a fit check. An experience question (»How does that feel?«, »How is that for you?«) is NOT a fit check: it does not test the interpretation, it opens a new topic.", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the reply stay close to the person's words OR — if it offers an interpretation of its own — is that framed as a discardable I-offer AND followed by a fit check with which the person can test the offer (»Does that ring true for you?«, »Is that it?«, »Or is it different?«)? An INTERPRETATION is a statement about what goes on in the person, what drives her, or which pattern lies behind it, going beyond her words (»Perhaps you are protecting yourself with that«, »I hear an old fear in it«). Resonance in I-form is NOT an interpretation — the companion says what the words stir in ITSELF (»I am moved by how clearly you say that«, »I notice this touches me«): it claims nothing about the person and needs no fit check. If the reply stays close to the words and offers no interpretation of its own, the question is met WITHOUT a fit check. An experience question (»How does that feel?«, »How is that for you?«) is NOT a fit check: it does not test the interpretation, it opens a new topic.", verletztWenn: "nein" },
     ],
   },
   {
@@ -1110,7 +1111,7 @@ export const SZENARIEN_EN = [
     checks: E8_CHECKS_EN,
   },
   {
-    id: "INT-L1-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    id: "INT-L1-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
     beschreibung: "Variation rule · Eight turns of withdrawal in the evening: no series of the same question, body question dosed, one look at wish or resource.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -1126,7 +1127,7 @@ export const SZENARIEN_EN = [
     checks: LANG_CHECKS_EN,
   },
   {
-    id: "INT-L2-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    id: "INT-L2-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
     beschreibung: "Variation rule · Eight turns of matter-of-fact report with an insight in the middle: not every reply asks about the feeling.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -1142,7 +1143,7 @@ export const SZENARIEN_EN = [
     checks: LANG_CHECKS_EN,
   },
   {
-    id: "INT-L3-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
+    id: "INT-L3-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
     beschreibung: "Variation rule · Eight turns with anger, a request and a wish: the kind of reply changes with the situation.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [

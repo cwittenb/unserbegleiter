@@ -28,6 +28,13 @@ import { cleanDisplay } from "../core/contracts/block.js";
 
 const KOERPER = /\bwo\b[^?]{0,40}\b(spürst|merkst|fühlst|sitzt|zeigt sich)\b|\bim körper\b|\bkörperlich\b|\bdein körper\b|\b(in|im) (der|deiner|deinem|dem) (brust|bauch|hals|kehle|magen|kopf|schultern|nacken)\b|\bwhere\b[^?]{0,40}\b(feel|notice|sense|sit)\b|\bin your body\b|\bphysically\b|\byour body\b|\bin your (chest|stomach|throat|shoulders|belly)\b/i;
 const ERLEBEN = /\bwie fühlt\b|\bfühlt (sich|es sich)\b[^?]{0,60}\ban\b|\bwie (ist|war) (das|es)\b[^?]{0,30}\b(für dich|für euch|gerade|jetzt)\b|\bwas macht (das|es)\b[^?]{0,20}\bmit (dir|euch)\b|\bwie geht es (dir|euch)\b|\bwas (spürst|fühlst|empfindest|merkst) du\b|\bwas (löst|regt|rührt)\b[^?]{0,30}\b(in dir|bei dir|aus)\b|\bwie erlebst du\b|\bwas (ist|passiert|geschieht)\b[^?]{0,25}\b(in dir|bei dir)\b|\bwie (es|sich das)\b[^?]{0,30}\bangefühlt\b|\bhow does (that|it|this)\b[^?]{0,30}\bfeel\b|\bhow did (that|it)\b[^?]{0,20}\bfeel\b|\bwhat does (that|it)\b[^?]{0,20}\bdo to you\b|\bhow is (that|it|this)\b[^?]{0,25}\bfor you\b|\bwhat (do you|are you) (feel|notice|sens|experienc)\w*\b|\bwhat comes up\b|\bwhat happens (in|inside) you\b/i;
+/* PRV-12d · Im Lauf rev-int (11.11.) übersehen: Der Judge las diese Formen als
+   Erlebensfrage, das Maß legte sie unter andereFrage ab. ABGRENZUNG (dieselbe
+   wie in INT-L/C1): Erlebensfrage = Frage nach Gefühl oder innerem Zustand.
+   Gedanken ("durch den Kopf"), Wunsch, Bedeutung, Erinnerung, Befürchtung,
+   Sicht des anderen und Sache bleiben andereFrage — das sind die Türen, die
+   die Heuristik öfter sehen will. */
+const ERLEBEN2 = /\bwie\b[^?]{0,40}\bangefühlt\b|\bwie (wäre|waere) (das|es)\b[^?]{0,30}\bfür (dich|euch)\b|\bwas hat (das|es)\b[^?]{0,25}\b(bei|in) (dir|euch)\b[^?]{0,15}\bausgelöst\b|\bwas (trifft|verletzt|schmerzt|kränkt|ärgert)\b[^?]{0,25}\b(dich|euch)\b|\bwas\b[^?]{0,15}\bmacht (dich|euch)\b[^?]{0,30}\b(wütend|traurig|sauer|ärgerlich|unsicher|hilflos)\b|\bwas ist\b[^?]{0,12}\bstärker\b|\bwie es (dir|euch)\b[^?]{0,20}\bgeht\b|\bwas (bei|in) (dir|euch)\b[^?]{0,20}\b(passiert|geschieht|ankommt|los ist)\b|\bwie (das|es)\b[^?]{0,12}\bbei (dir|euch)\b[^?]{0,15}\bankommt\b|\bwas taucht\b[^?]{0,25}\bauf\b|\bhineinspüren\b|\b(spürst|fühlst|empfindest) du\b|\bwas (war|waren) das für (ein |eine )?(weinen|tränen|gefühl)\b|\bhow would (that|it)\b[^?]{0,20}\b(be|feel) for you\b|\bwhat did (that|it)\b[^?]{0,20}\b(stir|bring up|trigger|set off)\b|\bwhat (hurts|stings|upsets|angers)\b[^?]{0,25}\byou\b|\bwhat makes you\b[^?]{0,30}\b(angry|sad|furious|unsure|helpless)\b|\bwhat('s| is)\b[^?]{0,12}\bstronger\b|\bhow you('re| are)\b[^?]{0,15}\b(doing|feeling)\b|\bwhat('s| is) (happening|going on) (in|inside|for) you\b|\bhow (that|it) lands\b|\b(do|did) you feel\b|\bwhat kind of (crying|tears|feeling)\b/i;
 const EINLADUNG = /\b(magst|möchtest|willst) du\b|\bwenn du (magst|möchtest|willst)\b|\bwenn ihr (mögt|möchtet|wollt)\b|\berzähl(e|t)?\b[^.!]{0,20}\b(gern|mir|mehr|davon)\b|\bnimm dir\b|\blass dir zeit\b|\bich bin (da|hier)\b[^.!]{0,25}\bwenn\b|\bif you('d)? like\b|\bfeel free\b|\btell me\b|\btake your time\b|\bwhenever you\b|\bi'?m here\b[^.!]{0,25}\b(if|when)\b/i;
 const ODER_ANFANG = /^\s*(oder|or)\b/i;
 const ODER_MITTE = /,?\s+\b(oder|or)\b\s+(magst|möchtest|willst|soll|wollen|ist|geht|eher|lieber|vielleicht|erst|would|do|shall|is|rather|maybe|perhaps)\b/i;
@@ -47,7 +54,7 @@ export function saetze(text) {
   return (sichtbar(text).match(/[^.!?…]+[.!?…]+["“”»«)]*|[^.!?…]+$/g) || []).map(s => s.trim()).filter(Boolean);
 }
 
-const tuerVon = satz => (KOERPER.test(satz) ? "koerper" : ERLEBEN.test(satz) ? "erleben" : "andere");
+const tuerVon = satz => (KOERPER.test(satz) ? "koerper" : (ERLEBEN.test(satz) || ERLEBEN2.test(satz)) ? "erleben" : "andere");
 
 /**
  * @returns {{form:string, tueren:string[], fragen:number}}
@@ -102,13 +109,17 @@ export function laengsteSerie(formen) {
 export function vielfalt(gespraeche) {
   const zaehler = Object.fromEntries(FORMEN.map(f => [f, 0]));
   let n = 0, erleben = 0, koerper = 0, ohneFrage = 0, koerperIrgendwo = 0;
-  let serie = { laenge: 0, form: null };
+  let serie = { laenge: 0, form: null }, erlebensSerie = 0;
   for (const antworten of gespraeche || []) {
-    const formen = [];
+    const formen = []; let lauf = 0;
     for (const text of antworten || []) {
       if (!String(text ?? "").trim()) continue;
       const r = schlussform(text);
       n++; zaehler[r.form]++; formen.push(r.form);
+      /* PRV-12d · Serie von Antworten, an deren Schluss eine Erlebens-Tür steht —
+         das ist, was INT-L/C1 prüft. `andereFrage` ist eine Restklasse aus vielen
+         Arten; eine Serie davon sagt nichts über Monotonie. */
+      if (r.tueren.includes("erleben") || r.tueren.includes("koerper")) { lauf++; if (lauf > erlebensSerie) erlebensSerie = lauf; } else lauf = 0;
       if (r.tueren.includes("erleben") || r.tueren.includes("koerper")) erleben++;   // Körperfrage IST eine Erlebensfrage (45 ⊇ 21)
       if (r.tueren.includes("koerper")) koerper++;
       if (r.form === "einladung" || r.form === "keineOeffnung") ohneFrage++;
@@ -126,14 +137,17 @@ export function vielfalt(gespraeche) {
     koerperfrageAmSchluss: anteil(koerper),         // Ziel ≤ 10 %  (Basis 29 %)
     koerperfrageIrgendwo: anteil(koerperIrgendwo),
     ohneFrageAmSchluss: anteil(ohneFrage),          // Einladung + keine Öffnung (Zielwert nach E2 entfallen)
-    laengsteSerie: serie,                           // Ziel ≤ 2
+    laengsteSerie: serie,                           // jede Form, auch die Restklasse — nur zur Ansicht
+    laengsteErlebensSerie: erlebensSerie,           // Ziel ≤ 2 (PRV-12d)
     groessteForm: n ? FORMEN.map(f => [f, zaehler[f] / n]).sort((a, b) => b[1] - a[1])[0] : null,   // Ziel: keine über 45 %
   };
 }
 
-/** Aus Transkripten (Runner): je Sample die sichtbaren Antworten der Begleitung. */
+/** Aus Transkripten (Runner): je Sample die sichtbaren Antworten der Begleitung.
+ *  PRV-12d: Feste Vorgeschichte (`vorlauf: true`) zählt nicht — sie ist Drehbuch,
+ *  keine Wahl des Modells (rev-int: 54 von 194 «anderen Fragen» waren Vorlauf). */
 export function vielfaltAusTranskripten(transkripte) {
-  return vielfalt((transkripte || []).map(t => (t || []).filter(m => m && m.role === "assistant" && !m.hidden).map(m => m.content)));
+  return vielfalt((transkripte || []).map(t => (t || []).filter(m => m && m.role === "assistant" && !m.hidden && !m.vorlauf).map(m => m.content)));
 }
 
 const pct = x => (x == null ? "–" : Math.round(x * 100) + " %");
@@ -149,6 +163,6 @@ export function vielfaltTabelle(v, titel = "Vielfalt") {
   // Zielwert "≥ 20 % ohne Frage" ist entfallen; gezaehlt wird stattdessen, wie
   // oft eine EINLADUNG die Frage ersetzt, und wie oft gar nichts offen bleibt.
   z.push(`  Einladung statt Frage: ${pct(v.anteile.einladung)}   ·   ohne jede Öffnung: ${pct(v.anteile.keineOeffnung)}   (E2: soll selten sein)`);
-  z.push(`  längste Serie gleicher Form: ${v.laengsteSerie.laenge}${v.laengsteSerie.form ? " × " + v.laengsteSerie.form : ""}   Ziel ≤ 2`);
+  z.push(`  längste Serie mit Erlebens-Tür am Schluss: ${v.laengsteErlebensSerie}   Ziel ≤ 2   ·   längste Serie gleicher Form: ${v.laengsteSerie.laenge}${v.laengsteSerie.form ? " × " + v.laengsteSerie.form : ""}`);
   return z.join("\n");
 }
