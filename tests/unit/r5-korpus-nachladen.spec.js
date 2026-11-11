@@ -87,6 +87,9 @@ describe("R5 · Nach dem Tor liest K() den englischen Korpus", () => {
 describe("R5 · Service-Worker-Routing", () => {
   it("der Korpus wird gecacht, wenn er einmal geholt wurde", () => {
     expect(cacheEntscheidung("/korpus.en.js")).toBe("cache-zuerst");
+    // CR-6 (C28) · mit Kern-Hash im Namen
+    expect(cacheEntscheidung("/korpus.en.a51cbcbe4f91bbd8.js")).toBe("cache-zuerst");
+    expect(cacheEntscheidung("/korpus.en.evil.js")).not.toBe("cache-zuerst");
   });
 
   it("aber er wird NICHT vorab geladen — sonst zöge ihn jedes deutsche Paar mit", () => {

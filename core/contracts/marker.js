@@ -34,6 +34,20 @@ export function findeMarker(text, markerOrder) {
   for (const mk of markerOrder || []) {
     if (zeile.includes(mk)) return mk;
   }
+  /* CR-6 (C24) · Die Marke steht ALLEIN in ihrer Zeile, aber das Modell hat
+     danach noch einen Satz geschrieben ("[[SLIDERS]]" und dann "Nimm dir
+     Zeit."). Bis CR-6 fiel sie durch: nicht in der letzten Zeile, also kein
+     Panel — und die Anzeige entfernte sie trotzdem. Angekuendigt war ein
+     Regler, es erschien nichts, das Gespraech stand.
+     Die Verschaerfung von oben bleibt: Eine Marke IRGENDWO im Fliesstext
+     feuert weiterhin nicht. Es zaehlt nur die Zeile, die aus nichts als der
+     Marke besteht — das schreibt niemand versehentlich. Gesucht wird von
+     unten; die letzte solche Zeile gewinnt. */
+  const zeilen = text.split("\n");
+  for (let i = zeilen.length - 1; i >= 0; i--) {
+    const z = zeilen[i].trim();
+    if ((markerOrder || []).includes(z)) return z;
+  }
   return null;
 }
 

@@ -206,6 +206,14 @@ export const de = {
   "chat.ausgelastetWarte": "Gerade ist viel los \u2014 ich bleibe dran \u2026",
   "chat.strukturKorrektur": "Formkorrektur l\u00e4uft (Entwicklungsumgebung) \u2026",
   "chat.strukturRettung": "Antwortform aus Freitext \u00fcbernommen (Entwicklungsumgebung).",
+  // CR-6 (C26) · Platzhalter der Bloecke und Meldungen der Engine — vorher fest deutsch im Code.
+  "block.gate": "Deine Abschluss-Übersicht zur Freigabe:",
+  "block.gateart": "Deine Selbstmitteilung zur Freigabe:",
+  "block.moment": "Protokoll der gemeinsamen Qualitätszeit gespeichert.",
+  "block.qz": "Eure Einladungen zu gemeinsamen Momenten:",
+  "block.auftrag": "Auftrags-Änderung übernommen.",
+  "engine.abgeschlossen": "Diese Sitzung ist abgeschlossen.",
+  "engine.blockUngueltig": "Das hat gerade nicht geklappt — bitte die Begleitung im Gespräch, den letzten Schritt zu wiederholen.",
   "chat.erneutSenden": "Erneut senden",
   // UX-2 · Ausgang ohne Abschluss; Neuladen bei verlorener Anmeldung.
   "chat.pausieren": "Pausieren — später weitermachen",

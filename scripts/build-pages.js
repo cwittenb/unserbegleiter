@@ -1,6 +1,6 @@
 // Erzeugt dist/cloudflare/ — Worker-Bundle, Pages-Client, wrangler.toml.
 import { build } from "esbuild";
-import { writeFile, mkdir, readFile, readdir, copyFile } from "node:fs/promises";
+import { writeFile, mkdir, readFile, readdir, copyFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { coreHash } from "./core-hash.js";
@@ -101,7 +101,12 @@ export async function buildPages({ outDir = path.join(ROOT, "dist/cloudflare") }
     entryPoints: [path.join(ROOT, "platforms/cloudflare/pages/korpus-en-entry.js")],
     bundle: true, format: "iife", write: false, target: "es2021",
   });
-  await writeFile(path.join(outDir, "public/korpus.en.js"), korpusEn.outputFiles[0].text);
+  // CR-6 (C28) · Kern-Hash im Dateinamen — passt nur zu dem app.js desselben Baus.
+  // Altstaende raeumen: Ein liegengebliebenes korpus.en.js aus einem frueheren
+  // Bau wuerde mit ausgeliefert — und alte Tabs faenden wieder eine Datei.
+  for (const f of await readdir(path.join(outDir, "public")))
+    if (/^korpus\.[a-z]{2}(\.[0-9a-f]+)?\.js$/.test(f)) await rm(path.join(outDir, "public", f));
+  await writeFile(path.join(outDir, "public/korpus.en." + hash + ".js"), korpusEn.outputFiles[0].text);
 
   // Service Worker (M2): eigener Bundle-Schritt, Kern-Hash wird zum Cache-Namen —
   // jeder Deploy invalidiert die Shell von selbst (activate räumt Altstände weg).

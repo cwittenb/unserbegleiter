@@ -12,6 +12,7 @@
 import { cleanDisplay } from "../contracts/block.js";
 import { offeneKlammerAbIndex } from "../contracts/steuertoken.js";
 import { ALLE_BLOECKE } from "../contracts/registry.js";
+import { bloeckeLokal } from "./block-texte.js";
 
 /**
  * Schneidet den Stream-Rohtext an der ersten angerissenen Struktur ab.
@@ -19,7 +20,7 @@ import { ALLE_BLOECKE } from "../contracts/registry.js";
  * @param {string[]} mkListe Markerreihenfolge der laufenden Session
  */
 export function schneideStreamText(roh, mkListe = []) {
-  let txt = cleanDisplay(roh, mkListe, ALLE_BLOECKE);
+  let txt = cleanDisplay(roh, mkListe, bloeckeLokal());
   let schnitt = txt.length;
   for (const b of ALLE_BLOECKE) {
     const i = txt.indexOf(b.start);

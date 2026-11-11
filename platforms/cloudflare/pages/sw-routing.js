@@ -34,7 +34,8 @@ export function cacheEntscheidung(pfad) {
   // würde ihn jedes deutschsprachige Paar beim Installieren mitziehen, also
   // genau das, was das Nachladen vermeidet. Wer ihn einmal geholt hat, soll
   // ihn aber offline behalten.
-  if (/^\/korpus\.[a-z]{2}\.js$/.test(pfad)) return "cache-zuerst";
+  // CR-6 (C28): mit Kern-Hash im Namen ("/korpus.en.<hash>.js"); der alte Name bleibt gültig.
+  if (/^\/korpus\.[a-z]{2}(\.[0-9a-f]{8,})?\.js$/.test(pfad)) return "cache-zuerst";
   if (SHELL_PFADE.includes(pfad)) return "cache-zuerst";
   return "netz";
 }
