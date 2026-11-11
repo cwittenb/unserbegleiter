@@ -193,6 +193,8 @@ export const en = {
   "chat.strukturKorrektur": "Format correction in progress (development environment) \u2026",
   "chat.strukturRettung": "Answer format recovered from free text (development environment).",
   "chat.erneutSenden": "Send again",
+  "chat.pausieren": "Pause — continue later",
+  "chat.neuLaden": "Reload page",
 
   // Gate (personal sharing)
   "gate.titel": "Your words, ready to share",
