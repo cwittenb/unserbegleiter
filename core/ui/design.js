@@ -1095,6 +1095,21 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
         padding:14px 0;margin:10px 0;font-size:var(--rz-fs-fein)}
       #scrChat .pb-skala{background:none;border:1px solid var(--rz-hairline);border-radius:0}
       #scrChat #btnChatEnde{font-size:var(--rz-fs-text);margin-top:6px}
+      /* UX-2 · Abstand zwischen Eingabe und den Ausgangs-Zeilen (wer senden
+         will, soll nicht die Zeile darunter treffen); Pausieren wie Abschliessen. */
+      #scrChat #btnChatPause{font-size:var(--rz-fs-text);margin-top:16px}
+      #scrChat.rz-auswahl #btnChatPause{display:none}
+      /* UX-2 · Das Feld waechst per Skript mit (app.js); hier nur: kein
+         Ziehgriff. Ab der Grenze rollt es in sich — das tut ein Textfeld von
+         Haus aus; eine eigene overflow-Regel braucht es nicht (S121.4). */
+      #scrChat .pb-composer textarea{resize:none}
+      /* UX-2 · Der Kopf klebt. Bis UX-2 rollte der Zurueck-Pfeil mit dem
+         Verlauf nach oben weg; nach dreissig Nachrichten gab es keinen
+         sichtbaren Weg hinaus. Der Kopf traegt seinen Papiergrund selbst und
+         deckt das obere Polster des Screens mit ab. */
+      #scrChat .rz-chat-oben>.rz-kopf{position:sticky;top:0;z-index:6;background:var(--rz-papier);
+        margin-top:calc(-30px - env(safe-area-inset-top,0px));
+        padding-top:calc(30px + env(safe-area-inset-top,0px));padding-bottom:10px}
       /* ---- D12-2b (Turn 27, 27e) · der Chat bekommt dieselbe Grammatik wie
          die uebrigen Screens: oben der Verlauf, unten die Schreibkante als
          eigene Zone, dazwischen die Naht mit dem Wegweiser-Badge.

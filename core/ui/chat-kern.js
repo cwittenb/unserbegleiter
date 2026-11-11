@@ -345,6 +345,18 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
     b.appendChild(k);
   }
 
+  /** UX-2 · Ist die Anmeldung endgueltig fort (Code "sitzung"), hilft nur
+   *  Neuladen — der Knopf steht dann direkt an der Meldung. */
+  function zeigeNeuLaden() {
+    const b = $("pbErr");
+    if (!b) return;
+    const k = el("button", "pb-btn");
+    k.id = "btnNeuLaden";
+    k.textContent = t("chat.neuLaden");
+    k.addEventListener("click", () => { const w = b.ownerDocument.defaultView; if (w && w.location) w.location.reload(); });
+    b.appendChild(k);
+  }
+
   async function warteAntwort(lauf, scrollErzwingen = false) {
     const gen = state.chatGen;   // S87 · Nachzügler-Zaun: nach einem Raumwechsel keine UI-Wirkung mehr
     wartende++;                  // S105.2 · Wartevorgänge schachteln sich (z. B. Wortlaut-Abruf im Zug)
@@ -371,6 +383,7 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
       else {
         err(fehlerText(e));
         if (!(e && e.nichtGesendet) && (istUeberlastet(e) || istWiederholbar(e))) zeigeErneutSenden();
+        else if (e && (e.code === "sitzung" || (e.status === 401 && !e.code))) zeigeNeuLaden();
       }
     }
     finally {

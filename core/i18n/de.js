@@ -207,6 +207,9 @@ export const de = {
   "chat.strukturKorrektur": "Formkorrektur l\u00e4uft (Entwicklungsumgebung) \u2026",
   "chat.strukturRettung": "Antwortform aus Freitext \u00fcbernommen (Entwicklungsumgebung).",
   "chat.erneutSenden": "Erneut senden",
+  // UX-2 · Ausgang ohne Abschluss; Neuladen bei verlorener Anmeldung.
+  "chat.pausieren": "Pausieren — später weitermachen",
+  "chat.neuLaden": "Seite neu laden",
 
   // Gate (Selbstmitteilung)
   "gate.titel": "Deine Selbstmitteilung zur Freigabe",

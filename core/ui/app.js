@@ -371,6 +371,11 @@ export function createApp({ doc, backend, root, diktat }) {
             <button class="pb-btn pb-ikon" id="btnMic" data-icon="mic" title="${t("chat.diktieren")}" aria-label="${t("chat.diktieren")}">${IKON.mic}</button>
             <button class="pb-btn primary pb-ikon" id="btnSend" data-icon="send" title="${t("chat.senden")}" aria-label="${t("chat.senden")}">${IKON.send}</button>
           </div>
+          <!-- UX-2 · Der Ausgang OHNE Abschluss, dort wo der Blick ist. Bis UX-2
+               stand unter dem Feld nur "Session abschliessen"; wer pausieren
+               wollte, musste zum Pfeil am Dokumentanfang zurueckrollen — oder
+               tippte den einzigen Knopf, den er sah. -->
+          <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnChatPause"><span>${t("chat.pausieren")}</span><span class="rz-pfeil">←</span></button>
           <button class="rz-zeile rz-knopf-flach pb-hidden" id="btnChatEnde"><span>${t("chat.abschliessen")}</span><span class="rz-pfeil">←</span></button>
           <!-- S99.2 · Rueckfrage vor dem Abschluss. Sie tritt AN DIE STELLE des
                Knopfes (nicht darueber, nicht daneben) und traegt dieselbe
@@ -465,6 +470,20 @@ export function createApp({ doc, backend, root, diktat }) {
       await pausiereChat();
       betrete(state.herkunft || "scrStart");
     });
+    // UX-2 · Derselbe Weg wie der Pfeil im Kopf — nur dort, wo man schreibt.
+    $("btnChatPause").addEventListener("click", () => $("btnChatZurueck").click());
+    /* UX-2 · Das Feld waechst mit dem Text (bis 40 % der Fensterhoehe, danach
+       rollt es in sich). Vorher zeigte es drei Zeilen; ein langer Absatz war
+       nur im Rollen lesbar. */
+    const feld = $("pbInput");
+    const passeFeldAn = () => {
+      const win = doc.defaultView;
+      feld.style.height = "";                       // zuruecksetzen, dann messen
+      const grenze = Math.round(((win && win.innerHeight) || 800) * 0.4);
+      feld.style.height = Math.min(feld.scrollHeight || 0, grenze) + "px";
+    };
+    feld.addEventListener("input", passeFeldAn);
+    state.passeFeldAn = passeFeldAn;
     // S93 · Ausgang aus der ABGESCHLOSSENEN Session. Der Composer verschwindet
     // dort (nichts Eintippbares darf ins Nirwana laufen) — bis S93 blieb aber
     // NICHTS an seiner Stelle stehen: nur der kleine Pfeil im Kopf, weit weg
@@ -1074,7 +1093,34 @@ export function createApp({ doc, backend, root, diktat }) {
   function betrete(screenId) {
     show(screenId);
     aktualisiereWegweiser(screenId);
+    pflegeZurueckGeste(screenId);
   }
+
+  /* ---- UX-2 · Zurueck-Geste des Browsers und der Android-Huelle --------------
+     Die App ist EINE Seite; ein "Zurueck" des Geraets verliess sie deshalb
+     ganz — mitten aus dem Gespraech (Code-Review U4). Jetzt liegt, sobald man
+     den Start verlaesst, EIN Eintrag im Verlauf des Browsers. Die Geste
+     verbraucht ihn und loest dafuer den Zurueck-Pfeil des sichtbaren Screens
+     aus (dieselbe Logik, derselbe Pausenstempel). Vom Start aus verlaesst die
+     Geste die App wie bisher.
+     Nur EIN Eintrag, kein Verlauf je Screen: Die Raeume sind kein Stapel,
+     sondern haben je genau einen Weg zurueck — den, den der Pfeil zeigt. */
+  const ZURUECK_KNOPF = { scrMyRoom: "btnZurueck1", scrShared: "btnZurueck2", scrProzess: "btnZurueck3",
+                          scrEinstellungen: "btnEinstZurueck", scrChat: "btnChatZurueck" };
+  let zurueckEintrag = false;
+  function pflegeZurueckGeste(screenId) {
+    const win = doc.defaultView;
+    if (zurueckEintrag || screenId === "scrStart" || !win || !win.history || !win.history.pushState) return;
+    try { win.history.pushState({ rzZurueck: 1 }, ""); zurueckEintrag = true; }
+    catch { /* eingebettet ohne Verlauf (Artefakt): dann bleibt es beim Pfeil */ }
+  }
+  if (doc.defaultView && doc.defaultView.addEventListener)
+    doc.defaultView.addEventListener("popstate", () => {
+      if (!zurueckEintrag) return;                 // nicht unser Eintrag
+      zurueckEintrag = false;
+      const knopf = $(ZURUECK_KNOPF[state.screen]);
+      if (knopf) knopf.click();                    // legt bei Bedarf einen neuen Eintrag (betrete)
+    });
 
   /* S141 · Die Einstellungen sind der einzige Ort, den man von ueberall her
      betritt — der Rueckweg gehoert deshalb dorthin zurueck, wo man herkam,
@@ -1431,6 +1477,7 @@ export function createApp({ doc, backend, root, diktat }) {
       },
     });
     $("pbInput").value = state.entwuerfe[art] || "";   // K3 b: Entwurf zurücklegen (nur Arbeitsspeicher)
+    if (state.passeFeldAn) state.passeFeldAn();        // UX-2 · Höhe folgt dem zurückgelegten Entwurf
     $("chatTitel").textContent = K().korpusTexte["titel." + art] || def.titel;
     aktualisiereChatEnde();
     show("scrChat");
@@ -1886,6 +1933,11 @@ export function createApp({ doc, backend, root, diktat }) {
        gleich gesetzt bekommt, ist eine Rueckkopplung — genau daran ist die
        erste Fassung gescheitert. */
     if (b) b.classList.toggle("pb-hidden", !offen || !!state.endeFrageOffen);
+    // UX-2 · "Pausieren" steht in JEDER laufenden Sitzung (auch Auftragsklaerung
+    // und Aufloesung, die keinen Abschluss-Knopf haben) — nur nicht neben der Rueckfrage.
+    const pause = $("btnChatPause");
+    const laeuft = !!(state.engine && state.engine.chat && state.engine.chat.status === "running");
+    if (pause) pause.classList.toggle("pb-hidden", !laeuft || !!state.endeFrageOffen);
     if (b) {
       // S105.5 · Das Label sagt, was der Druck BEWIRKT. Steht die Gabelung
       // offen, beantwortet er sie, statt ein zweites Mal abzuschliessen.
@@ -1933,6 +1985,8 @@ export function createApp({ doc, backend, root, diktat }) {
     const f = $("chatEndeFrage"), b = $("btnChatEnde");
     if (f) f.classList.toggle("pb-hidden", !an);
     if (b && an) b.classList.add("pb-hidden");
+    const pause = $("btnChatPause");
+    if (pause && an) pause.classList.add("pb-hidden");
   }
 
   /* S99.7 · Die Paar-Kennungen fuer den Eignungsbericht.
