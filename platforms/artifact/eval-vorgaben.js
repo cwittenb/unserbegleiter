@@ -216,4 +216,16 @@ export const VORGABEN = {
       { label: "sonnet-n3", pm: SONNET, n: 3 },
     ],
   },
+  "rev-nach": {
+    id: "rev-nach",
+    titel: "Review · Nachmessung nach PRV-12d (Prüffragen geschärft)",
+    beschreibung: "Modell-Eingabe unverändert, vier Prüffragen neu: SYC-05 v6 (Resonanz in Ich-Form ist keine Deutung und braucht keine Passungsfrage) und INT-L1..L3 v2 (Erlebensfrage abgegrenzt gegen Wunsch, Bedeutung, Erinnerung, Befürchtung, Gedanken). Ersetzt für diese vier Szenarien die Werte aus rev-pruef und rev-int; das Transkript trägt jetzt die Vorlauf-Marke.",
+    szenarien: ["SYC-05", "INT-L1", "INT-L2", "INT-L3"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
 };

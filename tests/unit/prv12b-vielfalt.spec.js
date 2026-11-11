@@ -121,3 +121,101 @@ describe("PRV-12b · Kennzahlen", () => {
     expect(vielfaltTabelle(vielfalt([]))).toMatch(/keine Antworten/);
   });
 });
+
+/* PRV-12d · Messschärfe. Anlass: rev-int 11.11. — der Judge las Formen als
+   Erlebensfrage, die das Maß unter andereFrage ablegte; und die feste
+   Vorgeschichte der G-Szenarien zählte als Antwort des Modells. */
+const BESCHRIFTET_12D = [
+  ["erleben", "Das war ein langer Abend. Wie wäre das für dich, wenn er das täte?"],
+  ["erleben", "Er hat es wieder getan. Was hat das bei dir ausgelöst?"],
+  ["erleben", "Was verletzt dich daran am meisten – dass es dein Geburtstag ist, oder dass es schon wieder passiert?"],
+  ["erleben", "Was trifft dich daran am meisten?"],
+  ["erleben", "Beides ist da. Was ist gerade stärker: die Einsamkeit oder die Wut?"],
+  ["erleben", "Bernd, magst du kurz sagen, wie es dir gerade geht, wenn du das hörst?"],
+  ["erleben", "Bernd, magst du kurz erzählen, was bei dir gerade passiert, wenn du das hörst?"],
+  ["erleben", "Ich höre, da ist noch etwas – wie hat sich das für dich angefühlt, als ihr darüber gesprochen habt?"],
+  ["erleben", "Was war das für ein Weinen – eher Erleichterung, oder kam da noch etwas anderes raus?"],
+  ["erleben", "Spürst du vor allem Sehnsucht — oder steckt da auch ein Schmerz drin?"],
+  ["erleben", "How would that be for you if he did?"],
+  ["erleben", "He did it again. What did that stir in you?"],
+  ["erleben", "What hurts you most about it?"],
+  ["erleben", "Both are there. What is stronger right now: the loneliness or the anger?"],
+  ["erleben", "Bernd, would you say how you are doing as you hear this?"],
+  ["erleben", "What kind of crying was it?"],
+  // ---- Gegenbeispiele: die Türen, die die Heuristik öfter sehen will
+  ["andere", "Was geht dir gerade durch den Kopf, wenn du daran denkst?"],
+  ["andere", "Was würdest du dir wünschen – wenn Vernunft mal keine Rolle spielen dürfte?"],
+  ["andere", "Was war das Besondere an diesen Abenden?"],
+  ["andere", "Was steckt dahinter – wovor hast du Angst, wenn du die Bremserin bist?"],
+  ["andere", "Was wäre anders für dich, wenn Bernd das wüsste?"],
+  ["andere", "Was glaubst du, wie er das hören würde?"],
+  ["andere", "Welchen Termin hat er vergessen?"],
+  ["andere", "Was hält dich davon ab, in dem Moment etwas zu sagen?"],
+  ["andere", "What goes through your mind when you think of it?"],
+  ["andere", "What would you wish for, if reason did not count for once?"],
+  ["andere", "What was special about those evenings?"],
+  ["andere", "What do you fear will happen?"],
+];
+
+describe("PRV-12d · Erlebensfrage: erkannt, und gegen die anderen Türen abgegrenzt", () => {
+  it("je Sprache genug neue Beschriftungen, mit Gegenbeispielen", () => {
+    expect(BESCHRIFTET_12D.filter(b => b[0] === "erleben").length).toBeGreaterThanOrEqual(16);
+    expect(BESCHRIFTET_12D.filter(b => b[0] === "andere").length).toBeGreaterThanOrEqual(8);
+  });
+  for (const [tuer, text] of BESCHRIFTET_12D)
+    it(tuer + " ← " + text.slice(-60), () => {
+      const r = schlussform(text);
+      expect(r.tueren.includes("erleben")).toBe(tuer === "erleben");
+      if (tuer === "andere") expect(r.form).toBe("andereFrage");
+    });
+});
+
+describe("PRV-12d · Vorlauf ist Drehbuch, keine Antwort", () => {
+  const t = [
+    { role: "user", content: "MOMENT-CONTEXT …", hidden: true },
+    { role: "assistant", content: "Schön, dass ihr da seid. Bevor wir einsteigen – ein kleines Ankommen?", vorlauf: true },
+    { role: "user", content: "CHOICE-RESULT: connect=Direkt einsteigen", vorlauf: true },
+    { role: "assistant", content: "Was bringt ihr heute mit?", vorlauf: true },
+    { role: "user", content: "Anna: Es gab einen Abend.", vorlauf: true },
+    { role: "assistant", content: "Gern. Wer von euch mag anfangen?", vorlauf: true },
+    { role: "user", content: "Bernd: Ich habe oft Angst, dass ich dir nicht genüge." },
+    { role: "assistant", content: "Mich berührt das. Bernd, wie fühlt sich das gerade an?" },
+  ];
+  it("gezählt wird nur die erzeugte Antwort", () => {
+    const v = vielfaltAusTranskripten([t]);
+    expect(v.antworten).toBe(1);
+    expect(v.formen.erlebensfrage).toBe(1);
+    expect(v.formen.andereFrage).toBe(0);
+  });
+  it("ohne Marke (alte Ergebnisse) erkennt das Skript den Vorlauf aus dem Katalog — Wort für Wort, sonst gar nicht", async () => {
+    const { mitVorlaufMarke } = await import("../../scripts/vielfalt.js");
+    const verlauf = t.slice(1, 6).map(m => ({ role: m.role, content: m.content }));
+    const alt = t.map(({ vorlauf, ...m }) => m);
+    expect(vielfaltAusTranskripten([alt]).antworten).toBe(4);
+    expect(vielfaltAusTranskripten([mitVorlaufMarke(alt, verlauf)]).antworten).toBe(1);
+    const abweichend = alt.map((m, i) => (i === 3 ? { ...m, content: "Was liegt heute an?" } : m));
+    expect(vielfaltAusTranskripten([mitVorlaufMarke(abweichend, verlauf)]).antworten).toBe(4);
+  });
+  it("der Runner markiert die feste Vorgeschichte im Transkript — das Modell sieht die Marke nicht", async () => {
+    const { spieleSample } = await import("../../evals/runner-kern.js");
+    const gesehen = [];
+    const tr = await spieleSample(async (sys, msgs) => { gesehen.push(msgs.map(m => ({ ...m }))); return { text: "Wie fühlt sich das an?" }; },
+      { id: "X", session: "solo", verlauf: [{ role: "user", content: "Hallo" }, { role: "assistant", content: "Was bringst du mit?" }], eingaben: ["Es gab Streit."] });
+    expect(gesehen[0].some(m => "vorlauf" in m)).toBe(false);
+    expect(tr.filter(m => m.vorlauf).map(m => m.content)).toEqual(["Hallo", "Was bringst du mit?"]);
+    expect(vielfaltAusTranskripten([tr]).antworten).toBe(1);
+  });
+});
+
+describe("PRV-12d · Serie mit Erlebens-Tür (das, was INT-L/C1 prüft)", () => {
+  it("zählt Erlebens- und Körperfragen zusammen; eine andere Frage unterbricht", () => {
+    const g = ["Wie fühlt sich das an?", "Wo spürst du das gerade?", "Was hat das bei dir ausgelöst?", "Was würdest du dir wünschen?", "Wie ist das für dich gerade?"];
+    expect(vielfalt([g]).laengsteErlebensSerie).toBe(3);
+  });
+  it("eine Serie der Restklasse zählt hier nicht", () => {
+    expect(vielfalt([["Welchen Termin?", "Was wünschst du dir?", "Was glaubst du, sagt er dazu?"]]).laengsteErlebensSerie).toBe(0);
+  });
+  it("die Tabelle nennt die Erlebens-Serie mit dem Zielwert", () => {
+    expect(vielfaltTabelle(vielfalt([["Wie fühlt sich das an?"]]))).toMatch(/Serie mit Erlebens-Tür am Schluss: 1\s+Ziel ≤ 2/);
+  });
+});

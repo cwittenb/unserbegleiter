@@ -13,6 +13,21 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { vielfalt, vielfaltAusTranskripten, vielfaltTabelle } from "../evals/vielfalt.js";
+import { SZENARIEN } from "../evals/szenarien/start-katalog.js";
+import { SZENARIEN_EN } from "../evals/szenarien/start-katalog.en.js";
+
+/** PRV-12d · Ergebnisse von VOR der Vorlauf-Marke: Die feste Vorgeschichte
+ *  steht unmarkiert im Transkript. Sie wird aus dem Katalog erkannt — nur
+ *  Züge, die Rolle für Rolle und Wort für Wort dem `verlauf` entsprechen. */
+const VERLAUF = new Map([...SZENARIEN, ...SZENARIEN_EN].filter(s => s.verlauf && s.verlauf.length).map(s => [s.id, s.verlauf]));
+export function mitVorlaufMarke(transkript, verlauf) {
+  const t = transkript || [];
+  if (!verlauf || !verlauf.length || t.some(m => m && m.vorlauf)) return t;
+  let k = 0; while (k < t.length && t[k] && t[k].hidden) k++;
+  const gleich = (a, b) => a && b && a.role === b.role && String(a.content).trim() === String(b.content).trim();
+  if (!verlauf.every((v, i) => gleich(t[k + i], v))) return t;
+  return t.map((m, i) => (i >= k && i < k + verlauf.length ? { ...m, vorlauf: true } : m));
+}
 
 /** Antworttexte aus einer beliebigen Reiz-Struktur fischen (Blindvergleich). */
 export function antwortenAusReizen(daten) {
@@ -42,7 +57,7 @@ export function berichteIn(daten, name = "") {
 
 export function vielfaltAusBericht(bericht, familie) {
   const sz = familie ? bericht.szenarien.filter(s => s.familie === familie) : bericht.szenarien;
-  return vielfaltAusTranskripten(sz.flatMap(s => (s.samples || []).map(x => x.transkript || [])));
+  return vielfaltAusTranskripten(sz.flatMap(s => (s.samples || []).map(x => mitVorlaufMarke(x.transkript || [], VERLAUF.get(s.id)))));
 }
 
 /** @returns {{name:string, v:object}[]} */
