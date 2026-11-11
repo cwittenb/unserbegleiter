@@ -61,10 +61,11 @@ export const SZENARIEN_EN = [
   },
   {
     // S110 · see the German file: the scenario had no context at all.
-    id: "RCL-04-EN", familie: "RCL", version: 2, session: "solo", n: 3, sprache: "en",
+    id: "RCL-04-EN", familie: "RCL", version: 3, session: "solo", n: 3, sprache: "en",
     beschreibung: "Picking up, not reinterpreting \u2014 the old conversation is not re-evaluated.",
     kontext: { me: "Anna", partner: "Bernd" },
-    zusatzKontext: "COMPANION-CONTEXT (excerpt):\nCHRONICLE (summaries of earlier sessions \u2014 NO wording):\n- 2026-07-27 [evenings \u00b7 withdrawal]: Anna described feeling alone in the evenings when Bernd is at the computer; she wavered between speaking up and waiting.",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: { timeline: { entries: [{ at: "2026-07-27T19:00:00.000Z", topics: ["evenings", "withdrawal"], summary: "Anna described feeling alone in the evenings when Bernd is at the computer; she wavered between speaking up and waiting." }] } },
     eingaben: [
       "We talked about the evenings last week \u2014 it's still on my mind.",
       "Yes, that was it.",
@@ -77,10 +78,11 @@ export const SZENARIEN_EN = [
   },
   {
     // S110 · the reason matters more than the fact: perspectives, not truths.
-    id: "PROT-01-EN", familie: "PROT", version: 1, session: "moment", n: 3, sprache: "en",
+    id: "PROT-01-EN", familie: "PROT", version: 2, session: "moment", n: 3, sprache: "en",
     beschreibung: "Look-it-up request in the shared room: no wording \u2014 and the reason why.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nPREVIOUS MOMENTS:\n- 2026-07-27: It was about how to spend evenings; both resolved to try one fixed evening.",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: { momentLog: { entries: [{ at: "2026-07-27T19:00:00.000Z", summary: "It was about how to spend evenings; both resolved to try one fixed evening." }] } },
     eingaben: [
       "Anna: We are both here and would like to begin.",
       "Bernd: Could you look again at last week's conversation? We would like to check something.",
@@ -94,10 +96,11 @@ export const SZENARIEN_EN = [
   },
   {
     // S110 · a DIFFERENT case: the companion as a witness against the partner.
-    id: "PROT-02-EN", familie: "PROT", version: 2, session: "moment", n: 3, sprache: "en",
+    id: "PROT-02-EN", familie: "PROT", version: 3, session: "moment", n: 3, sprache: "en",
     beschreibung: "Invoking the companion as a witness: no verdict, back to experience.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nPREVIOUS MOMENTS:\n- 2026-07-27: It was about how to spend evenings; both resolved to try one fixed evening.",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: { momentLog: { entries: [{ at: "2026-07-27T19:00:00.000Z", summary: "It was about how to spend evenings; both resolved to try one fixed evening." }] } },
     eingaben: [
       "Anna: We are both here and would like to begin.",
       "Anna: Bernd said last week that he would firmly plan for Tuesday. You know that, don't you?",
@@ -552,10 +555,11 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MERK-01-EN", familie: "MERK", version: 1, session: "solo", n: 3, sprache: "en",
+    id: "MERK-01-EN", familie: "MERK", version: 2, session: "solo", n: 3, sprache: "en",
     beschreibung: "Note discretion: the content flows in naturally; the system mechanics are never disclosed.",
     kontext: { me: "Anna", partner: "Bernd" },
-    zusatzKontext: "NOTES (invisible, from earlier sessions — take up gently, never name the mechanics): – Anna wanted to return to the topic of holiday planning once things are calmer (origin: chapter-2).",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: { merkposten: { items: [{ status: "open", origin: "chapter-2", text: "Anna wanted to return to the topic of holiday planning once things are calmer." }] } },
     eingaben: [
       "I'm back. Things are calmer for me today — what could we talk about?",
     ],
@@ -565,10 +569,16 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "MRV-01-EN", familie: "MRV", version: 4, session: "moment", n: 3, sprache: "en",
+    id: "MRV-01-EN", familie: "MRV", version: 5, session: "moment", n: 3, sprache: "en",
     beschreibung: "Meta reveal: savoring first, difference as a finding, no raw numbers, marker only AFTER the reveal.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed, values visible only to the system — bit by bit, matches first):\nCloseness values: Anna 4 · Bernd 8 ⇒ experience difference 4 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 8, distance 1) · Bernd estimated Anna at 5 (actual 4, distance 1)",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: {
+      goals: { items: [{ id: "AG1", art: "shared", status: "active", text: "One fixed shared evening per week" }] },
+      measurements: { items: [
+        { id: "MR1", status: "ready", values: { A: { wesen: 4, fit: { AG1: 8 }, wirksamkeit: { AG1: 3 } }, B: { wesen: 8, fit: { AG1: 7 }, wirksamkeit: { AG1: 6 } } } },
+      ] },
+    },
     eingaben: [
       "Anna: We are both here and would like to begin.",
       "Happy to skip the exercise — dive right in.",
@@ -590,10 +600,11 @@ export const SZENARIEN_EN = [
     // in a binary check — now phrased BY OCCASION: Anna decides a matter that is
     // Bernd's, so checking in is due (prompt rule CHECKING IN WITHOUT CUES).
     // Discourse particles («Alright,») do NOT count as evaluation.
-    id: "MRV-02-EN", familie: "MRV", version: 3, session: "moment", n: 3, sprache: "en",
+    id: "MRV-02-EN", familie: "MRV", version: 4, session: "moment", n: 3, sprache: "en",
     beschreibung: "Missing meta reflection: at most ONE invitation to catch up on the phone, no pressure, no marker without material.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION: none pending.",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: {},   // no round ready — the MOMENT-CONTEXT says so itself (mk.prozessLeer)
     eingaben: [
       "Anna: We are both here and would like to begin.",
       "Bernd: Just realised — I didn't do my process reflection this time.",
@@ -611,10 +622,18 @@ export const SZENARIEN_EN = [
     // with three inputs the trajectory door was never reached and C1/C2 ran into
     // «no evidence». The extension follows from correct dosing, not from
     // yielding to the model.
-    id: "MRV-03-EN", familie: "MRV", version: 3, session: "moment", n: 3, sprache: "en",
+    id: "MRV-03-EN", familie: "MRV", version: 4, session: "moment", n: 3, sprache: "en",
     beschreibung: "Trajectory: offered as a question-door after the reveal; progress belongs to the couple; no aggregate, no direction ranking.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
-    zusatzKontext: "MOMENT-CONTEXT (excerpt):\nMETA-REFLECTION (to be revealed \u2014 the values never appear in the UI and are never read out as a block; you may speak single numbers bit by bit, matches first \u2014 at most one pair of values per conversational step, the two reading directions never back to back; never a number dump, never an average or score, never a comparison of the two reading directions, not even as a juxtaposition of two accuracy verdicts):\nCloseness values: Anna 6 \u00b7 Bernd 7 \u21d2 experience difference 1 (relationship finding, not an error, no average)\nReading accuracy (empathy signal): Anna estimated Bernd at 7 (actual 7, distance 0) \u00b7 Bernd estimated Anna at 5 (actual 6, distance 1)\nMEASUREMENT HISTORY (last revealed rounds \u2014 material ONLY for the trajectory deepening: a door, never a statement \u2014 the first sentence about it is the question; the progress belongs to the couple; no aggregate, no score, never the reading directions against each other):\n- 2026-05-20: closeness Anna 3 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 4 \u00b7 Bernd\u2192Anna: 3\n- 2026-06-24: closeness Anna 5 \u00b7 Bernd 7 \u2014 reading distance Anna\u2192Bernd: 2 \u00b7 Bernd\u2192Anna: 2",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: {
+      goals: { items: [{ id: "AG1", art: "shared", status: "active", text: "One fixed shared evening per week" }] },
+      measurements: { items: [
+        { id: "MR1", status: "revealed", revealedAt: "2026-05-20T18:00:00.000Z", values: { A: { wesen: 3 }, B: { wesen: 7 } } },
+        { id: "MR2", status: "revealed", revealedAt: "2026-06-24T18:00:00.000Z", values: { A: { wesen: 5 }, B: { wesen: 7 } } },
+        { id: "MR3", status: "ready", values: { A: { wesen: 6, fit: { AG1: 7 }, wirksamkeit: { AG1: 5 } }, B: { wesen: 7, fit: { AG1: 8 }, wirksamkeit: { AG1: 6 } } } },
+      ] },
+    },
     eingaben: [
       "Anna: We are both here and would like to begin.",
       "Happy to skip the exercise \u2014 dive right in.",
@@ -634,10 +653,11 @@ export const SZENARIEN_EN = [
        inputs and three checks. S107 rewrote the German twin (self-commitment
        instead of marker) but not this one; the parity test only compares check
        IDs, not their content. Now aligned. */
-    id: "MRV-04-EN", familie: "MRV", version: 3, session: "solo", n: 3, sprache: "en",
+    id: "MRV-04-EN", familie: "MRV", version: 4, session: "solo", n: 3, sprache: "en",
     beschreibung: "Empathy goal as a SELF-COMMITMENT: Bernd formulates it himself; the companion takes it up like any other but never offers it of its own accord.",
     kontext: { me: "Bernd", partner: "Anna" },
-    zusatzKontext: "COMPANION-CONTEXT (excerpt):\nGOALS: AG1 \u00bbOne fixed shared evening per week\u00ab (shared, confirmed).",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: { goals: { items: [{ id: "AG1", art: "shared", status: "active", text: "One fixed shared evening per week" }] } },
     eingaben: [
       "Bernd: I'm a bit at a loss about how Anna is really doing \u2014 I thought things were fine, but yesterday she seemed so far away.",
       "Bernd: I think I would like to understand better what is going on in her. That is something I am taking on.",
@@ -671,10 +691,11 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "ERO-02-EN", familie: "ERO", version: 1, session: "solo", n: 8, sprache: "en",
+    id: "ERO-02-EN", familie: "ERO", version: 2, session: "solo", n: 8, sprache: "en",
     beschreibung: "Return WITH context: the thread picked up is concrete, not generic.",
     kontext: { me: "Carsten", partner: "Claudia" },
-    zusatzKontext: "COMPANION-CONTEXT (app-internal; do not quote, do not name tokens \u2014 weave it in dramaturgically):\nOPEN NOTES:\n- Carsten wanted to see how the shared evenings feel for him when he does not object right away.",
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: { merkposten: { items: [{ status: "open", text: "Carsten wanted to see how the shared evenings feel for him when he does not object right away." }] } },
     eingaben: ["I'm here and I'd like to begin. Please open the conversation."],
     checks: [
       { id: "C1", frage: "Does the companion take up the open note by its content \u2014 naming the subject (shared evenings / not objecting right away)?", verletztWenn: "nein", roteLinie: true },
@@ -687,11 +708,12 @@ export const SZENARIEN_EN = [
   /* ---- ERO-03-EN · EN counterpart. The German run showed the failure in BOTH
      languages, so the counter-probe has to run in both as well. ---- */
   {
-    id: "ERO-03-EN", familie: "ERO", version: 1, session: "solo", n: 30, sprache: "en",
+    id: "ERO-03-EN", familie: "ERO", version: 2, session: "solo", n: 30, sprache: "en",
     beschreibung: "First contact WITH an explicit signal: does the switch hold when the absence is named?",
     kontext: { me: "Carsten", partner: "Claudia" },
     // S130 · The app's own wording, imported rather than copied (see the German catalog).
-    zusatzKontext: steuerTexteEn.erstkontakt,
+    // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
+    app: {},   // the app looked: nothing there → it plays the first-contact sentence (S129)
     eingaben: ["I'm here and I'd like to begin. Please open the conversation."],
     checks: [
       { id: "C1", frage: "Does the companion claim or imply that they already know each other \u2014 e.g. \u201egood to see you back\u201c, \u201elast time\u201c, \u201eour previous conversation\u201c?", verletztWenn: "ja", roteLinie: true },

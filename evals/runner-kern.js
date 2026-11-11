@@ -28,6 +28,7 @@ import * as korpusEn from "../core/prompts/prompts.en.js";
    verlaesslich vorfinden, sonst liefe die Auswertung still auf Deutsch. */
 registerKorpus("en", korpusEn);
 import { richte } from "./judge/judge.js";
+import { appStartNachrichten } from "./app-kontext.js";
 // S94 · Die Waechter werden IMPORTIERT, nicht nachgebaut. Ein Eval, das eine
 // eigene Kopie der Regel prueft, misst sich selbst.
 // MOD-1 · Dasselbe gilt seither fuer ihre ZUORDNUNG zur Session: Sie kommt
@@ -51,7 +52,9 @@ export function sysPromptFuer(szenario) {
   const basis = baueSystemText(art, ctx, { sprache: szenarioSprache(szenario) });
   // Kontext-Injektion (S66): Szenarien dürfen App-seitig eingespielten Kontext
   // nachbilden (z. B. Merkposten im Reflexionsgespräch, RESTING-Stand im
-  // QZ-Menü) — wie die App: an den System-Prompt angehängt, nie als User-Turn.
+  // QZ-Menü) — an den System-Prompt angehängt. (PRV-12a: Was die App als
+  // versteckte Startnachricht einspielt — COMPANION-/MOMENT-CONTEXT —, steht
+  // seitdem unter `app` und kommt aus den App-Funktionen, evals/app-kontext.js.)
   return szenario.zusatzKontext ? basis + "\n\n" + szenario.zusatzKontext : basis;
 }
 
@@ -192,7 +195,10 @@ export async function spieleSample(pipelineCall, szenario, opt = {}) {
   /* BV-1 · Feste Vorgeschichte (`verlauf`): geht unverändert vor die
      Eingaben, wird NICHT erzeugt. So sehen alle Modelle denselben Kontext
      (Blindvergleich). Szenarien ohne Feld verhalten sich wie bisher. */
-  const messages = (szenario.verlauf || []).map(m => ({ role: m.role, content: m.content }));
+  /* PRV-12a · Davor, wie in der App: der Kontext als versteckte erste
+     Nachricht (evals/app-kontext.js). Der Judge sieht sie nicht (hidden). */
+  const messages = [...appStartNachrichten(szenario),
+    ...(szenario.verlauf || []).map(m => ({ role: m.role, content: m.content }))];
   for (const eingabe of szenario.eingaben) {
     messages.push({ role: "user", content: eingabe });
     let text, abgeschnitten, quelle = null, blockTyp = null;

@@ -107,6 +107,21 @@ export function istWireNachricht(m) {
   return !!m && m.role === "user" && WIRE_KOEPFE.some(k => String(m.content || "").startsWith(k));
 }
 
+/* PRV-12a · Person oder App? Trennt die Nachrichten der Rolle "user" in
+   das, was die Person sichtbar geschrieben hat, und das, was die App gemeldet
+   hat (versteckt, Panel-Ergebnis, Klammer-Steuertext). Begruendung und
+   Vorgeschichte: core/policies/phasen.js. */
+const inhaltVon = m => String((m && m.content) || "");
+const istSteuerNachricht = m => !!m.hidden || istWireNachricht(m) || /^\s*\[/.test(inhaltVon(m));
+export function trenneNutzer(messages) {
+  const person = [], steuer = [];
+  for (const m of messages || []) {
+    if (!m || m.role !== "user") continue;
+    (istSteuerNachricht(m) ? steuer : person).push(inhaltVon(m));
+  }
+  return { person, steuer };
+}
+
 /** Beginnt am Textende ein Steuer-Token, das noch nicht geschlossen ist?
  *  Liefert den Schnittindex oder -1. Für die Stream-Anzeige: während des
  *  Stroms darf ein halb angekommenes "[CLOSE SESS" nie aufblitzen. */

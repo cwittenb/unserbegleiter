@@ -8,6 +8,9 @@
 // aktiven Sprache (steuer), damit hier keine Sprache im Code steht.
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+import { trenneNutzer } from "../contracts/steuertoken.js";
+export { trenneNutzer };
+
 const inhalt = m => String((m && m.content) || "");
 
 /**
@@ -56,6 +59,27 @@ export function bloeckeEinzel(teile, phase) {
   return [kern, modul];
 }
 
+/* ---- PRV-12a · Wer spricht? ------------------------------------------------
+ * Die Signale der Phasen (teilen, abruf, ende) sind Woerter der PERSON. Bis
+ * PRV-12a liefen sie ueber ALLE Nachrichten der Rolle "user" — also auch ueber
+ * den versteckten Kontext, den die App zu Beginn einspielt. Der traegt
+ * "(shared, active)" je gemeinsamem Auftrag, und das Muster `teilen` trifft
+ * "share": Jedes Paar mit einem gemeinsamen Auftrag bekam im
+ * Reflexionsgespraech ab dem ersten Zug das Teilen-Modul (13k Zeichen), die
+ * Ersparnis aus PRV-7 fiel von 45 % auf 13 % (Code-Review C12). Freigegebenes
+ * Material des Partners im Kontext konnte genauso jedes andere Signal
+ * ausloesen.
+ *
+ * Deshalb zwei Stroeme:
+ *   person — was die Person sichtbar geschrieben hat
+ *   steuer — was die App gemeldet hat: versteckte Nachrichten, Panel-
+ *            Ergebnisse (Wire) und Klammer-Steuertexte ("[CLOSE SESSION]").
+ * Die Klammer-Erkennung traegt den Eval mit: Dort kommen Steuertexte als
+ * gewoehnliche Eingaben ohne hidden-Vermerk.
+ * (trenneNutzer liegt bei den Vertraegen — auch die Karten der Engine nutzen es.) */
+/** Abschluss-Steuertexte der App (sprachinvariant, core/contracts/steuertoken.js). */
+const ABSCHLUSS_TOKEN = /^\s*\[(close session|close moment|checkpoint)/i;
+
 /**
  * PRV-7 · Reflexionsgespraech: kein Kapitelablauf, sondern drei Module, die
  * nur bei Anlass gebraucht werden. Grosszuegig erkannt (Fehltreffer kosten
@@ -71,13 +95,15 @@ export function bloeckeEinzel(teile, phase) {
  */
 export function phaseSolo(messages, signale) {
   const ms = messages || [];
-  const person = ms.filter(m => m && m.role === "user").map(inhalt);
+  const { person, steuer } = trenneNutzer(ms);
   const letzte = person.at(-1) || "";
   const letzteAntwort = inhalt([...ms].reverse().find(m => m && m.role === "assistant"));
+  const alleNutzer = ms.filter(m => m && m.role === "user").map(inhalt);
   return {
     einstieg: !ms.some(m => m && m.role === "assistant"),
-    teilen: person.some(t => signale.teilen.test(t)) || signale.ende.test(letzte),
-    abruf: person.slice(-3).some(t => signale.abruf.test(t) || t.trim().startsWith("RECALL-RESULT")) || /RECALL-BLOCK/.test(letzteAntwort),
+    teilen: person.some(t => signale.teilen.test(t)) || signale.ende.test(letzte) || steuer.some(t => ABSCHLUSS_TOKEN.test(t)),
+    abruf: person.slice(-3).some(t => signale.abruf.test(t))
+      || alleNutzer.slice(-3).some(t => t.trim().startsWith("RECALL-RESULT")) || /RECALL-BLOCK/.test(letzteAntwort),
   };
 }
 
@@ -145,10 +171,13 @@ export function phaseMoment(messages, signale) {
   const iConnect = nutzer.findIndex(t => t.trim().startsWith("CHOICE-RESULT: connect"));
   const iMarke = ms.findIndex(m => m.role === "assistant" && inhalt(m).includes("[[META-REVEALED]]"));
   const nachMarke = iMarke < 0 ? 0 : ms.slice(iMarke + 1).filter(m => m.role === "user").length;
+  // PRV-12a · End-Signale nur aus Worten der Person; der versteckte
+  // MOMENT-CONTEXT traegt freigegebene Texte ("danke dir, dass …").
+  const { person, steuer } = trenneNutzer(ms);
   return {
     ankommen: iConnect < 0 || nutzer.length - 1 - iConnect <= 1,
     aufdeckung: iMarke < 0 || nachMarke <= NACH_AUFDECKUNG,
-    abschluss: nutzer.some(t => signale.ende.test(t)),
+    abschluss: person.some(t => signale.ende.test(t)) || steuer.some(t => ABSCHLUSS_TOKEN.test(t)),
   };
 }
 

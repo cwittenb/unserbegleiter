@@ -12,6 +12,8 @@
 // Der Inhalt kommt lazy aus dem Korpus ({signal, spur, text}), wie bei den
 // anderen Schaerfungen.
 
+import { trenneNutzer } from "../contracts/steuertoken.js";
+
 export const FENSTER = 3;
 
 export function baueKartenSchaerfung(inhalt) {
@@ -20,8 +22,11 @@ export function baueKartenSchaerfung(inhalt) {
     if (!i || !(i.signal instanceof RegExp) || typeof i.text !== "string")
       throw new Error("Karte braucht {signal: RegExp, text: string} aus dem Korpus.");
     const ms = messages || [];
-    const person = ms.filter(m => m && m.role === "user").slice(-FENSTER);
-    if (person.some(m => i.signal.test(String(m.content || "")))) return i.text;
+    /* PRV-12a · Nur Worte der Person (Code-Review C23): Zu Beginn sind die
+       letzten "user"-Nachrichten der versteckte Kontext — Bernds freigegebener
+       Satz "ein Teil von mir" gab Anna die Anteile-Karte ohne eigenen Anlass. */
+    const person = trenneNutzer(ms).person.slice(-FENSTER);
+    if (person.some(t => i.signal.test(t))) return i.text;
     const letzteAntwort = [...ms].reverse().find(m => m && m.role === "assistant");
     if (i.spur instanceof RegExp && letzteAntwort && i.spur.test(String(letzteAntwort.content || ""))) return i.text;
     return null;
