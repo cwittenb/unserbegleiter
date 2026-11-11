@@ -142,6 +142,7 @@ describe("S88 · Themenfrage: ID raus, Herkunft rein", () => {
     const box = $id("boxMess");
     box.querySelector('[data-pass="AG1"]').value = "7";
     box.querySelector("#msWesen").value = "4";
+    for (const r of document.querySelectorAll("input.rz-regler")) r.dispatchEvent(new Event("input", { bubbles: true }));   // UX-5: jeden Regler anfassen
     await klick(box.querySelector("#msOk")); await ruhe();
     const mr = await backend.bstate.get("measurements");
     expect(mr.items[0].values.A.fit).toEqual({ AG1: 7 });

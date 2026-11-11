@@ -152,6 +152,7 @@ describe("S39 · Prozessreflexions-Rhythmus (geteilter Vertrag)", () => {
     await klick(root.querySelector("#btnMess"));
     await ruhe();
     expect(root.querySelector("#boxMess").textContent).toContain("in der letzten Woche");
+    for (const r of document.querySelectorAll("input.rz-regler")) r.dispatchEvent(new Event("input", { bubbles: true }));   // UX-5: jeden Regler anfassen
     await klick(root.querySelector("#boxMess").querySelector("#msOk"));
     await ruhe();
     // Runde ist offen und eigener Beitrag da → "abgegeben"-Ansicht

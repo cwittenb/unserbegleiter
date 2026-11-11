@@ -146,6 +146,15 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
                 border-radius:var(--rz-rund-blatt);padding:12px 16px;margin:0 0 10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
       .pb-skala.offen{display:flex}
       .pb-skala input[type=range]{flex:1;accent-color:var(--rz-akzent)}
+      /* UX-5 · Regler der Prozessreflexion: Akzent aus den Tokens statt
+         Browser-Blau, Zahl daneben, und bis zur ersten Beruehrung KEIN Griff —
+         ein Griff auf der 5 saehe aus wie ein Wert. */
+      .rz-regler-zeile{display:flex;align-items:center;gap:12px}
+      .rz-regler{flex:1;accent-color:var(--rz-akzent);min-height:var(--rz-tapziel-finger)}
+      .rz-regler-zahl{min-width:2ch;text-align:right;font-family:var(--rz-sans);font-size:var(--rz-fs-text);font-variant-numeric:tabular-nums;color:var(--rz-sek)}
+      .rz-regler:not([data-beruehrt]){accent-color:var(--rz-linie)}
+      .rz-regler:not([data-beruehrt])::-webkit-slider-thumb{opacity:0}
+      .rz-regler:not([data-beruehrt])::-moz-range-thumb{opacity:0}
       .pb-skala .wert{font-weight:500;min-width:26px;text-align:center;color:var(--rz-akzent-ink);font-size:var(--rz-fs-zeile)}
       .pb-msg.ai strong{font-weight:500}
       .pb-msg.ai code{background:var(--rz-blase-du-rand);border-radius:var(--rz-rund-fein);padding:0 4px;font-family:ui-monospace,Menlo,monospace;font-size:var(--rz-fs-fein)}

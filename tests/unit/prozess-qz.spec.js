@@ -75,6 +75,7 @@ describe("UI · Prozessreflexion-Widget (verdeckt)", () => {
     box.querySelector("#msWesen").value = "4";
     box.querySelector('[data-pass="AG1"]').value = "6";
     box.querySelector('[data-wirk="AG1"]').value = "3";   // S107 · Wirksamkeit
+    for (const r of document.querySelectorAll("input.rz-regler")) r.dispatchEvent(new Event("input", { bubbles: true }));   // UX-5: jeden Regler anfassen
     await klick(box.querySelector("#msOk"));
     expect(box.textContent).toContain("verdeckt abgelegt");
 

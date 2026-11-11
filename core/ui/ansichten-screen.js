@@ -35,6 +35,12 @@ import { holeVerlauf } from "./verlauf-ablage.js";   // S95.7c
  * @param {Function} ctx.zeitleistenEintrag
  * @param {Function} ctx.zeigePaarsprache
  */
+/** UX-5 · Regler mit Zahl daneben; bis zur ersten Beruehrung ohne Griff und ohne Wert. */
+function regler(attribute) {
+  return `<span class="rz-regler-zeile"><input ${attribute} type="range" min="1" max="10" value="5" class="rz-voll rz-regler">` +
+    `<span class="rz-regler-zahl" aria-hidden="true">–</span></span>`;
+}
+
 export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSektion,
                                        zeitleistenEintrag, zeigePaarsprache,
                                        oeffneLeseansicht, err = () => {} }) {
@@ -257,7 +263,7 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
          Moment des Antwortens da ist. */
       `<div class="pb-sub rz-oben-3">${t("mess.gruppeWesen")}</div>` +
       `<p class="rz-klein-leise">${t("mess.wesenHilfe")}</p>` +
-      `<label class="rz-fein-block">${t("mess.wesen", { zeitraum })}<br><input id="msWesen" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
+      `<label class="rz-fein-block">${t("mess.wesen", { zeitraum })}<br>${regler('id="msWesen"')}</label>` +
       // S88 · Themen-Regler: Gruppenzeile sagt die Herkunft (und implizit,
       // warum individuelle Ziele hier fehlen); die Frage traegt KEINE Wire-ID
       // mehr — die ID bleibt im data-pass-Attribut und im fit-Objekt (Wire
@@ -267,10 +273,32 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
          sie eine Diagnostik, die es bisher nicht gab — hohe Passung bei
          niedriger Wirksamkeit ist die Stelle, an der das Paar Hilfe braucht. */
       aktive.map(a =>
-        `<label class="rz-fein-block">${t("mess.fit", { text: esc(a.text) })}<br><input data-pass="${esc(a.id)}" type="range" min="1" max="10" value="5" class="rz-voll"></label>` +
-        `<label class="rz-fein-block">${t("mess.wirksam", { text: esc(a.text) })}<br><input data-wirk="${esc(a.id)}" type="range" min="1" max="10" value="5" class="rz-voll"></label>`
+        `<label class="rz-fein-block">${t("mess.fit", { text: esc(a.text) })}<br>${regler('data-pass="' + esc(a.id) + '"')}</label>` +
+        `<label class="rz-fein-block">${t("mess.wirksam", { text: esc(a.text) })}<br>${regler('data-wirk="' + esc(a.id) + '"')}</label>`
       ).join("") +
-      `<button class="pb-btn primary" id="msOk">${t("mess.abgeben")}</button>`;
+      `<p class="rz-klein-leise" id="msOffen">${t("mess.alleRegler")}</p>` +
+      `<button class="pb-btn primary" id="msOk" disabled>${t("mess.abgeben")}</button>`;
+    /* UX-5 · Kein Wert ohne Beruehrung. Die Regler standen vorbelegt auf 5,
+       ohne Zahl, und liessen sich unberuehrt abgeben — dreimal 5 sah danach aus
+       wie eine Aussage (Code-Review U8). Jetzt: Der Griff erscheint erst mit
+       der ersten Beruehrung, die Zahl steht daneben, und "Abgeben" wird frei,
+       wenn JEDER Regler einmal angefasst wurde. Auch wer die 5 meint, muss sie
+       setzen (antippen genuegt). */
+    const alleRegler = [...box.querySelectorAll("input.rz-regler")];
+    const pruefeStand = () => {
+      const offen = alleRegler.some(r => !r.hasAttribute("data-beruehrt"));
+      box.querySelector("#msOk").disabled = offen;
+      box.querySelector("#msOffen").classList.toggle("pb-hidden", !offen);
+    };
+    for (const r of alleRegler) {
+      const zahl = r.parentElement.querySelector(".rz-regler-zahl");
+      const beruehrt = () => {
+        r.setAttribute("data-beruehrt", "1");
+        zahl.textContent = r.value;
+        pruefeStand();
+      };
+      for (const ev of ["input", "change", "pointerdown", "keydown"]) r.addEventListener(ev, beruehrt);
+    }
     /* CR-1.2 · Der Klick hatte keinen Fehlerpfad: Wies der Server die Abgabe
        ab, verschwand der Wurf in einer unbehandelten Ablehnung und der Knopf
        wirkte tot. Jetzt steht die Meldung in der Fehlerzeile, der Knopf bleibt
@@ -280,6 +308,7 @@ export function macheAnsichtenScreen({ $, backend, state, zeigeNur, rhythmusSekt
       const fit = {}, wirksamkeit = {};
       for (const inp of box.querySelectorAll("[data-pass]")) fit[inp.getAttribute("data-pass")] = +inp.value;
       for (const inp of box.querySelectorAll("[data-wirk]")) wirksamkeit[inp.getAttribute("data-wirk")] = +inp.value;
+      if (alleRegler.some(r => !r.hasAttribute("data-beruehrt"))) return;   // UX-5 · Gurt zum disabled-Attribut
       knopf.disabled = true;
       let runde;
       try {

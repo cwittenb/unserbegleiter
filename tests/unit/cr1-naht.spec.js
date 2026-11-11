@@ -58,6 +58,7 @@ describe("CR-1.2 · Abgabe der Prozessreflexion hat einen Fehlerpfad", () => {
   beforeEach(() => { document.body.innerHTML = '<div id="app"></div>'; root = document.getElementById("app"); });
   const $id = id => root.querySelector("#" + id);
 
+  const fasseAlleAn = () => { for (const r of root.querySelectorAll("input.rz-regler")) r.dispatchEvent(new Event("input", { bubbles: true })); };
   async function zurAbgabe(backend) {
     await backend.bstate.set("findings", { at: new Date().toISOString() });
     await backend.bstate.set("goals", { items: [{ id: "AG1", art: "shared", status: "active", text: "Ein Abend pro Woche." }] });
@@ -78,6 +79,7 @@ describe("CR-1.2 · Abgabe der Prozessreflexion hat einen Fehlerpfad", () => {
     } };
     await zurAbgabe(backend);
     $id("msWesen").value = "7";
+    fasseAlleAn();                       // UX-5 · Abgabe erst nach Berührung jedes Reglers
     await klick($id("msOk")); await ruhe();
 
     expect($id("pbErr").classList.contains("pb-hidden")).toBe(false);
@@ -102,6 +104,7 @@ describe("CR-1.2 · Abgabe der Prozessreflexion hat einen Fehlerpfad", () => {
     let loese; let rufe = 0;
     backend.mess = { beitrag: () => { rufe++; return new Promise(r => { loese = () => r({ id: "MR1", status: "open", values: {} }); }); } };
     await zurAbgabe(backend);
+    fasseAlleAn();
     $id("msOk").click(); await tick();
     expect($id("msOk").disabled).toBe(true);
     $id("msOk").click(); await tick();
