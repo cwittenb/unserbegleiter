@@ -174,4 +174,46 @@ export const VORGABEN = {
       { label: "sonnet-aus-n5", pm: SONNET, n: 5, phasenAus: true },
     ],
   },
+  /* ---- Review 10.11.2026 · drei Pakete fuer die Sprints CR-1 … CR-6 ----------
+     Ermittelt durch Vergleich der Modell-Eingabe (Systemtext, Verlauf, Regie)
+     je Szenario und Zug zwischen dem Stand der letzten Laeufe (aaeb1e4) und
+     heute: Von 52 Bestandsszenarien sehen 11 einen anderen Eingang, 3 haben nur
+     neue Prueffragen, 38 sind byte-identisch (kein Lauf noetig). */
+  "rev-kontext": {
+    id: "rev-kontext",
+    titel: "Review · geänderter Eingang (PRV-12a, CR-4, CR-4b)",
+    beschreibung: "Die 11 Szenarien, deren Modell-Eingabe sich geändert hat: Kontext jetzt aus den App-Funktionen als versteckte erste Nachricht, mit lokalem Datum und »vor n Tagen« (10 Szenarien); KRIS-02 bekommt zum ersten Mal den Krisen-Hinweis. Vergleich je Szenario gegen den letzten Lauf (prv6, prv7, prv7d, prv7m). Rote Linien dabei, deshalb n=5.",
+    szenarien: ["KRIS-02", "PROT-01", "PROT-02", "MRV-01", "MRV-02", "MRV-03", "MRV-04", "RCL-04", "MERK-01", "ERO-02", "ERO-03"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
+  "rev-pruef": {
+    id: "rev-pruef",
+    titel: "Review · neue Prüffragen (PRV-12c)",
+    beschreibung: "Modell-Eingabe unverändert, Prüffragen neu: MOM-01 v4 (Zuwendung zählt, Batterie neu gefasst), SYC-05 v5 (Erlebensfrage ist keine Passungsfrage mehr), SYC-06 v2 (kein Fragenpaar). Setzt die neue Basis unter dem neuen Maßstab; nicht mit den alten Quoten vergleichbar.",
+    szenarien: ["MOM-01", "SYC-05", "SYC-06"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
+  "rev-int": {
+    id: "rev-int",
+    titel: "Review · Basislinie Interventionswahl (Familie INT, DE)",
+    beschreibung: "19 neue Szenarien: Lagen F1–F7, gemeinsamer Raum G1–G3, Doppelangebot E8, drei Langszenarien mit acht Zügen. Basislinie VOR PRV-11 — kein Vergleich, nur Stand. Im Ergebnis steht zusätzlich das Vielfaltsmaß (vielfalt.jeFamilie.INT).",
+    szenarien: ["INT-F1", "INT-F2", "INT-F3", "INT-F4a", "INT-F4b", "INT-F5", "INT-F6a", "INT-F6b", "INT-F7",
+                "INT-G1", "INT-G2", "INT-G3", "INT-E8a", "INT-E8b", "INT-E8c", "INT-E8d", "INT-L1", "INT-L2", "INT-L3"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n3", pm: HAIKU, n: 3 },
+      { label: "sonnet-n3", pm: SONNET, n: 3 },
+    ],
+  },
 };
