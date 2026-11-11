@@ -314,6 +314,7 @@ export const en = {
      same THIRD, not each other. See docs/designnotiz-beziehungswesen.md. */
   "mess.wesen": "How is your relationship being doing {zeitraum}? (1–10)",
   "mess.wesenHilfe": "Suppose your relationship were a being of its own, with its own needs and feelings — how has it been faring lately?",
+  "mess.alleRegler": "Please set every slider once — even if the middle is right for you.",
   "mess.fit": "How closely does the theme \u201c{text}\u201d match your current development focus? (1–10)",
   // S107 · Efficacy: felt individually. A difference between the two on the
   // SAME topic is a conversation opener in itself.

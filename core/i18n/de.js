@@ -339,6 +339,8 @@ export const de = {
      Geratener). Siehe docs/designnotiz-beziehungswesen.md. */
   "mess.wesen": "Wie geht es eurem Beziehungswesen {zeitraum}? (1–10)",
   "mess.wesenHilfe": "Angenommen, eure Beziehung wäre ein eigenständiges Wesen mit eigenen Bedürfnissen und Gefühlen — wie ergeht es ihm in der letzten Zeit?",
+  // UX-5 · Abgabe erst, wenn jeder Regler einmal angefasst wurde.
+  "mess.alleRegler": "Bitte stelle jeden Regler einmal ein — auch wenn die Mitte für dich stimmt.",
   "mess.fit": "Wie genau trifft das Thema „{text}“ euren aktuellen Entwicklungsfokus? (1–10)",
   // S107 · Wirksamkeit: individuell erlebt. Ein Unterschied zwischen euch beim
   // SELBEN Thema ist ein Gesprächsanlass für sich.

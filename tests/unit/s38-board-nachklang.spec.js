@@ -155,6 +155,7 @@ describe("S38 · Zeitleisten-Einträge", () => {
     await klick(root.querySelector("#btnMyRoom"));
     await klick(root.querySelector("#btnMess"));
     await ruhe();
+    for (const r of document.querySelectorAll("input.rz-regler")) r.dispatchEvent(new Event("input", { bubbles: true }));   // UX-5: jeden Regler anfassen
     await klick(root.querySelector("#boxMess").querySelector("#msOk"));
     await ruhe();
     const zl = await backend.pstate.get("timeline");
