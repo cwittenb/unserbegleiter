@@ -211,7 +211,7 @@ export function zeigeWiedereinstieg(enrollFehler) {
 
   const sprachKnopf = l =>
     '<button type="button" data-wspr="' + l + '" aria-pressed="' + (getLocale() === l) + '">' +
-    t("paarspr.name." + l) + "</button>";
+    t("sprache.eigen." + l) + "</button>";
   /* Zweimal im Markup, je Breite genau EINE sichtbar (display:none nimmt die
      verdeckte auch aus dem Bedienbaum). Mobil steht die Sprachwahl neben der
      Wortmarke, auf dem Desktop ganz oben rechts — also in der anderen Spalte.

@@ -159,7 +159,8 @@ describe("L3.3 · Der Screen", () => {
     const app = await rendere();
     const paar = app.querySelector(".rz-sprachpaar");
     const knoepfe = [...paar.querySelectorAll("button")];
-    expect(knoepfe.map(b => b.textContent)).toEqual([de["paarspr.name.de"], de["paarspr.name.en"]]);
+    // UX-1/U18 · Sprachen heissen in der Sprachwahl, wie sie sich selbst nennen.
+    expect(knoepfe.map(b => b.textContent)).toEqual(["Deutsch", "English"]);
     expect(paar.textContent).not.toMatch(/\bDE\b/);
     expect(knoepfe[0].getAttribute("aria-pressed")).toBe("true");
     expect(DESIGN).toContain(".rz-sprachpaar{display:flex;align-items:center;gap:10px;\n"

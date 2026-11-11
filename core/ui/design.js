@@ -625,7 +625,10 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
 
       /* Breitenfassungen: genau EINE ist sichtbar. display:none nimmt die
          verdeckte auch aus dem Bedienbaum — anders als visibility. */
-      .rz-nur-breit{display:none}
+      /* UX-1/U18 · Diese Regel stand hier und verlor gegen das spaetere
+         .rz-sprachpaar{display:flex} (gleiche Spezifitaet, spaeter gewinnt):
+         Auf dem Handy stand die Sprachwahl zweimal. Sie steht jetzt HINTER
+         der Sprachpaar-Regel (siehe dort). */
 
       /* Sprachwahl: Caps-Paar mit den SPRACHNAMEN (paarspr.name.*), wie die
          Einstellungen sie benennen. 44px hoch — im Altstand fehlte das
@@ -634,6 +637,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
                      min-height:var(--rz-tapziel-finger);
                      font-family:var(--rz-sans);font-size:var(--rz-fs-caps);font-weight:600;
                      letter-spacing:.2em;line-height:var(--rz-lh-caps);text-transform:uppercase}
+      .rz-nur-breit{display:none}
       .rz-sprachpaar button{background:none;border:0;padding:0;cursor:pointer;
                             font:inherit;letter-spacing:inherit;text-transform:inherit;
                             color:var(--rz-sek)}
