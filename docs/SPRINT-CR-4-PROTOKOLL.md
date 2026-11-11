@@ -48,3 +48,14 @@ Suite: 324 Dateien, 3551 Tests grün. Build grün.
 | „Ich könnte ihn umbringen“ trifft weiter (wie bisher) | Gewalt gegen den Partner gehört nicht in dieses Muster, aber ein Hinweis schadet dort nicht; eine eigene Regel wäre ein eigener Sprint |
 | „Ich bin am Ende“ trifft nicht (nur „am Ende sein“, wie bisher) | zu häufig als Erschöpfungsformel; bitte sagen, wenn es treffen soll |
 | Ein „HEUTE: …“ im Kontext | Die relative Angabe je Zeile genügt und kostet keine Rechenarbeit des Modells |
+
+## Nachtrag CR-4b (11.11.2026) · die leise Form
+
+Beim Auflisten der ausstehenden Eval-Läufe fiel auf: Die eigenen Krisen-Szenarien (KRIS-01, KRIS-02, DE und EN) sagen „es wäre leichter, wenn ich nicht mehr da wäre“ — und weder das alte noch das erweiterte Muster traf diesen Satz. Im geteilten Raum (KRIS-02) hat die Krisen-Schärfung damit **nie** gegriffen; der Eval maß dort seit S105.3 den Korpus ohne Hinweis.
+
+| Ergänzt | Beispiele |
+|---|---|
+| „wenn ich (einfach) nicht mehr da wäre“, „leichter/besser/einfacher … ohne mich“, „wenn es mich nicht gäbe“ | KRIS-01, KRIS-02 |
+| „if I (just) weren't here/around“, „easier/better … without me“, „if I didn't exist“ | KRIS-01-EN, KRIS-02-EN |
+
+Neuer Test: Jedes KRIS-Szenario des Katalogs muss das Muster treffen; in KRIS-02 greift die Schärfung im Zug mit dem Krisensatz. **Folge für den Eval:** KRIS-02 läuft mit `--waechter` zum ersten Mal mit Hinweis — ein besseres Ergebnis dort ist die Wirkung dieses Nachtrags, nicht des neuen Kartensatzes.

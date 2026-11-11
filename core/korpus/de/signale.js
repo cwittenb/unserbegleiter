@@ -33,7 +33,10 @@ const KRISE_DE = [
   String.raw`\bwäre\s+(ich\s+)?(lieber|am liebsten|besser|gern)\s+tot\b`, String.raw`\b(ich\s+)?wäre\s+tot\b`, String.raw`\b(lieber|am liebsten)\s+(wäre\s+ich\s+)?tot\b`, String.raw`\btot\s+sein\s+(will|möchte|wollen)`,
   // nicht mehr leben / da sein / aufwachen
   String.raw`\bnicht\s+mehr\s+(weiter)?leben\b(?!\s+(wie|als|mit dem|in d))`, String.raw`\bnicht\s+mehr\s+weiterleben`, String.raw`\b(will|möchte|wollte)\s+(ich\s+)?(einfach\s+)?nicht\s+mehr\s+da\s+sein`,
-  String.raw`\bnicht\s+mehr\s+aufwachen`, String.raw`\bweg\s+sein\s+wollen`, String.raw`\bweg\s+sein,?\s+für\s+immer`,
+  String.raw`\bnicht\s+mehr\s+aufwachen`,
+  // CR-4b · die leise Form ("es wäre leichter, wenn ich nicht mehr da wäre") — genau der Satz
+  // der eigenen Krisen-Szenarien KRIS-01/02, den weder das alte noch das erste neue Muster traf.
+  String.raw`\bwenn\s+ich\s+(einfach\s+|gar\s+)?nicht\s+mehr\s+(da|hier)\s+(wäre|bin|sein)`, String.raw`\b(leichter|besser|einfacher)\b[^.!?]{0,30}\bohne\s+mich\b`, String.raw`\bwenn\s+es\s+mich\s+nicht\s+(mehr\s+)?gäbe`, String.raw`\bweg\s+sein\s+wollen`, String.raw`\bweg\s+sein,?\s+für\s+immer`,
   // Leben nehmen / Ende setzen
   String.raw`\b(mir|sich|dir)\s+das\s+leben\s+(zu\s+)?nehmen`, String.raw`\bein\s+ende\s+(setzen|machen|bereiten)`, String.raw`\bschluss\s+machen\s+mit\s+(dem\s+leben|allem|mir)\b`,
   // Selbstverletzung — mit Personbezug
@@ -49,7 +52,7 @@ const KRISE_EN = [
   String.raw`\bwish\s+i\s+(were|was)\s+dead`, String.raw`\b(rather|better\s+off)\s+(be\s+)?dead\b`,
   String.raw`\bdon'?t\s+want\s+to\s+(live|be\s+here|be\s+alive|wake\s+up)\b(?!\s+like)`, String.raw`\bcan'?t\s+go\s+on\s+living`,
   String.raw`\b(cut|cutting|hurt|hurting|harm|harming)\s+myself\b(?!\s+some\s+slack)`, String.raw`\bno\s+reason\s+to\s+live`, String.raw`\blife\s+has\s+no\s+(meaning|point)`,
-  String.raw`\bend\s+it\s+all\b`, String.raw`\b(thinking|thought)\s+(of|about)\s+ending\s+it\b`, String.raw`\bbetter\s+off\s+without\s+me`, String.raw`\bdisappear\s+forever`,
+  String.raw`\bend\s+it\s+all\b`, String.raw`\bif\s+i\s+(just\s+)?(weren'?t|wasn'?t|were\s+not|was\s+not)\s+(here|around|there)\b`, String.raw`\b(easier|better)\b[^.!?]{0,30}\bwithout\s+me\b`, String.raw`\bif\s+i\s+(just\s+)?(didn'?t|did\s+not)\s+exist`, String.raw`\b(thinking|thought)\s+(of|about)\s+ending\s+it\b`, String.raw`\bbetter\s+off\s+without\s+me`, String.raw`\bdisappear\s+forever`,
 ];
 export const KRISE_MUSTER = new RegExp([...KRISE_DE, ...KRISE_EN].join("|"), "i");
 
