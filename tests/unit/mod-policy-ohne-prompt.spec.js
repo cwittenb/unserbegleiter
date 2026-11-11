@@ -39,7 +39,11 @@ describe("MOD-2b · Policies greifen ohne Prompt (Engine + Mock-LLM)", () => {
     await e.sendUser("Anna: Ich will nicht mehr leben.");
     expect(systeme).toHaveLength(1);
     expect(systeme[0]).toContain(de.waechter.krise.text);
+    // CR-4.1 · Fenster von drei Nachrichten: erst der vierte Zug ist wieder frei.
     await e.sendUser("Bernd: Wie war dein Tag?");
+    await e.sendUser("Anna: Ganz gut.");
+    await e.sendUser("Bernd: Schön.");
+    systeme.splice(1, 2);
     expect(systeme[1]).not.toContain(de.waechter.krise.text);   // je Zug neu entschieden
   });
 

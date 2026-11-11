@@ -27,6 +27,8 @@ import { mitKorpusSprache } from "../core/komposition.js";
 import { baueSoloKontext, baueMomentKontext } from "../core/ui/sessions.js";
 import { formatiereMessrunde, formatiereVerlauf, bereiteRunde } from "../core/ui/prozess.js";
 
+export const EVAL_HEUTE = "2026-08-03T12:00:00";   // lokal, ohne Zone: überall derselbe Kalendertag
+
 /** Der Text, den die App für dieses Szenario als versteckte Startnachricht
  *  einspielte — oder null (Szenario ohne `app`, Session ohne solchen Kontext). */
 export function appKontextFuer(szenario) {
@@ -34,15 +36,20 @@ export function appKontextFuer(szenario) {
   if (!a) return null;
   const k = szenario.kontext || {};
   const nameA = k.nameA || "Anna", nameB = k.nameB || "Bernd";
+  /* CR-4.3 · Festes Heute. Der Kontext traegt relative Zeitangaben ("vor 7
+     Tagen"); mit der Uhr des Rechners aenderte sich der Prompt von Tag zu Tag,
+     und Laeufe waeren nicht vergleichbar. Vorgabe: der 03.08.2026 mittags —
+     eine Woche nach den Daten der bestehenden Szenarien. */
+  const jetzt = new Date(a.jetzt || EVAL_HEUTE);
   return mitKorpusSprache(szenario.sprache === "en" ? "en" : "de", () => {
     if (szenario.session === "solo")
-      return baueSoloKontext(a) || K().steuerTexte.erstkontakt;                // wie app.js (S129)
+      return baueSoloKontext({ ...a, jetzt }) || K().steuerTexte.erstkontakt;                // wie app.js (S129)
     if (szenario.session === "moment") {
       const runde = bereiteRunde(a.measurements);                             // wie app.js (S89)
       return baueMomentKontext({
-        ...a,
+        ...a, jetzt,
         messrunde: runde ? formatiereMessrunde(runde, nameA, nameB) : null,
-        messVerlauf: formatiereVerlauf(a.measurements, nameA, nameB),
+        messVerlauf: formatiereVerlauf(a.measurements, nameA, nameB, 3, jetzt),
       }, nameA, nameB);
     }
     throw new Error("Szenario " + szenario.id + ": `app` gibt es nur für solo und moment (ist: " + szenario.session + ").");

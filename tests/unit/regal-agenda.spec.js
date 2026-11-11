@@ -53,7 +53,8 @@ describe("baueMomentKontext (Modell-Kontrakt: app-interne erste Nachricht)", () 
     expect(k).not.toContain("AG3");                                 // abgeschlossene raus
     expect(k).toContain("von Anna: Mehr gemeinsame Abende (Wunsch: 2/Woche)");
     expect(k).not.toContain("Erledigt");                            // nur offene Agenda
-    expect(k).toContain("2026-06-20: Gut verbunden. · Zwischenzeit-Impuls war: Spaziergang");
+    // CR-4.3 · Datum jetzt mit Abstand zum Heute ("…, vor n …").
+    expect(k).toMatch(/- 2026-06-20, [^:]+: Gut verbunden\. · Zwischenzeit-Impuls war: Spaziergang/);
     expect(k).toContain("von Anna: Nähe zentral");
     expect(k).toContain("Namen: Anna (A), Bernd (B).");
   });

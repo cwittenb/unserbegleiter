@@ -31,6 +31,8 @@
    damit in die Sprachfassung, nicht in die Mechanik. Seit S113 ohne
    Produktions-Aufrufer; einzeln geprueft bleiben sie dort. */
 
+import { trenneNutzer } from "../contracts/steuertoken.js";
+
 /* S105.3 · VORWAERTS statt rueckwaerts.
    Bis hierher pruefte dieser Waechter die fertige Antwort und liess sie neu
    schreiben. Beides passt nicht mehr: Zurueckgenommen wird nichts, und
@@ -57,12 +59,21 @@
  *
  * @param {{signal:RegExp, text:string}|function} inhalt
  */
+/* CR-4.1 · FENSTER statt Einzelzug.
+   Bis CR-4 wurde nur der Zug geschaerft, in dem das Wort fiel. Im geteilten
+   Raum antwortet darauf oft die ANDERE Person ("Was??", "Seit wann?") — und
+   genau dieser Folgezug, in dem die Begleitung den Ort wechseln und die Hilfe
+   nennen muss, bekam keinen Hinweis mehr. Jetzt gilt wie bei den Karten: Das
+   Signal steht in einer der letzten FENSTER sichtbaren Nachrichten der
+   Personen. Versteckter Kontext und Panel-Ergebnisse zaehlen nicht
+   (trenneNutzer) — freigegebene Texte im Kontext sind kein Anlass. */
+export const FENSTER = 3;
+
 export function baueKrisenSchaerfung(inhalt) {
   return (messages, ctx = {}) => {
     const { signal, text } = liesInhalt(inhalt);
-    const letzte = [...(messages || [])].reverse().find(m => m && m.role === "user");
-    const nachricht = String((letzte && letzte.content) || "");
-    if (!signal.test(nachricht)) return null;
+    const zuletzt = trenneNutzer(messages).person.slice(-FENSTER);
+    if (!zuletzt.some(t => signal.test(t))) return null;
     return ctx.text || text;
   };
 }

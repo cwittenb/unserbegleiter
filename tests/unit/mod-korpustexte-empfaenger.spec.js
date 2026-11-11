@@ -36,7 +36,7 @@ describe("MOD-3b · korpusTexte = kontextTexte ⊔ oberflaechenTexte", () => {
       for (const k of Object.keys(m.oberflaechenTexte)) expect(istOberflaeche(k), k).toBe(true);
       for (const k of Object.keys(m.kontextTexte)) expect(istOberflaeche(k), k).toBe(false);
       expect(Object.keys(m.oberflaechenTexte)).toHaveLength(28);
-      expect(Object.keys(m.kontextTexte)).toHaveLength(59);
+      expect(Object.keys(m.kontextTexte)).toHaveLength(67);   // CR-4.3: +8 zeit.* (relative Angaben im Kontext)
     });
   }
   it("DE ≡ EN je Objekt", () => {

@@ -34,7 +34,9 @@ const sha = s => createHash("sha256").update(s, "utf8").digest("hex");
 
 describe("MOD-2a · Die deutschen Schaerfungstexte sind die alten (byte-identisch)", () => {
   it("krise / zweiseitigkeit / aufdeck", () => {
-    expect(sha(de.waechter.krise.text)).toBe("957843c61355653d23d20632b28de6bf03802157fc3e75e88a5253f13bc563dd");
+    // CR-4.1 · "Falls in den letzten Nachrichten …" statt "In der Nachricht klingt … an":
+    // Der Hinweis haelt jetzt ein Fenster von drei Nachrichten und behauptet nichts mehr (P15).
+    expect(sha(de.waechter.krise.text)).toBe("7698dcf1d5255c1ca58f7d8b82bf56c8b3c082726734a467cb7c8b8c2cd58458");
     expect(sha(de.waechter.zweiseitigkeit.text)).toBe("af3209d3d5d3d9ba0f952bcb10d79f80bd82d4b94f96c70faaba5a7bedf861d3");
     expect(sha(de.waechter.aufdeck.text)).toBe("abbed5547f6bd0adfbc9a44d99999736ff44ea74801e4db5ba3ee3bf42d535cc");
   });

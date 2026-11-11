@@ -128,8 +128,8 @@ describe("S107 · Das Beziehungswesen", () => {
       { id: "MR3", status: "ready", values: { A: { wesen: 8 }, B: { wesen: 8 } } },
     ] };
     const v = formatiereVerlauf(mr, "Anna", "Bernd");
-    expect(v).toContain("2026-05-01: Beziehungswesen Anna 4 · Bernd 7 (Abstand 3)");
-    expect(v).toContain("2026-06-01: Beziehungswesen Anna 6 · Bernd 7 (Abstand 1)");
+    expect(v).toMatch(/- 2026-05-01, [^:]+: Beziehungswesen Anna 4 · Bernd 7 \(Abstand 3\)/);   // CR-4.3: mit Abstand zum Heute
+    expect(v).toMatch(/- 2026-06-01, [^:]+: Beziehungswesen Anna 6 · Bernd 7 \(Abstand 1\)/);
     expect(v).not.toContain("MR3");            // ready zählt nicht zum Verlauf
     expect(formatiereVerlauf({ items: [] }, "Anna", "Bernd")).toBeNull();
   });

@@ -150,6 +150,30 @@ describe("Duplikat-Wächter (Bot-Muster: immer wieder gleiche Anfrage)", () => {
   });
 });
 
+describe("CR-4.4 · Duplikat-Wächter vergleicht den Zug, nicht nur die Worte", () => {
+  const zug = (c, frage, antwort) => c.call("POST", "/api/llm", { system: "S", messages: [
+    { role: "user", content: "Hallo" }, { role: "assistant", content: frage }, { role: "user", content: antwort }] });
+
+  it("dreimal »Ja« auf drei VERSCHIEDENE Fragen geht durch (vor CR-4: 429 beim dritten)", async () => {
+    const { anna } = await frischesPaar();
+    expect((await zug(anna, "Magst du beginnen?", "Ja")).status).toBe(200);
+    expect((await zug(anna, "Passt das Wort »einsam«?", "Ja")).status).toBe(200);
+    expect((await zug(anna, "Soll ich das festhalten?", "Ja")).status).toBe(200);
+    expect((await zug(anna, "Und für heute reicht es?", "Ja")).status).toBe(200);
+  });
+
+  it("derselbe Zug dreimal (gleiche Frage, gleiche Antwort) wird weiter abgewiesen", async () => {
+    const { anna } = await frischesPaar();
+    expect((await zug(anna, "Magst du beginnen?", "Ja")).status).toBe(200);
+    expect((await zug(anna, "Magst du beginnen?", " ja ")).status).toBe(200);
+    const vorher = upstreamCalls;
+    const dritte = await zug(anna, "Magst du beginnen?", "Ja");
+    expect(dritte.status).toBe(429);
+    expect(dritte.data.code).toBe("quota_duplikat");
+    expect(upstreamCalls).toBe(vorher);
+  });
+});
+
 describe("Raten-Limit je Minute", () => {
   it("oberhalb der Minutenrate ⇒ 429 mit Durchatmen-Meldung", async () => {
     // eigener Worker mit enger Rate, damit der Test unabhängig kalibriert ist

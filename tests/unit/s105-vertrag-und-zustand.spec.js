@@ -151,12 +151,21 @@ describe("S105.3 · Krisen-Schärfung", () => {
       .toContain("zuerst der Verweis in den eigenen Raum");
   });
 
-  it("liest die JÜNGSTE Nachricht der Person, nicht irgendeine", () => {
+  /* CR-4.1 · Bis CR-4 hiess es hier: "liest die JUENGSTE Nachricht, nicht
+     irgendeine" — der Folgezug bekam keinen Hinweis mehr. Im geteilten Raum
+     antwortet auf den Satz aber oft die ANDERE Person ("Was??"), und genau
+     dann muss die Begleitung den Ort wechseln (Code-Review C5). Jetzt gilt
+     ein Fenster von drei Nachrichten der Personen; danach schweigt sie wieder. */
+  it("der Hinweis hält über die zwei Folgezüge — und endet dann", () => {
     const verlauf = [
       { role: "user", content: "Ich will nicht mehr leben." },
       { role: "assistant", content: "Ich bin da." },
       { role: "user", content: "Danke, jetzt geht es besser." },
     ];
+    expect(krisenSchaerfung(verlauf)).toMatch(/APP-HINWEIS/);
+    verlauf.push({ role: "assistant", content: "Gut." }, { role: "user", content: "Wir wollten noch über den Urlaub reden." });
+    expect(krisenSchaerfung(verlauf)).toMatch(/APP-HINWEIS/);
+    verlauf.push({ role: "assistant", content: "Gern." }, { role: "user", content: "Also, im August." });
     expect(krisenSchaerfung(verlauf)).toBeNull();
   });
 
