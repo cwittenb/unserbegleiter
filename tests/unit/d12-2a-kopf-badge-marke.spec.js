@@ -185,7 +185,7 @@ describe("D12-2a · Wortmarke am Fuss", () => {
   });
 
   it("auf Tiefgruen traegt die Marke ihren eigenen Ton", () => {
-    expect(DESIGN_CSS).toContain("--rz-marke-auf-gruen:#6f8062");
+    expect(DESIGN_CSS).toContain("--rz-marke-auf-gruen:#849379");
     expect(DESIGN_CSS).toMatch(/\.rz-tiefgruen \.rz-fussmarke[^{]*\{color:var\(--rz-marke-auf-gruen\)\}/);
   });
 });

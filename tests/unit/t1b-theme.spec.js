@@ -276,9 +276,9 @@ describe("T1g · eine Palette, keine Doppelgänger", () => {
     // Stimme die Akzentschrift. Was NICHT erlaubt ist: zwei Namen für
     // dieselbe Rolle — genau das hat T1g abgeräumt.
     const erlaubt = [
-      "--rz-akzent-hell = --rz-pfeil (#7d9b62)",
-      "--rz-akzent-hell = --rz-label (#7d9b62)",
-      "--rz-akzent-hell = --rz-kulisse-baum (#7d9b62)",
+      // UX-3 · Pfeil und heller Akzent sind auf 3:1 abgedunkelt, das Label
+      // (Text) auf 4,5:1 — der Baum der Kulisse behaelt den alten Ton.
+      "--rz-akzent-hell = --rz-pfeil (#78955e)",
       "--rz-akzent = --rz-kulisse-teich (#8fae74)",
       "--rz-nutzer = --rz-akzent-ink (#41562c)",
       "--rz-kulisse-wasser = --rz-auf-akzent (#ffffff)",

@@ -20,17 +20,30 @@ export const THEME_CSS = String.raw`
            Tinte, Knopfflaeche ist Akzentflaeche, die eigene Sprechblase traegt
            denselben Akzent. Wo zwei Token dieselbe Rolle spielten, hat der
            D1-Wert gewonnen — die Aenderungen stehen im Protokoll T1g. */
+        /* UX-3 · Kontrast (Code-Review U6, WCAG 1.4.3). Vier Toene lagen als
+           TEXT unter 4,5:1 — gerade die kleinen Zeilen, die erklaeren, was
+           privat bleibt:
+             --rz-sek2             3,07 → 4,5  (Einleitungen, Sitzungsname)
+             --rz-label            2,94 → 4,5  (Caps-Zeilen, 11 px)
+             --rz-marke-auf-gruen  3,50 → 4,5  (Fussmarke; dunkel 4,16)
+           und zwei als ZEICHEN unter 3:1 (Pfeile, Mikrofon, Balken):
+             --rz-pfeil, --rz-akzent-hell  2,94 → 3,0
+           Gemessen gegen Papier UND die abgehobene Flaeche. Preis: --rz-sek2
+           liegt jetzt fast auf --rz-sek — die zweite Graustufe ist auf Papier
+           nicht zu halten, ohne den Kontrast zu verfehlen (vgl. die Notiz bei
+           --rz-flaeche-hoch). Der Waechter: tests/unit/ux3-lesbar.spec.js.
+           Die dunkle Fassung erbt --rz-marke-auf-gruen und besteht damit auch. */
         --rz-serif:'Source Serif 4',Georgia,'Times New Roman',serif;
         --rz-sans:'Instrument Sans',system-ui,-apple-system,sans-serif;
         --rz-papier:#faf8f2;
         --rz-hairline:#e3dfd0;--rz-hairline-gruen:rgba(157,176,143,.28);
         --rz-tiefgruen:#1e2a22;
         --rz-ink:#23291f;--rz-ink-auf-gruen:#eef0e7;--rz-ink2-auf-gruen:#e6e9d9;
-        --rz-sek:#6b7261;--rz-sek2:#8b917d;--rz-sek-auf-gruen:#b9c3ac;--rz-sek2-auf-gruen:#8a9e7c;
-        --rz-gedimmt:#a3a894;--rz-marke:#5c6653;--rz-marke-auf-gruen:#6f8062;
-        --rz-akzent:#8fae74;--rz-akzent-text:#14201a;--rz-akzent-hell:#7d9b62;
-        --rz-pfeil:#7d9b62;--rz-pfeil-auf-gruen:#a9c88b;
-        --rz-label:#7d9b62;--rz-label-auf-gruen:#9db08f;--rz-nutzer:#41562c;
+        --rz-sek:#6b7261;--rz-sek2:#6c7161;--rz-sek-auf-gruen:#b9c3ac;--rz-sek2-auf-gruen:#8a9e7c;
+        --rz-gedimmt:#a3a894;--rz-marke:#5c6653;--rz-marke-auf-gruen:#849379;
+        --rz-akzent:#8fae74;--rz-akzent-text:#14201a;--rz-akzent-hell:#78955e;
+        --rz-pfeil:#78955e;--rz-pfeil-auf-gruen:#a9c88b;
+        --rz-label:#5f764b;--rz-label-auf-gruen:#9db08f;--rz-nutzer:#41562c;
         /* Kulisse/Zeichen: Baum auf Papier, Teich auf Tiefgruen, Wasserlinie. */
         --rz-kulisse-baum:#7d9b62;--rz-kulisse-teich:#8fae74;--rz-kulisse-wasser:#ffffff;
         /* Hinweisblatt (Wiedereinstieg): warmes Papier mit eigenem Rand. */
