@@ -138,6 +138,18 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .pb-composer textarea{scroll-margin-block:80px 40vh}
       .pb-btn{min-height:44px;box-sizing:border-box}
       .rz-ecke button{min-height:var(--rz-tapziel)}
+      /* UX-3 · Trefferflaeche 44×44 (Code-Review U7, WCAG 2.5.8) — OHNE das
+         Zeichen zu vergroessern oder das Raster zu verschieben: Eine
+         unsichtbare Flaeche liegt mittig ueber dem Element und nimmt den
+         Finger an. Betroffen waren Zurueck-Pfeil (28×24), Einstellungs-Zeichen
+         (36×36) und Wegweiser-Badge (32 hoch). Das Mikrofon (32 breit) bekommt
+         echte Breite statt einer Ueberlagerung — es sitzt zwischen Feld und
+         Sende-Knopf, und eine Flaeche darueber naehme beiden den Rand. */
+      .rz-zurueck,.rz-ecke button{position:relative}
+      .rz-zurueck::after,.rz-ecke button::after,.rz-weg-badge::after{
+        content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+        width:max(100%,var(--rz-tapziel-finger));height:max(100%,var(--rz-tapziel-finger))}
+      .rz-zurueck.rz-blind::after{display:none}
       .pb-typing{display:inline-flex;gap:5px;align-items:center;min-height:14px}
       .pb-typing span{width:7px;height:7px;border-radius:50%;background:var(--rz-sek2);animation:pbBlink 1.2s infinite}
       .pb-typing span:nth-child(2){animation-delay:.2s}.pb-typing span:nth-child(3){animation-delay:.4s}
@@ -152,7 +164,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
       .rz-regler-zeile{display:flex;align-items:center;gap:12px}
       .rz-regler{flex:1;accent-color:var(--rz-akzent);min-height:var(--rz-tapziel-finger)}
       .rz-regler-zahl{min-width:2ch;text-align:right;font-family:var(--rz-sans);font-size:var(--rz-fs-text);font-variant-numeric:tabular-nums;color:var(--rz-sek)}
-      .rz-regler:not([data-beruehrt]){accent-color:var(--rz-linie)}
+      .rz-regler:not([data-beruehrt]){accent-color:var(--rz-hairline)}
       .rz-regler:not([data-beruehrt])::-webkit-slider-thumb{opacity:0}
       .rz-regler:not([data-beruehrt])::-moz-range-thumb{opacity:0}
       .pb-skala .wert{font-weight:500;min-width:26px;text-align:center;color:var(--rz-akzent-ink);font-size:var(--rz-fs-zeile)}
@@ -1057,7 +1069,7 @@ export const DESIGN_CSS = String.raw`      ${SCHRIFT_IMPORT}
          background-clip:content-box faerben nur den Inhaltskasten
          (44 - 2*5 = 34). Die 5px sind ein ABGELEITETER Wert, keine
          Rasterstufe — sie ergeben sich aus der Differenz beider Masse. */
-      #scrChat #btnMic{border:0;background:none;color:var(--rz-akzent-hell);padding:0 6px;
+      #scrChat #btnMic{border:0;background:none;color:var(--rz-akzent-hell);padding:0 12px;
         min-height:var(--rz-tapziel-finger)}
       #scrChat #btnMic svg{stroke-width:1.6}
       #scrChat #btnSend{width:var(--rz-tapziel-finger);height:var(--rz-tapziel-finger);
