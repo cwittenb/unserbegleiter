@@ -58,13 +58,17 @@ export class Engine {
   _blocks() { return this.def.blocks || (this.def.block ? [this.def.block] : []); }
 
   async _save() { if (this.hooks.onSave) await this.hooks.onSave(this.chat); }
-  _personError(msg) { if (this.hooks.onPersonError) this.hooks.onPersonError(msg); }
+  /* CR-6 (C26) · Die Engine kennt keine Sprache (MOD-0). Ihre Meldungen an die
+     Person tragen deshalb einen CODE und die Daten dazu; die Oberflaeche
+     uebersetzt (engine.<code> im Woerterbuch). Der deutsche Text bleibt als
+     Rueckfall fuer Aufrufer ohne Woerterbuch (Tests, Eval, Protokolle). */
+  _personError(msg, code, daten) { if (this.hooks.onPersonError) this.hooks.onPersonError(msg, code, daten); }
 
   /** Personen-Eingabe: genau eine User-Nachricht, dann Assistant-Runde. */
   async sendUser(text) {
     if (this.busy || !text || !text.trim()) return false;
     if (this.chat.status === "released" || this.chat.status === "finished") {
-      this._personError("Diese Session ist abgeschlossen.");
+      this._personError("Diese Session ist abgeschlossen.", "abgeschlossen");
       return false;
     }
     const msg = { role: "user", content: text.trim() };
@@ -281,7 +285,8 @@ export class Engine {
       await this._save();
       this._personError(
         "Der Block ist weiterhin ungültig (" + errors[0] +
-        ") – bitte das System im Chat um eine Wiederholung bitten."
+        ") – bitte das System im Chat um eine Wiederholung bitten.",
+        "blockUngueltig", { grund: errors[0] }
       );
       return;   // KEIN dritter Versuch
     }
@@ -359,7 +364,8 @@ export class Engine {
       await this._save();
       this._personError(
         "Der Block ist weiterhin ungültig (" + errors[0] +
-        ") – bitte das System im Chat um eine Wiederholung bitten."
+        ") – bitte das System im Chat um eine Wiederholung bitten.",
+        "blockUngueltig", { grund: errors[0] }
       );
       return;   // KEIN dritter Versuch
     }

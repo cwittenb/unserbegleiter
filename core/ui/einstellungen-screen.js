@@ -228,13 +228,19 @@ export function macheEinstellungenScreen({ doc, $, chrome, backend, state, err, 
      offen, schliesst der erste Tap NUR das Fach. */
   function verdrahteEinstellungen(betrete, verlasse) {
     const knopf = chrome("pbEinst");
-    if (!knopf || knopf.dataset.rzVerdrahtet) return;
-    knopf.dataset.rzVerdrahtet = "1";
-    knopf.addEventListener("click", () => {
+    if (!knopf) return;
+    /* CR-6 (C17) · Das Zeichen steht im Body und ueberlebt den Neuaufbau der
+       Oberflaeche (Sprachwechsel → relaunch). Bis CR-6 wurde es EINMAL
+       verdrahtet und hing danach an der ersten App-Instanz — mit deren altem
+       Zustand: Nach einem Sprachwechsel oeffnete es erst beim zweiten Tippen.
+       Jetzt ersetzt jede neue Instanz den Handler der vorigen. */
+    if (knopf._rzEinstHandler) knopf.removeEventListener("click", knopf._rzEinstHandler);
+    knopf._rzEinstHandler = () => {
       if (state.screen === "scrEinstellungen" && typeof verlasse === "function") { verlasse(); return; }
       zeigeEinstellungen();
       betrete("scrEinstellungen");
-    });
+    };
+    knopf.addEventListener("click", knopf._rzEinstHandler);
   }
 
   /* ---- Paarsprache: beidseitig bestätigter Wechsel (S30·C3).

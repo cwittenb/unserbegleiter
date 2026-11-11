@@ -85,6 +85,11 @@ export function zeigeKeineVerbindung() {
   });
 }
 
+/** CR-6 (C28) · "/korpus.en.<hash>.js"; ohne eingesetzten Hash (Tests, Dev) der alte Name. */
+export function korpusPfad(locale, hash) {
+  return "/korpus." + locale + (/^[0-9a-f]{8,}$/.test(hash) ? "." + hash : "") + ".js";
+}
+
 export async function boot() {
   /* R5 · Korpus-Lader. Deutsch liegt im Bundle; Englisch wird als eigene
      Datei nachgezogen (Script-Tag statt import(), weil der Client als IIFE
@@ -95,7 +100,12 @@ export async function boot() {
     const da = globalThis.__KORPUS_EN__;
     if (da) return fertig(da);
     const s = doc.createElement("script");
-    s.src = "/korpus." + locale + ".js";
+    /* CR-6 (C28) · Die Datei traegt den Kern-Hash im Namen. Bis CR-6 hiess sie
+       immer gleich: Ein Tab, der vor einem Deploy geoeffnet war, lud zu seinem
+       ALTEN app.js den NEUEN Korpus — zwei Staende, die nicht zusammen gebaut
+       wurden. Jetzt findet der alte Tab seine Datei nicht mehr und scheitert
+       laut (unten), statt still zu mischen; Neuladen holt beides frisch. */
+    s.src = korpusPfad(locale, "__CORE_HASH__");
     s.onload = () => globalThis.__KORPUS_EN__
       ? fertig(globalThis.__KORPUS_EN__)
       : scheitern(new Error("Korpus geladen, aber leer: " + locale));

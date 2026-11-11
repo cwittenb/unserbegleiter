@@ -18,7 +18,7 @@ import { t } from "../i18n/index.js";
 import { mdRender } from "./html.js";
 import { cleanDisplay } from "../contracts/block.js";
 import { istWireNachricht } from "../contracts/steuertoken.js";
-import { ALLE_BLOECKE } from "../contracts/registry.js";
+import { bloeckeLokal } from "./block-texte.js";
 
 /**
  * Zeichnet einen aufbewahrten Verlauf als Leseansicht.
@@ -57,7 +57,7 @@ export function zeichneReplay(wirt, verlauf, el) {
     letzteRolle = m.role;
 
     const d = el("div", "pb-msg " + (m.role === "assistant" ? "ai" : "me"));
-    const rein = cleanDisplay(m.content, [], ALLE_BLOECKE);
+    const rein = cleanDisplay(m.content, [], bloeckeLokal());
     if (m.role === "assistant") d.innerHTML = mdRender(rein);
     else d.textContent = rein;
     (gruppe || wirt).appendChild(d);

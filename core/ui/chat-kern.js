@@ -23,7 +23,7 @@ import { esc, mdRender, IKON } from "./html.js";
 import { schneideStreamText } from "./stream-anzeige.js";
 import { cleanDisplay, findeBlock } from "../contracts/block.js";
 import { findeMarker } from "../contracts/marker.js";
-import { ALLE_BLOECKE } from "../contracts/registry.js";
+import { bloeckeLokal } from "./block-texte.js";
 import { K } from "../prompts/prompts.js";
 import { bereiteRunde, formatiereMessrunde, formatiereVerlauf } from "./prozess.js";
 import { istWireNachricht } from "../contracts/steuertoken.js";
@@ -249,9 +249,10 @@ export function macheChatKern({ doc, $, el, state, backend, err, hint, aktualisi
            des Block-Rohtexts. Unsichtbare Blöcke (leerer Platzhalter) bleiben
            unsichtbar. cleanDisplay läuft weiter — Alt-Verläufe tragen den
            Block noch im Text. */
-        let anzeige = cleanDisplay(m.content, mkListe, ALLE_BLOECKE);
+        const bloecke = bloeckeLokal();   // CR-6 (C26): Platzhalter in der Sprache der Oberfläche
+        let anzeige = cleanDisplay(m.content, mkListe, bloecke);
         if (m.role === "assistant" && m.block && m.block.typ) {
-          const bd = ALLE_BLOECKE.find(b => b.dataset === m.block.typ);
+          const bd = bloecke.find(b => b.dataset === m.block.typ);
           if (bd && bd.placeholder) anzeige = (anzeige ? anzeige + "\n\n" : "") + bd.placeholder;
         }
         if (m.role === "assistant") d.innerHTML = mdRender(anzeige);

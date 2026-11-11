@@ -5,7 +5,7 @@ import { Engine } from "../engine/engine.js";
 import { cleanDisplay, findeBlock } from "../contracts/block.js";
 import { offeneKlammerAbIndex, WIRE_KOEPFE, istWireNachricht, PAIRS_KOPF } from "../contracts/steuertoken.js";
 import { findeMarker } from "../contracts/marker.js";
-import { ALLE_BLOECKE } from "../contracts/registry.js";
+import { bloeckeLokal } from "./block-texte.js";
 import { quereGate, baueMomentKontext, baueSoloKontext, baueAnlassKontext, markiereGelesen, hebeInAgenda, raeumeAgendaAb, merkeVor, nimmFreigabeZurueckAb } from "./sessions.js";
 import { redigiereRegalFuerRolle, redigiereAgendaFuerRolle, WEGE_FUER, inKarenz } from "../engine/regal.js";
 import { paareAusVerlauf, baueAusschnitt, paarWaehlbar, paarGrund, waehleUm,
@@ -67,6 +67,9 @@ function umhuelleBackend(roh, tick) {
    S95.1: Die Liste lebt jetzt in contracts/steuertoken.js (zweiter Verbraucher:
    die Ausschnitt-Auswahlmenge); hier bleibt der Re-Export für Bestandscode. */
 export { WIRE_KOEPFE };
+
+/* CR-6 (C26) · Meldungen der Engine → Wörterbuch (als Literale, Kanarie S113). */
+const ENGINE_MELDUNG = { abgeschlossen: "engine.abgeschlossen", blockUngueltig: "engine.blockUngueltig" };
 
 export function createApp({ doc, backend, root, diktat }) {
   const rohBackend = backend;   // Relaunch umhüllt selbst neu (kein Doppel-Zählen)
@@ -1114,13 +1117,20 @@ export function createApp({ doc, backend, root, diktat }) {
     try { win.history.pushState({ rzZurueck: 1 }, ""); zurueckEintrag = true; }
     catch { /* eingebettet ohne Verlauf (Artefakt): dann bleibt es beim Pfeil */ }
   }
-  if (doc.defaultView && doc.defaultView.addEventListener)
-    doc.defaultView.addEventListener("popstate", () => {
+  if (doc.defaultView && doc.defaultView.addEventListener) {
+    const win = doc.defaultView;
+    /* CR-6 (C17) · Wie das Einstellungs-Zeichen: Das Fenster ueberlebt den
+       Neuaufbau (relaunch). Jede Instanz ersetzt den Lauscher der vorigen —
+       sonst antworteten nach einem Sprachwechsel zwei Instanzen auf eine Geste. */
+    if (win.__rzZurueckLauscher) win.removeEventListener("popstate", win.__rzZurueckLauscher);
+    win.__rzZurueckLauscher = () => {
       if (!zurueckEintrag) return;                 // nicht unser Eintrag
       zurueckEintrag = false;
       const knopf = $(ZURUECK_KNOPF[state.screen]);
       if (knopf) knopf.click();                    // legt bei Bedarf einen neuen Eintrag (betrete)
-    });
+    };
+    win.addEventListener("popstate", win.__rzZurueckLauscher);
+  }
 
   /* S141 · Die Einstellungen sind der einzige Ort, den man von ueberall her
      betritt — der Rueckweg gehoert deshalb dorthin zurueck, wo man herkam,
@@ -1466,7 +1476,8 @@ export function createApp({ doc, backend, root, diktat }) {
       def, chat, llm: backend.llm, ctx,
       hooks: {
         onSave: c => backend.chat.save(def.shared ? "shared" : "mine", art, c),
-        onPersonError: lebend(err),
+        // CR-6 (C26) · Code → Wörterbuch; ohne Code bleibt der Text der Engine.
+        onPersonError: lebend((msg, code, daten) => err(ENGINE_MELDUNG[code] ? t(ENGINE_MELDUNG[code], daten) : msg)),
         /* S105.5 · Nach jedem Zug kann sich die Lage am Abschluss geaendert
            haben — etwa wenn eine Uebergabe verweigert wurde und die Gabelung
            nun offen steht. Der Knopf leitet sein Label aus dem Verlauf ab, also
@@ -1759,7 +1770,7 @@ export function createApp({ doc, backend, root, diktat }) {
   function baueWortlautWire(verlauf, vid) {
     const sichtbar = ((verlauf && verlauf.messages) || [])
       .filter(m => !m.hidden && !istWireNachricht(m))
-      .map(m => (m.role === "assistant" ? "B: " : "I: ") + cleanDisplay(m.content, [], ALLE_BLOECKE))
+      .map(m => (m.role === "assistant" ? "B: " : "I: ") + cleanDisplay(m.content, [], bloeckeLokal()))
       .join("\n");
     return sichtbar
       ? "RECALL-RESULT\n" + fuelle(K().steuerTexte.abrufGefunden, { vid }) + "\n" + sichtbar

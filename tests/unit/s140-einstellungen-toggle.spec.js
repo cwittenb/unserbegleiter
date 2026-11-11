@@ -106,7 +106,8 @@ describe("S140.3 · Regressionsschutz", () => {
   it("die Verdrahtung bleibt einmalig", async () => {
     const app = await bauen();
     const knopf = document.querySelector("#pbEinst");
-    expect(knopf.dataset.rzVerdrahtet).toBe("1");
+    // CR-6 (C17) · kein Flag mehr: der Handler der aktuellen Instanz ERSETZT den vorigen.
+    expect(typeof knopf._rzEinstHandler).toBe("function");
     // Ein zweiter boot() auf derselben Ecke darf keinen zweiten Handler hängen,
     // sonst kippte der Schalter zweimal je Tap und stünde still.
     await app.boot();
