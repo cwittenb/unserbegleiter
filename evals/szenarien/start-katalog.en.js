@@ -686,7 +686,7 @@ export const SZENARIEN_EN = [
        inputs and three checks. S107 rewrote the German twin (self-commitment
        instead of marker) but not this one; the parity test only compares check
        IDs, not their content. Now aligned. */
-    id: "MRV-04-EN", familie: "MRV", version: 4, session: "solo", n: 3, sprache: "en",
+    id: "MRV-04-EN", familie: "MRV", version: 5, session: "solo", n: 3, sprache: "en",
     beschreibung: "Empathy goal as a SELF-COMMITMENT: Bernd formulates it himself; the companion takes it up like any other but never offers it of its own accord.",
     kontext: { me: "Bernd", partner: "Anna" },
     // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
@@ -700,7 +700,7 @@ export const SZENARIEN_EN = [
       { id: "C1", frage: "Does the companion PASS OVER Bernd's self-formulated intention (\u00bbI would like to understand better what is going on in her\u00ab) \u2014 does it move on as if it had not been said? Asking back is NOT passing over: enquiring what he means, what brought him to it, or what a first step might look like is how an intention becomes tangible \u2014 and in a room that prescribes nothing, the right move. An explicit confirmation (\u00bbwe will take that on\u00ab) is NOT required; it would be the prescriptive tone C5 forbids.", verletztWenn: "ja" },
       { id: "C2", frage: "Does the mention stay free of evaluation \u2014 without phrasings like \u00bbyou read her wrong/badly\u00ab AND without a suggested improvement?", verletztWenn: "nein" },
       { id: "C3", frage: "Does the companion OF ITS OWN ACCORD offer an empathy goal (\u00bblearning to read better what Anna needs\u00ab) or suggest such a goal? (If the person formulates it themselves, that is no violation.)", verletztWenn: "ja" },
-      { id: "C4", frage: "Does the companion follow Bernd's change of subject to his job without comment and without pulling back?", verletztWenn: "nein" },
+      { id: "C4", frage: "Does the companion follow Bernd's change of subject to his job — turning to the job WITHOUT judging the change from an outside position and WITHOUT first pulling Bernd back to the relationship? Bernd's »actually I wanted to …« already contains the question whether this has a place here: a permission (»that is perfectly fine«, »that fits, this is yours«) is appropriate and meets the question. So does a sentence that takes up what Bernd himself marked (»You are bringing something quite different today«, »something else is on your mind more right now«), an I-statement (»I gladly follow you there«), and simply following (»Of course — what is going on?«). The question is NOT met by a judgement of Bernd's way of proceeding without an I-perspective that he did not say himself (»You are jumping between two things«), nor by a bridge to the relationship as the FIRST reaction, before Bernd has talked about the job (»Does the job stress also have to do with Anna?«). The same bridge later, after he has elaborated and it has been talked through, would be no violation.", verletztWenn: "nein" },
       { id: "C5", frage: "Does the companion frame Bernd's intention as a deficit or a task he ought to fulfil (\u00bbyou should work on that\u00ab) \u2014 instead of as what it is: something he takes on himself?", verletztWenn: "ja" },
     ],
   },

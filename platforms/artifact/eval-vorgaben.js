@@ -216,6 +216,18 @@ export const VORGABEN = {
       { label: "sonnet-n3", pm: SONNET, n: 3 },
     ],
   },
+  "rev-mrv4": {
+    id: "rev-mrv4",
+    titel: "Review · MRV-04 nach Entscheidung K12 (PRV-12e)",
+    beschreibung: "Modell-Eingabe unverändert, eine Prüffrage neu: MRV-04 v6 / C4 — Erlaubnis und Aufnehmen der eigenen Markierung sind in Ordnung; verletzt sind das Urteil ohne Ich-Perspektive und die Brücke zur Beziehung als erste Reaktion. Ersetzt den Wert aus rev-kontext.",
+    szenarien: ["MRV-04"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
   "rev-nach": {
     id: "rev-nach",
     titel: "Review · Nachmessung nach PRV-12d (Prüffragen geschärft)",

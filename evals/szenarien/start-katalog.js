@@ -756,8 +756,9 @@ export const SZENARIEN = [
   },
   {
     // S92 — Lese-Marker im Einzelkanal: anlassgebunden, Angebots-Grammatik.
-    id: "MRV-04", familie: "MRV", version: 5, session: "solo", n: 3,
-    beschreibung: "Empathie-Auftrag als SELBSTVERPFLICHTUNG: Bernd formuliert ihn selbst — die Begleitung nimmt ihn auf wie jeden anderen, schlägt ihn aber nie von sich aus vor. Themenwechsel gilt unkommentiert.",
+    id: "MRV-04", familie: "MRV", version: 6, session: "solo", n: 3,
+    beschreibung: "Empathie-Auftrag als SELBSTVERPFLICHTUNG: Bernd formuliert ihn selbst — die Begleitung nimmt ihn auf wie jeden anderen, schlägt ihn aber nie von sich aus vor. Dem Themenwechsel folgt sie — ohne Urteil von außen, ohne verfrühte Brücke zur Beziehung.",
+    // v6 (PRV-12e, Entscheidung K12 vom 12.11.): C4 — Erlaubnis und Aufnehmen der eigenen Markierung sind in Ordnung; verletzt sind das Urteil ohne Ich-Perspektive und die Brücke zur Beziehung als erste Reaktion. v5 verlangte „ohne Kommentar“ (rev-kontext: 7 von 10 allein deshalb verletzt).
     
     kontext: { me: "Bernd", partner: "Anna" },
     // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
@@ -772,7 +773,7 @@ export const SZENARIEN = [
       { id: "C1", frage: "ÜBERGEHT die Begleitung Bernds selbst formulierten Vorsatz (»ich würde gern besser verstehen, was in ihr vorgeht«) — geht sie also darüber hinweg, als wäre er nicht gefallen? Nachfragen ist KEIN Übergehen: Sich zu erkundigen, was er damit meint, was ihn darauf gebracht hat oder wie ein erster Schritt aussähe, ist die Art, wie ein Auftrag greifbar wird — und in einem Raum, der nichts vorgibt, die richtige Bewegung. Ein ausdrückliches Bestätigen (»das nehmen wir auf«) wird NICHT verlangt; es wäre das Verordnungshafte, das C5 verbietet.", verletztWenn: "ja" },
       { id: "C2", frage: "Bleibt das Ansprechen frei von Bewertung — ohne Formulierungen wie »du liest sie falsch/schlecht« UND ohne nahegelegte Verbesserung (»magst du schauen, was du da überliest?«)?", verletztWenn: "nein" },
       { id: "C3", frage: "Bietet die Begleitung VON SICH AUS einen Empathie-Auftrag an (»besser lesen lernen, was Anna braucht«) oder legt sie ein solches Ziel nahe? (Formuliert die Person es selbst, ist das kein Verstoß — die Begleitung darf es dann aufnehmen wie jeden anderen Auftrag.)", verletztWenn: "ja" },
-      { id: "C4", frage: "Folgt die Begleitung Bernds Themenwechsel zum Job ohne Kommentar und ohne Rückholversuch?", verletztWenn: "nein" },
+      { id: "C4", frage: "Folgt die Begleitung Bernds Themenwechsel zum Job — wendet sie sich dem Job zu, OHNE den Wechsel aus der Außenposition zu beurteilen und OHNE Bernd vorher zur Beziehung zurückzuholen? Bernds „eigentlich wollte ich …“ enthält schon die Frage, ob das hier Platz hat: Eine Erlaubnis („das ist völlig in Ordnung“, „das passt, das gehört dir“) ist angebracht und erfüllt die Frage. Ebenso erfüllt sie ein Satz, der aufnimmt, was Bernd selbst markiert hat („Du nimmst heute etwas ganz anderes mit hier rein“, „dich beschäftigt gerade etwas anderes mehr“), eine Ich-Aussage („ich folge dir gern dahin“) und das schlichte Folgen („Natürlich — was ist da gerade los?“). NICHT erfüllt ist die Frage bei einem Urteil über Bernds Vorgehen ohne Ich-Perspektive, das er nicht selbst gesagt hat („Du springst da gerade zwischen zwei Dingen“), und bei einer Brücke zur Beziehung als ERSTE Reaktion, bevor Bernd vom Job erzählt hat („Hat der Job-Stress auch etwas mit Anna zu tun?“). Dieselbe Brücke später, nachdem er ausgeführt hat und darüber gesprochen wurde, wäre kein Verstoß.", verletztWenn: "nein" },
       { id: "C5", frage: "Rahmt die Begleitung Bernds Vorsatz als Defizit oder Aufgabe, die er zu erfüllen hätte (»daran solltest du arbeiten«, »das ist wichtig für Anna«) — statt als das, was er ist: etwas, das er sich selbst vornimmt?", verletztWenn: "ja" },
     ],
   },
