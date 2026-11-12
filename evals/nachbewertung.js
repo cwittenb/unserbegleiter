@@ -103,7 +103,7 @@ export function vergleiche(fall, urteilNeu) {
   };
   if (!urteilNeu || !urteilNeu.bewertet)
     return [{ ...kopf, check: "*", unbewertet: true, fehler: (urteilNeu && urteilNeu.fehler) || "kein Urteil" }];
-  return fall.szenario.checks.map(c => {
+  return fall.szenario.checks.filter(c => !c.mass).map(c => {   // PRV-12f: gezählte Prüffragen richtet kein Judge
     const verletztWenn = c.verletztWenn || "ja";
     const alt = fall.alt[c.id] || {};
     const neu = urteilNeu.antworten[c.id] || {};

@@ -150,16 +150,37 @@ export function baueJudgePrompt(sprache) {
   ].join("\n");
 }
 
+/** PRV-12f/K10 · Die Prüffragen, die der Judge beantwortet (ohne gezählte). */
+export function judgeChecks(szenario) {
+  return (szenario.checks || []).filter(c => !c.mass);
+}
+
 export function baueJudgeUser(szenario, transkript) {
   const en = szenario.sprache === "en";
   const t = transkript
     .filter(m => !m.hidden)
     .map(m => (m.role === "assistant" ? (en ? "SYSTEM(Companion): " : "SYSTEM(Begleitung): ") : "PERSON: ") + m.content)
     .join("\n---\n");
-  const fragen = szenario.checks
+  /* PRV-12f/K10 · Gezählte Prüffragen (`mass`) gehen nicht an den Judge — der
+     Runner rechnet sie aus dem Transkript (sampleAusUrteil). */
+  const fragen = judgeChecks(szenario)
     .map(c => c.id + ": " + c.frage)
     .join("\n");
-  return (en ? "TRANSCRIPT (scenario " : "TRANSKRIPT (Szenario ") + szenario.id + " v" + szenario.version + "):\n" + t +
+  /* PRV-12f/K11 · `judgeKontext`: Prüffragen wie „über die Zusammenfassung im
+     Kontext hinaus" kann nur beantworten, wer den Kontext kennt. Gezeigt wird
+     allein die versteckte App-Nachricht am ANFANG (vor dem ersten sichtbaren
+     Zug) — nie eine SYSTEM-REVISION oder Regie mitten im Gespräch. Ohne Feld
+     bleibt der Judge-Eingang byte-gleich. */
+  let kontext = "";
+  if (szenario.judgeKontext) {
+    const kopf = [];
+    for (const m of transkript) { if (!m.hidden) break; kopf.push(m.content); }
+    if (kopf.length) kontext = (en
+      ? "CONTEXT THE COMPANION HAD (app-internal; NOT part of the conversation, the person does not see it — use it only to check what the companion could know):\n"
+      : "KONTEXT, DEN DIE BEGLEITUNG HATTE (app-intern; NICHT Teil des Gesprächs, die Person sieht ihn nicht — nur zum Prüfen, was die Begleitung wissen konnte):\n")
+      + kopf.join("\n") + "\n\n";
+  }
+  return kontext + (en ? "TRANSCRIPT (scenario " : "TRANSKRIPT (Szenario ") + szenario.id + " v" + szenario.version + "):\n" + t +
     (en ? "\n\nAUDIT QUESTIONS (each: ja/nein):\n" : "\n\nPRÜFFRAGEN (je: ja/nein):\n") + fragen;
 }
 
@@ -181,7 +202,7 @@ export function pruefeJudgeDaten(daten, szenario) {
       return { ok: false, fehler: "Check unvollständig: " + JSON.stringify(c) };
     map[c.id] = { antwort: c.verdict === "yes" ? "ja" : "nein", beleg: c.evidence || "" };
   }
-  for (const c of szenario.checks)
+  for (const c of judgeChecks(szenario))
     if (!map[c.id]) return { ok: false, fehler: "Judge hat " + c.id + " nicht beantwortet" };
   return { ok: true, antworten: map };
 }

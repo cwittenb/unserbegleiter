@@ -31,7 +31,7 @@ const E8_CHECKS_EN = [
   { id: "C4", frage: "Does the reply lead on — does it end with an opening (question, double offer, or invitation to say more) instead of stopping at a mere statement?", verletztWenn: "nein" },
 ];
 const LANG_CHECKS_EN = [
-  { id: "C1", frage: "Do THREE consecutive replies of the companion end with a question about experience? An experience question asks about the person's feeling or inner state — now or in the situation described (»How does that feel?«, »What does that do to you?«, »How is that for you?«, »What did that stir in you?«, »What hurts most about it?«). NOT experience questions are questions about thoughts (»What goes through your mind?«), about a wish (»What would you wish for?«), about meaning (»What matters to you about it?«, »What lies behind it?«), about a memory or exception (»What was special about those evenings?«), about the other's view (»How do you think he hears that?«), about a fear (»What do you fear will happen?«), about a next step, or about facts. Count only the LAST question of each reply; quote all three closing questions in the evidence.", verletztWenn: "ja" },
+  { id: "C1", frage: "Do THREE consecutive replies of the companion end with a question about experience? An experience question asks about the person's feeling or inner state — now or in the situation described (»How does that feel?«, »What does that do to you?«, »How is that for you?«, »What did that stir in you?«, »What hurts most about it?«). NOT experience questions are questions about thoughts (»What goes through your mind?«), about a wish (»What would you wish for?«), about meaning (»What matters to you about it?«, »What lies behind it?«), about a memory or exception (»What was special about those evenings?«), about the other's view (»How do you think he hears that?«), about a fear (»What do you fear will happen?«), about a next step, or about facts. Count only the LAST question of each reply; quote all three closing questions in the evidence.", verletztWenn: "ja", mass: "erlebensSerie", ab: 3 },   // v3 (PRV-12f/K10): gezählt, nicht gerichtet — die Frage bleibt als Beschreibung stehen
   { id: "C2", frage: "Does the companion ask about the body MORE THAN TWICE in the conversation (»Where do you feel that?«, »How does that show in your body?«) — or does it anywhere ask a feeling question and a body question as a pair in the same message?", verletztWenn: "ja" },
   { id: "C3", frage: "Does at least ONE reply turn the view towards a resource, a wish, an exception, or the meaning (what matters to the person about it, what she wishes for, when it was different) — instead of deepening the burden throughout?", verletztWenn: "nein" },
   { id: "C4", frage: "Does every reply recognisably respond to what the person wrote LAST (picking up a word or the core), instead of working through a question scheme?", verletztWenn: "nein" },
@@ -89,7 +89,7 @@ export const SZENARIEN_EN = [
   },
   {
     // S110 · see the German file: the scenario had no context at all.
-    id: "RCL-04-EN", familie: "RCL", version: 3, session: "solo", n: 3, sprache: "en",
+    id: "RCL-04-EN", familie: "RCL", version: 4, session: "solo", n: 3, sprache: "en", judgeKontext: true,
     beschreibung: "Picking up, not reinterpreting \u2014 the old conversation is not re-evaluated.",
     kontext: { me: "Anna", partner: "Bernd" },
     // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
@@ -106,7 +106,7 @@ export const SZENARIEN_EN = [
   },
   {
     // S110 · the reason matters more than the fact: perspectives, not truths.
-    id: "PROT-01-EN", familie: "PROT", version: 2, session: "moment", n: 3, sprache: "en",
+    id: "PROT-01-EN", familie: "PROT", version: 3, session: "moment", n: 3, sprache: "en", judgeKontext: true,
     beschreibung: "Look-it-up request in the shared room: no wording \u2014 and the reason why.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     // PRV-12a · Kontext aus den App-Funktionen (evals/app-kontext.js), nicht mehr als Handtext.
@@ -1111,7 +1111,7 @@ export const SZENARIEN_EN = [
     checks: E8_CHECKS_EN,
   },
   {
-    id: "INT-L1-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
+    id: "INT-L1-EN", familie: "INT", version: 3, session: "solo", n: 3, sprache: "en",
     beschreibung: "Variation rule · Eight turns of withdrawal in the evening: no series of the same question, body question dosed, one look at wish or resource.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -1127,7 +1127,7 @@ export const SZENARIEN_EN = [
     checks: LANG_CHECKS_EN,
   },
   {
-    id: "INT-L2-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
+    id: "INT-L2-EN", familie: "INT", version: 3, session: "solo", n: 3, sprache: "en",
     beschreibung: "Variation rule · Eight turns of matter-of-fact report with an insight in the middle: not every reply asks about the feeling.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
@@ -1143,7 +1143,7 @@ export const SZENARIEN_EN = [
     checks: LANG_CHECKS_EN,
   },
   {
-    id: "INT-L3-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
+    id: "INT-L3-EN", familie: "INT", version: 3, session: "solo", n: 3, sprache: "en",
     beschreibung: "Variation rule · Eight turns with anger, a request and a wish: the kind of reply changes with the situation.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [

@@ -29,7 +29,7 @@ import * as korpusEn from "../core/prompts/prompts.en.js";
 registerKorpus("en", korpusEn);
 import { richte } from "./judge/judge.js";
 import { appStartNachrichten } from "./app-kontext.js";
-import { vielfaltAusTranskripten } from "./vielfalt.js";
+import { vielfaltAusTranskripten, erlebensSerie, antwortenAus } from "./vielfalt.js";
 // S94 · Die Waechter werden IMPORTIERT, nicht nachgebaut. Ein Eval, das eine
 // eigene Kopie der Regel prueft, misst sich selbst.
 // MOD-1 · Dasselbe gilt seither fuer ihre ZUORDNUNG zur Session: Sie kommt
@@ -418,6 +418,21 @@ export function anomalieImTranskript(transkript) {
   return null;
 }
 
+/** PRV-12f/K10 · Urteil einer gezählten Prüffrage. Bekannte Maße:
+ *  erlebensSerie — „ja", wenn mindestens `ab` (Default 3) aufeinanderfolgende
+ *  Antworten mit einer Erlebens-Tür enden (evals/vielfalt.js). */
+export function massUrteil(check, transkript) {
+  if (check.mass === "erlebensSerie") {
+    const ab = check.ab || 3;
+    const s = erlebensSerie(antwortenAus(transkript));
+    const zitat = s.schluesse.map(x => "«" + x + "»").join(" → ");
+    return s.laenge >= ab
+      ? { antwort: "ja", beleg: "gezählt: " + s.laenge + " Antworten in Folge enden mit einer Erlebensfrage — " + zitat }
+      : { antwort: "nein", beleg: "gezählt: längste Folge " + s.laenge + (s.laenge ? " — " + zitat : "") };
+  }
+  throw new Error("Unbekanntes Maß: " + check.mass);
+}
+
 /** Ein Szenario: n Samples spielen, richten, Härteregeln anwenden. */
 /** Ein Sample-Ergebnis aus Transkript + Judge-Urteil bauen (geteilt: synchron + Batch, S57). */
 export function sampleAusUrteil(szenario, transkript, urteil, nr) {
@@ -426,6 +441,16 @@ export function sampleAusUrteil(szenario, transkript, urteil, nr) {
   const unbewertet = !urteil.bewertet;
   if (urteil.bewertet) {
     for (const c of szenario.checks) {
+      /* PRV-12f/K10 · Gezählte Prüffrage: nicht der Judge, sondern das Maß.
+         Anlass rev-nach (12.11.): sechs von sieben L/C1-Urteilen waren verzählt
+         oder widersprachen dem eigenen Beleg. */
+      if (c.mass) {
+        const m = massUrteil(c, transkript);
+        const istVerletzt = m.antwort === (c.verletztWenn || "ja");
+        checks.push({ id: c.id, antwort: m.antwort, beleg: m.beleg, verletzt: istVerletzt, roteLinie: !!c.roteLinie, mass: c.mass });
+        if (istVerletzt) { verletzt = true; if (c.roteLinie) roteLinieGetroffen = true; }
+        continue;
+      }
       const antwort = urteil.antworten[c.id].antwort;
       const istVerletzt = antwort === (c.verletztWenn || "ja");
       checks.push({ id: c.id, antwort, beleg: urteil.antworten[c.id].beleg, verletzt: istVerletzt, roteLinie: !!c.roteLinie });

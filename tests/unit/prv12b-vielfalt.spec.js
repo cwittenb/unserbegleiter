@@ -155,6 +155,9 @@ const BESCHRIFTET_12D = [
   ["andere", "What would you wish for, if reason did not count for once?"],
   ["andere", "What was special about those evenings?"],
   ["andere", "What do you fear will happen?"],
+  // PRV-12f · Zielfrage, in der das Gefühl nur als Gegenstand vorkommt
+  ["andere", "Was ist dir dabei wichtiger – dass Bernd versteht, wie es dir dabei geht?"],
+  ["andere", "What matters more to you – that Bernd understands how you are doing?"],
 ];
 
 describe("PRV-12d · Erlebensfrage: erkannt, und gegen die anderen Türen abgegrenzt", () => {

@@ -36,7 +36,7 @@ describe("PRV-12d · INT-L/C1 nennt die Abgrenzung der Erlebensfrage", () => {
       const id = "INT-L" + n + suffix;
       it(id + ": v2, mit Gegenbeispielen und Belegpflicht", () => {
         const f = frage(k, id, "C1");
-        expect(von(k, id).version).toBe(2);
+        expect(von(k, id).version).toBeGreaterThanOrEqual(2);   // v3 seit PRV-12f (C1 gezählt)
         expect(f).toMatch(/KEINE Erlebensfragen sind|NOT experience questions are/);
         expect(f).toMatch(/Wunsch|wish/); expect(f).toMatch(/Bedeutung|meaning/);
         expect(f).toMatch(/Befürchtung|fear/); expect(f).toMatch(/Gedanken|thoughts/);
