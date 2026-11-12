@@ -33,8 +33,11 @@ const ERLEBEN = /\bwie fühlt\b|\bfühlt (sich|es sich)\b[^?]{0,60}\ban\b|\bwie 
    wie in INT-L/C1): Erlebensfrage = Frage nach Gefühl oder innerem Zustand.
    Gedanken ("durch den Kopf"), Wunsch, Bedeutung, Erinnerung, Befürchtung,
    Sicht des anderen und Sache bleiben andereFrage — das sind die Türen, die
-   die Heuristik öfter sehen will. */
-const ERLEBEN2 = /\bwie\b[^?]{0,40}\bangefühlt\b|\bwie (wäre|waere) (das|es)\b[^?]{0,30}\bfür (dich|euch)\b|\bwas hat (das|es)\b[^?]{0,25}\b(bei|in) (dir|euch)\b[^?]{0,15}\bausgelöst\b|\bwas (trifft|verletzt|schmerzt|kränkt|ärgert)\b[^?]{0,25}\b(dich|euch)\b|\bwas\b[^?]{0,15}\bmacht (dich|euch)\b[^?]{0,30}\b(wütend|traurig|sauer|ärgerlich|unsicher|hilflos)\b|\bwas ist\b[^?]{0,12}\bstärker\b|\bwie es (dir|euch)\b[^?]{0,20}\bgeht\b|\bwas (bei|in) (dir|euch)\b[^?]{0,20}\b(passiert|geschieht|ankommt|los ist)\b|\bwie (das|es)\b[^?]{0,12}\bbei (dir|euch)\b[^?]{0,15}\bankommt\b|\bwas taucht\b[^?]{0,25}\bauf\b|\bhineinspüren\b|\b(spürst|fühlst|empfindest) du\b|\bwas (war|waren) das für (ein |eine )?(weinen|tränen|gefühl)\b|\bhow would (that|it)\b[^?]{0,20}\b(be|feel) for you\b|\bwhat did (that|it)\b[^?]{0,20}\b(stir|bring up|trigger|set off)\b|\bwhat (hurts|stings|upsets|angers)\b[^?]{0,25}\byou\b|\bwhat makes you\b[^?]{0,30}\b(angry|sad|furious|unsure|helpless)\b|\bwhat('s| is)\b[^?]{0,12}\bstronger\b|\bhow you('re| are)\b[^?]{0,15}\b(doing|feeling)\b|\bwhat('s| is) (happening|going on) (in|inside|for) you\b|\bhow (that|it) lands\b|\b(do|did) you feel\b|\bwhat kind of (crying|tears|feeling)\b/i;
+   die Heuristik öfter sehen will.
+   PRV-12f: "wie es dir geht" nur als Bitte (sagen/erzählen …) — sonst zählte
+   die Zielfrage "dass er versteht, wie es dir geht – oder dass sich etwas
+   ändert?" als Erlebensfrage (rev-nach, INT-L3). */
+const ERLEBEN2 = /\bwie\b[^?]{0,40}\bangefühlt\b|\bwie (wäre|waere) (das|es)\b[^?]{0,30}\bfür (dich|euch)\b|\bwas hat (das|es)\b[^?]{0,25}\b(bei|in) (dir|euch)\b[^?]{0,15}\bausgelöst\b|\bwas (trifft|verletzt|schmerzt|kränkt|ärgert)\b[^?]{0,25}\b(dich|euch)\b|\bwas\b[^?]{0,15}\bmacht (dich|euch)\b[^?]{0,30}\b(wütend|traurig|sauer|ärgerlich|unsicher|hilflos)\b|\bwas ist\b[^?]{0,12}\bstärker\b|\b(sagen|erzählen|beschreiben)\b[^?]{0,15}\bwie es (dir|euch)\b[^?]{0,20}\bgeht\b|\bwas (bei|in) (dir|euch)\b[^?]{0,20}\b(passiert|geschieht|ankommt|los ist)\b|\bwie (das|es)\b[^?]{0,12}\bbei (dir|euch)\b[^?]{0,15}\bankommt\b|\bwas taucht\b[^?]{0,25}\bauf\b|\bhineinspüren\b|\b(spürst|fühlst|empfindest) du\b|\bwas (war|waren) das für (ein |eine )?(weinen|tränen|gefühl)\b|\bhow would (that|it)\b[^?]{0,20}\b(be|feel) for you\b|\bwhat did (that|it)\b[^?]{0,20}\b(stir|bring up|trigger|set off)\b|\bwhat (hurts|stings|upsets|angers)\b[^?]{0,25}\byou\b|\bwhat makes you\b[^?]{0,30}\b(angry|sad|furious|unsure|helpless)\b|\bwhat('s| is)\b[^?]{0,12}\bstronger\b|\b(say|tell|describe)\b[^?]{0,15}\bhow you('re| are)\b[^?]{0,15}\b(doing|feeling)\b|\bwhat('s| is) (happening|going on) (in|inside|for) you\b|\bhow (that|it) lands\b|\b(do|did) you feel\b|\bwhat kind of (crying|tears|feeling)\b/i;
 const EINLADUNG = /\b(magst|möchtest|willst) du\b|\bwenn du (magst|möchtest|willst)\b|\bwenn ihr (mögt|möchtet|wollt)\b|\berzähl(e|t)?\b[^.!]{0,20}\b(gern|mir|mehr|davon)\b|\bnimm dir\b|\blass dir zeit\b|\bich bin (da|hier)\b[^.!]{0,25}\bwenn\b|\bif you('d)? like\b|\bfeel free\b|\btell me\b|\btake your time\b|\bwhenever you\b|\bi'?m here\b[^.!]{0,25}\b(if|when)\b/i;
 const ODER_ANFANG = /^\s*(oder|or)\b/i;
 const ODER_MITTE = /,?\s+\b(oder|or)\b\s+(magst|möchtest|willst|soll|wollen|ist|geht|eher|lieber|vielleicht|erst|would|do|shall|is|rather|maybe|perhaps)\b/i;
@@ -146,8 +149,28 @@ export function vielfalt(gespraeche) {
 /** Aus Transkripten (Runner): je Sample die sichtbaren Antworten der Begleitung.
  *  PRV-12d: Feste Vorgeschichte (`vorlauf: true`) zählt nicht — sie ist Drehbuch,
  *  keine Wahl des Modells (rev-int: 54 von 194 «anderen Fragen» waren Vorlauf). */
+export function antwortenAus(transkript) {
+  return (transkript || []).filter(m => m && m.role === "assistant" && !m.hidden && !m.vorlauf).map(m => m.content);
+}
 export function vielfaltAusTranskripten(transkripte) {
-  return vielfalt((transkripte || []).map(t => (t || []).filter(m => m && m.role === "assistant" && !m.hidden && !m.vorlauf).map(m => m.content)));
+  return vielfalt((transkripte || []).map(antwortenAus));
+}
+
+/** PRV-12f · Längste Folge von Antworten, an deren Schluss eine Erlebens-Tür
+ *  steht (Erlebens- oder Körperfrage, auch als Tür im Doppelangebot) — mit den
+ *  Schlussfragen dieser Folge als Beleg. Bei Gleichstand die erste. */
+export function erlebensSerie(antworten) {
+  let best = { laenge: 0, schluesse: [] }, lauf = [];
+  for (const text of antworten || []) {
+    if (!String(text ?? "").trim()) continue;
+    const r = schlussform(text);
+    if (r.tueren.includes("erleben") || r.tueren.includes("koerper")) {
+      const s = saetze(text).slice(-2).filter(x => /\?/.test(x));
+      lauf.push(s.at(-1) || "");
+      if (lauf.length > best.laenge) best = { laenge: lauf.length, schluesse: [...lauf] };
+    } else lauf = [];
+  }
+  return best;
 }
 
 const pct = x => (x == null ? "–" : Math.round(x * 100) + " %");

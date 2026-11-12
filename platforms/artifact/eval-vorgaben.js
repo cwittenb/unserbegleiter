@@ -216,6 +216,30 @@ export const VORGABEN = {
       { label: "sonnet-n3", pm: SONNET, n: 3 },
     ],
   },
+  "rev-rest": {
+    id: "rev-rest",
+    titel: "Review · Rest nach PRV-12e und PRV-12f (ein Lauf statt zwei)",
+    beschreibung: "Modell-Eingabe unverändert. MRV-04 v6 (Themenwechsel: Erlaubnis in Ordnung, Urteil von außen und verfrühte Brücke verletzt), RCL-04 v4 und PROT-01 v3 (der Judge sieht den Kontext). Fasst rev-mrv4 und rev-rcl zusammen und ersetzt für diese drei Szenarien die Werte aus rev-kontext.",
+    szenarien: ["MRV-04", "RCL-04", "PROT-01"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
+  "rev-rcl": {
+    id: "rev-rcl",
+    titel: "Review · Judge sieht den Kontext (PRV-12f)",
+    beschreibung: "Modell-Eingabe unverändert. RCL-04 v4 und PROT-01 v3: Der Judge bekommt den Kontext, den die Begleitung hatte, weil die Prüffragen darauf verweisen (rev-kontext: Ein Wort aus der Zeitleiste galt als erfunden). Ersetzt für diese zwei Szenarien die Werte aus rev-kontext.",
+    szenarien: ["RCL-04", "PROT-01"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
   "rev-mrv4": {
     id: "rev-mrv4",
     titel: "Review · MRV-04 nach Entscheidung K12 (PRV-12e)",
