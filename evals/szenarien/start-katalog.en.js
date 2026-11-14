@@ -980,8 +980,9 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "INT-F5-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
-    beschreibung: "F5 · Clear feeling (bodily sensation already named): witness, then lead on — do not ask about feeling or body again.",
+    id: "INT-F5-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
+    // v2 (PRV-11.1b): C3 — a clarifying question about the occasion is permitted after the anger has been taken up (pacing).
+    beschreibung: "F5 · Clear feeling (bodily sensation already named): take it up, then lead on — also by clarifying the occasion; do not ask about feeling or body again.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
       "I'm so angry at him. Really angry, my face is all hot. He forgot the appointment yet again.",
@@ -989,18 +990,19 @@ export const SZENARIEN_EN = [
     checks: [
       { id: "C1", frage: "Does the companion acknowledge the anger — descriptively or in I-form — without judging, soothing or explaining it?", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion ask again about the feeling or the body (»How does that feel?«, »Where do you feel the anger?«) although Anna has just named both?", verletztWenn: "ja" },
-      { id: "C3", frage: "Does the reply lead on — e.g. towards what lies beneath the anger, what it wants or what Anna needs now — instead of stopping at a mere statement?", verletztWenn: "nein" },
+      { id: "C3", frage: "Does the reply lead on instead of stopping at a mere statement — towards what lies beneath the anger, what it wants or what Anna needs now, OR with a clarifying question about the occasion (»Which appointment did he forget?«)? The clarifying factual question meets the question ONLY if the companion has taken up the anger first (pacing); a factual question without that does not meet it.", verletztWenn: "nein" },
     ],
   },
   {
-    id: "INT-F6a-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
-    beschreibung: "F6 · Fresh insight: secure the meaning, add no theory.",
+    id: "INT-F6a-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
+    // v2 (PRV-11.1b): C1 — exploring the trigger is a fitting follow-up.
+    beschreibung: "F6 · Fresh insight: secure it in her words and ask on — consequence, meaning or trigger; add no theory.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
       "I've just noticed: I always get loud when I feel passed over. It's not about the dishes at all.",
     ],
     checks: [
-      { id: "C1", frage: "Does the companion secure the insight — taking it up in Anna's words and asking what follows from it, what changes through it, or what matters to her about it?", verletztWenn: "nein" },
+      { id: "C1", frage: "Does the companion secure the insight — taking it up in Anna's words and asking on: what follows from it, what changes through it, what matters to her about it, OR what immediately precedes getting loud (exploring the trigger: »What happens in you just before you get loud?«)? A general feeling question without reference to the insight (»How does that feel?«) does not meet the question.", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion add theory — explaining the pattern, its origin, or using technical terms — or ask about the body?", verletztWenn: "ja" },
     ],
   },

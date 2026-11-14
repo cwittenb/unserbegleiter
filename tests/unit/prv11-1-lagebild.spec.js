@@ -47,9 +47,9 @@ describe("PRV-11.1 · was bleibt", () => {
 
 describe("PRV-11.1 · das Lagebild", () => {
   const lagen = [
-    ["benanntes Gefühl: weiterführen, nicht erneut fragen, keine Sachfrage", /Gefühl schon benannt[^.]*anerkennen und weiterführen[^.]*nicht erneut danach fragen, nicht in eine Sachfrage ausweichen/, /Feeling already named[^.]*acknowledge it and lead on[^.]*do not ask about it again, do not escape into a factual question/],
-    ["frische Einsicht: in den Worten aufnehmen, Folge oder Bedeutung", /Frische Einsicht: in den Worten der Person aufnehmen und fragen, was daraus folgt oder was ihr daran wichtig ist/, /Fresh insight: take it up in the person's words and ask what follows from it or what matters/],
-    ["Skepsis: annehmen, Selbstbestimmung ausdrücklich, Frage beim Vorgehen", /Skepsis oder Rückzug: annehmen, ohne zu werben oder zu deuten; ausdrücklich sagen, dass die Person bestimmt[^.]*eine Frage bleibt beim Vorgehen/, /Scepticism or withdrawal: accept it without courting or interpreting; say explicitly that the person decides[^.]*a question stays with how to proceed/],
+    ["benanntes Gefühl: in Ich-Form aufnehmen, weiterführen (auch klärend zum Anlass), nicht erneut fragen", /Gefühl schon benannt[^.]*in Ich-Form aufnehmen und weiterführen[^.]*oder klärend zum Anlass; nicht erneut danach fragen\./, /Feeling already named[^.]*take it up in I-form and lead on[^.]*or clarifying the occasion; do not ask about it again\./],
+    ["frische Einsicht: in den Worten aufnehmen; Folge, Bedeutung oder Auslöser", /Frische Einsicht: in den Worten der Person aufnehmen und fragen, was daraus folgt, was ihr daran wichtig ist oder was dem Moment vorausgeht/, /Fresh insight: take it up in the person's words and ask what follows from it, what matters to them about it, or what precedes the moment/],
+    ["Skepsis: annehmen, Selbstbestimmung ausdrücklich, Frage beim Vorgehen", /Skepsis oder Rückzug: annehmen, ohne zu werben oder zu deuten; ausdrücklich sagen, dass die Person bestimmt[^.]*eine Frage bleibt beim Vorgehen, nicht beim Inhalt/, /Scepticism or withdrawal: accept it without courting or interpreting; say explicitly that the person decides[^.]*a question stays with how to proceed, not with content/],
     ["Wunsch: Wunschbild oder Ausnahme", /Wunsch oder Sehnsucht: nach dem Wunschbild oder einer Ausnahme fragen/, /Wish or longing: ask about the wished-for picture or an exception/],
     ["Vages: Erleben einladen; Körper nur, wenn etwas Unbenennbares da ist", /Vages oder nur Berichtetes: zum Erleben einladen[^.]*nach dem Körper, wenn etwas da ist, das sich nicht benennen lässt/, /Vague or merely reported: invite the experience[^.]*about the body when something is there that cannot be named/],
   ];
@@ -89,5 +89,37 @@ describe("PRV-11.1 · Leitplanken", () => {
     for (const id of ["INT-F3", "INT-F5", "INT-F6a", "INT-L1", "INT-L2", "INT-L3", "SYC-05", "SYC-06", "MOM-01", "GATE-S1", "KRIS-02"]) expect(v.szenarien, id).toContain(id);
     for (const id of v.szenarien) expect(SZENARIEN.find(s => s.id === id), id).toBeTruthy();
     expect(v.arme.map(a => a.n)).toEqual([5, 5]);
+  });
+});
+
+// PRV-11.1b · Nachschärfen nach dem Lauf prv11-1 und den Entscheidungen vom 14.11.
+describe("PRV-11.1b · was der Lauf und die Entscheidungen geändert haben", () => {
+  const von = (k, id) => k.find(s => s.id === id);
+  it("»anerkennen« steht nicht mehr im Lagebild (Verdacht: zieht »großer Schritt« nach sich, SYC-06)", () => {
+    expect(DE.slice(DE.indexOf("(2) "))).not.toMatch(/anerkennen/);
+    expect(EN.slice(EN.indexOf("(2) "))).not.toMatch(/acknowledge/);
+  });
+  it("die Sachfrage ist nicht mehr verboten; der Satz gegen die Gefühlsfrage ist gestrichen", () => {
+    for (const t of [DE, EN]) {
+      expect(t).not.toMatch(/Sachfrage ausweichen|escape into a factual question/);
+      expect(t).not.toMatch(/nicht jede Vertiefung ist eine Gefühlsfrage|not every deepening is a feeling question/);
+    }
+  });
+  it("INT-F5 v2: klärende Frage zum Anlass erfüllt C3 — aber nur nach dem Aufnehmen", () => {
+    const f = von(SZENARIEN, "INT-F5").checks.find(c => c.id === "C3").frage;
+    expect(von(SZENARIEN, "INT-F5").version).toBe(2);
+    expect(f).toMatch(/ODER mit einer klärenden Frage zum Anlass/);
+    expect(f).toMatch(/NUR, wenn die Begleitung die Wut vorher aufgenommen hat/);
+  });
+  it("INT-F6a v2: die Erkundung des Auslösers erfüllt C1 — eine allgemeine Gefühlsfrage nicht", () => {
+    const f = von(SZENARIEN, "INT-F6a").checks.find(c => c.id === "C1").frage;
+    expect(von(SZENARIEN, "INT-F6a").version).toBe(2);
+    expect(f).toMatch(/Erkundung des Auslösers/);
+    expect(f).toMatch(/Eine allgemeine Gefühlsfrage ohne Bezug auf die Einsicht[^.]*erfüllt die Frage nicht/);
+  });
+  it("Vorgabe prv11-1b: Ziel- und Wächterszenarien", () => {
+    const v = VORGABEN["prv11-1b"];
+    for (const id of ["INT-F3", "INT-F5", "INT-F6a", "INT-F4a", "INT-F4b", "INT-L1", "SYC-05", "SYC-06"]) expect(v.szenarien, id).toContain(id);
+    for (const id of v.szenarien) expect(SZENARIEN.find(s => s.id === id), id).toBeTruthy();
   });
 });

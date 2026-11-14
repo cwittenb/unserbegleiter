@@ -8,31 +8,31 @@
   },
   "sessions": {
     "solo": {
-      "text": "a702e56b47d211f1ffc711246a860d7a88732392239b86fe25090b07bd29c23e",
+      "text": "2f124c5a0c5b9499090ecf8f4d6b8a337c815b20845b3686f1cf4c8db4074c75",
       "textLaenge": 41063,
-      "struktur": "5ab5de44c40e56bc49c281ad3303fd4eacd063f834936cead8178eb19f2424b8",
-      "runner": "a702e56b47d211f1ffc711246a860d7a88732392239b86fe25090b07bd29c23e",
+      "struktur": "effdf4d79bc5a0c517cf538feff0546b442f5361e8f6582aaf5c2e90336ed698",
+      "runner": "2f124c5a0c5b9499090ecf8f4d6b8a337c815b20845b3686f1cf4c8db4074c75",
       "runnerGleichText": true
     },
     "moment": {
-      "text": "9ba2a28fad1d5eaa16a949913da8d6fc3f2c4c8fcd576cac8614558292a4268a",
+      "text": "ae1f0aed18b15cca072f105aa8bce5a6aeea0fe04d5e81e6d2d5456d3dd56cb7",
       "textLaenge": 34733,
-      "struktur": "5aac982add79f1b10fb989354452df423ecf20600e14f6f81c52bbeb6f4889cf",
-      "runner": "9ba2a28fad1d5eaa16a949913da8d6fc3f2c4c8fcd576cac8614558292a4268a",
+      "struktur": "a4eac6e21f34241e0a3c6def260492cb95516edd574b44822ad0dbdda8ee7b67",
+      "runner": "ae1f0aed18b15cca072f105aa8bce5a6aeea0fe04d5e81e6d2d5456d3dd56cb7",
       "runnerGleichText": true
     },
     "einzel": {
-      "text": "b732652ca923cf590b0e44d1cc86b9c5f9179d20e9efb16f7c488d029e7abac8",
+      "text": "a7a7bcb243471c396572ad3cbb6410c5b7f72587d984b64851e84d0fb38c1f85",
       "textLaenge": 33805,
-      "struktur": "c91cd6d32814ab431a7286db8f36ce58e80737c7ca9e89602d583ff632c1a98c",
-      "runner": "b732652ca923cf590b0e44d1cc86b9c5f9179d20e9efb16f7c488d029e7abac8",
+      "struktur": "a0173a5bac889cac57195758c916320dd974a8d5804952a41d0711f9fd5f95c2",
+      "runner": "a7a7bcb243471c396572ad3cbb6410c5b7f72587d984b64851e84d0fb38c1f85",
       "runnerGleichText": true
     },
     "gemeinsam": {
-      "text": "8d37217092b054c7772f6eab9ba5b6498cf9ed6ebb3140e18f8be7b473699a49",
+      "text": "a91cf8014e78bac57ba813658c48533ba38f972189c5ab4763ac082415d9b8fe",
       "textLaenge": 33358,
-      "struktur": "fdbe7cbd031bacaddde1c865e381aad366b0528e92fa698010ba6073470f44ea",
-      "runner": "8d37217092b054c7772f6eab9ba5b6498cf9ed6ebb3140e18f8be7b473699a49",
+      "struktur": "4866ea59da9b685779c52bc5674db3a7f0b05b0e0aa75d228f8dffe704dd5a2f",
+      "runner": "a91cf8014e78bac57ba813658c48533ba38f972189c5ab4763ac082415d9b8fe",
       "runnerGleichText": true
     },
     "qualitytime": {
