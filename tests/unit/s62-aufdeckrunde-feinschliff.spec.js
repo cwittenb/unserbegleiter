@@ -293,9 +293,9 @@ describe("S62 · Baustein 'bedeutsame Momente' (K4 c: alle Sessions, QZ separat 
   it("Baustein existiert in beiden Korpora (Schlüsselparität) und trägt die drei Ebenen plus Dosierung", () => {
     for (const b of [bausteine, bausteineEn]) expect(typeof b.bedeutsameMomente).toBe("string");
     expect(bausteine.bedeutsameMomente).toContain("ICH-PERSPEKTIVE");
-    expect(bausteine.bedeutsameMomente).toContain("Wie fühlt sich das gerade an?");
-    expect(bausteine.bedeutsameMomente).toContain("Wo spürst du das?");
-    expect(bausteine.bedeutsameMomente).toContain("Wie wirkt sich das gerade auf eure Beziehung aus?");
+    // PRV-11.1: die drei Beispielfragen sind gestrichen (Echo); die Ebenen stehen als Lagebild.
+    expect(bausteine.bedeutsameMomente).toContain("VERTIEFUNG NACH LAGE");
+    expect(bausteine.bedeutsameMomente).toContain("BEZIEHUNGSEBENE");
     expect(bausteine.bedeutsameMomente).toContain("DOSIERUNG");
   });
 

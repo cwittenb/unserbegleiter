@@ -8,11 +8,11 @@
   },
   "sessions": {
     "solo": {
-      "zeichen": 40092,
-      "tokenSchaetzung": 11792,
+      "zeichen": 40064,
+      "tokenSchaetzung": 11784,
       "zeilen": 69,
       "langeZeilen": 18,
-      "capsWoerter": 227,
+      "capsWoerter": 223,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
@@ -27,11 +27,11 @@
       }
     },
     "moment": {
-      "zeichen": 33716,
-      "tokenSchaetzung": 9916,
+      "zeichen": 33688,
+      "tokenSchaetzung": 9908,
       "zeilen": 61,
       "langeZeilen": 20,
-      "capsWoerter": 190,
+      "capsWoerter": 186,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
@@ -46,11 +46,11 @@
       }
     },
     "einzel": {
-      "zeichen": 33503,
-      "tokenSchaetzung": 9854,
+      "zeichen": 33475,
+      "tokenSchaetzung": 9846,
       "zeilen": 76,
       "langeZeilen": 19,
-      "capsWoerter": 90,
+      "capsWoerter": 86,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,
@@ -65,11 +65,11 @@
       }
     },
     "gemeinsam": {
-      "zeichen": 32328,
-      "tokenSchaetzung": 9508,
+      "zeichen": 32300,
+      "tokenSchaetzung": 9500,
       "zeilen": 63,
       "langeZeilen": 19,
-      "capsWoerter": 127,
+      "capsWoerter": 123,
       "genauWoerter": 0,
       "verstossWoerter": 0,
       "sprintRefs": 0,

@@ -47,7 +47,9 @@ describe("S95.4 · Teilenwunsch als Bremse", () => {
 
   it("führt die Vertiefung aufs Erleben, nicht auf den Inhalt", () => {
     setKorpusSprache("de");
-    expect(raum()).toContain("ERLEBEN");
+    // PRV-11.1: "ERLEBEN" traf bisher zufällig die Überschrift VORRANG DER ERLEBENSFRAGE
+    // im Momente-Baustein. Gemeint ist die Regel im Teilen-Modul.
+    expect(raum()).toContain("Danach bleibst du beim Erleben");
     expect(raum()).toContain("Was wäre anders, wenn");
     setKorpusSprache("de");
   });

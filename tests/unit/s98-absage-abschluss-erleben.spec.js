@@ -63,12 +63,15 @@ describe("S98 · Abschluss-Weiche vor Schritt 1 (QZ-01, K3)", () => {
   });
 });
 
-describe("S98 · Vorrang der Erlebensfrage (MOM-01)", () => {
-  it("eine Klärungs- oder Bestätigungsfrage darf das Budget nicht aufbrauchen", () => {
+// PRV-11.1: Der "Vorrang der Erlebensfrage" ist gestrichen — er traf auch Skepsis,
+// benannte Wut und frische Einsicht (rev-int: F3, F5, F6a je 3/3). Geblieben ist,
+// was S98 schützen wollte: Eine Prozess- oder Okay-Frage ersetzt die Vertiefung nicht.
+describe("S98 · Die Vertiefung wird nicht von einer Prozessfrage verdrängt (MOM-01)", () => {
+  it("eine Prozess- oder Okay-Frage ersetzt die Vertiefung nicht", () => {
     beide(sp => {
       const txt = moment();
-      expect(txt, sp).toContain(sp === "de" ? "VORRANG DER ERLEBENSFRAGE" : "PRECEDENCE OF THE EXPERIENCE QUESTION");
-      expect(txt, sp).toContain(sp === "de" ? "die andere wartet auf die nächste Nachricht" : "the other waits for the next message");
+      expect(txt, sp).toContain(sp === "de" ? "Eine Prozess- oder Okay-Frage ersetzt die Vertiefung nicht" : "A process or okay question does not replace the deepening");
+      expect(txt, sp).not.toContain(sp === "de" ? "VORRANG DER ERLEBENSFRAGE" : "PRECEDENCE OF THE EXPERIENCE QUESTION");
     });
   });
 
