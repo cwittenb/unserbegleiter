@@ -28,3 +28,16 @@ Nicht geplant, beim Testen gefunden: Fällt der Judge aus, bricht der Lauf nicht
 ## Tests
 
 `tests/unit/eval-r1-fortsetzen.spec.js` (neu, 12 Tests); `prv-eval-vorgaben.spec.js` nachgezogen (der Test zum Fortsetzen von Hand schaltet den Haken ab). Ganze Suite: 333 Dateien, 3753 Tests grün.
+
+## Nachtrag EVAL-R2 (2026-11-14, auf Zuruf)
+
+Rückmeldung aus dem ersten Lauf: Der Abbruch «Internal server error while processing action» verschwand nach Neuladen; die Umgebung zeigt außerdem eine Bestätigung «Ich bin noch da».
+
+| Was | Jetzt |
+|---|---|
+| Von selbst fortsetzen | nur, wenn im abgebrochenen Versuch mindestens ein Aufruf durchkam, oder wenn das Nutzungslimit eine Rücksetzzeit nennt. Kam gar nichts durch, wartet das Paket auf einen Klick und sagt, warum (offene Bestätigung oder Neuladen). |
+| Szenarioliste | zugeklappt; die Zeile nennt die gewählten Kürzel (ab 40 gekürzt) und folgt dem An- und Abwählen. Ein Klick klappt auf. |
+
+Grenze: Die Fehlermeldung der Bestätigung «Ich bin noch da» ist nicht bekannt. Erkannt wird sie mittelbar daran, dass kein Aufruf durchkommt. Kommt sie mitten im Lauf, kostet das einen vergeblichen Versuch nach 30 Sekunden.
+
+Tests: `tests/unit/eval-r1-fortsetzen.spec.js` (+7).

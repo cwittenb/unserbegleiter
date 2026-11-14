@@ -77,6 +77,39 @@ describe("EVAL-R1 · laufeSzenario mit Sample-Speicher", () => {
   });
 });
 
+describe("EVAL-R2 · Szenarioliste zugeklappt, Zusammenfassung der Kürzel", () => {
+  beforeEach(() => { document.body.innerHTML = '<div id="app" data-core-hash="h"></div>'; });
+  const root = () => document.getElementById("app");
+  const mach = () => async () => ({ text: "x" });
+  it("im Paket: zu, die Zeile nennt genau die gewählten Kürzel", () => {
+    createEvalApp({ doc: document, root: root(), szenarien: SZENARIEN, machAdapter: mach, vorgabe: { id: "z", titel: "Z", szenarien: ["SYC-05", "INT-L1"], judge: "j", waechter: true, arme: [{ label: "a", pm: "m", n: 1 }] } });
+    expect(root().querySelector("#evSzDet").open).toBe(false);
+    expect(root().querySelector("#evSzSum").textContent).toBe("· 2 gewählt: SYC-05, INT-L1");
+    expect(root().querySelector("#evSzDet").contains(root().querySelector("#evSz"))).toBe(true);
+  });
+  it("die Zeile folgt dem An- und Abwählen", () => {
+    createEvalApp({ doc: document, root: root(), szenarien: SZENARIEN, machAdapter: mach, vorgabe: { id: "z", titel: "Z", szenarien: ["SYC-05", "INT-L1"], judge: "j", waechter: true, arme: [{ label: "a", pm: "m", n: 1 }] } });
+    const cb = root().querySelector('[data-sz="INT-L1"]');
+    cb.checked = false; cb.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(root().querySelector("#evSzSum").textContent).toBe("· 1 gewählt: SYC-05");
+    for (const x of root().querySelectorAll("[data-sz]:checked")) { x.checked = false; }
+    root().querySelector("#evSz").dispatchEvent(new Event("change", { bubbles: true }));
+    expect(root().querySelector("#evSzSum").textContent).toBe("· keines gewählt");
+  });
+  it("ohne Paket: alle gewählt — die Zeile kürzt nach 40 Kürzeln ab", () => {
+    createEvalApp({ doc: document, root: root(), szenarien: SZENARIEN, machAdapter: mach });
+    const s = root().querySelector("#evSzSum").textContent;
+    expect(s).toMatch(new RegExp("^· " + SZENARIEN.length + " gewählt: "));
+    expect(s).toMatch(new RegExp("… und " + (SZENARIEN.length - 40) + " weitere$"));
+  });
+  it("die Sprachwahl bleibt bedienbar und aktualisiert die Zeile", () => {
+    createEvalApp({ doc: document, root: root(), szenarien: SZENARIEN, machAdapter: mach });
+    const r = root().querySelector('[name="evSprache"][value="nichts"]');
+    r.checked = true; r.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(root().querySelector("#evSzSum").textContent).toBe("· keines gewählt");
+  });
+});
+
 describe("EVAL-R1 · Artefakt: Fortsetzen ab dem Sample, von selbst", () => {
   let root, t;
   const uhr = { jetzt: () => new Date(t), schlaf: async ms => { t += ms; } };   // künstliche Uhr: Warten kostet keine echte Zeit
@@ -156,19 +189,71 @@ describe("EVAL-R1 · Artefakt: Fortsetzen ab dem Sample, von selbst", () => {
   });
 
   it("acht Versuche ohne ein neues Sample: hört auf und sagt, warum", async () => {
+    // Je Versuch kommt der erste Zug durch, der zweite scheitert: Es geht etwas, aber nie ein ganzes Sample.
     let p = 0;
     const mach = () => async (system, messages) => {
       if (istJudge(system)) return gruen(messages);
-      p++;
-      throw new Error("Permission denied");
+      if (++p % 2 === 0) throw new Error("Permission denied");
+      return { text: "Antwort." };
     };
-    starte(mach);
+    starte(mach, { ...vg, szenarien: ["INT-L1"] });
     root.querySelector("#evVorgabe").click();
     await bis(/Aufgegeben/);
     expect(stand()).toMatch(/8 Versuche ohne ein neues Sample/);
     expect(stand()).toMatch(/Permission denied/);
-    expect(p).toBe(8);
+    expect(p).toBe(16);
     expect(root.querySelector("#evVorgabe").disabled).toBe(false);
+  });
+
+  it("EVAL-R2 · kommt kein einziger Aufruf durch, wird NICHT gewartet — das sieht nach »Ich bin noch da« aus", async () => {
+    let p = 0;
+    const mach = () => async (system, messages) => {
+      if (istJudge(system)) return gruen(messages);
+      p++;
+      throw new Error("Internal server error while processing action");
+    };
+    starte(mach);
+    const t0 = t;
+    root.querySelector("#evVorgabe").click();
+    await bis(/Wartet auf dich/);
+    expect(stand()).toMatch(/Kein einziger Aufruf kam durch \(Internal server error while processing action\)/);
+    expect(stand()).toMatch(/Ich bin noch da/);
+    expect(p).toBe(1);                                            // ein Versuch, kein zweiter
+    expect(t).toBe(t0);                                           // keine Wartezeit
+    expect(root.querySelector("#evVorgabe").disabled).toBe(false);
+    expect(root.querySelector("#evHalt").style.display).toBe("none");
+  });
+
+  it("EVAL-R2 · mitten in der Arbeit unterbrochen, danach geht nichts mehr: ein Versuch nach 30 s, dann wartet es auf dich", async () => {
+    let p = 0;
+    const mach = () => async (system, messages) => {
+      if (istJudge(system)) return gruen(messages);
+      if (++p > ZUEGE) throw new Error("Permission denied");       // das erste Sample kommt durch, danach nichts mehr
+      return { text: "Antwort." };
+    };
+    starte(mach);
+    const t0 = t;
+    root.querySelector("#evVorgabe").click();
+    await bis(/Wartet auf dich/);
+    expect(stand()).toMatch(/0 Szenarien, 1 Samples fertig/);
+    expect(t - t0).toBe(30000);
+    expect(p).toBe(ZUEGE + 2);
+  });
+
+  it("EVAL-R2 · das Nutzungslimit mit Rücksetzzeit wartet auch dann, wenn gar nichts durchkam", async () => {
+    let p = 0;
+    const reset = Math.floor(t / 1000) + 600;
+    const mach = () => async (system, messages) => {
+      if (istJudge(system)) return gruen(messages);
+      if (++p === 1) throw new Error(JSON.stringify({ type: "exceeded_limit", resetsAt: reset }));
+      return { text: "Antwort." };
+    };
+    starte(mach);
+    const t0 = t;
+    root.querySelector("#evVorgabe").click();
+    await bis(/Alle 1 Läufe fertig/);
+    expect(stand()).toMatch(/Alle 1 Läufe fertig/);
+    expect(t - t0).toBeGreaterThanOrEqual(600000);
   });
 
   it("ohne den Haken bleibt es beim Fortsetzen auf Klick", async () => {
