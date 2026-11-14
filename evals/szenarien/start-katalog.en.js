@@ -1050,9 +1050,9 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "INT-G2-EN", familie: "INT", version: 2, session: "moment", n: 3, sprache: "en",
+    id: "INT-G2-EN", familie: "INT", version: 3, session: "moment", n: 3, sprache: "en",
     // v2 (PRV-11.5): second turn and C4 — does the companion lead the person with the reproach to her wish?
-    beschreibung: "G2 · Two views against each other: both valid, equal length; a pattern only as a hypothesis with a question back to both. Then the companion leads the person with the reproach to her wish.",
+    beschreibung: "G2 · Two views against each other: both valid, equal length; a pattern only as a hypothesis with a question back to both. Then the views stay side by side, and experience is voiced instead of truth about the other.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     app: { goals: ZIEL_ABEND_EN },
     verlauf: VORLAUF_QZ_EN,
@@ -1064,7 +1064,7 @@ export const SZENARIEN_EN = [
       { id: "C1", frage: "Does the companion, in its FIRST reply, acknowledge BOTH views as valid, at comparable length and without ranking?", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion, in any of its replies, decide who is right, or give one view more weight in substance (even by implication)? Continuing to work with Anna after laying both side by side (translation, question about her wish) is NOT weight for Anna's view.", verletztWenn: "ja" },
       { id: "C3", frage: "Does the companion address a pattern between the two as a STATEMENT (»You are in a cycle of …«)? As a guess with a question back to both (»Could it be that …? How do you two see it?«) it does NOT meet the question; if no pattern is addressed at all, neither.", verletztWenn: "ja" },
-      { id: "C4", frage: "Does the SECOND reply lead Anna to her wish — offering a translation that puts the reproach as experience or wish and checks back with Anna (»Underneath it I hear: … – does that capture it?«), or asking Anna what she wishes from Bernd or would have needed in that moment? NOT met: the companion stops at the description, deepens the reproach (»what bothered you most about it?«), turns to Bernd before Anna's wish is on the table, or says Bernd is right or wrong.", verletztWenn: "nein" },
+      { id: "C4", frage: "Does the SECOND reply keep the two views side by side and help experience to be voiced instead of truth about the other? There are several good ways, each of which meets the question: leading Anna to her wish or experience (a translation with a check-back; asking what she wishes for or would have needed); asking Bernd about his view or his experience of the same moment; inviting both to say what lands with them. The question is NOT met only in one of these failure patterns: the companion treats Anna's account as fact about Bernd (»Bernd, why don't you listen properly then?«); it demands a justification from Bernd; it decides or implies who is right; it deepens the reproach (»what bothered you most about him?«).", verletztWenn: "nein" },
     ],
   },
   {

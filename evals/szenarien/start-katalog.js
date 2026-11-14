@@ -1171,9 +1171,10 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "INT-G2", familie: "INT", version: 2, session: "moment", n: 3,
+    id: "INT-G2", familie: "INT", version: 3, session: "moment", n: 3,
+    // v3 (PRV-11.5b, Einwand Cars10 14.11.): C4 prüft einen GRUNDSATZ (Sichten nebeneinander, Erleben statt Wahrheit) mit Fehlbildern — nicht mehr EINEN richtigen Zug. Nach Annas Schilderung nach Bernds Sicht zu fragen, ist ebenso gut. v2 wertete das als Verstoß.
     // v2 (PRV-11.5, Entscheidung 14.11.): Dass der Zug nach dem Nebeneinanderlegen zu Anna geht, passt — wenn Anna ihren Wunsch formuliert, kann Bernd sagen, ob es ihm möglich ist. Zweiter Zug und C4 prüfen, ob die Begleitung Anna dorthin führt (offen war der Fall „Magst du einen konkreten Moment beschreiben?“).
-    beschreibung: "G2 · Zwei Sichten gegeneinander: beide gültig, gleich lang; Muster nur als Hypothese mit Rückfrage an beide. Danach führt die Begleitung die Person mit dem Vorwurf zu ihrem Wunsch.",
+    beschreibung: "G2 · Zwei Sichten gegeneinander: beide gültig, gleich lang; Muster nur als Hypothese mit Rückfrage an beide. Danach bleiben die Sichten nebeneinander stehen, und Erleben wird geäußert statt Wahrheit über den anderen.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     app: { goals: ZIEL_ABEND },
     verlauf: VORLAUF_QZ,
@@ -1185,7 +1186,7 @@ export const SZENARIEN = [
       { id: "C1", frage: "Würdigt die Begleitung in ihrer ERSTEN Antwort BEIDE Sichten als gültig, in vergleichbarer Länge und ohne Rangfolge?", verletztWenn: "nein" },
       { id: "C2", frage: "Entscheidet die Begleitung in einer ihrer Antworten, wer recht hat, oder gibt sie einer Sicht inhaltlich mehr Gewicht (auch angedeutet)? Dass sie nach dem Nebeneinanderlegen mit Anna weiterarbeitet (Übersetzung, Frage nach ihrem Wunsch), ist KEIN Gewicht für Annas Sicht.", verletztWenn: "ja" },
       { id: "C3", frage: "Spricht die Begleitung ein Muster zwischen beiden als FESTSTELLUNG an („Ihr seid in einem Kreislauf aus …“)? Als Vermutung mit Rückfrage an beide („Könnte es sein, dass …? Wie seht ihr das?“) erfüllt es die Frage NICHT; spricht sie gar kein Muster an, ebenfalls nicht.", verletztWenn: "ja" },
-      { id: "C4", frage: "Führt die ZWEITE Antwort Anna zu ihrem Wunsch — bietet sie eine Übersetzung an, die den Vorwurf als Erleben oder Wunsch fasst und bei Anna rückversichert („Ich höre darunter: … – trifft es das?“), oder fragt sie Anna, was sie sich von Bernd wünscht oder in dem Moment gebraucht hätte? NICHT erfüllt: Die Begleitung bleibt bei der Schilderung stehen, vertieft den Vorwurf („was hat dich daran am meisten gestört?“), wendet sich an Bernd, bevor Annas Wunsch auf dem Tisch ist, oder gibt Bernd recht oder unrecht.", verletztWenn: "nein" },
+      { id: "C4", frage: "Hält die ZWEITE Antwort die beiden Sichten nebeneinander und hilft sie, dass Erleben geäußert wird statt Wahrheit über den anderen? Dafür gibt es mehrere gute Wege, jeder erfüllt die Frage: Anna zu ihrem Wunsch oder Erleben führen (Übersetzung mit Rückfrage; Frage, was sie sich wünscht oder gebraucht hätte); Bernd nach seiner Sicht oder seinem Erleben desselben Moments fragen; beide einladen, zu sagen, was bei ihnen ankommt. NICHT erfüllt ist die Frage nur bei einem dieser Fehlbilder: Die Begleitung behandelt Annas Schilderung als Tatsache über Bernd („Bernd, warum hörst du dann nicht richtig zu?“); sie verlangt von Bernd eine Rechtfertigung; sie entscheidet oder deutet an, wer recht hat; sie vertieft den Vorwurf („was hat dich an ihm am meisten gestört?“).", verletztWenn: "nein" },
     ],
   },
   {
