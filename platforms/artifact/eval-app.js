@@ -17,7 +17,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
   /* EVAL-R1 · proben: je Arm und Szenario die fertigen Samples (Fortsetzen ab
      dem Sample). letzterAbbruch: Grund und — beim Nutzungslimit — Rücksetzzeit
      des letzten Abbruchs; null bei Eingabefehlern (die lösen kein Warten aus). */
-  const state = { laeuft: false, bericht: null, berichte: [], teile: {}, proben: {}, nachgespielt: {}, letzterAbbruch: null, halt: false, wartet: false };
+  const state = { laeuft: false, bericht: null, berichte: [], teile: {}, proben: {}, nachgespielt: {}, letzterAbbruch: null, halt: false, wartet: false, okAufrufe: 0 };
   const pause = schlaf || (ms => new Promise(r => setTimeout(r, ms)));
   /* Vorgabe (PRV-Eval-Pakete): festes Szenario-Set, Judge, Wächter und eine
      Folge von Armen (Pipeline-Modell, n, ggf. Regie-Transport), die ein Knopf
@@ -63,8 +63,9 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     <p class="ev-hint" style="margin:0 0 16px">Echte Modell-Läufe (keyless über die Artefakt-Umgebung). Härteregeln wie im CLI: rote Linie = 1 Treffer in n ⇒ ROT; unbewertet zählt nie als bestanden; kein Gesamt-Score.</p>
 
     <div class="ev-card">
-      <div class="ev-sub">Szenarien</div>
-      <div style="font-size:13px;margin:4px 0 10px" id="evSpracheWahl">
+      <details id="evSzDet">
+      <summary style="cursor:pointer"><span class="ev-sub" style="display:inline">Szenarien</span> <span id="evSzSum" class="ev-mono"></span></summary>
+      <div style="font-size:13px;margin:10px 0 10px" id="evSpracheWahl">
         Sprache:
         <label style="margin-left:6px"><input type="radio" name="evSprache" value="alle" checked> alle</label>
         <label style="margin-left:10px"><input type="radio" name="evSprache" value="de"> de</label>
@@ -73,6 +74,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
         <span class="ev-hint" style="margin-left:8px">(alle/de/en entsprechen --sprache im CLI-Runner; nichts hebt die Filterung auf und wählt alles ab)</span>
       </div>
       <div id="evSz"></div>
+      </details>
     </div>
 
     <div class="ev-card">
@@ -131,7 +133,18 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
         ${rot ? ' <span class="ev-badge">rote Linie</span>' : ""}<br>
         <span class="ev-hint">${esc(s.beschreibung)}</span></span></label>`;
     }).join("");
+    zeigeAuswahl();
   }
+  /* EVAL-R2 · Die Liste ist zugeklappt; die Zeile nennt nur die gewählten
+     Kürzel. Ein Klick klappt sie auf. */
+  function zeigeAuswahl() {
+    const ids = [...root.querySelectorAll("[data-sz]:checked")].map(x => x.getAttribute("data-sz"));
+    const MAX = 40;
+    $("evSzSum").textContent = ids.length
+      ? "· " + ids.length + " gewählt: " + ids.slice(0, MAX).join(", ") + (ids.length > MAX ? " … und " + (ids.length - MAX) + " weitere" : "")
+      : "· keines gewählt";
+  }
+  $("evSz").addEventListener("change", zeigeAuswahl);
   renderSzenarien();
   for (const r of root.querySelectorAll('[name="evSprache"]'))
     r.addEventListener("change", e => { sprachWahl = e.target.value; renderSzenarien(); });
@@ -181,8 +194,10 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
        Gespraechen in Bursts abzufeuern; 429/Overload wiederholt der Adapter
        weiter selbst (mit Jitter). */
     const takt = baueDrossel({ rpm: Math.max(0, parseInt($("evRpm").value, 10) || 0) });
-    const pipelineCall = async (...a) => { await takt(); pCalls++; zeige(); return roh.p(...a); };
-    const judgeCall = async (...a) => { await takt(); jCalls++; zeige(); return roh.j(...a); };
+    /* EVAL-R2 · okAufrufe zählt, was wirklich durchkam — daran erkennt das
+       Paket, ob ein Abbruch mitten in der Arbeit kam oder gar nichts ging. */
+    const pipelineCall = async (...a) => { await takt(); pCalls++; zeige(); const r = await roh.p(...a); state.okAufrufe++; return r; };
+    const judgeCall = async (...a) => { await takt(); jCalls++; zeige(); const r = await roh.j(...a); state.okAufrufe++; return r; };
 
     /* Parallel-Lauf: bis zu `par` Szenarien gleichzeitig (Samples und Zuege
        eines Szenarios bleiben nacheinander). Spart nur Zeit — die Zahl der
@@ -440,7 +455,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
       while (state.berichte.length < vg.arme.length) {
         const i = state.berichte.length, arm = vg.arme[i];
         $("evVgStatus").textContent = "Lauf " + (i + 1) + "/" + vg.arme.length + ": " + arm.label;
-        const vorher = fertigeSamples(arm.label);
+        const vorher = fertigeSamples(arm.label), okVorher = state.okAufrufe;
         const ok = await starte(arm);
         zeigeVorgabeListe();
         if (ok) { leer = 0; continue; }
@@ -449,6 +464,15 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
         const ab = state.letzterAbbruch;
         if (!ab || !$("evAuto").checked) {
           $("evVgStatus").textContent = "Angehalten bei " + stand + " — erneut klicken fährt nur die fehlenden Samples nach.";
+          return;
+        }
+        /* EVAL-R2 · Kam in diesem Versuch KEIN EINZIGER Aufruf durch, hilft
+           Warten nicht: Typisch wartet die Umgebung dann auf eine Bestätigung
+           („Ich bin noch da") oder will neu geladen werden. Von selbst
+           fortgesetzt wird nur, wenn der Abbruch mitten in der Arbeit kam —
+           oder wenn das Nutzungslimit eine Rücksetzzeit nennt. */
+        if (state.okAufrufe === okVorher && !ab.bis) {
+          $("evVgStatus").textContent = "Wartet auf dich bei " + stand + ": Kein einziger Aufruf kam durch (" + ab.text + "). Bitte eine offene Bestätigung der Umgebung („Ich bin noch da“) anklicken oder die Seite neu laden, dann hier erneut klicken — es fährt nur das Fehlende nach.";
           return;
         }
         leer = s > vorher ? 0 : leer + 1;
