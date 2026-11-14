@@ -1,7 +1,7 @@
 // Corpus EN · SIGNALE (MOD-6) — the watchers' regexes (code, not prompt text). Mirror of de/signale.js.
 
 // CR-4.1 · Dieselbe Union wie im deutschen Korpus (MOD-2a) — EINE Quelle.
-import { KRISE_MUSTER } from "../de/signale.js";
+import { KRISE_MUSTER, SKEPSIS_MUSTER } from "../de/signale.js";
 
 export const SIGNALE = {
   krise: KRISE_MUSTER,   // CR-4.1 · siehe oben
@@ -13,6 +13,7 @@ export const SIGNALE = {
      "Anteil" allein ist bewusst KEIN Treffer: "mein Anteil daran" ist die
      eigene Beteiligung (GATE), keine Anteile-Sprache. */
   anteile: /\b(ein|einen|mein|meinen|dein|deinen|sein|ihr)\w*\s+(\w+\s+)?teil\s+(von|in)\s+(mir|dir|ihm|ihr)\b|(?<![a-zäöüß])(ängstlich|verletzt|vermeidend|kindlich|innere|kritisch|wütend|traurig)[a-zäöüß]*\s+(an)?teil\b|hin- und hergerissen|hin und her gerissen|einerseits[^.!?]{0,100}andererseits|\bzwiespält|ich hasse (ihn|sie|dich|mich)\b|will nur noch weg|\bich bin (so |einfach )?(dumm|blöd|unfähig|wertlos)\b|\b(a |one )?part of (me|you|him|her)\b|\b(scared|hurt|angry|avoidant|inner|critical)\s+part\b|\btorn between\b|on the one hand[^.!?]{0,100}on the other|\bi hate (him|her|you|myself)\b|just want to (leave|get out)|\bi'?m (so )?(stupid|useless|worthless)\b/i,
+  skepsis: SKEPSIS_MUSTER,   // PRV-11.5 · same union as DE
   anteileSpur: /\bteil von dir\b|\bteil in dir\b|\banteile?n? (von|in) dir\b|\bpart of you\b|\bparts of you\b/i,
   entwicklung: /früher (fand|mochte|liebte|bewunderte) ich|(hat|haben) mich (damals|früher|anfangs|am anfang) (so |total |sehr )?(fasziniert|angezogen|begeistert)|was mich (damals|früher|anfangs|am anfang) an (ihm|ihr|dir)|genau das,? was mich (mal |damals |früher )?(an (ihm|ihr|dir) )?(angezogen|fasziniert|begeistert)|\bi used to (love|admire|like) (that|how|his|her|your)|what (first )?(drew|attracted) me|(fascinated|attracted) me (at first|back then|in the beginning)/i,
   entwicklungSpur: /entwicklungsraum|\b(eigene[nrn]? )?(handlungs)?spielraum\b|was (könnte|kann) dich (daran|an diesem verhalten) so (stark )?berühr|development space|room to grow|what might touch you so/i,

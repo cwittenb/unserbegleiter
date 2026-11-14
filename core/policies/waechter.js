@@ -27,6 +27,8 @@ export const SCHAERFUNGEN = Object.freeze({
   // PRV-4 · Theorie-Linsen als Karte (immer die letzten Glieder der Kette).
   anteile:        k => baueKartenSchaerfung(() => k().waechter.anteile),
   entwicklung:    k => baueKartenSchaerfung(() => k().waechter.entwicklung),
+  // PRV-11.5 · Lage-Karte (vor den Theorie-Karten; bisher nur im Reflexionsgespräch).
+  skepsis:        k => baueKartenSchaerfung(() => k().waechter.skepsis),
 });
 
 /** Übergabe-Prüfungen: Art → (eintrag, k) ⇒ (text, engine) ⇒ Kennung|null. */

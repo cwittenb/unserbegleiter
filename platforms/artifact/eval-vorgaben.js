@@ -228,6 +228,18 @@ export const VORGABEN = {
       { label: "sonnet-n5", pm: SONNET, n: 5 },
     ],
   },
+  "prv11-5": {
+    id: "prv11-5",
+    titel: "PRV-11.5 · Karte »Skepsis« über die Regie, G2 mit zweitem Zug",
+    beschreibung: "Neu: Lage-Karte Skepsis (nur Reflexionsgespräch) — kommt, wenn die Person am Nutzen zweifelt oder für jemand anderen hier ist; Grundprompt unverändert. INT-G2 v2: zweiter Zug, C4 prüft den Weg zu Annas Wunsch. Ziel (je Modell): INT-F3 ≤ 1/5 (vorher 5/5). INT-G2 C4 setzt die Basis; C1–C3 ≤ 1/5. MRV-01 und INT-G1 zur Beobachtung.",
+    szenarien: ["INT-F3", "INT-G2", "INT-G1", "MRV-01"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
   "prv11-2": {
     id: "prv11-2",
     titel: "PRV-11.2 · Gemeinsamer Raum (mit Skepsis und Einsicht)",
