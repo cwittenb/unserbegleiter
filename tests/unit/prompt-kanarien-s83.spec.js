@@ -22,8 +22,8 @@ const faelle = [
     nbBeispiel: "handelt in DREI Schritten statt zu fragen",
     nbSchritte: "die Session würdevoll weiterführen",
     momBeilaeufig: "gerade die beiläufige am Einstieg",
-    momPflicht: "immer genau eine Erlebensfrage",
-    momErsatz: "sie ist die Frage dieser Nachricht",
+    momPflicht: "Eine Vertiefung pro Nachricht",
+    momErsatz: "Eine Prozess- oder Okay-Frage ersetzt die Vertiefung nicht",
     endPunkt: "lass uns hier einen Punkt machen",
     endRegel: "END-SIGNALE ERNST NEHMEN",
     endVerbot: "Ein End-Signal führt in den Abschluss",
@@ -42,8 +42,8 @@ const faelle = [
     nbBeispiel: "acts in three steps instead of asking",
     nbSchritte: "continue the session with dignity",
     momBeilaeufig: "the casual one at the start especially",
-    momPflicht: "always ask exactly one experience question",
-    momErsatz: "it is the question of this message",
+    momPflicht: "One deepening per message",
+    momErsatz: "A process or okay question does not replace the deepening",
     endPunkt: "let's leave it here",
     endRegel: "Take END SIGNALS SERIOUSLY",
     endVerbot: "An end signal leads into the closing",
@@ -88,7 +88,7 @@ describe.each(faelle)("Prompt-Kanarien S83 · %s", (_sprache, P, T) => {
     expect(mom()).toContain(T.nbName);
   });
 
-  it("MOM-01: die beiläufige Feststellungs-Form steht als Verbot im Momente-Baustein; genau eine Erlebensfrage ist Pflicht", () => {
+  it("MOM-01: die beiläufige Feststellungs-Form steht als Verbot im Momente-Baustein; eine Vertiefung je Nachricht, keine Prozessfrage an ihrer Stelle (PRV-11.1: nach Lage statt Pflicht-Erlebensfrage)", () => {
     const b = P.bausteine.bedeutsameMomente;
     expect(b).toContain(T.momBeilaeufig);
     expect(b).toContain(T.momPflicht);

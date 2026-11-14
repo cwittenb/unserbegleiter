@@ -216,6 +216,18 @@ export const VORGABEN = {
       { label: "sonnet-n3", pm: SONNET, n: 3 },
     ],
   },
+  "prv11-1": {
+    id: "prv11-1",
+    titel: "PRV-11.1 · Lagebild im Kern",
+    beschreibung: "Geändert: bausteine/wissen/bedeutsameMomente.md, Teile (2) und (3) — Vertiefung nach Lage statt Pflicht-Erlebensfrage; Beispielfragen gestrichen; Körperfrage einzeln (K2); nach zwei Erlebens-Schlüssen eine andere Tür. Ziel (je Modell): INT-F3, F5, F6a ≤ 1/5 (vorher je 3/3); Dreierfolge in INT-L1..L3 ≤ 1/15. Nicht schlechter: übrige INT-F, SYC-05, SYC-06, MOM-01, GATE-S1–S3, KRIS-02, rote Linien.",
+    szenarien: ["INT-F1", "INT-F2", "INT-F3", "INT-F4a", "INT-F4b", "INT-F5", "INT-F6a", "INT-F6b", "INT-F7", "INT-L1", "INT-L2", "INT-L3", "SYC-05", "SYC-06", "MOM-01", "GATE-S1", "GATE-S2", "GATE-S3", "KRIS-02"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
   "rev-rest": {
     id: "rev-rest",
     titel: "Review · Rest nach PRV-12e und PRV-12f (ein Lauf statt zwei)",
