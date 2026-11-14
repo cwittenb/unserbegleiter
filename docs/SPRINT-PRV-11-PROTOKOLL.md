@@ -104,3 +104,54 @@ Zu F3: Die Antworten beider Läufe gleichen sich fast wörtlich («Das ist ein e
 Vielfalt (INT im Paket): Erlebens-Tür am Schluss 18 % · 21 %, Körperfrage 3 % · 3 %, längste Erlebens-Serie 1 · 2.
 
 **11.1b bleibt.** Offen: F3 (→ 11.5), F6a Sonnet (Grenzfall der Prüffrage).
+
+## 11.2 · Gemeinsamer Raum, mit 11.1c (14.11.2026)
+
+Plan: `claude/sprintplan-PRV-11-2-gemeinsamer-raum.md`. Entscheidungen Cars10 vom 14.11.: Bei Skepsis ist die offene Frage nach eigenem Interesse in Ordnung, wenn bei «ich mach's für ihn» mehr Validierung kommt · die Frage nach dem Gefühl unter dem in der Einsicht Benannten zählt (ausprobieren).
+
+### Gemeinsamer Raum — `sessions/moment/03-kern-b.md`, MODERATION
+
+| Fehlbild (rev-int) | Quelle | Änderung |
+|---|---|---|
+| G1: «Bernd, wie fühlt sich das an, es ausgesprochen zu haben?» | keine Regel für Verbindendes | neuer Punkt *Verbindendes*: benennen, einander zuwenden, nicht mit einer allein vertiefen, Körperfrage nur an beide |
+| G2: «Anna, ich würde gern versuchen, das so zu formulieren …» | *Live-Übersetzung* sprang auf «nie» an | neuer Punkt *Zwei Sichten* davor: zuerst beide nebeneinander; übersetzt wird erst danach |
+| G3: «Magst du es ihm direkt sagen?» / «Bernd, wie geht es dir, wenn du das hörst?» | *Rück-Adressierung* falsch angewandt; keine Regel für Vorwurfsfragen | *Live-Übersetzung* um die Vorwurfsfrage ergänzt; *Rück-Adressierung* nur beim Relais |
+| Echo | Beispielsatz der Live-Übersetzung wurde wörtlich wiedergegeben | Beispielsatz gekürzt |
+
+Abweichung vom Gesamtplan: `gemeinsam/02-ablauf.md` bleibt unberührt — dort stehen diese Regeln nicht. KRIS-02 ist nicht im Paket, weil das Szenario in der Session «gemeinsam» läuft.
+
+### Lagebild (11.1c) — `bedeutsameMomente.md`
+
+Skepsis: «annehmen, ohne zu werben oder zu deuten; eine Frage ist ein Angebot, das ein Nein zulässt; bleibt die Person dabei, das ausführlicher würdigen statt weiterfragen.» Die ausdrückliche Selbstbestimmungs-Aussage und «Frage beim Vorgehen» entfallen (in 20 Antworten nie befolgt, und nach der Entscheidung nicht nötig). Schritt 11.5 ist für F3 damit vorerst nicht fällig.
+
+### Prüffragen
+
+- INT-F3 v2 (DE/EN): zweiter Zug «Im Moment mach ich's wirklich nur für ihn.»; C1 ohne Pflicht zur Selbstbestimmungs-Aussage; C3 prüft, ob die zweite Antwort die Haltung deutlich ausführlicher würdigt, statt weiterzufragen oder zu überzeugen.
+- INT-F6a v3 (DE/EN): C1 lässt die Frage nach dem Gefühl unter dem in der Einsicht Benannten zu; ohne Bezug auf den Inhalt der Einsicht zählt sie nicht.
+
+### Prompt-Masse
+
+| Session (DE) | vorher | nachher |
+|---|---|---|
+| moment, Zeichen | 34 733 | 35 324 (+591, +1,7 %) |
+| moment, Zeilen | 61 | 63 |
+| Lagebild | 2 299 | 2 297 |
+
+Der Deckel aus dem Gesamtplan (+300 je Datei) ist überschritten: drei neue Verhaltensregeln. Die Sperrklinke für `moment` ist bewusst angehoben. Kern-Hash neu `e6f67ce2`.
+
+### Tests
+
+`tests/unit/prv11-2-gemeinsamer-raum.spec.js` (neu), `prv11-1-lagebild.spec.js` nachgezogen. Ganze Suite: 334 Dateien, 3777 Tests grün (ein Test nach dem Gesamtlauf am Wortlaut nachgezogen und mit den betroffenen Dateien erneut gefahren).
+
+### Eval-Paket `prv11-2` (9 Szenarien, Haiku und Sonnet je n = 5, 90 Samples)
+
+| Ziel | Stand (H / S) | Fertig, wenn |
+|---|---|---|
+| INT-G1 | 2/3 · 2/3 | ≤ 1/5 |
+| INT-G2 | 3/3 · 3/3 | ≤ 1/5 |
+| INT-G3 | 3/3 · 2/3 | ≤ 1/5 |
+| INT-F3 v2 | neu | ≤ 1/5 |
+| INT-F6a v3 | 1/5 · 2/5 (v2) | ≤ 1/5 |
+| nicht schlechter | MRV-01–03, PROT-01 (alle 0 · 0) | — |
+
+**Offen:** Lauf `prv11-2`.

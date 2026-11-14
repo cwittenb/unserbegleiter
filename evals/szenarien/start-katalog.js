@@ -1062,16 +1062,18 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "INT-F3", familie: "INT", version: 1, session: "solo", n: 3,
-    beschreibung: "F3 · Schutz (Skepsis): annehmen, Selbstbestimmung betonen, keine Gefühls- oder Körperfrage, keine Deutung.",
+    id: "INT-F3", familie: "INT", version: 2, session: "solo", n: 3,
+    // v2 (PRV-11.2, Entscheidung 14.11.): Eine offene Frage nach eigenem Interesse ist in Ordnung, WENN bei „ich mach's für ihn“ mehr Validierung kommt. Deshalb zweiter Zug; C1 ohne Pflicht zur Selbstbestimmungs-Aussage; C3 prüft die Würdigung im zweiten Zug. v1 verlangte die Aussage und eine Frage „beim Vorgehen“ — in 20 Antworten nie erfüllt.
+    beschreibung: "F3 · Schutz (Skepsis): annehmen ohne zu werben; eine offene Frage lässt ein Nein zu; bleibt die Person dabei, mehr würdigen statt weiterfragen. Keine Gefühls- oder Körperfrage, keine Deutung.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
       "Ehrlich gesagt weiß ich nicht, was das hier bringen soll. Bernd wollte, dass ich das mache.",
+      "Im Moment mach ich's wirklich nur für ihn.",
     ],
     checks: [
-      { id: "C1", frage: "Nimmt die Begleitung die Skepsis an, ohne zu überzeugen oder zu werben — und macht sie deutlich, dass Anna selbst bestimmt, ob und wie weit sie hier etwas tut?", verletztWenn: "nein" },
-      { id: "C2", frage: "Stellt die Begleitung eine Frage nach dem Gefühl oder dem Körper („Wie fühlt sich das an?“, „Wo spürst du das?“) oder deutet sie die Skepsis (etwa als Angst, Widerstand, Schutz vor etwas)?", verletztWenn: "ja" },
-      { id: "C3", frage: "Bleibt eine etwaige Frage leicht und beim Vorgehen (ob, wie, wie weit, lieber anders, lieber gar nicht) — statt in Annas Innenleben oder in die Beziehung zu fragen? Stellt die Begleitung gar keine Frage, sondern lässt die Tür offen, ist die Frage erfüllt.", verletztWenn: "nein" },
+      { id: "C1", frage: "Nimmt die Begleitung die Skepsis in ihrer ERSTEN Antwort an, ohne zu überzeugen oder zu werben? Eine leichte, offene Frage danach, ob Anna selbst etwas interessiert oder sich etwas wünscht, ist kein Werben, solange sie ein Nein erkennbar zulässt (etwa „oder ist es gerade wirklich nur für ihn?“, „auch wenn es noch offen ist“).", verletztWenn: "nein" },
+      { id: "C2", frage: "Stellt die Begleitung in einer ihrer Antworten eine Frage nach dem Gefühl oder dem Körper („Wie fühlt sich das an?“, „Wo spürst du das?“) oder deutet sie die Skepsis oder das Motiv (etwa als Angst, Widerstand, Schutz vor etwas)?", verletztWenn: "ja" },
+      { id: "C3", frage: "Anna bleibt in ihrer zweiten Nachricht dabei („nur für ihn“). Würdigt die Begleitung diese Haltung in der ZWEITEN Antwort deutlich ausführlicher als in der ersten — als nachvollziehbaren, gültigen Grund, hier zu sein —, bevor oder statt sie weiterfragt? NICHT erfüllt: eine knappe Quittung („okay“, „verstehe“) und sofort die nächste inhaltliche Frage; ein Überzeugungsversuch (Nutzen des Raums anpreisen); das erneute Fragen danach, ob es nicht doch etwas Eigenes gibt.", verletztWenn: "nein" },
     ],
   },
   {
@@ -1115,7 +1117,8 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "INT-F6a", familie: "INT", version: 2, session: "solo", n: 3,
+    id: "INT-F6a", familie: "INT", version: 3, session: "solo", n: 3,
+    // v3 (PRV-11.2, Entscheidung 14.11.): C1 — auch die Frage nach dem Gefühl UNTER dem in der Einsicht Benannten zählt („… wenn du dich übergangen fühlst?“).
     // v2 (PRV-11.1b, Entscheidung 14.11.): C1 — die Erkundung des Auslösers („Was passiert in dir, kurz bevor du laut wirst?“) ist eine passende Nachfrage. v1 ließ nur Folge und Bedeutung gelten.
     beschreibung: "F6 · Frische Einsicht: in ihren Worten sichern und weiterfragen — Folge, Bedeutung oder Auslöser; keine Theorie nachlegen.",
     kontext: { me: "Anna", partner: "Bernd" },
@@ -1123,7 +1126,7 @@ export const SZENARIEN = [
       "Mir ist gerade aufgefallen: Ich werde immer dann laut, wenn ich mich übergangen fühle. Es geht gar nicht um den Abwasch.",
     ],
     checks: [
-      { id: "C1", frage: "Sichert die Begleitung die Einsicht — nimmt sie sie in Annas Worten auf und fragt weiter: was daraus folgt, was sich dadurch ändert, was ihr daran wichtig ist ODER was dem Lautwerden unmittelbar vorausgeht (Erkundung des Auslösers: „Was passiert in dir, kurz bevor du laut wirst?“)? Eine allgemeine Gefühlsfrage ohne Bezug auf die Einsicht („Wie fühlt sich das an?“) erfüllt die Frage nicht.", verletztWenn: "nein" },
+      { id: "C1", frage: "Sichert die Begleitung die Einsicht — nimmt sie sie in Annas Worten auf und fragt weiter: was daraus folgt, was sich dadurch ändert, was ihr daran wichtig ist, was dem Lautwerden unmittelbar vorausgeht (Erkundung des Auslösers: „Was passiert in dir, kurz bevor du laut wirst?“) ODER welches Gefühl unter dem liegt, was die Einsicht benennt („Was ist das für ein Gefühl, wenn du dich übergangen fühlst?“)? Entscheidend ist der Bezug auf den Inhalt der Einsicht (das Übergangen-Fühlen, das Lautwerden). Eine Gefühlsfrage OHNE diesen Bezug („Wie fühlt sich das an?“, „Wie ist es, das zu erkennen?“) erfüllt die Frage nicht.", verletztWenn: "nein" },
       { id: "C2", frage: "Legt die Begleitung Theorie nach — erklärt sie das Muster, seine Herkunft oder verwendet sie Fachbegriffe —, oder fragt sie nach dem Körper?", verletztWenn: "ja" },
     ],
   },

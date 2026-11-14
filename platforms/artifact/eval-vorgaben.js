@@ -228,6 +228,18 @@ export const VORGABEN = {
       { label: "sonnet-n5", pm: SONNET, n: 5 },
     ],
   },
+  "prv11-2": {
+    id: "prv11-2",
+    titel: "PRV-11.2 · Gemeinsamer Raum (mit Skepsis und Einsicht)",
+    beschreibung: "Geändert: moment/03-kern-b.md MODERATION — Verbindendes einander zuwenden; zwei Sichten zuerst nebeneinander; Vorwurfsfrage zuerst bei der Fragenden; Rück-Adressierung nur bei Relais. Lagebild: Skepsis als offene Frage, danach würdigen. Prüffragen INT-F3 v2 (zweizügig), INT-F6a v3. Ziel (je Modell): INT-G1, G2, G3, F3, F6a ≤ 1/5. Nicht schlechter: MRV-01–03, PROT-01.",
+    szenarien: ["INT-G1", "INT-G2", "INT-G3", "INT-F3", "INT-F6a", "MRV-01", "MRV-02", "MRV-03", "PROT-01"],
+    judge: JUDGE,
+    waechter: true,
+    arme: [
+      { label: "haiku-n5", pm: HAIKU, n: 5 },
+      { label: "sonnet-n5", pm: SONNET, n: 5 },
+    ],
+  },
   "prv11-1b": {
     id: "prv11-1b",
     titel: "PRV-11.1b · Lagebild nachgeschärft",
