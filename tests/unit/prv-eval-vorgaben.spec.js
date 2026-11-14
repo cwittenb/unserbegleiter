@@ -180,10 +180,11 @@ describe("Eval-Artefakt · Fortsetzen nach Abbruch", () => {
     createEvalApp({ doc: document, root, szenarien: SZENARIEN, machAdapter: mach, vorgabe: vg });
     root.querySelector("#evRpm").value = "0";
     root.querySelector("#evPar").value = "1";
+    root.querySelector("#evAuto").checked = false;   // EVAL-R1: hier geht es um das Fortsetzen von Hand
     const warte = async re => { for (let i = 0; i < 400 && !re.test(root.querySelector("#evVgStatus").textContent); i++) await new Promise(r => setTimeout(r, 5)); };
     root.querySelector("#evVorgabe").click();
     await warte(/Angehalten/);
-    expect(root.querySelector("#evVgStatus").textContent).toMatch(/2 Szenarien schon fertig/);
+    expect(root.querySelector("#evVgStatus").textContent).toMatch(/2 Szenarien, 2 Samples fertig/);
     const vorher = gespielt.length;
     root.querySelector("#evVorgabe").click();
     await warte(/Alle 1 Läufe fertig/);

@@ -505,14 +505,29 @@ export function szenarioAusSamples(szenario, samples, anzahl, variante) {
   };
 }
 
-export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante, regieTransport, linsenVoll, phasenAus }) {
+/** EVAL-R1 · `sampleSpeicher` (optional): ein Array, das der Aufrufer behält.
+ *  Jedes fertige (gespielte UND gerichtete) Sample landet sofort darin; ein
+ *  erneuter Aufruf beginnt beim ersten fehlenden. So kostet ein Abbruch mitten
+ *  im Szenario höchstens das eine angefangene Sample, nicht alle davor. Ohne
+ *  Speicher verhält sich die Funktion wie bisher (auch: unbewertete Samples
+ *  bleiben im Ergebnis, wenn der Lauf nicht fortgesetzt wird). */
+export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judgeOpts, waechter, variante, regieTransport, linsenVoll, phasenAus, sampleSpeicher }) {
   const anzahl = n || szenario.n || 3;
-  const samples = [];
+  const samples = Array.isArray(sampleSpeicher) ? sampleSpeicher : [];
+  /* Beim Fortsetzen zählen nur gerichtete Samples. Ein unbewertetes (Judge
+     ausgefallen, leere Antwort) ist meist Folge derselben Störung, die den
+     Lauf abgebrochen hat — es wird neu gespielt statt als "unbewertet" im
+     Bericht zu bleiben. Die Nummern werden lückenlos neu vergeben. */
+  if (samples.some(s => s.unbewertet)) {
+    const gut = samples.filter(s => !s.unbewertet);
+    samples.length = 0;
+    gut.forEach((s, i) => samples.push(s.nr === i + 1 ? s : { ...s, nr: i + 1 }));
+  }
   // ST5.4: Präambel + Schema EINMAL je Szenario bauen (deterministisch —
   // identische Serialisierung über alle Samples hält den Prompt-Cache und den
   // Grammatik-Cache der API treffsicher).
   const struktur = variante === "struktur" ? strukturFuer(szenario) : null;
-  for (let i = 0; i < anzahl; i++) {
+  for (let i = samples.length; i < anzahl; i++) {
     const transkript = await spieleSample(pipelineCall, szenario, { waechter, struktur, regieTransport, linsenVoll, phasenAus });
     const anomalie = anomalieImTranskript(transkript);
     const urteil = anomalie
@@ -520,7 +535,7 @@ export async function laufeSzenario(szenario, { pipelineCall, judgeCall, n, judg
       : await richte(judgeCall, szenario, transkript, judgeOpts);
     samples.push(sampleAusUrteil(szenario, transkript, urteil, i + 1));
   }
-  return szenarioAusSamples(szenario, samples, anzahl, variante);
+  return szenarioAusSamples(szenario, samples.slice(0, anzahl), anzahl, variante);
 }
 
 /** Fehler-Szenario: Pipeline/Judge sind nach Retries hart gescheitert.
