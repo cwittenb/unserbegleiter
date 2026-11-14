@@ -171,3 +171,40 @@ Rohdaten: `evals/ergebnisse/prv11/prv11-2_alle.json` (Kern `e6f67ce2`). Auswertu
 | MRV-02, MRV-03, PROT-01 | 0 · 0 | 0 · 0 | — | hält |
 
 Rote Linien: 0. **11.2 bleibt.** Offen: F3 — die Kernregel greift nicht, der Hinweis über die Regie (11.5) ist fällig.
+
+## 11.5 · Karte «Skepsis» über die Regie, G2 mit zweitem Zug (14.11.2026)
+
+Plan: `claude/sprintplan-PRV-11-5-karte-skepsis.md`. Entscheidungen Cars10 vom 14.11.: Bei G2 passt es, dass der Zug nach dem Nebeneinanderlegen zu Anna geht (sie formuliert ihren Wunsch, Bernd sagt, ob es ihm möglich ist); offen war, ob nach «Magst du einen konkreten Moment beschreiben?» ein Übersetzungsangebot folgt. Reihenfolge 11.3/11.5 egal.
+
+### Karte Skepsis
+
+| Teil | Inhalt | Datei |
+|---|---|---|
+| Signal | Zweifel am Nutzen, Auftrag eines anderen, «nur für ihn/sie» — DE ∪ EN, ein Muster für beide Sprachen | `core/korpus/de/signale.js` (`SKEPSIS_MUSTER`), `en/signale.js` importiert es |
+| Text | als Möglichkeit («Falls …»): gültigen Grund würdigen, zwei bis drei Sätze in Ich-Form, ohne zu werben oder zu deuten; bleibt die Person dabei, nicht weiterfragen, Tür offen lassen; keine Gefühls- oder Körperfrage | `bausteine/waechter/skepsis.md` (DE/EN) |
+| Kette | nur `solo`, vor den Theorie-Karten: `["skepsis", "anteile", "entwicklung"]` | `core/policies/katalog.js`, `waechter.js`, `scripts/build-korpus.js` |
+
+Der Grundprompt ist unverändert (Golden und Sperrklinke ohne Änderung). Die Karte steht nur in der Regie des Zuges, nie im Verlauf. Sie kommt, solange das Muster in einer der letzten drei Nachrichten der Person steht.
+
+Abweichung vom Gesamtplan: kein neuer Wächter, kein Wechselzähler, kein Umzug des Klassifizierers — die Karten-Mechanik aus PRV-4 genügt, und die Dreierfolge ist ohne Zähler bei 0/15.
+
+**Fehltreffer-Schau:** Über alle Eingaben und Vorgeschichten des Eval-Katalogs (DE und EN) trifft das Muster nur INT-F3 und INT-F3-EN. Der Test hält das fest.
+
+### INT-G2 v2 (DE/EN)
+
+Zweiter Zug: «Anna: Ja, gern. Gestern zum Beispiel: Ich erzähle vom Gespräch mit meiner Chefin, und du rührst im Topf und sagst nur ‹mhm›.» Neue Prüffrage C4: Führt die zweite Antwort Anna zu ihrem Wunsch (Übersetzung mit Rückfrage oder Frage nach dem Wunsch)? C1 gilt jetzt ausdrücklich für die erste Antwort; C2 stellt klar, dass das Weiterarbeiten mit Anna kein Gewicht für ihre Sicht ist.
+
+### Tests
+
+`tests/unit/prv11-5-karte-skepsis.spec.js` (neu, 36 Tests: Satzliste mit 11 Treffern und 10 Fehltreffern, Kette, Engine, Eval). Ganze Suite: 335 Dateien, 3813 Tests grün.
+
+### Eval-Paket `prv11-5` (4 Szenarien, Haiku und Sonnet je n = 5, 40 Samples)
+
+| Ziel | Stand (H / S) | Fertig, wenn |
+|---|---|---|
+| INT-F3 v2 | 5/5 · 5/5 | ≤ 1/5 |
+| INT-G2 v2 | C4 neu | setzt Basis; C1–C3 ≤ 1/5 |
+| INT-G1 | 0/5 · 1/5 | beobachten (Sonnet wandte sich oft nur an Bernd) |
+| MRV-01 | 0/5 · 1/5 | ≤ 1/5 |
+
+**Offen:** Lauf `prv11-5`.

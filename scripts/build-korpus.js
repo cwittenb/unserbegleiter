@@ -57,7 +57,7 @@ const FILTER = {
   count:  (expr, arg) => { if (arg != null) throw new Error("count nimmt kein Argument"); return expr + ".length"; },
   zeilen: (expr, arg) => { if (arg == null) throw new Error("zeilen braucht einen Trenner"); return expr + ".split(\"\\n\").join(" + jsString(arg) + ")"; },
 };
-const WAECHTER = ["krise", "zweiseitigkeit", "aufdeck", "anteile", "entwicklung"];
+const WAECHTER = ["krise", "zweiseitigkeit", "aufdeck", "anteile", "entwicklung", "skepsis"];
 
 /* ---- Hilfen ------------------------------------------------------------- */
 export function escapeTemplate(text) {
@@ -331,6 +331,8 @@ export function baueSchichtQuelle(sprache, schicht, reg = ladeBausteine(sprache)
          /* PRV-4 · Theorie-Linsen als Karte: Signal in den Nachrichten der Person, Spur in der eigenen letzten Antwort. */
          "  anteile: { signal: SIGNALE.anteile, spur: SIGNALE.anteileSpur, text: " + t("anteile") + " },\n" +
          "  entwicklung: { signal: SIGNALE.entwicklung, spur: SIGNALE.entwicklungSpur, text: " + t("entwicklung") + " },\n" +
+         /* PRV-11.5 · Lage-Karte Skepsis: nur Signal, keine Spur — das Fenster (drei Nachrichten) trägt den zweiten Zug. */
+         "  skepsis: { signal: SIGNALE.skepsis, text: " + t("skepsis") + " },\n" +
          /* PRV-7 · Anlaesse der Phasenmodule im Reflexionsgespraech (core/policies/phasen.js). */
          "  phasen: { teilen: SIGNALE.teilen, abruf: SIGNALE.abruf, ende: SIGNALE.ende },\n};\n";
     /* Die Karten-Texte binden Wissen-Bausteine ein; ihre Importe entstehen erst

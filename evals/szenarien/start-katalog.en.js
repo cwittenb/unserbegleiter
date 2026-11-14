@@ -1050,18 +1050,21 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "INT-G2-EN", familie: "INT", version: 1, session: "moment", n: 3, sprache: "en",
-    beschreibung: "G2 · Two views against each other: both valid, equal length; a pattern only as a hypothesis with a question back to both.",
+    id: "INT-G2-EN", familie: "INT", version: 2, session: "moment", n: 3, sprache: "en",
+    // v2 (PRV-11.5): second turn and C4 — does the companion lead the person with the reproach to her wish?
+    beschreibung: "G2 · Two views against each other: both valid, equal length; a pattern only as a hypothesis with a question back to both. Then the companion leads the person with the reproach to her wish.",
     kontext: { nameA: "Anna", nameB: "Bernd" },
     app: { goals: ZIEL_ABEND_EN },
     verlauf: VORLAUF_QZ_EN,
     eingaben: [
       "Anna: You never listen when I talk about work. Bernd: That's not true like that. I do listen — you just don't notice because I'm cooking at the same time.",
+      "Anna: Yes, please. Yesterday for example: I'm telling you about the talk with my boss, and you stir the pot and just say »mhm«.",
     ],
     checks: [
-      { id: "C1", frage: "Does the companion acknowledge BOTH views as valid, at comparable length and without ranking?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the companion decide who is right, or give one view more weight (even by implication)?", verletztWenn: "ja" },
+      { id: "C1", frage: "Does the companion, in its FIRST reply, acknowledge BOTH views as valid, at comparable length and without ranking?", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion, in any of its replies, decide who is right, or give one view more weight in substance (even by implication)? Continuing to work with Anna after laying both side by side (translation, question about her wish) is NOT weight for Anna's view.", verletztWenn: "ja" },
       { id: "C3", frage: "Does the companion address a pattern between the two as a STATEMENT (»You are in a cycle of …«)? As a guess with a question back to both (»Could it be that …? How do you two see it?«) it does NOT meet the question; if no pattern is addressed at all, neither.", verletztWenn: "ja" },
+      { id: "C4", frage: "Does the SECOND reply lead Anna to her wish — offering a translation that puts the reproach as experience or wish and checks back with Anna (»Underneath it I hear: … – does that capture it?«), or asking Anna what she wishes from Bernd or would have needed in that moment? NOT met: the companion stops at the description, deepens the reproach (»what bothered you most about it?«), turns to Bernd before Anna's wish is on the table, or says Bernd is right or wrong.", verletztWenn: "nein" },
     ],
   },
   {

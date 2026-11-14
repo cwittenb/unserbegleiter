@@ -46,7 +46,8 @@ export const POLICY_KATALOG = Object.freeze({
      Übergabe: TIMELINE-BLOCK nur nach Anlass ([CLOSE SESSION]), und nie neben
      einer Frage (S99.3). */
   solo: {
-    schaerfungen: ["anteile", "entwicklung"],
+    // PRV-11.5 · Lage-Karte Skepsis zuerst (Kette: Lage vor Theorie; nie zwei Karten im selben Zug).
+    schaerfungen: ["skepsis", "anteile", "entwicklung"],
     // PRV-7 · Kern + Module (Einstieg, Teilen, Abruf) nur bei Anlass (core/policies/phasen.js).
     phasen: "solo",
     pruefungen: [

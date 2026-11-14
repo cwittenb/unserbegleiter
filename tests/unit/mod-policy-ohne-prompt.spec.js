@@ -99,7 +99,7 @@ describe("MOD-2b · Katalog-Invarianten", () => {
     // PRV-4: die Theorie-Karten hängen in jeder Art hinten an.
     expect(POLICY_KATALOG.moment.schaerfungen).toEqual(["krise", "zweiseitigkeit", "anteile", "entwicklung"]);
     expect(POLICY_KATALOG.gemeinsam.schaerfungen).toEqual(["aufdeck", "krise", "zweiseitigkeit", "anteile", "entwicklung"]);
-    expect(POLICY_KATALOG.solo.schaerfungen).toEqual(["anteile", "entwicklung"]);
+    expect(POLICY_KATALOG.solo.schaerfungen).toEqual(["skepsis", "anteile", "entwicklung"]);   // PRV-11.5
     expect(POLICY_KATALOG.einzel).toEqual({ schaerfungen: ["anteile", "entwicklung"], pruefungen: [], phasen: "einzel" });   // PRV-5
     expect(POLICY_KATALOG.moment.pruefungen.map(p => p.art)).toEqual(["abschluss", "meta"]);
     expect(POLICY_KATALOG.gemeinsam.pruefungen.map(p => p.art)).toEqual(["marken"]);

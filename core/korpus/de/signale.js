@@ -56,6 +56,31 @@ const KRISE_EN = [
 ];
 export const KRISE_MUSTER = new RegExp([...KRISE_DE, ...KRISE_EN].join("|"), "i");
 
+/* ---- PRV-11.5 · Skepsis (DE ∪ EN) --------------------------------------------
+   Anlass: INT-F3 (prv11-2, 14.11.) — die Regel im Lagebild griff in keinem
+   Modell: Blieb die Person bei "ich mach's nur für ihn", kam ein Satz Quittung
+   und die nächste Frage. Die Karte (bausteine/waechter/skepsis.md) kommt, wenn
+   die Person am Nutzen zweifelt, auf Wunsch eines anderen hier ist oder sagt,
+   sie tue es nur für ihn oder sie.
+   ENG gehalten: "nur für ihn" allein ("ich koche nur für ihn") trifft nicht —
+   es braucht "mach(e) … nur für" oder "hier". Satzliste:
+   tests/unit/prv11-5-karte-skepsis.spec.js. */
+const SKEPSIS_DE = [
+  String.raw`\bwas (das|es|mir das|uns das)( hier| alles)? bringen soll\b`,
+  String.raw`\bwozu (das|es)( hier)?( gut sein| alles)? soll\b`, String.raw`\bwozu das hier gut ist\b`,
+  String.raw`\bbringt (doch|eh|ja|sowieso|mir|uns)( eh| doch| sowieso)? (nichts|nix)\b`, String.raw`\bglaub(e)? (ich )?nicht,? dass (das|es)( hier)? (etwas|was|viel) bringt\b`,
+  String.raw`\b(wollte|will|möchte|meinte|meint|findet|fand),? dass ich (das|es|hier|mal|mir das)\b[^.!?]{0,30}\b(mache|mach|machen soll|ausprobiere|probiere|versuche|anschaue|komme|bin)\b`,
+  String.raw`\b(hat|hatte) (mich )?(dazu )?(überredet|gedrängt|gebeten)\b`, String.raw`\bauf (seinen|ihren) wunsch (hin )?(hier|dabei)\b`,
+  String.raw`\bmach(e)?( ich)?( das| es|'s|s)?( hier)?( wirklich| eigentlich| im moment| gerade)? (nur|bloß) (für|wegen) (ihn|sie|ihm|ihr|bernd|anna)\b`,
+  String.raw`\b(bin|sitze) (hier )?(wirklich |eigentlich )?(nur|bloß) (für|wegen) (ihn|sie|ihm|ihr|bernd|anna)( hier)?\b`,
+  String.raw`\bnicht (meine|mein) (idee|ding|wunsch)\b`, String.raw`\bnicht aus eigenem antrieb\b`,
+];
+const SKEPSIS_EN = [
+  String.raw`\bwhat (this|that|it) is (supposed|meant) to (achieve|do|bring)\b`, String.raw`\bwhat'?s the point of (this|that|it)\b`, String.raw`\bdon'?t see the point\b`,
+  String.raw`\b(wanted|wants|asked|told|talked) me (in)?to (do|try|come|be|use)\b`, String.raw`\b(only|just) (doing|here)( it| this)? for (him|her)\b`, String.raw`\b(wasn'?t|not) my idea\b`,
+];
+export const SKEPSIS_MUSTER = new RegExp([...SKEPSIS_DE, ...SKEPSIS_EN].join("|"), "i");
+
 export const SIGNALE = {
   krise: KRISE_MUSTER,   // CR-4.1 · siehe oben
   krisenhilfe: /0800\s*111\s*0\s*111|Telefonseelsorge|Krisendienst|crisis line|helpline/i,
@@ -66,6 +91,7 @@ export const SIGNALE = {
      "Anteil" allein ist bewusst KEIN Treffer: "mein Anteil daran" ist die
      eigene Beteiligung (GATE), keine Anteile-Sprache. */
   anteile: /\b(ein|einen|mein|meinen|dein|deinen|sein|ihr)\w*\s+(\w+\s+)?teil\s+(von|in)\s+(mir|dir|ihm|ihr)\b|(?<![a-zäöüß])(ängstlich|verletzt|vermeidend|kindlich|innere|kritisch|wütend|traurig)[a-zäöüß]*\s+(an)?teil\b|hin- und hergerissen|hin und her gerissen|einerseits[^.!?]{0,100}andererseits|\bzwiespält|ich hasse (ihn|sie|dich|mich)\b|will nur noch weg|\bich bin (so |einfach )?(dumm|blöd|unfähig|wertlos)\b|\b(a |one )?part of (me|you|him|her)\b|\b(scared|hurt|angry|avoidant|inner|critical)\s+part\b|\btorn between\b|on the one hand[^.!?]{0,100}on the other|\bi hate (him|her|you|myself)\b|just want to (leave|get out)|\bi'?m (so )?(stupid|useless|worthless)\b/i,
+  skepsis: SKEPSIS_MUSTER,   // PRV-11.5 · siehe oben
   anteileSpur: /\bteil von dir\b|\bteil in dir\b|\banteile?n? (von|in) dir\b|\bpart of you\b|\bparts of you\b/i,
   entwicklung: /früher (fand|mochte|liebte|bewunderte) ich|(hat|haben) mich (damals|früher|anfangs|am anfang) (so |total |sehr )?(fasziniert|angezogen|begeistert)|was mich (damals|früher|anfangs|am anfang) an (ihm|ihr|dir)|genau das,? was mich (mal |damals |früher )?(an (ihm|ihr|dir) )?(angezogen|fasziniert|begeistert)|\bi used to (love|admire|like) (that|how|his|her|your)|what (first )?(drew|attracted) me|(fascinated|attracted) me (at first|back then|in the beginning)/i,
   entwicklungSpur: /entwicklungsraum|\b(eigene[nrn]? )?(handlungs)?spielraum\b|was (könnte|kann) dich (daran|an diesem verhalten) so (stark )?berühr|development space|room to grow|what might touch you so/i,
