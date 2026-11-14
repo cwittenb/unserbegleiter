@@ -12,9 +12,13 @@ import { JUDGE_PROMPT_VERSION } from "../../evals/judge/judge.js";
 import { esc } from "../../core/ui/html.js";   // R3: vollstaendige Maskierung
 import { baueDrossel } from "../../core/llm/adapter.js";
 
-export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgabe }) {
+export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgabe, schlaf }) {
   const nun = jetzt || (() => new Date());
-  const state = { laeuft: false, bericht: null, berichte: [], teile: {} };
+  /* EVAL-R1 · proben: je Arm und Szenario die fertigen Samples (Fortsetzen ab
+     dem Sample). letzterAbbruch: Grund und — beim Nutzungslimit — Rücksetzzeit
+     des letzten Abbruchs; null bei Eingabefehlern (die lösen kein Warten aus). */
+  const state = { laeuft: false, bericht: null, berichte: [], teile: {}, proben: {}, nachgespielt: {}, letzterAbbruch: null, halt: false, wartet: false };
+  const pause = schlaf || (ms => new Promise(r => setTimeout(r, ms)));
   /* Vorgabe (PRV-Eval-Pakete): festes Szenario-Set, Judge, Wächter und eine
      Folge von Armen (Pipeline-Modell, n, ggf. Regie-Transport), die ein Knopf
      nacheinander abarbeitet — ein JSON je Arm. Ohne Vorgabe bleibt alles wie
@@ -49,6 +53,10 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
       <div style="font-size:14px;margin:4px 0 8px">${esc(vg.beschreibung || "")}</div>
       <div class="ev-mono" style="font-size:12px">Szenarien: ${esc(vg.szenarien.join(", "))}<br>Judge: ${esc(vg.judge)} · Wächter: ${vg.waechter ? "an" : "aus"}<br>${vg.arme.map((a, i) => (i + 1) + ". " + esc(a.label) + " — " + esc(a.pm) + ", n=" + a.n + (a.regieTransport ? ", Transport " + esc(a.regieTransport) : "") + (a.linsenVoll ? ", Linsen voll" : "") + (a.phasenAus ? ", Phasen aus" : "")).join("<br>")}</div>
       <button class="ev-btn primary" id="evVorgabe" style="margin-top:12px">Alle ${vg.arme.length} Läufe nacheinander starten</button>
+      <button class="ev-btn" id="evHalt" style="margin-top:12px;display:none">Anhalten</button>
+      <label style="display:block;font-size:13px;margin:10px 0 0">
+        <input type="checkbox" id="evAuto" checked> Nach einem Abbruch <b>von selbst fortsetzen</b> (wartet und macht ohne Klick weiter; der Tab muss offen bleiben)
+      </label>
       <div id="evVgStatus" class="ev-hint" style="margin-top:8px"></div>
       <div id="evVgListe" style="margin-top:10px"></div>
     </div>` : ""}
@@ -156,6 +164,7 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
     const waechter = $("evWaechter").checked;
 
     state.laeuft = true;
+    state.letzterAbbruch = null;
     $("evStart").disabled = true;
     $("evErgebnis").style.display = "none";
 
@@ -187,6 +196,11 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
        Sandbox …), faehrt der naechste Klick nur die fehlenden nach — bezahlte
        Samples gehen nicht verloren. */
     const schon = arm ? (state.teile[arm.label] ||= {}) : {};
+    /* EVAL-R1 · Fortsetzen ab dem Sample: Bricht der Lauf MITTEN in einem
+       Szenario ab, bleiben dessen fertige Samples liegen. Bisher gingen sie
+       verloren — bei einem Langszenario bis zu 44 Aufrufe, mal `par`. */
+    const proben = arm ? (state.proben[arm.label] ||= {}) : {};
+    const nachgespielt = arm ? (state.nachgespielt[arm.label] ||= {}) : {};
     const offen = auswahl.filter(s => !schon[s.id]);
     try {
       const fertig = new Array(offen.length);
@@ -199,7 +213,14 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
           aktuell = [...laufend].join(", ") + " (" + erledigt + "/" + auswahl.length + " fertig)";
           zeige();
           try {
-            fertig[i] = schon[offen[i].id] = await laufeSzenario(offen[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport, linsenVoll: !!(arm && arm.linsenVoll), phasenAus: !!(arm && arm.phasenAus) });
+            /* EVAL-R1 · Unbewertete Samples (Judge ausgefallen, leere Antwort)
+               werden im Paket-Modus EINMAL nachgespielt, bevor das Szenario als
+               fertig gilt — sonst bliebe ein Ausfall kurz vor dem Limit als
+               "unbewertet" im Bericht stehen. */
+            const lauf = () => laufeSzenario(offen[i], { pipelineCall, judgeCall, n, waechter, regieTransport: arm && arm.regieTransport, linsenVoll: !!(arm && arm.linsenVoll), phasenAus: !!(arm && arm.phasenAus), ...(arm ? { sampleSpeicher: (proben[offen[i].id] ||= []) } : {}) });
+            let r = await lauf();
+            if (arm && r.unbewerteteSamples && !nachgespielt[offen[i].id]) { nachgespielt[offen[i].id] = true; r = await lauf(); }
+            fertig[i] = schon[offen[i].id] = r;
             erledigt++;
           } catch (e) { fehler = fehler || e; }
           finally { laufend.delete(offen[i].id); }
@@ -217,14 +238,17 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
       return true;
     } catch (e) {
       abbruch = deutlicherFehler(e);
+      state.letzterAbbruch = { text: abbruch, bis: limitBis(e) };
+      const gerettet = arm ? offen.filter(s => !schon[s.id]).reduce((z, s) => z + (proben[s.id] || []).length, 0) : 0;
+      const rettung = gerettet ? " · Dazu " + gerettet + " fertige Samples aus angefangenen Szenarien gerettet." : "";
       if (ergebnisse.length) {                       // Teilergebnis retten — die Samples sind bezahlt
         baueBericht(ergebnisse, pm, jm, abbruch, waechter, arm);
         zeigeErgebnis();
         await speichere();
         status("Abgebrochen nach " + ergebnisse.length + " von " + auswahl.length + " Szenarien — Teilbericht unten. " + abbruch +
-          (arm ? " · Erneut klicken fährt nur die fehlenden Szenarien nach." : ""), "ev-rot");
+          (arm ? rettung + " · Fortsetzen fährt nur die fehlenden Samples nach." : ""), "ev-rot");
       } else {
-        status("Lauf abgebrochen: " + abbruch, "ev-rot");
+        status("Lauf abgebrochen: " + abbruch + rettung, "ev-rot");
       }
     } finally {
       state.laeuft = false;
@@ -241,6 +265,15 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
       }
     } catch { /* kein JSON — Originaltext verwenden */ }
     return e.message;
+  }
+
+  /** EVAL-R1 · Rücksetzzeit des Nutzungslimits in ms, sonst null. */
+  function limitBis(e) {
+    try {
+      const d = JSON.parse(e.message);
+      if (d && d.type === "exceeded_limit" && d.resetsAt) return d.resetsAt * 1000;
+    } catch { /* kein JSON */ }
+    return null;
   }
 
   function baueBericht(ergebnisse, pm, jm, abbruch, waechter, arm) {
@@ -372,22 +405,66 @@ export function createEvalApp({ doc, root, szenarien, machAdapter, jetzt, vorgab
       else { const b = state.berichte[+k]; ladeHerunter(b, vg.id + "_" + b.stand.arm.replace(/[^\w-]+/g, "-") + ".json"); }
     });
   }
+  /** EVAL-R1 · Warten mit sichtbarem Countdown; `false`, wenn angehalten wurde. */
+  async function warteMit(ms, text) {
+    const ende = nun().getTime() + ms;
+    state.wartet = true;
+    $("evHalt").style.display = "";
+    try {
+      for (;;) {
+        if (state.halt) return false;
+        const rest = ende - nun().getTime();
+        if (rest <= 0) return true;
+        const sek = Math.ceil(rest / 1000);
+        $("evVgStatus").textContent = text + (sek >= 3600 ? Math.floor(sek / 3600) + " h " + Math.floor(sek % 3600 / 60) + " min" : sek >= 60 ? Math.floor(sek / 60) + " min " + (sek % 60) + " s" : sek + " s")
+          + " (um " + new Date(ende).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr).";
+        await pause(Math.min(1000, rest));
+      }
+    } finally { state.wartet = false; $("evHalt").style.display = "none"; }
+  }
+  if (vg) $("evHalt").addEventListener("click", () => { state.halt = true; });
   if (vg) $("evVorgabe").addEventListener("click", async () => {
     if (state.laeuft) return;
     $("evVorgabe").disabled = true;
+    state.halt = false;
+    /* EVAL-R1 · Selbst fortsetzen. Ein Abbruch (Nutzungslimit, Freigabe der
+       Sandbox, Netz) beendet das Paket nicht mehr: Das Artefakt wartet und
+       macht ohne Klick weiter — beim Limit bis zur gemeldeten Rücksetzzeit,
+       sonst gestaffelt. Schluss ist erst nach MAX_LEER Versuchen, die kein
+       einziges neues Sample gebracht haben. */
+    const STUFEN = [30, 30, 60, 120, 300];
+    const MAX_LEER = 8;
+    const fertigeSamples = label => Object.values(state.proben[label] || {}).reduce((z, a) => z + a.length, 0);
+    let leer = 0;
     try {
-      for (let i = state.berichte.length; i < vg.arme.length; i++) {
-        $("evVgStatus").textContent = "Lauf " + (i + 1) + "/" + vg.arme.length + ": " + vg.arme[i].label;
-        const ok = await starte(vg.arme[i]);
+      while (state.berichte.length < vg.arme.length) {
+        const i = state.berichte.length, arm = vg.arme[i];
+        $("evVgStatus").textContent = "Lauf " + (i + 1) + "/" + vg.arme.length + ": " + arm.label;
+        const vorher = fertigeSamples(arm.label);
+        const ok = await starte(arm);
         zeigeVorgabeListe();
-        if (!ok) {
-          const k = Object.keys(state.teile[vg.arme[i].label] || {}).length;
-          $("evVgStatus").textContent = "Angehalten bei Lauf " + (i + 1) + " (" + k + " Szenarien schon fertig) — erneut klicken fährt nur die fehlenden nach.";
+        if (ok) { leer = 0; continue; }
+        const k = Object.keys(state.teile[arm.label] || {}).length, s = fertigeSamples(arm.label);
+        const stand = "Lauf " + (i + 1) + " (" + k + " Szenarien, " + s + " Samples fertig)";
+        const ab = state.letzterAbbruch;
+        if (!ab || !$("evAuto").checked) {
+          $("evVgStatus").textContent = "Angehalten bei " + stand + " — erneut klicken fährt nur die fehlenden Samples nach.";
+          return;
+        }
+        leer = s > vorher ? 0 : leer + 1;
+        if (leer >= MAX_LEER) {
+          $("evVgStatus").textContent = "Aufgegeben bei " + stand + ": " + MAX_LEER + " Versuche ohne ein neues Sample. Letzter Grund: " + ab.text + " — erneut klicken versucht es wieder.";
+          return;
+        }
+        const bisLimit = ab.bis ? ab.bis - nun().getTime() + 30000 : 0;
+        const ms = Math.max(bisLimit, STUFEN[Math.min(leer, STUFEN.length - 1)] * 1000);
+        if (!(await warteMit(ms, "Unterbrochen bei " + stand + (ab.bis ? " — Nutzungslimit" : "") + ". Macht von selbst weiter in "))) {
+          $("evVgStatus").textContent = "Angehalten bei " + stand + " — erneut klicken fährt nur die fehlenden Samples nach.";
           return;
         }
       }
       $("evVgStatus").textContent = "Alle " + vg.arme.length + " Läufe fertig — bitte die JSONs herunterladen und schicken.";
-    } finally { $("evVorgabe").disabled = false; }
+    } finally { $("evVorgabe").disabled = false; $("evHalt").style.display = "none"; state.wartet = false; }
   });
   $("evDownload").addEventListener("click", download);
   $("evCopy").addEventListener("click", async () => {
