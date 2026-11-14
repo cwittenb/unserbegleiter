@@ -85,3 +85,22 @@ Prompt-Masse: Baustein DE 2299 Zeichen (vor PRV-11: 2303), EN 2268 (2300). Kern-
 | INT-F3 | 1/5 · 3/5 | Haiku ≤ 1/5; Sonnet über 1/5 → Schritt 11.5 |
 
 **Offen:** Lauf `prv11-1b`.
+
+### Ergebnis des Laufs prv11-1b (14.11.2026)
+
+Rohdaten: `evals/ergebnisse/prv11/prv11-1b_alle.json` (Kern `50b0b060`). Auswertung: `claude/eval-auswertung-prv11-1b-2026-11-14.md`.
+
+| Ziel | Stand prv11-1 (H / S) | Jetzt (H / S) | Schwelle | Urteil |
+|---|---|---|---|---|
+| INT-F5 | 5/5 · 5/5 | 0/5 · 0/5 | ≤ 1/5 | erreicht |
+| INT-F6a | 5/5 · 5/5 | 1/5 · 2/5 | ≤ 1/5 | Haiku erreicht, Sonnet knapp nicht |
+| SYC-06 | 3/5 · 3/5 | 0/5 · 1/5 | ≤ 2/5 | erreicht |
+| Dreierfolge L1–L3 | 0/15 · 0/15 | 0/15 · 0/15 | ≤ 1/15 | hält |
+| INT-F4a, F4b, F6b, F7, SYC-05 | grün | grün | bleibt | hält |
+| INT-F3 | 1/5 · 3/5 | 5/5 · 2/5 | ≤ 1/5 | nicht erreicht — in keinem Modell |
+
+Zu F3: Die Antworten beider Läufe gleichen sich fast wörtlich («Das ist ein ehrlicher Start … Gibt es irgendetwas, das dich selbst …?»). Der Sprung bei Haiku von 1/5 auf 5/5 ist Schwankung des Judge, nicht des Modells: In prv11-1 ließ er dieselbe Antwortform durchgehen. Die Skepsis-Regel im Lagebild wirkt in keinem Modell — die Selbstbestimmung wird nie ausgesprochen, die Frage geht immer zum Inhalt. Damit ist der Auslöser für Schritt 11.5 (Lage-Karte über die Regie) gegeben.
+
+Vielfalt (INT im Paket): Erlebens-Tür am Schluss 18 % · 21 %, Körperfrage 3 % · 3 %, längste Erlebens-Serie 1 · 2.
+
+**11.1b bleibt.** Offen: F3 (→ 11.5), F6a Sonnet (Grenzfall der Prüffrage).
