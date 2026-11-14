@@ -155,3 +155,19 @@ Der Deckel aus dem Gesamtplan (+300 je Datei) ist überschritten: drei neue Verh
 | nicht schlechter | MRV-01–03, PROT-01 (alle 0 · 0) | — |
 
 **Offen:** Lauf `prv11-2`.
+
+### Ergebnis des Laufs prv11-2 (14.11.2026)
+
+Rohdaten: `evals/ergebnisse/prv11/prv11-2_alle.json` (Kern `e6f67ce2`). Auswertung: `claude/eval-auswertung-prv11-2-2026-11-14.md`.
+
+| Ziel | Vorher (H / S) | Jetzt (H / S) | Schwelle | Urteil |
+|---|---|---|---|---|
+| INT-G1 | 2/3 · 2/3 | 0/5 · 1/5 | ≤ 1/5 | erreicht (Judge bei Sonnet großzügig) |
+| INT-G2 | 3/3 · 3/3 | 0/5 · 1/5 | ≤ 1/5 | erreicht; die Übersetzung an Anna folgt aber oft im selben Zug |
+| INT-G3 | 3/3 · 2/3 | 0/5 · 0/5 | ≤ 1/5 | erreicht |
+| INT-F6a v3 | 1/5 · 2/5 | 0/5 · 0/5 | ≤ 1/5 | erreicht |
+| INT-F3 v2 | neu | 5/5 · 5/5 | ≤ 1/5 | verfehlt: zweite Antwort quittiert knapp und fragt weiter |
+| MRV-01 | 0/5 · 0/5 | 0/5 · 1/5 | nicht schlechter | ein Einzelfall (C2), beobachten |
+| MRV-02, MRV-03, PROT-01 | 0 · 0 | 0 · 0 | — | hält |
+
+Rote Linien: 0. **11.2 bleibt.** Offen: F3 — die Kernregel greift nicht, der Hinweis über die Regie (11.5) ist fällig.
