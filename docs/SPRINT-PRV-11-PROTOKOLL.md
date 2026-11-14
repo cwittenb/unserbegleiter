@@ -208,3 +208,11 @@ Zweiter Zug: «Anna: Ja, gern. Gestern zum Beispiel: Ich erzähle vom Gespräch 
 | MRV-01 | 0/5 · 1/5 | ≤ 1/5 |
 
 **Offen:** Lauf `prv11-5`.
+
+### Nachtrag 11.5b · Grundsatz statt Einzelzug (14.11.2026)
+
+Einwand Cars10: «Ich weiß nicht, ob wir mit so engen Wenn-dann-Vorgaben etwas erreichen. In G2 wäre es auch denkbar, nach Annas Beschreibung nach Bernds Perspektive zu fragen — dabei darauf zu achten, dass Perspektiven nebeneinandergelegt werden können und emotionale Empfindungen, keine Wahrheiten, geäußert werden.»
+
+INT-G2 v3 (DE/EN): C4 prüft jetzt diesen Grundsatz. Mehrere Wege erfüllen ihn (Anna zum Wunsch führen, Bernd nach seiner Sicht fragen, beide einladen); verletzt ist er nur bei benannten Fehlbildern (Schilderung als Tatsache über Bernd, Rechtfertigung verlangen, entscheiden, wer recht hat, Vorwurf vertiefen). v2 hatte «wendet sich an Bernd, bevor Annas Wunsch auf dem Tisch ist» als Verstoß gewertet — das war zu eng. Paket `prv11-5` neu gebaut; Kern-Hash unverändert.
+
+Offene Grundsatzfrage: ob alle INT-Prüffragen und die neuen Regeln im Korpus auf diese Form umgestellt werden (Grundsatz plus Fehlbilder statt eines richtigen Zugs).

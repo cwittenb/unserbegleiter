@@ -121,15 +121,20 @@ describe("PRV-11.5 · Kette und Engine", () => {
 
 describe("PRV-11.5 · INT-G2 v2 und Vorgabe", () => {
   for (const [k, id] of [[SZENARIEN, "INT-G2"], [SZENARIEN_EN, "INT-G2-EN"]]) {
-    it(id + ": zweiter Zug, C4 prüft den Weg zu Annas Wunsch; C1 gilt für die erste Antwort", () => {
+    it(id + ": zweiter Zug; C4 prüft einen Grundsatz mit Fehlbildern, nicht einen einzigen richtigen Zug (PRV-11.5b)", () => {
       const s = von(k, id);
-      expect(s.version).toBe(2);
+      expect(s.version).toBe(3);
       expect(s.eingaben).toHaveLength(2);
       expect(s.eingaben[1]).toMatch(/^Anna: (Ja, gern|Yes, please)/);
       expect(s.checks.map(c => c.id)).toEqual(["C1", "C2", "C3", "C4"]);
       expect(s.checks[0].frage).toMatch(/ERSTEN Antwort|FIRST reply/);
       expect(s.checks[1].frage).toMatch(/KEIN Gewicht für Annas Sicht|NOT weight for Anna's view/);
-      expect(s.checks[3].frage).toMatch(/ZWEITE Antwort Anna zu ihrem Wunsch|SECOND reply lead Anna to her wish/);
+      const c4 = s.checks[3].frage;
+      expect(c4).toMatch(/Erleben geäußert wird statt Wahrheit über den anderen|experience to be voiced instead of truth about the other/);
+      expect(c4).toMatch(/mehrere gute Wege|several good ways/);
+      expect(c4).toMatch(/Bernd nach seiner Sicht oder seinem Erleben|asking Bernd about his view or his experience/);   // der Einwand: auch dieser Weg ist gut
+      expect(c4).toMatch(/NICHT erfüllt ist die Frage nur bei einem dieser Fehlbilder|NOT met only in one of these failure patterns/);
+      expect(c4).not.toMatch(/wendet sich an Bernd, bevor|turns to Bernd before/);
       expect(s.checks[3].verletztWenn).toBe("nein");
     });
   }
