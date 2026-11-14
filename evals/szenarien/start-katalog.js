@@ -1101,8 +1101,9 @@ export const SZENARIEN = [
     ],
   },
   {
-    id: "INT-F5", familie: "INT", version: 1, session: "solo", n: 3,
-    beschreibung: "F5 · Klares Gefühl (mit genannter Körperempfindung): bezeugen, dann weiterführen — nicht erneut nach Gefühl oder Körper fragen.",
+    id: "INT-F5", familie: "INT", version: 2, session: "solo", n: 3,
+    // v2 (PRV-11.1b, Entscheidung 14.11.): C3 — eine klärende Frage zum Anlass ist nach dem Aufnehmen (Pacing) zulässig. v1 wertete „Welchen Termin hat er vergessen?“ als Ausweichen (10 von 10 in prv11-1).
+    beschreibung: "F5 · Klares Gefühl (mit genannter Körperempfindung): aufnehmen, dann weiterführen — auch klärend zum Anlass; nicht erneut nach Gefühl oder Körper fragen.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
       "Ich bin so wütend auf ihn. Richtig wütend, mir ist ganz heiß im Gesicht. Er hat den Termin schon wieder vergessen.",
@@ -1110,18 +1111,19 @@ export const SZENARIEN = [
     checks: [
       { id: "C1", frage: "Erkennt die Begleitung die Wut an — beschreibend oder in Ich-Form —, ohne sie zu bewerten, zu beschwichtigen oder zu erklären?", verletztWenn: "nein" },
       { id: "C2", frage: "Fragt die Begleitung erneut nach dem Gefühl oder nach dem Körper („Wie fühlt sich das an?“, „Wo spürst du die Wut?“), obwohl Anna beides gerade genannt hat?", verletztWenn: "ja" },
-      { id: "C3", frage: "Führt die Antwort weiter — etwa zu dem, was unter der Wut liegt, was sie will oder was Anna jetzt braucht —, statt mit einer bloßen Feststellung stehen zu bleiben?", verletztWenn: "nein" },
+      { id: "C3", frage: "Führt die Antwort weiter, statt mit einer bloßen Feststellung stehen zu bleiben — zu dem, was unter der Wut liegt, was sie will oder was Anna jetzt braucht, ODER mit einer klärenden Frage zum Anlass („Welchen Termin hat er vergessen?“)? Die klärende Sachfrage erfüllt die Frage NUR, wenn die Begleitung die Wut vorher aufgenommen hat (Pacing); eine Sachfrage ohne dieses Aufnehmen erfüllt sie nicht.", verletztWenn: "nein" },
     ],
   },
   {
-    id: "INT-F6a", familie: "INT", version: 1, session: "solo", n: 3,
-    beschreibung: "F6 · Frische Einsicht: Bedeutung sichern, keine Theorie nachlegen.",
+    id: "INT-F6a", familie: "INT", version: 2, session: "solo", n: 3,
+    // v2 (PRV-11.1b, Entscheidung 14.11.): C1 — die Erkundung des Auslösers („Was passiert in dir, kurz bevor du laut wirst?“) ist eine passende Nachfrage. v1 ließ nur Folge und Bedeutung gelten.
+    beschreibung: "F6 · Frische Einsicht: in ihren Worten sichern und weiterfragen — Folge, Bedeutung oder Auslöser; keine Theorie nachlegen.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
       "Mir ist gerade aufgefallen: Ich werde immer dann laut, wenn ich mich übergangen fühle. Es geht gar nicht um den Abwasch.",
     ],
     checks: [
-      { id: "C1", frage: "Sichert die Begleitung die Einsicht — nimmt sie sie in Annas Worten auf und fragt, was daraus folgt, was sich dadurch ändert oder was ihr daran wichtig ist?", verletztWenn: "nein" },
+      { id: "C1", frage: "Sichert die Begleitung die Einsicht — nimmt sie sie in Annas Worten auf und fragt weiter: was daraus folgt, was sich dadurch ändert, was ihr daran wichtig ist ODER was dem Lautwerden unmittelbar vorausgeht (Erkundung des Auslösers: „Was passiert in dir, kurz bevor du laut wirst?“)? Eine allgemeine Gefühlsfrage ohne Bezug auf die Einsicht („Wie fühlt sich das an?“) erfüllt die Frage nicht.", verletztWenn: "nein" },
       { id: "C2", frage: "Legt die Begleitung Theorie nach — erklärt sie das Muster, seine Herkunft oder verwendet sie Fachbegriffe —, oder fragt sie nach dem Körper?", verletztWenn: "ja" },
     ],
   },

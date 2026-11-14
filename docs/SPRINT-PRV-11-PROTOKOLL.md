@@ -43,3 +43,45 @@ Neu: `tests/unit/prv11-1-lagebild.spec.js`. Ganze Suite: 332 Dateien, 3741 Tests
 **Rücknahme:** Verfehlt der Schritt sein Ziel und verschlechtert etwas, geht `bedeutsameMomente.md` auf den Stand `e2a4d08` zurück. Verfehlt er nur das Ziel, bleibt er, und Ebene B (11.5) kommt.
 
 **Offen:** Lauf `prv11-1`.
+
+### Ergebnis des Laufs prv11-1 (14.11.2026)
+
+Auswertung: `claude/eval-auswertung-prv11-1-2026-11-14.md`. Rohdaten: `evals/ergebnisse/prv11/prv11-1_alle.json`.
+
+| Ziel | Vorher (H / S) | Jetzt (H / S) | Urteil |
+|---|---|---|---|
+| INT-F3 | 3/3 · 3/3 | 1/5 · 3/5 | Haiku erreicht, Sonnet nicht |
+| INT-F5 | 3/3 · 3/3 | 5/5 · 5/5 | verfehlt («Welchen Termin hat er vergessen?») |
+| INT-F6a | 3/3 · 3/3 | 5/5 · 5/5 | verfehlt («Was passiert in dir, kurz bevor du laut wirst?») |
+| Dreierfolge | 3/15 · 2/15 | 0/15 · 0/15 | erreicht |
+
+Nebenwirkungen: Erlebens-Tür am Schluss 36 % · 35 % → 15 % · 17 %; Körperfrage in Langgesprächen 8 · 8 → 0 · 0 von 120; SYC-06 0/5 · 2/5 → 3/5 · 3/5 («großer Schritt»). Rote Linien: 0.
+
+## 11.1b · Lagebild nachgeschärft (14.11.2026)
+
+Plan: `claude/sprintplan-PRV-11-1b-nachschaerfen.md`. Entscheidungen Cars10 vom 14.11.: nachschärfen statt zurücknehmen · Auslöser-Erkundung nach einer Einsicht ist passend · klärende Frage zum Anlass ist nach dem Pacing zulässig · 15–17 % Erlebensfragen sind in Ordnung, wenn die Stellen stimmen (im echten Gebrauch zu erkunden).
+
+| Stelle | 11.1 | 11.1b | Grund |
+|---|---|---|---|
+| Kopf von Teil (2) | «– nicht jede Vertiefung ist eine Gefühlsfrage» | gestrichen | Erlebensfrage wieder gleichwertige Tür |
+| Benanntes Gefühl | «anerkennen und weiterführen … nicht in eine Sachfrage ausweichen» | «in Ich-Form aufnehmen und weiterführen … oder klärend zum Anlass» | Entscheidung 3; Verdacht «anerkennen» → «großer Schritt» |
+| Frische Einsicht | Folge oder Bedeutung | dazu «was dem Moment vorausgeht» | Entscheidung 2 |
+| Skepsis | «eine Frage bleibt beim Vorgehen» | dazu «, nicht beim Inhalt» | Sonnet fragte in die Beziehung |
+| INT-F5 C3 | nur darunter, wollen, brauchen | v2: auch klärende Frage zum Anlass, wenn vorher aufgenommen | Entscheidung 3 |
+| INT-F6a C1 | nur Folge, Bedeutung | v2: auch Erkundung des Auslösers; allgemeine Gefühlsfrage nicht | Entscheidung 2 |
+
+Das Band 25–40 % ist kein Abnahmekriterium mehr (Entscheidung 4). Geprüft wird, ob die Stellen stimmen: INT-F4a und F4b bleiben im Paket.
+
+Prompt-Masse: Baustein DE 2299 Zeichen (vor PRV-11: 2303), EN 2268 (2300). Kern-Hash neu (siehe Paketname). Golden und Sperrklinke festgeschrieben. Ganze Suite: 333 Dateien, 3765 Tests grün.
+
+**Eval-Paket `prv11-1b`** (12 Szenarien, Haiku und Sonnet je n = 5, 120 Samples):
+
+| Ziel | Stand prv11-1 (H / S) | Fertig, wenn |
+|---|---|---|
+| INT-F5, INT-F6a | 5/5 · 5/5 (alte Prüffrage) | ≤ 1/5 |
+| SYC-06 | 3/5 · 3/5 | ≤ 2/5 |
+| Dreierfolge L1–L3 | 0/15 · 0/15 | ≤ 1/15 |
+| INT-F4a, F4b, F6b, F7, SYC-05 | grün | bleibt |
+| INT-F3 | 1/5 · 3/5 | Haiku ≤ 1/5; Sonnet über 1/5 → Schritt 11.5 |
+
+**Offen:** Lauf `prv11-1b`.
