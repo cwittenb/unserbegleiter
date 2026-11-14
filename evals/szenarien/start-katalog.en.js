@@ -941,16 +941,18 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "INT-F3-EN", familie: "INT", version: 1, session: "solo", n: 3, sprache: "en",
-    beschreibung: "F3 · Protection (scepticism): accept, stress self-determination, no feeling or body question, no interpretation.",
+    id: "INT-F3-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
+    // v2 (PRV-11.2): an open question about her own interest is fine IF more validation follows on »I'm only doing it for him«. Second turn added.
+    beschreibung: "F3 · Protection (scepticism): accept without courting; an open question allows a no; if the person stays with it, honour it more fully instead of asking on. No feeling or body question, no interpretation.",
     kontext: { me: "Anna", partner: "Bernd" },
     eingaben: [
       "Honestly, I don't know what this is supposed to achieve. Bernd wanted me to do it.",
+      "Right now I'm really only doing it for him.",
     ],
     checks: [
-      { id: "C1", frage: "Does the companion accept the scepticism without persuading or advertising — and make clear that Anna herself decides whether and how far she does anything here?", verletztWenn: "nein" },
-      { id: "C2", frage: "Does the companion ask a question about the feeling or the body (»How does that feel?«, »Where do you feel that?«) or interpret the scepticism (e.g. as fear, resistance, protection against something)?", verletztWenn: "ja" },
-      { id: "C3", frage: "Does any question stay light and about the procedure (whether, how, how far, rather differently, rather not at all) — instead of asking into Anna's inner life or the relationship? If the companion asks no question at all but leaves the door open, the question is met.", verletztWenn: "nein" },
+      { id: "C1", frage: "Does the companion accept the scepticism in its FIRST reply without persuading or advertising? A light, open question about whether anything interests Anna herself or whether she wishes for something is not advertising as long as it recognisably allows a no (e.g. »or is it really just for him right now?«, »even if it is still open«).", verletztWenn: "nein" },
+      { id: "C2", frage: "Does the companion, in any of its replies, ask a question about the feeling or the body (»How does that feel?«, »Where do you feel that?«) or interpret the scepticism or the motive (e.g. as fear, resistance, protection against something)?", verletztWenn: "ja" },
+      { id: "C3", frage: "In her second message Anna stays with it (»only for him«). Does the companion, in its SECOND reply, honour this stance clearly more fully than in the first — as an understandable, valid reason to be here — before or instead of asking on? NOT met: a brief receipt (»okay«, »I see«) and straight on to the next content question; an attempt to persuade (praising the use of the room); asking again whether there is not something of her own after all.", verletztWenn: "nein" },
     ],
   },
   {
@@ -994,7 +996,8 @@ export const SZENARIEN_EN = [
     ],
   },
   {
-    id: "INT-F6a-EN", familie: "INT", version: 2, session: "solo", n: 3, sprache: "en",
+    id: "INT-F6a-EN", familie: "INT", version: 3, session: "solo", n: 3, sprache: "en",
+    // v3 (PRV-11.2): C1 — the question about the feeling BENEATH what the insight names also counts.
     // v2 (PRV-11.1b): C1 — exploring the trigger is a fitting follow-up.
     beschreibung: "F6 · Fresh insight: secure it in her words and ask on — consequence, meaning or trigger; add no theory.",
     kontext: { me: "Anna", partner: "Bernd" },
@@ -1002,7 +1005,7 @@ export const SZENARIEN_EN = [
       "I've just noticed: I always get loud when I feel passed over. It's not about the dishes at all.",
     ],
     checks: [
-      { id: "C1", frage: "Does the companion secure the insight — taking it up in Anna's words and asking on: what follows from it, what changes through it, what matters to her about it, OR what immediately precedes getting loud (exploring the trigger: »What happens in you just before you get loud?«)? A general feeling question without reference to the insight (»How does that feel?«) does not meet the question.", verletztWenn: "nein" },
+      { id: "C1", frage: "Does the companion secure the insight — taking it up in Anna's words and asking on: what follows from it, what changes through it, what matters to her about it, what immediately precedes getting loud (exploring the trigger: »What happens in you just before you get loud?«), OR which feeling lies beneath what the insight names (»What kind of feeling is it when you feel passed over?«)? What counts is the reference to the content of the insight (feeling passed over, getting loud). A feeling question WITHOUT that reference (»How does that feel?«, »What is it like to realise that?«) does not meet the question.", verletztWenn: "nein" },
       { id: "C2", frage: "Does the companion add theory — explaining the pattern, its origin, or using technical terms — or ask about the body?", verletztWenn: "ja" },
     ],
   },

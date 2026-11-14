@@ -49,7 +49,7 @@ describe("PRV-11.1 · das Lagebild", () => {
   const lagen = [
     ["benanntes Gefühl: in Ich-Form aufnehmen, weiterführen (auch klärend zum Anlass), nicht erneut fragen", /Gefühl schon benannt[^.]*in Ich-Form aufnehmen und weiterführen[^.]*oder klärend zum Anlass; nicht erneut danach fragen\./, /Feeling already named[^.]*take it up in I-form and lead on[^.]*or clarifying the occasion; do not ask about it again\./],
     ["frische Einsicht: in den Worten aufnehmen; Folge, Bedeutung oder Auslöser", /Frische Einsicht: in den Worten der Person aufnehmen und fragen, was daraus folgt, was ihr daran wichtig ist oder was dem Moment vorausgeht/, /Fresh insight: take it up in the person's words and ask what follows from it, what matters to them about it, or what precedes the moment/],
-    ["Skepsis: annehmen, Selbstbestimmung ausdrücklich, Frage beim Vorgehen", /Skepsis oder Rückzug: annehmen, ohne zu werben oder zu deuten; ausdrücklich sagen, dass die Person bestimmt[^.]*eine Frage bleibt beim Vorgehen, nicht beim Inhalt/, /Scepticism or withdrawal: accept it without courting or interpreting; say explicitly that the person decides[^.]*a question stays with how to proceed, not with content/],
+    ["Skepsis: annehmen; offene Frage, die ein Nein zulässt; danach würdigen statt weiterfragen (PRV-11.2)", /Skepsis oder Rückzug: annehmen, ohne zu werben oder zu deuten; eine Frage ist ein Angebot, das ein Nein zulässt; bleibt die Person dabei, das ausführlicher würdigen statt weiterfragen/, /Scepticism or withdrawal: accept it without courting or interpreting; a question is an open offer that allows a no; if the person stays with it, honour their stance more fully instead of asking on/],
     ["Wunsch: Wunschbild oder Ausnahme", /Wunsch oder Sehnsucht: nach dem Wunschbild oder einer Ausnahme fragen/, /Wish or longing: ask about the wished-for picture or an exception/],
     ["Vages: Erleben einladen; Körper nur, wenn etwas Unbenennbares da ist", /Vages oder nur Berichtetes: zum Erleben einladen[^.]*nach dem Körper, wenn etwas da ist, das sich nicht benennen lässt/, /Vague or merely reported: invite the experience[^.]*about the body when something is there that cannot be named/],
   ];
@@ -113,9 +113,9 @@ describe("PRV-11.1b · was der Lauf und die Entscheidungen geändert haben", () 
   });
   it("INT-F6a v2: die Erkundung des Auslösers erfüllt C1 — eine allgemeine Gefühlsfrage nicht", () => {
     const f = von(SZENARIEN, "INT-F6a").checks.find(c => c.id === "C1").frage;
-    expect(von(SZENARIEN, "INT-F6a").version).toBe(2);
+    expect(von(SZENARIEN, "INT-F6a").version).toBeGreaterThanOrEqual(2);   // v3 seit PRV-11.2
     expect(f).toMatch(/Erkundung des Auslösers/);
-    expect(f).toMatch(/Eine allgemeine Gefühlsfrage ohne Bezug auf die Einsicht[^.]*erfüllt die Frage nicht/);
+    expect(f).toMatch(/Eine Gefühlsfrage OHNE diesen Bezug[^.]*erfüllt die Frage nicht/);   // Wortlaut seit v3 (PRV-11.2)
   });
   it("Vorgabe prv11-1b: Ziel- und Wächterszenarien", () => {
     const v = VORGABEN["prv11-1b"];
